@@ -84,6 +84,8 @@ import org.apache.tools.ant.types.FilterChain;
 import org.apache.tools.ant.types.RegularExpression;
 import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.types.ResourceCollection;
+import org.apache.tools.ant.types.resources.FileResource;
+import org.apache.tools.ant.types.resources.JavaResource;
 import org.apache.tools.ant.types.resources.StringResource;
 import org.apache.tools.ant.types.resources.ZipResource;
 import org.apache.tools.ant.util.FileNameMapper;
@@ -146,7 +148,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
         }
         BufferedImage badgeIcon;
         try {
-            badgeIcon = badgeFile == null ? null : ImageIO.read(badgeFile);
+            badgeIcon = badgeFile == null ? ImageIO.read(ExtractLayer.class.getResourceAsStream("badge.png")) : ImageIO.read(badgeFile);
         } catch (IOException ex) {
             throw new BuildException("Error reading " + badgeFile, ex);
         }
@@ -476,7 +478,11 @@ implements FileNameMapper, URIResolver, EntityResolver {
                 final String prfx = "nbresloc:";
                 if (!url.startsWith(prfx)) {
                     if (localAllowed) {
-                        copy.add(".*/" + url);
+                        if (url.startsWith("/")) {
+                            copy.add(url.substring(1));
+                        } else {
+                            copy.add(".*/" + url);
+                        }
                         return;
                     } else {
                         throw new BuildException("Unknown urlvalue was: " + url);

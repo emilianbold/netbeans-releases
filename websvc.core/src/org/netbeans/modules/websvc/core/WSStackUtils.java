@@ -138,16 +138,21 @@ public class WSStackUtils {
             return ServerType.NOT_SPECIFIED;
         }
         String serverId = j2eeModuleProvider.getServerID();
-        if (serverId.startsWith("Tomcat")) return ServerType.TOMCAT; //NOI18N
-        else if (serverId.equals("J2EE")) return ServerType.GLASSFISH; //NOI18N
-        else if (serverId.equals("gfv3")) return ServerType.GLASSFISH_V3; //NOI18N
-        else if (serverId.equals("GlassFish")) return ServerType.GLASSFISH; //NOI18N
-        else if (serverId.equals("APPSERVER")) return ServerType.GLASSFISH; //NOI18N
-        else if (serverId.equals("JavaEE")) return ServerType.GLASSFISH; //NOI18N
-        else if (serverId.startsWith("JBoss")) return ServerType.JBOSS; //NOI18N
-        else if (serverId.startsWith("WebLogic")) return ServerType.WEBLOGIC; //NOI18N
-        else if (serverId.startsWith("WebSphere")) return ServerType.WEBSPHERE; //NOI18N
-        else return ServerType.UNKNOWN;
+        if (serverId != null) {
+            if (serverId.startsWith("Tomcat")) return ServerType.TOMCAT; //NOI18N
+            else if (serverId.equals("J2EE")) return ServerType.GLASSFISH; //NOI18N
+            else if (serverId.equals("gfv3")) return ServerType.GLASSFISH_V3; //NOI18N
+            else if (serverId.equals("GlassFish")) return ServerType.GLASSFISH; //NOI18N
+            else if (serverId.equals("APPSERVER")) return ServerType.GLASSFISH; //NOI18N
+            else if (serverId.equals("JavaEE")) return ServerType.GLASSFISH; //NOI18N
+            else if (serverId.startsWith("JBoss")) return ServerType.JBOSS; //NOI18N
+            else if (serverId.startsWith("WebLogic")) return ServerType.WEBLOGIC; //NOI18N
+            else if (serverId.startsWith("WebSphere")) return ServerType.WEBSPHERE; //NOI18N
+            else return ServerType.UNKNOWN;
+        } else {
+            return ServerType.NOT_SPECIFIED;
+        }
+        
     }
     
     public ServerType getServerType() {

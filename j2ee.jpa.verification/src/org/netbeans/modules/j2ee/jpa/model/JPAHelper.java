@@ -63,7 +63,8 @@ public class JPAHelper {
     
     /**
      * Utility method to find out if any member is annotated as Id or
-     * EmbeddedId in this class? It does not check any of the inheritted
+     * EmbeddedId in this class?
+     * It does not check any of the inheritted
      * members.
      *
      * @param javaClass JavaClass whose members will be inspected.

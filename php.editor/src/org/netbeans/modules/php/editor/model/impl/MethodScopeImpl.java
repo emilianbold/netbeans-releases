@@ -120,7 +120,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     }
 
     public TypeScope getTypeScope() {
-        return (ClassScope) getInScope();
+        return (TypeScope) getInScope();
     }
 
     @Override
@@ -152,10 +152,12 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
                     }
 
                 sb.append(param.getName());
+                if (!param.isMandatory()) {
                     String defaultValue = param.getDefaultValue();
                     if (defaultValue != null) {
                         sb.append(" = ").append(defaultValue); //NOI18N
                     }
+                }
             }
         }
 

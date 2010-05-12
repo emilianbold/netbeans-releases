@@ -58,6 +58,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -92,9 +94,9 @@ abstract class AbstractEntry implements ModuleEntry {
         return getBundleInfo().getLongDescription();
     }
     
-    public int compareTo(Object o) {
-        int retval = getLocalizedName().compareTo(((ModuleEntry) o).getLocalizedName()); 
-        return (retval != 0) ? retval : getCodeNameBase().compareTo(((ModuleEntry) o).getCodeNameBase());
+    public int compareTo(ModuleEntry o) {
+        int retval = getLocalizedName().compareTo(o.getLocalizedName()); 
+        return (retval != 0) ? retval : getCodeNameBase().compareTo(o.getCodeNameBase());
     }
     
     public synchronized Set<String> getPublicClassNames() {
@@ -105,7 +107,8 @@ abstract class AbstractEntry implements ModuleEntry {
                 for (int i = 0; i < cpext.length; i++) {
                     File ext = new File(cpext[i]);
                     if (!ext.isFile()) {
-                        Util.err.log(ErrorManager.WARNING, "Could not find Class-Path extension " + ext + " of " + this);
+                        Logger.getLogger(AbstractEntry.class.getName()).log(Level.FINE,
+                                "Could not find Class-Path extension {0} of {1}", new Object[] {ext, this});
                         continue;
                     }
                     scanJarForPublicClassNames(publicClassNames, ext);
@@ -189,7 +192,12 @@ abstract class AbstractEntry implements ModuleEntry {
 
     /** Checks whether a .class file is marked as public or not. */
     private static boolean isPublic(JarFile jf, JarEntry entry) throws IOException {
-        InputStream is = jf.getInputStream(entry);
+        InputStream is;
+        try {
+            is = jf.getInputStream(entry);
+        } catch (SecurityException x) {
+            throw new IOException(x);
+        }
         try {
             DataInput input = new DataInputStream(is);
             skip(input, 8); // magic, minor_version, major_version

@@ -58,8 +58,8 @@ import org.openide.ErrorManager;
     }
     
     @Override
-    public SunCCCompiler createCopy() {
-        SunCCCompiler copy = new SunCCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
+    public SunCCCompiler createCopy(CompilerFlavor flavor) {
+        SunCCCompiler copy = new SunCCCompiler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath());
         if (isReady()) {
             copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
             copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
@@ -82,32 +82,11 @@ import org.openide.ErrorManager;
         try {
             String line;
             while ((line = reader.readLine()) != null) {
-                //System.out.println(line);
-                int includeIndex = line.indexOf("-I"); // NOI18N
-                while (includeIndex > 0) {
-                    String token;
-                    int spaceIndex = line.indexOf(' ', includeIndex + 1); // NOI18N
-                    if (spaceIndex > 0) {
-                        token = line.substring(includeIndex+2, spaceIndex);
-                    } else {
-                        token = line.substring(includeIndex+2);
-                    }
-                    if ( ! token.equals("-xbuiltin")) { //NOI18N
-                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
-                    }
+                for(String token : getSystemPaths(line)){
+                    addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(token));
                     if (token.endsWith("Cstd")) { // NOI18N
                         // See 89872 "Parser Settings" for Sun Compilers Collection are incorrect
-                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token.substring(0, token.length()-4) + "std")); // NOI18N
-                    }
-                    // Hack to handle -compat flag. If this flag is added,
-                    // the compiler looks in in CC4 and not in CC. Just adding CC4 doesn't
-                    // fix this problem but it may work for some include files
-//                  if (token.endsWith("include/CC")) // NOI18N
-//                      systemIncludeDirectoriesList.addUnique(normalizePath(token + "4")); // NOI18N
-                    if (spaceIndex > 0) {
-                        includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
-                    } else {
-                        break;
+                        addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(token.substring(0, token.length()-4) + "std")); // NOI18N
                     }
                 }
                 parseUserMacros(line, pair.systemPreprocessorSymbolsList);
@@ -131,7 +110,7 @@ import org.openide.ErrorManager;
                     }
                     if (sepIdx > 0) {
                         String token = line.substring(8, sepIdx) + "=" + line.substring(sepIdx + 1); // NOI18N
-                        pair.systemPreprocessorSymbolsList.addUnique(token);
+                        addUnique(pair.systemPreprocessorSymbolsList, token);
                     }
                 }
             }

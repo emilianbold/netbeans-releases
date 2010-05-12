@@ -650,7 +650,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         jPanelCompileProcessor.add(jButtonMoveDownP, gridBagConstraints);
 
-        jTabbedPane1.addTab("Processor", jPanelCompileProcessor);
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Processors_Tab"), jPanelCompileProcessor); // NOI18N
 
         jPanelCompileTests.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         jPanelCompileTests.setLayout(new java.awt.GridBagLayout());
@@ -935,6 +935,12 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         collectLibs(uiProperties.ENDORSED_CLASSPATH_MODEL, libs, jars);
         collectLibs(uiProperties.WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel(), libs, jars);
         libs.add("CopyLibs"); // NOI18N
+
+        // make jsp compilation libraries sharable if jsp compilation is ticked on
+        if (uiProperties.COMPILE_JSP_MODEL.isSelected()) {
+            libs.add("jsp-compilation"); // NOI18N
+            libs.add("jsp-compiler"); // NOI18N
+        }
         boolean res = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
         if (res) {
             if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
@@ -949,8 +955,12 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                             Library serverLibrary = SharabilityUtility.findOrCreateLibrary(loc, serverID);
                             assert returnServerLibrary.length == 1;
                             returnServerLibrary[0] = serverLibrary.getName();
-                            EditableProperties ep = uiProperties.getProject().getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            WebProjectUtilities.setServerProperties(ep, serverLibrary.getName());
+                            AntProjectHelper helper = uiProperties.getProject().getAntProjectHelper();
+                            EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            EditableProperties epPriv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                            J2EEProjectProperties.setSharableServerProperties(ep, epPriv, serverLibrary.getName());
+                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, epPriv);
+                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                             ProjectManager.getDefault().saveProject(uiProperties.getProject());
                             ClassPathUiSupport.addLibraries(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(),
                                     null, new Library[]{serverLibrary}, new HashSet<Library>(), null);

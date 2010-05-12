@@ -7068,3 +7068,16 @@ org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache
 org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache$AnnotationRefreshTask
 org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache$Item
 org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache$ItemKey
+org.netbeans.modules.versioning.VersioningManager$ByPriorityComparator
+
+# OK on Feb 10, 2010:
+org.netbeans.core.NbKeymap$AcceleratorBindingImpl
+org.netbeans.modules.openide.loaders.FileEntityResolver
+org.netbeans.modules.openide.loaders.FileEntityResolver$DTDParser
+org.netbeans.modules.openide.loaders.FileEntityResolver$Lkp
+org.netbeans.modules.openide.loaders.FileEntityResolver$StopSaxException
+org.netbeans.spi.debugger.ActionsProvider$ContextAware
+org.netbeans.spi.debugger.ActionsProvider$ContextAware$ContextDispatcherListener
+org.openide.awt.AcceleratorBinding
+org.openide.filesystems.FSException
+

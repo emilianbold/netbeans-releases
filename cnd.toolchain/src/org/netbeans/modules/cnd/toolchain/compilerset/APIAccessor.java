@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.toolchain.compilerset;
 
+import java.nio.charset.Charset;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
@@ -68,7 +69,7 @@ public abstract class APIAccessor {
 
     /**
      * Register the accessor. The method can only be called once
-     * - othewise it throws IllegalStateException.
+     * - otherwise it throws IllegalStateException.
      *
      * @param accessor instance.
      */
@@ -85,4 +86,5 @@ public abstract class APIAccessor {
 
     public abstract void setToolPath(Tool tool, String p);
 
+    public abstract void setCharset(Charset charset, CompilerSet cs);
 }

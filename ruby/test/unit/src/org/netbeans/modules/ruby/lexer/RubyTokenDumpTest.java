@@ -41,14 +41,16 @@
 
 package org.netbeans.modules.ruby.lexer;
 
+import java.util.concurrent.Callable;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 
 /**
  * Test tokens dump of Ruby code input. Based on Java one by Mila Metelka.
  */
-public class RubyTokenDumpTest extends NbTestCase {
+public class RubyTokenDumpTest extends RubyTestBase {
     
     public RubyTokenDumpTest(String testName) {
         super(testName);
@@ -66,8 +68,15 @@ public class RubyTokenDumpTest extends NbTestCase {
     }
 
     public void testHeredoc1() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/heredoc1.rb.txt",
-                RubyTokenId.language());
+        failsDueToIssue182494(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                LexerTestUtilities.checkTokenDump(RubyTokenDumpTest.this, "testfiles/heredoc1.rb.txt",
+                        RubyTokenId.language());
+                return null;
+            }
+        });
     }
     
     public void testEmbeddedCode() throws Exception {
@@ -86,7 +95,14 @@ public class RubyTokenDumpTest extends NbTestCase {
     }    
 
     public void testPercentExpressions() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/percent-expressions2.rb.txt",
-                RubyTokenId.language());
+        failsDueToIssue182494(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                LexerTestUtilities.checkTokenDump(RubyTokenDumpTest.this, "testfiles/percent-expressions2.rb.txt",
+                        RubyTokenId.language());
+                return null;
+            }
+        });
     }    
 }

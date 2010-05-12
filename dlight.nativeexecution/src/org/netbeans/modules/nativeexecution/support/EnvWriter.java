@@ -38,12 +38,15 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -53,36 +56,43 @@ import org.openide.util.Exceptions;
 public final class EnvWriter {
 
     private final OutputStream os;
+    private final boolean remote;
 
-    public EnvWriter(OutputStream os) {
+    public EnvWriter(final OutputStream os, final boolean remote) {
         this.os = os;
+        this.remote = remote;
     }
 
-    private final static String remoteCharSet = System.getProperty("cnd.remote.charset"); // NOI18N
-    /*package*/static String getCharSet() {
-        return remoteCharSet == null ? "UTF-8" : remoteCharSet; // NOI18N
-    }
-    
-    public static byte[] getBytesWithRemoteCharset(String str) {
-        final String charSet = getCharSet();
-        if (java.nio.charset.Charset.isSupported(charSet)) {
-            try {
-                return str.getBytes(charSet);
-            } catch (UnsupportedEncodingException ex) {
-                Exceptions.printStackTrace(ex);
+    public static byte[] getBytes(String str, boolean remote) {
+        if (remote) {
+            final String charSet = ProcessUtils.getRemoteCharSet();
+            if (java.nio.charset.Charset.isSupported(charSet)) {
+                try {
+                    return str.getBytes(charSet);
+                } catch (UnsupportedEncodingException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         return str.getBytes();
     }
 
     public void write(final MacroMap env) throws IOException {
+        write(env.entrySet());
+    }
+
+    public void write(Map<String, String> env) throws IOException {
+        write(env.entrySet());
+    }
+
+    private void write(Set<Entry<String, String>> env) throws IOException {
         if (!env.isEmpty()) {
             String name = null;
             String value = null;
             // Very simple sanity check of vars...
             Pattern pattern = Pattern.compile("[A-Z0-9_]+"); // NOI18N
 
-            for (Entry<String, String> entry : env.entrySet()) {
+            for (Entry<String, String> entry : env) {
                 // ask key as is
                 name = entry.getKey();
                 // check capitalized key by pattern
@@ -93,7 +103,7 @@ public final class EnvWriter {
                 value = entry.getValue();
 
                 if (value != null) {
-                    os.write(getBytesWithRemoteCharset(name + "=\"" + value + "\" && export " + name + "\n")); // NOI18N
+                    os.write(getBytes(name + "=\"" + value + "\" && export " + name + "\n", remote)); // NOI18N
                     os.flush();
                 }
             }

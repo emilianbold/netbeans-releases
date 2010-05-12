@@ -47,8 +47,11 @@
 #include <windows.h>
 #include <string>
 
+bool isWow64();
 bool disableFolderVirtualization(HANDLE hProcess);
 bool getStringFromRegistry(HKEY rootKey, const char *keyName, const char *valueName, std::string &value);
+bool getStringFromRegistryEx(HKEY rootKey, const char *keyName, const char *valueName, std::string &value,bool read64bit);
+bool getStringFromRegistry64bit(HKEY rootKey, const char *keyName, const char *valueName, std::string &value);
 bool getDwordFromRegistry(HKEY rootKey, const char *keyName, const char *valueName, DWORD &value);
 bool dirExists(const char *path);
 bool fileExists(const char *path);
@@ -64,6 +67,7 @@ bool setupProcess(int &argc, char *argv[], DWORD &parentProcID, const char *atta
 bool printToConsole(const char *msg);
 bool getParentProcessID(DWORD &id);
 bool isConsoleAttached();
+int convertAnsiToUtf8(const char *ansi, char *utf8, int utf8Len);
 
 #endif	/* _UTILSFUNCS_H */
 

@@ -472,6 +472,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
             for (Product productToIntegrate : productsToIntegrate) {
                 final File location = productToIntegrate.getInstallationLocation();
+                registerJavaDB(location, new File(directory, "javadb"));
                 LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
                 if(!registerGlassFish(location, directory)) {
                     continue;
@@ -494,6 +495,39 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
+    }
+    
+    private boolean registerJavaDB(File nbLocation, File javadbLocation) throws IOException {
+        if(!FileUtils.exists(javadbLocation)) {
+            LogManager.log("Requested to register JavaDB at " + javadbLocation + " but can't find it");
+            return false;
+        }
+        File javaExe = JavaUtils.getExecutable(SystemUtils.getCurrentJavaHome());
+        String [] cp = {
+            "platform/core/core.jar",
+            "platform/lib/boot.jar",
+            "platform/lib/org-openide-modules.jar",
+            "platform/core/org-openide-filesystems.jar",
+            "platform/lib/org-openide-util.jar",
+            "platform/lib/org-openide-util-lookup.jar",
+            "ide/modules/org-netbeans-modules-derby.jar"
+        };
+        for(String c : cp) {
+            File f = new File(nbLocation, c);
+            if(!FileUtils.exists(f)) {
+                LogManager.log("... cannot find jar required for JavaDB integration: " + f);
+                return false;
+            }
+        }
+        String mainClass = "org.netbeans.modules.derby.DerbyRegistration";
+        List <String> commands = new ArrayList <String> ();
+        commands.add(javaExe.getAbsolutePath());
+        commands.add("-cp");
+        commands.add(StringUtils.asString(cp, File.pathSeparator));
+        commands.add(mainClass);
+        commands.add(new File(nbLocation, "nb").getAbsolutePath());
+        commands.add(javadbLocation.getAbsolutePath());
+        return SystemUtils.executeCommand(nbLocation, commands.toArray(new String [] {})).getErrorCode() == 0;
     }
 
     private boolean isGlassFishRegistred(File nbLocation) throws IOException {

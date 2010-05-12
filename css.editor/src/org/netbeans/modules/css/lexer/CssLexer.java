@@ -47,6 +47,7 @@ import org.netbeans.modules.css.parser.CssParserTokenManager;
 import org.netbeans.modules.css.parser.PatchedCssParserTokenManager;
 import org.netbeans.modules.css.parser.TokenMgrError;
 import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
@@ -58,28 +59,63 @@ import org.netbeans.spi.lexer.TokenFactory;
  */
 public final class CssLexer implements Lexer<CssTokenId> {
 
-    private int lexerState;
-    private final TokenFactory<CssTokenId> tokenFactory;
-    private CssParserTokenManager tokenManager;
-    private LexerRestartInfo<CssTokenId> lexerRestartInfo;
+    private boolean                         inOptionsDialog;
+    private LexerInput                      input;
+    private int                             lexerState;
+    private final TokenFactory<CssTokenId>  tokenFactory;
+    private CssParserTokenManager           tokenManager;
+    private LexerRestartInfo<CssTokenId>    lexerRestartInfo;
 
     private static final int JCCTOKEN_TO_TOKENID_INDEX_DIFF = CssParserConstants.LBRACE - CssTokenId.LBRACE.ordinal();
 
+    @Override
     public Object state() {
         return lexerState;
     }
 
-    public CssLexer(LexerRestartInfo<CssTokenId> info) {
+    public CssLexer (LexerRestartInfo<CssTokenId> info) {
         this.lexerRestartInfo = info;
+        input = info.input ();
         if (info.state() != null) {
             tokenManager = new PatchedCssParserTokenManager(new LexerCharStream(info), ((Integer) info.state()).intValue());
         } else {
             tokenManager = new PatchedCssParserTokenManager(new LexerCharStream(info));
         }
         this.tokenFactory = info.tokenFactory();
+        inOptionsDialog = info.getAttributeValue ("OptionsDialog") != null;
+        Integer state = (Integer) lexerRestartInfo.state ();
+        lexerState = state == null ?
+            0 : (int) state;
     }
 
+    private static CssTokenId[] tokens = {
+        CssTokenId.COMMENT, CssTokenId.ATKEYWORD, CssTokenId.CDO, CssTokenId.URL,
+        CssTokenId.SEMICOLON, CssTokenId.SELECTOR_NMSTART, CssTokenId.COLON, CssTokenId.CDO,
+        CssTokenId.SELECTOR_NMSTART, CssTokenId.CDO, CssTokenId.GT, CssTokenId.CDO,
+        CssTokenId.SELECTOR_NMSTART, CssTokenId.CDO, CssTokenId.LBRACE, CssTokenId.CDO,
+        CssTokenId.NAME, CssTokenId.CDO, CssTokenId.SEMICOLON, CssTokenId.CDO,
+        CssTokenId.NUMBER, CssTokenId.SEMICOLON, CssTokenId.CDO, CssTokenId.NAME,
+        CssTokenId.SEMICOLON, CssTokenId.FUNCTION, CssTokenId.STRING, CssTokenId.RBRACE,
+        CssTokenId.SEMICOLON, CssTokenId.CDO, CssTokenId.RBRACE
+    };
+
+    private static int[] lengths = {
+        36, 6, 0, 14, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2, 4, 0, 0, 
+        0, 6, 0, 2, 15, 0, 3, 25, 0, 0, 0, 0
+    };
+
+    @Override
     public Token<CssTokenId> nextToken() {
+        if (inOptionsDialog) {
+            int next = input.read ();
+            if (next == LexerInput.EOF)
+                return null;
+            if (lexerState >= lengths.length)
+                return tokenFactory.createToken (CssTokenId.CDO);
+            for (int i = 0; i < lengths [lexerState]; i++)
+                input.read ();
+            return tokenFactory.createToken (tokens [lexerState++]);
+        }
         org.netbeans.modules.css.parser.Token token = null;
         try {
 
@@ -132,6 +168,7 @@ public final class CssLexer implements Lexer<CssTokenId> {
 
     }
 
+    @Override
     public void release() {
         tokenManager = null;
     }

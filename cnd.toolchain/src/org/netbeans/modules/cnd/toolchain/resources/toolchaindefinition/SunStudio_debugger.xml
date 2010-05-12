@@ -42,12 +42,12 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <debugger>
-        <tool name="gdb"/>
+    <debugger id="SunStudio">
+        <tool name="dbx"/>
         <alternative_path>
             <path directory="$PATH"/>
             <path toolchain_name="*"/>
         </alternative_path>
-        <version flags="-v" />
+        <version flags="-V -c quit" />
     </debugger>
 </toolchaindefinition>

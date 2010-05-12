@@ -66,7 +66,7 @@ public class RemoteFileChooserBuilderTestCase extends NativeExecutionBaseTestCas
     public void testRemoteFileChoser() throws Exception {
         ExecutionEnvironment env = getTestExecutionEnvironment();
         ConnectionManager.getInstance().connectTo(env);
-        RemoteFileChooserBuilder fcb = new RemoteFileChooserBuilder(env);
+        FileChooserBuilder fcb = new FileChooserBuilder(env);
         JFileChooser chooser = fcb.createFileChooser();
         int ret = chooser.showDialog(null, "Choose file at " + env.getDisplayName());
         switch (ret) {

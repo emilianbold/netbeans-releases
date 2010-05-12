@@ -84,6 +84,10 @@ public final class AptCacheForSourceQuery {
 
     private static URL getDefaultAptFolder (final URL sourceRoot) {
         try {
+            if (emittedAptFolders.containsKey(sourceRoot)) {
+                //apt folder is a apt folder for itself
+                return sourceRoot;
+            }
             final File aptFolder = JavaIndex.getAptFolder(sourceRoot, true);
             final URL result = aptFolder.toURI().toURL();
             emittedAptFolders.put(result,sourceRoot);

@@ -42,7 +42,6 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -72,6 +71,7 @@ import org.openide.windows.WindowManager;
 public final class ReporterResultTopComponent extends TopComponent implements HyperlinkListener {
 
     private static ReporterResultTopComponent instance;
+    private static final RequestProcessor RP = new RequestProcessor("ReporterResultTopComponentLoader", 3);
     private static final Logger LOG = Logger.getLogger(ReporterResultTopComponent.class.getName());
     private static boolean showUpload = false;
     /** path to the icon used by the component and its open action */
@@ -140,7 +140,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        showMyIssues(true);
+        RP.post(new URLDisplayer(true));
     }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JEditorPane dataDisplayer;
@@ -190,7 +190,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         if (showUpload) {
             return;
         }
-        showMyIssues(false);
+        RP.post(new URLDisplayer(false));
     }
 
     @Override
@@ -237,35 +237,44 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         loadPage(url, true);
     }
 
-    private void showMyIssues(boolean show) {
-        String urlStr = null;
-        String userName = new ExceptionsSettings().getUserName();
-        if (userName != null && !"".equals(userName)) {             //NOI18N
-            urlStr = NbBundle.getMessage(ReporterResultTopComponent.class, "userNameURL") + userName;
-        } else {
-            String userId = Installer.findIdentity();
-            if (userId != null) {
-                urlStr = NbBundle.getMessage(ReporterResultTopComponent.class, "userIdURL") + userId;
+    private class URLDisplayer implements Runnable {
+        private String urlStr = null;
+        private final boolean show;
+
+        public URLDisplayer(boolean show) {
+            this.show = show;
+        }
+
+        @Override
+        public void run() {
+            if (EventQueue.isDispatchThread()){
+                try {
+                    loadPage(new URL(urlStr), show);
+                } catch (MalformedURLException ex) {
+                    handleIOException(urlStr, ex);
+                }
+            }else{
+                String userName = new ExceptionsSettings().getUserName();
+                if (userName != null && !"".equals(userName)) {             //NOI18N
+                    urlStr = NbBundle.getMessage(ReporterResultTopComponent.class, "userNameURL") + userName;
+                } else {
+                    String userId = Installer.findIdentity();
+                    if (userId != null) {
+                        urlStr = NbBundle.getMessage(ReporterResultTopComponent.class, "userIdURL") + userId;
+                    }
+                }
+                if (urlStr == null) {
+                    return; // XXX prompt to log in?
+                }
+                EventQueue.invokeLater(this);
             }
-        }
-        if (urlStr == null) {
-            return; // XXX prompt to log in?
-        }
-        try {
-            loadPage(new URL(urlStr), show);
-        } catch (MalformedURLException ex) {
-            handleIOException(urlStr, ex);
         }
     }
 
     private void loadPage(URL url, boolean show) {
         assert (EventQueue.isDispatchThread());
-        try {
-            dataDisplayer.setPage(getLoadingPageURL(url));
-        } catch (IOException ex) {
-            handleIOException(url, ex);
-        }
-        RequestProcessor.getDefault().post(new PageUploader(url, show));
+        dataDisplayer.setText(getLoadingPage(url));
+        RP.post(new PageUploader(url, show));
     }
 
     private class PageUploader implements Runnable{
@@ -279,22 +288,25 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
             this.show = show;
         }
 
-            public void run() {
-                try {
-                    if (EventQueue.isDispatchThread()) {
-                        if (show) {
-                            ReporterResultTopComponent.this.requestVisible();
-                        }
-                        dataDisplayer.setPage(localData);
-                    } else {
-                        LOG.fine("Loading: " + url);        //NOI18N
-                        localData = uploadURL(url);
-                        EventQueue.invokeLater(this);
+        public void run() {
+            try {
+                if (EventQueue.isDispatchThread()) {
+                    if (show) {
+                        ReporterResultTopComponent topComponent =
+                                ReporterResultTopComponent.this;
+                        topComponent.requestVisible();
+                        topComponent.requestActive();
                     }
-                } catch (IOException ex) {
-                    handleIOException(url, ex);
+                    dataDisplayer.setPage(localData);
+                } else {
+                    LOG.log(Level.FINE, "Loading: {0}", url);        //NOI18N
+                    localData = uploadURL(url);
+                    EventQueue.invokeLater(this);
                 }
+            } catch (IOException ex) {
+                handleIOException(url, ex);
             }
+        }
         
     }
 
@@ -341,23 +353,17 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         });
     }
 
-    private static URL getLoadingPageURL(URL url) throws IOException {
-        File tmpFile = File.createTempFile("loading", ".html");        //NOI18N
-        tmpFile.deleteOnExit();
-        FileWriter fw = new FileWriter(tmpFile);
-        try{
-            fw.write("<html><head><title></title></head><body>");
-            fw.write(NbBundle.getMessage(ReporterResultTopComponent.class, "LoadingMessage"));
-            fw.write("<a href=\"" + url.toString() + "\">" + url + "</a>");
-            fw.write("</body></html>");
-        }finally{
-            fw.close();
-        }
-        return tmpFile.toURI().toURL();
+    private static String getLoadingPage(URL url) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><head><title></title></head><body>");
+        sb.append(NbBundle.getMessage(ReporterResultTopComponent.class, "LoadingMessage"));
+        sb.append("<a href=\"").append(url.toString()).append("\">").append(url).append("</a>");
+        sb.append("</body></html>");
+        return sb.toString();
     }
 
     @Override
-    public void hyperlinkUpdate(HyperlinkEvent e) {
+    public void hyperlinkUpdate(final HyperlinkEvent e) {
         if (!HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
             return;
         }
@@ -382,7 +388,14 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         } else {
             LOG.log(Level.INFO, "Bugzilla Accessor not found");
         }
-        HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
+        RP.post(new Runnable(){
+
+            @Override
+            public void run() {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
+            }
+
+        });
     }
 
     final static class ResolvableHelper implements Serializable {

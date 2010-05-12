@@ -103,7 +103,7 @@ public class BugzillaAutoupdate {
      *         downloaded
      */
     public boolean checkAndNotify(BugzillaRepository repository) {
-        Bugzilla.LOG.fine("BugzillaAutoupdate.checkAndNotify start");
+        Bugzilla.LOG.finest("BugzillaAutoupdate.checkAndNotify start");
         try {
             if(wasCheckedToday(getLastCheck(repository))) {
                 return true;
@@ -125,7 +125,7 @@ public class BugzillaAutoupdate {
                 }
             }
         } finally {
-            Bugzilla.LOG.fine("BugzillaAutoupdate.checkAndNotify finish");
+            Bugzilla.LOG.finest("BugzillaAutoupdate.checkAndNotify finish");
         }
         return true;
     }

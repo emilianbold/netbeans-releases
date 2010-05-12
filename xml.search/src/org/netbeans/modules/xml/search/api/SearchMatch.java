@@ -46,6 +46,6 @@ package org.netbeans.modules.xml.search.api;
  */
 public enum SearchMatch {
 
-  PATTERN, // (? and *)
-  REGULAR_EXPRESSION;
+    PATTERN, // (? and *)
+    REGULAR_EXPRESSION;
 }

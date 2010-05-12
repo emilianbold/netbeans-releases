@@ -43,7 +43,7 @@ import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.cnd.remote.sync.RfsSyncFactory;
@@ -53,8 +53,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
- *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
 public class IncludeMappingsTestCase extends RemoteTestBase {
 
@@ -82,7 +81,7 @@ public class IncludeMappingsTestCase extends RemoteTestBase {
         String localPath;
 
         remotePath = "/usr/include/stdio.h";
-        localPath = mapper.getLocalPath(remotePath, true);
+        localPath = mapper.getLocalPath(remotePath, true).replace('\\', '/');
         assertNotNull("Mapper returned null for " + remotePath, localPath);
         assertTrue("Local path for " + remotePath + " should start with " + localSyncRoot + ", but it is " + localPath,
                 localPath.startsWith(localSyncRoot));
@@ -94,14 +93,14 @@ public class IncludeMappingsTestCase extends RemoteTestBase {
             String path = "/username/temp.tmp";
             String referenceLocalPath = localRoot + path;
             remotePath = remoteRoot + path;
-            localPath = mapper.getLocalPath(remotePath);
+            localPath = mapper.getLocalPath(remotePath).replace('\\', '/');
             System.err.printf("Mapped %s:%s to %s\n", execEnv, remotePath, localPath);
             assertNotNull("Mapper returned null for " + remotePath, localPath);
             assertEquals("Local path ", referenceLocalPath, localPath);
         } else {
             String referenceLocalPath = "/home/username/temp.tmp";
             remotePath = remoteSyncRoot + referenceLocalPath;
-            localPath = mapper.getLocalPath(remotePath);
+            localPath = mapper.getLocalPath(remotePath).replace('\\', '/');
             System.err.printf("Mapped %s:%s to %s\n", execEnv, remotePath, localPath);
             assertNotNull("Mapper returned null for " + remotePath, localPath);
             assertEquals("Local path ", referenceLocalPath, localPath);
@@ -119,7 +118,7 @@ public class IncludeMappingsTestCase extends RemoteTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(IncludeMappingsTestCase.class);
+        return new RemoteDevelopmentTest(IncludeMappingsTestCase.class);
     }
 
 }

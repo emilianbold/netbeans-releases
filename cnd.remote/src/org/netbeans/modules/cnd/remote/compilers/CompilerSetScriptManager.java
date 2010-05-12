@@ -46,9 +46,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 
@@ -62,10 +60,20 @@ import org.openide.util.Exceptions;
     private List<String> compilerSets;
     private int nextSet;
     private String platform;
+    private Process process;
 
     public CompilerSetScriptManager(ExecutionEnvironment env) {
         super(env);
         compilerSets = new ArrayList<String>();
+    }
+
+    public boolean cancel() {
+        Process aProcess = process;
+        if (aProcess != null) {
+            aProcess.destroy();
+            return true;
+        }
+        return false;
     }
 
     public void runScript() {
@@ -74,9 +82,8 @@ import org.openide.util.Exceptions;
             compilerSets.clear();
             try {
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-                HostInfo hinfo = HostInfoUtils.getHostInfo(executionEnvironment);
-                pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
-                Process process = pb.call();
+                pb.setExecutable("/bin/sh").setArguments("-s"); // NOI18N
+                process = pb.call();
                 process.getOutputStream().write(ToolchainScriptGenerator.generateScript(null).getBytes());
                 process.getOutputStream().close();
 
@@ -109,6 +116,8 @@ import org.openide.util.Exceptions;
             } catch (IOException ex) {
                 RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: IOException [{0}]", ex.getMessage()); // NOI18N
                 setFailed(ex.getMessage());
+            } finally {
+                process = null;
             }
         }
     }
@@ -133,4 +142,5 @@ import org.openide.util.Exceptions;
         }
         return buf.toString();
     }
+
 }

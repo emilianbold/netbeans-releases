@@ -41,9 +41,11 @@ package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,7 +62,7 @@ import org.openide.filesystems.FileRenameEvent;
 final class FileObjectKeeper implements FileChangeListener {
     private static final Logger LOG = Logger.getLogger(FileObjectKeeper.class.getName());
 
-    private Set<FileObject> kept;
+    private Set<FolderObj> kept;
     private Collection<FileChangeListener> listeners;
     private final FolderObj root;
     private long timeStamp;
@@ -74,7 +76,11 @@ final class FileObjectKeeper implements FileChangeListener {
             listeners = new CopyOnWriteArraySet<FileChangeListener>();
         }
         if (listeners.isEmpty()) {
-            listenToAll();
+            Callable<?> stop = null;
+            if (fcl instanceof Callable && fcl.getClass().getName().equals("org.openide.filesystems.DeepListener")) { // NOI18N
+                stop = (Callable<?>)fcl;
+            }
+            listenToAll(stop);
         }
         listeners.add(fcl);
     }
@@ -88,95 +94,142 @@ final class FileObjectKeeper implements FileChangeListener {
             listenNoMore();
         }
     }
+     public List<File> init(long previous, FileObjectFactory factory, boolean expected) {
+          File file = root.getFileName().getFile();
+         LinkedList<File> arr = new LinkedList<File>();
+         long ts = root.getProvidedExtensions().refreshRecursively(file, previous, arr);
+         for (File f : arr) {
+             if (f.isDirectory()) {
+                 continue;
+             }
+             long lm = f.lastModified();
+             LOG.log(Level.FINE, "  check {0} for {1}", new Object[] { lm, f });
+             if (lm > ts) {
+                 ts = lm;
+             }
+             if (lm > previous && factory != null) {
+                 final BaseFileObj prevFO = factory.getCachedOnly(f);
+                 if (prevFO == null) {
+                     BaseFileObj who = factory.getValidFileObject(f, Caller.Others);
+                     if (who != null) {
+                         LOG.log(Level.FINE, "External change detected {0}", who);  //NOI18N
+                         who.fireFileChangedEvent(expected);
+                      } else {
+                         LOG.log(Level.FINE, "Cannot get valid FileObject. File probably removed: {0}", f);  //NOI18N
+                      }
+                 } else {
+                     LOG.log(Level.FINE, "Do classical refresh for {0}", prevFO);  //NOI18N
+                     prevFO.refresh(expected, true);
+                  }
+              }
+          }
+          timeStamp = ts;
+          LOG.log(Level.FINE, "Testing {0}, time {1}", new Object[] { file, timeStamp });
+         return arr;
+      }
 
-    public void init(long previous, FileObjectFactory factory, boolean expected) {
-        File file = root.getFileName().getFile();
-        File[] arr = file.listFiles();
-        long ts = 0;
-        if (arr != null) {
-            for (File f : arr) {
-                if (f.isDirectory()) {
-                    continue;
-                }
-                long lm = f.lastModified();
-                LOG.log(Level.FINE, "  check {0} for {1}", new Object[] { lm, f });
-                if (lm > ts) {
-                    ts = lm;
-                }
-                if (lm > previous && factory != null) {
-                    final BaseFileObj prevFO = factory.getCachedOnly(f);
-                    if (prevFO == null) {
-                        BaseFileObj who = factory.getValidFileObject(f, Caller.Others);
-                        if (who != null) {
-                            LOG.log(Level.FINE, "External change detected {0}", who);  //NOI18N
-                            who.fireFileChangedEvent(expected);
-                        } else {
-                            LOG.log(Level.FINE, "Cannot get valid FileObject. File probably removed: {0}", f);  //NOI18N
-                        }
-                    } else {
-                        prevFO.refresh(expected, true);
-                    }
+    private void listenTo(FileObject fo, boolean add, Collection<? super File> children) {
+        Set<FolderObj> k;
+        if (add) {
+            fo.addFileChangeListener(this);
+            if (fo instanceof FolderObj) {
+                FolderObj folder = (FolderObj)fo;
+                folder.getKeeper(children);
+                folder.getChildren();
+                k = kept;
+                if (k != null) {
+                    k.add(folder);
                 }
             }
+            LOG.log(Level.FINER, "Listening to {0}", fo);
+        } else {
+            fo.removeFileChangeListener(this);
+            LOG.log(Level.FINER, "Ignoring {0}", fo);
         }
-        timeStamp = ts;
-        LOG.log(Level.FINE, "Testing {0}, time {1}", new Object[] { file, timeStamp });
     }
 
-    private final void listenToAll() {
+    private void listenToAll(Callable<?> stop) {
         assert Thread.holdsLock(this);
         assert kept == null;
-        kept = new HashSet<FileObject>();
-        root.addFileChangeListener(this);
-        Enumeration<? extends FileObject> en = root.getChildren(true);
-        while (en.hasMoreElements()) {
-            FileObject fo = en.nextElement();
+        kept = new HashSet<FolderObj>();
+        LinkedList<File> it = new LinkedList<File>();
+        listenTo(root, true, it);
+        FileObjectFactory factory = null;
+        for (;;) {
+            File f = it.poll();
+            if (f == null) {
+                break;
+            }
+            if (factory == null) {
+                factory = FileObjectFactory.getInstance(f);
+            }
+            FileObject fo = factory.getValidFileObject(f, Caller.Others);
             if (fo instanceof FolderObj) {
-                FolderObj obj = (FolderObj)fo;
-                obj.addFileChangeListener(this);
-                kept.add(obj);
-                obj.getKeeper();
+                FolderObj obj = (FolderObj) fo;
+                Object shallStop = null;
+                if (stop != null) {
+                    try {
+                        shallStop = stop.call();
+                    } catch (Exception ex) {
+                        shallStop = Boolean.TRUE;
+                    }
+                }
+                if (Boolean.TRUE.equals(shallStop)) {
+                    LOG.log(Level.INFO, "addRecursiveListener to {0} interrupted", root); // NOI18N
+                    return;
+                }
+                listenTo(obj, true, it);
             }
         }
     }
 
-    private final void listenNoMore() {
+    private void listenNoMore() {
         assert Thread.holdsLock(this);
 
-        root.removeFileChangeListener(this);
-        Set<FileObject> k = kept;
+        listenTo(root, false, null);
+        Set<FolderObj> k = kept;
         if (k != null) {
-            for (FileObject fo : k) {
-                fo.removeFileChangeListener(this);
+            for (FolderObj fo : k) {
+                listenTo(fo, false, null);
             }
             kept = null;
         }
     }
 
+    @Override
     public void fileFolderCreated(FileEvent fe) {
         Collection<FileChangeListener> arr = listeners;
-        if (arr == null || kept == null) {  //#178378 - ignore queued events when no more listening (kept == null)
-            return;
-        }
-        final FileObject f = fe.getFile();
-        if (f instanceof FolderObj) {
+        final FileObject folder = fe.getFile();
+        if (folder instanceof FolderObj) {
+            FolderObj obj = (FolderObj)folder;
             synchronized (this) {
-                kept.add(f);
-                f.addFileChangeListener(this);
-                Enumeration<? extends FileObject> en = f.getChildren(true);
-                while (en.hasMoreElements()) {
-                    FileObject fo = en.nextElement();
+                LinkedList<File> it = new LinkedList<File>();
+                listenTo(obj, true, it);
+                FileObjectFactory factory = null;
+                for (;;) {
+                    File f = it.poll();
+                    if (f == null) {
+                        break;
+                    }
+                    if (factory == null) {
+                        factory = FileObjectFactory.getInstance(f);
+                    }
+                    FileObject fo = factory.getValidFileObject(f, Caller.Others);
                     if (fo instanceof FolderObj) {
-                        fo.addFileChangeListener(this);
+                        listenTo((FolderObj)fo, true, it);
                     }
                 }
             }
+        }
+        if (arr == null || kept == null) {  //#178378 - ignore queued events when no more listening (kept == null)
+            return;
         }
         for (FileChangeListener l : arr) {
             l.fileFolderCreated(fe);
         }
     }
 
+    @Override
     public void fileDataCreated(FileEvent fe) {
         Collection<FileChangeListener> arr = listeners;
         if (arr == null) {
@@ -187,6 +240,7 @@ final class FileObjectKeeper implements FileChangeListener {
         }
     }
 
+    @Override
     public void fileChanged(FileEvent fe) {
         Collection<FileChangeListener> arr = listeners;
         if (arr == null) {
@@ -197,30 +251,33 @@ final class FileObjectKeeper implements FileChangeListener {
         }
     }
 
+    @Override
     public void fileDeleted(FileEvent fe) {
         Collection<FileChangeListener> arr = listeners;
-        if (arr == null) {
-            return;
-        }
         final FileObject f = fe.getFile();
         if (f.isFolder() && fe.getSource() == f && f != root) {
             // there will be another event for parent folder
             return;
         }
 
+        if (f instanceof FolderObj) {
+            FolderObj obj = (FolderObj)f;
+            synchronized (this) {
+                if (kept != null) {
+                    kept.remove(obj);
+                }
+                listenTo(obj, false, null);
+            }
+        }
+        if (arr == null) {
+            return;
+        }
         for (FileChangeListener l : arr) {
             l.fileDeleted(fe);
         }
-        if (f instanceof FolderObj) {
-            synchronized (this) {
-                if (kept != null) {
-                    kept.remove(f);
-                }
-                f.removeFileChangeListener(this);
-            }
-        }
     }
 
+    @Override
     public void fileRenamed(FileRenameEvent fe) {
         Collection<FileChangeListener> arr = listeners;
         if (arr == null) {
@@ -236,6 +293,7 @@ final class FileObjectKeeper implements FileChangeListener {
         }
     }
 
+    @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
         Collection<FileChangeListener> arr = listeners;
         if (arr == null) {

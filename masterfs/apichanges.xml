@@ -46,6 +46,40 @@ made subject to such option by the copyright holder.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="priority-io">
+            <api name="masterfs"/>
+            <summary><code>ProvidedExtensions.priorityIO</code> to suspend background refresh</summary>
+            <version major="2" minor="25"/>
+            <date day="12" month="5" year="2010"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    <code>ProvidedExtensions.priorityIO</code> allows
+                    parsing API to suspend background I/O activity after refresh
+                    of main window.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="ProvidedExtensions"/>
+            <issue number="181684"/>
+        </change>
+        <change id="recursive-control">
+            <api name="masterfs"/>
+            <summary><code>ProvidedExtensions.refreshRecursively</code> was added.</summary>
+            <version major="2" minor="24"/>
+            <date day="16" month="4" year="2010"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    <code>ProvidedExtensions.refreshRecursively</code> allows
+                    various version control providers to get better control
+                    on behavior of recursive listener.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="ProvidedExtensions"/>
+            <issue number="181684"/>
+        </change>
         <change id="added-canWrite-friend-contract-for-versioning-systems">
             <api name="masterfs"/>
             <summary><code>ProvidedExtensions.canWrite</code> was added.</summary>

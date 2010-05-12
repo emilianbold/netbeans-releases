@@ -80,10 +80,12 @@ public class RunScript {
 
     protected final Callable<Cancellable> getCallable()  {
         return new Callable<Cancellable>() {
+            @Override
             public Cancellable call() throws Exception {
                 if (!provider.isValid()) {
                     LOGGER.info("RunScript provider is not valid");
                     return new Cancellable() {
+                        @Override
                         public boolean cancel() {
                             return true;
                         }
@@ -98,6 +100,7 @@ public class RunScript {
 //                    CommandUtils.processExecutionException(exc);
 //                }
                 return new Cancellable() {
+                    @Override
                     public boolean cancel() {
                         return result.cancel(true);
                     }
@@ -134,17 +137,21 @@ public class RunScript {
             encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(scriptFile));
         }
 
+        @Override
         public InputProcessor newInputProcessor(final InputProcessor defaultProcessor) {
             return InputProcessors.proxy(defaultProcessor, new InputProcessor() {
 
+                @Override
                 public void processInput(char[] chars) throws IOException {
                     getFileWriter().write(chars);
                 }
 
+                @Override
                 public void reset() throws IOException {
                     defaultProcessor.reset();
                 }
 
+                @Override
                 public void close() throws IOException {
                     getFileWriter().flush();
                     getFileWriter().close();
@@ -154,6 +161,7 @@ public class RunScript {
             });
         }
 
+        @Override
         public void run() {
             try {
                 PhpOptions options = PhpOptions.getInstance();

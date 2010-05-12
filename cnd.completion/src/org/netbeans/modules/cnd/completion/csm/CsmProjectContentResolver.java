@@ -95,7 +95,7 @@ import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * help class to resolve content of the project
@@ -1141,7 +1141,7 @@ public final class CsmProjectContentResolver {
                             qname = member.getQualifiedName();
                             if (member.getName().length() == 0 && CsmKindUtilities.isEnum(member)) {
                                 // Fix for IZ#139784: last unnamed enum overrides previous ones
-                                qname = CharSequenceKey.create(new StringBuilder(qname).append('$').append(++unnamedEnumCount));
+                                qname = CharSequences.create(new StringBuilder(qname).append('$').append(++unnamedEnumCount));
                             }
                         }
                         // do not replace inner objects by outer ones
@@ -1161,16 +1161,20 @@ public final class CsmProjectContentResolver {
             it = CsmSelect.getClassMembers(csmClass, nestedClassifierFilter);
             while (it.hasNext()) {
                 CsmMember member = it.next();
-                if (isKindOf(member.getKind(), memberKinds) &&
-                        matchVisibility(member, minVisibility)) {
-                    CharSequence memberName = member.getName();
-                    if (memberName.length() == 0) {
-                        Map<CharSequence, CsmMember> set = getClassMembers((CsmClass) member, contextDeclaration, kinds, strPrefix, staticOnly, match,
-                                handledClasses, CsmVisibility.PUBLIC, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnUnnamedMembers);
-                        // replace by own elements in nested set
-                        if (set != null && set.size() > 0) {
-                            set.putAll(res);
-                            res = set;
+                CharSequence memberName = member.getName();
+                if (memberName.length() == 0) {
+                    if (isKindOf(member.getKind(), memberKinds) &&
+                            matchVisibility(member, minVisibility)) {
+                        CsmClass innerClass = (CsmClass) member;
+                        // if inner class doesn't have enclosing variables => iterate it
+                        if (innerClass.getEnclosingVariables().isEmpty()) {
+                            Map<CharSequence, CsmMember> set = getClassMembers(innerClass, contextDeclaration, kinds, strPrefix, staticOnly, match,
+                                    handledClasses, CsmVisibility.PUBLIC, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnUnnamedMembers);
+                            // replace by own elements in nested set
+                            if (set != null && set.size() > 0) {
+                                set.putAll(res);
+                                res = set;
+                            }
                         }
                     }
                 }

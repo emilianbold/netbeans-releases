@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -68,7 +69,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * APT utilities
@@ -149,7 +150,7 @@ public class APTUtils {
 
     public static void setTokenText(APTToken _token, char buf[], int start, int count) {
         if (_token instanceof APTBaseToken) {
-            _token.setTextID(CharSequenceKey.create(buf, start, count));
+            _token.setTextID(CharSequences.create(buf, start, count));
         } else if (_token instanceof APTCommentToken) {
             // no need to set text in comment token, but set text len
             ((APTCommentToken)_token).setTextLength(count);
@@ -210,6 +211,7 @@ public class APTUtils {
                 // Comments
             case APTTokenTypes.CPP_COMMENT:
             case APTTokenTypes.COMMENT:
+            case APTTokenTypes.FORTRAN_COMMENT:
                 return new APTCommentToken();
                 
             default: /*assert(APTConstTextToken.constText[type] != null) : "Do not know text for constText token of type " + type;  // NOI18N*/
@@ -279,7 +281,7 @@ public class APTUtils {
         StringBuilder retValue = new StringBuilder();
         retValue.append("MACROS (sorted "+macros.size()+"):\n"); // NOI18N
         List<CharSequence> macrosSorted = new ArrayList<CharSequence>(macros.keySet());
-        Collections.sort(macrosSorted, CharSequenceKey.Comparator);
+        Collections.sort(macrosSorted, CharSequences.comparator());
         for (CharSequence key : macrosSorted) {
             APTMacro macro = macros.get(key);
             assert(macro != null);
@@ -425,6 +427,7 @@ public class APTUtils {
         switch (ttype) {
             case APTTokenTypes.COMMENT:
             case APTTokenTypes.CPP_COMMENT:
+            case APTTokenTypes.FORTRAN_COMMENT:
                 return true;
             default:
                 return false;
@@ -536,7 +539,7 @@ public class APTUtils {
     }
 
     public static List<APTToken> toList(TokenStream ts) {
-        ArrayList<APTToken> tokens = new ArrayList<APTToken>(1024);
+        LinkedList<APTToken> tokens = new LinkedList<APTToken>();
         try {
             APTToken token = (APTToken) ts.nextToken();
             while (!isEOF(token)) {
@@ -547,7 +550,6 @@ public class APTUtils {
         } catch (TokenStreamException ex) {
             LOG.log(Level.INFO, "error on converting token stream to list", ex.getMessage()); // NOI18N
         }
-        tokens.trimToSize();
         return tokens;
     }
     

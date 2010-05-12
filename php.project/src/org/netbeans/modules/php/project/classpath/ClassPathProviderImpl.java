@@ -91,7 +91,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     private final SourceRoots tests;
     private final SourceRoots selenium;
 
-    // GuardedBy(dirCache)
+    // GuardedBy(dirCache) - if new item is added to this map, do not forget to update propertyChange() method as well
     private final Map<String, List<FileObject>> dirCache = new HashMap<String, List<FileObject>>();
     // GuardedBy(cache)
     private final Map<ClassPathCache, ClassPath> cache = new EnumMap<ClassPathCache, ClassPath>(ClassPathCache.class);
@@ -151,6 +151,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return getDirs(PhpProjectProperties.INCLUDE_PATH);
     }
 
+    @Override
     public FileType getFileType(FileObject file) {
         Parameters.notNull("file", file);
 
@@ -195,10 +196,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return FileType.UNKNOWN;
     }
 
+    @Override
     public List<FileObject> getIncludePath() {
         return new ArrayList<FileObject>(getPlatformPath());
     }
 
+    @Override
     public FileObject resolveFile(FileObject directory, String fileName) {
         FileObject resolved = directory.getFileObject(fileName);
         if (resolved != null) {
@@ -269,6 +272,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return cp;
     }
 
+    @Override
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(PhpSourcePath.BOOT_CP)) {
             return getBootClassPath();
@@ -305,9 +309,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return null;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        synchronized (dirCache) {
-            dirCache.remove(evt.getPropertyName());
+        String propertyName = evt.getPropertyName();
+        if (PhpProjectProperties.INCLUDE_PATH.equals(propertyName)) {
+            synchronized (dirCache) {
+                dirCache.remove(propertyName);
+            }
         }
     }
 }

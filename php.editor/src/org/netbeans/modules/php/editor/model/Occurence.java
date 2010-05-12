@@ -40,16 +40,29 @@ package org.netbeans.modules.php.editor.model;
 
 import java.util.Collection;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 
 /**
  * @author Radek Matous
  */
 public interface Occurence{
-    PhpElement getDeclaration();
+    public static enum Accuracy {
+        NO,
+        UNIQUE,
+        EXACT,
+        EXACT_TYPE,
+        MORE_TYPES,
+        MORE_MEMBERS,
+        MORE,
+    }
+    /**
+     * makes sense just for type members for calls with unknown types on left side (else EXACT).
+     */
+    Accuracy degreeOfAccuracy();
     /**mostly the same as getDeclaration. In case of __constructor are different*/
-    PhpElement gotoDeclaratin();
-    boolean gotoDeclarationEnabled();
+    PhpElementKind getKind();
+    Collection<? extends PhpElement> gotoDeclarations();
     Collection<? extends PhpElement> getAllDeclarations();
     Collection<Occurence> getAllOccurences();
     OffsetRange getOccurenceRange();

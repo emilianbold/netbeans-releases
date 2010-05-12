@@ -66,7 +66,7 @@ import org.openide.filesystems.URLMapper;
  */
 public class SourceFileManager implements JavaFileManager {
     
-    private final ClassPath sourceRoots;
+    final ClassPath sourceRoots;
     private final boolean ignoreExcludes;
     private static Logger log = Logger.getLogger(SourceFileManager.class.getName());
     

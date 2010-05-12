@@ -45,8 +45,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -66,6 +64,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -76,7 +75,7 @@ public abstract class FrameworkCommandSupport {
     // @GuardedBy(COMMANDS_CACHE)
     private static final Map<PhpModule, List<FrameworkCommand>> COMMANDS_CACHE = new WeakHashMap<PhpModule, List<FrameworkCommand>>();
 
-    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+    private static final RequestProcessor RP = new RequestProcessor(FrameworkCommandSupport.class.getName());
 
     protected final PhpModule phpModule;
 
@@ -226,7 +225,8 @@ public abstract class FrameworkCommandSupport {
      * @param post {@link Runnable} that is run afterwards, can be <code>null</code>.
      */
     public final void refreshFrameworkCommandsLater(final Runnable post) {
-        EXECUTOR.submit(new Runnable() {
+        RP.execute(new Runnable() {
+            @Override
             public void run() {
                 refreshFrameworkCommands();
                 if (post != null) {
@@ -359,6 +359,7 @@ public abstract class FrameworkCommandSupport {
             }
         }
 
+        @Override
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
             InputProcessor[] processors = new InputProcessor[factories.size()];
             for (int i = 0; i < processors.length; i++) {
@@ -370,25 +371,31 @@ public abstract class FrameworkCommandSupport {
 
     private class PluginListener implements FileChangeListener {
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             changed();
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             changed();
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             changed();
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             changed();
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             changed();
         }

@@ -7,20 +7,26 @@ cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
 export BUILD_DESC=trunk-nightly
 source init.sh
+export JAVAFX_PATH=/net/smetiste.czech/space/${BASE_FOR_JAVAFX}
 
 rm -rf $DIST
+if [ -d $JAVAFX_PATH/zip/moduleclusters ]; then
+   rm $JAVAFX_PATH/ready
+   rm -r $JAVAFX_PATH/zip
+   rm -r $JAVAFX_PATH/ml
+fi
 
 if [ ! -z $WORKSPACE ]; then
     #I'm under hudson and have sources here, I need to clone them
     #Clean obsolete sources first
     rm -rf $NB_ALL
     hg clone $WORKSPACE $NB_ALL
-    if [ $RUNJAVAFX == 1 ]; then
-        #Clone also javafx sources - XXX needs to be parametrized
-        cd $NB_ALL
-        hg clone http://hg.netbeans.org/javafx
-    fi
 fi
+
+#if [ $ML_BUILD == 1 ]; then
+#    cd $NB_ALL
+#    hg clone $ML_REPO $NB_ALL/l10n
+#fi
 
 ###################################################################
 #
@@ -36,13 +42,33 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Build failed"
     exit $ERROR_CODE;
 fi
-cp -r $BASE_DIR/main/nbbuild/netbeans $BASE_DIR/
 
 ###################################################################
 #
 # Pack all the components
 #
 ###################################################################
+if [ -d $cp $JAVAFX_PATH/zip/moduleclusters ]; then
+   cd $NB_ALL/nbbuild/netbeans
+   cp $JAVAFX_PATH/zip/moduleclusters/*.zip .
+
+   if [ $ML_BUILD == 1 ]; then
+      cd $NB_ALL/nbbuild/netbeans-ml
+      cp $JAVAFX_PATH/ml/zip/moduleclusters/*.zip .
+      for zip_file in `ls *.zip`; do
+         unzip -oq $zip_file
+      done
+      rm -r META-INF
+      rm *.zip
+   fi
+
+   cd $NB_ALL/nbbuild/netbeans
+   for zip_file in `ls *.zip`; do
+      unzip -oq $zip_file
+   done
+   rm -r META-INF
+   rm *.zip
+fi
 
 cd $TRUNK_NIGHTLY_DIRNAME
 bash pack-all-components.sh
@@ -52,8 +78,6 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Packaging failed"
     exit $ERROR_CODE;
 fi
-rm -r $BASE_DIR/main/nbbuild/netbeans
-mv $BASE_DIR/netbeans $BASE_DIR/main/nbbuild/
 
 ###################################################################
 #

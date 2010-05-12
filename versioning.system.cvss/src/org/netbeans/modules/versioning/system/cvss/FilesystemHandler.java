@@ -237,7 +237,7 @@ class FilesystemHandler extends VCSInterceptor {
             //        options.setModeratelyQuiet(true);
                     final ExecutorGroup refreshCommandGroup = new ExecutorGroup(null);
                     refreshCommandGroup.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options, null));
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         public void run() {
                             refreshCommandGroup.execute();
                         }
@@ -248,6 +248,20 @@ class FilesystemHandler extends VCSInterceptor {
         } else {
             return super.getAttribute(file, attrName);
         }
+    }
+
+    @Override
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        long retval = -1;
+        if (org.netbeans.modules.versioning.system.cvss.util.Utils.isPartOfCVSMetadata(dir)) {
+            retval = 0;
+        }
+        return retval;
+    }
+
+    @Override
+    public boolean isMutable(File file) {
+        return org.netbeans.modules.versioning.system.cvss.util.Utils.isPartOfCVSMetadata(file) || super.isMutable(file);
     }
 
     // private methods ---------------------------

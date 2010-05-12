@@ -48,6 +48,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.SourceRoots;
@@ -95,6 +97,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         this.selenium = selenium;
     }
 
+    @Override
     public List<PathResourceImplementation> getResources() {
         synchronized (this) {
             if (resources != null) {
@@ -106,7 +109,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             if (resources == null) {
                 List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(urls.length);
                 for (URL root : urls) {
-                    result.add(new FilteringPathResource(evaluator, root));
+                    result.add(new FilteringPathResource(project, root));
                 }
                 resources = Collections.unmodifiableList(result);
             }
@@ -114,14 +117,17 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         }
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 
+    @Override
     public synchronized void propertyChange(PropertyChangeEvent evt) {
         if (SourceRoots.PROP_ROOTS.equals(evt.getPropertyName())) {
             invalidate();
@@ -188,24 +194,27 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                     && !relativePath.startsWith("../"); // NOI18N
     }
 
-    private final class FilteringPathResource implements FilteringPathResourceImplementation, PropertyChangeListener {
+    private final class FilteringPathResource implements FilteringPathResourceImplementation, PropertyChangeListener, ChangeListener {
 
         final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         volatile PathMatcher matcher;
         private final URL root;
 
-        FilteringPathResource(PropertyEvaluator evaluator, URL root) {
-            assert evaluator != null;
+        FilteringPathResource(PhpProject project, URL root) {
+            assert project != null;
             assert root != null;
 
             this.root = root;
-            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+            ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, this);
+            ProjectPropertiesSupport.addWeakIgnoredFilesListener(project, this);
         }
 
+        @Override
         public URL[] getRoots() {
             return new URL[]{root};
         }
 
+        @Override
         public boolean includes(URL root, String resource) {
             if (matcher == null) {
                 File rootFile = new File(URI.create(root.toExternalForm()));
@@ -217,18 +226,22 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             return matcher.matches(resource, true);
         }
 
+        @Override
         public ClassPathImplementation getContent() {
             return null;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent ev) {
             String prop = ev.getPropertyName();
             // listen only on IGNORE_PATH, VisibilityQuery changes should be checked by parsing & indexing automatically
@@ -236,11 +249,23 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                     || prop.equals(PhpProjectProperties.IGNORE_PATH)
                     || prop.equals(PhpProjectProperties.TEST_SRC_DIR)
                     || prop.equals(PhpProjectProperties.SELENIUM_SRC_DIR)) {
-                matcher = null;
-                PropertyChangeEvent ev2 = new PropertyChangeEvent(this, FilteringPathResourceImplementation.PROP_INCLUDES, null, null);
-                ev2.setPropagationId(ev);
-                pcs.firePropertyChange(ev2);
+                fireChange(ev);
             }
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            // ignored files change
+            fireChange(null);
+        }
+
+        private void fireChange(PropertyChangeEvent event) {
+            matcher = null;
+            PropertyChangeEvent ev = new PropertyChangeEvent(this, FilteringPathResourceImplementation.PROP_INCLUDES, null, null);
+            if (event != null) {
+                ev.setPropagationId(event);
+            }
+            pcs.firePropertyChange(ev);
         }
     }
 }

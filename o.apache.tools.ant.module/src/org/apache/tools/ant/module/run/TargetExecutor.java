@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -54,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -85,6 +87,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.ReaderInputStream;
 import org.openide.windows.IOProvider;
+import org.openide.windows.IOSelect;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import org.w3c.dom.Element;
@@ -92,6 +95,8 @@ import org.w3c.dom.Element;
 /** Executes an Ant Target asynchronously in the IDE.
  */
 public final class TargetExecutor implements Runnable {
+
+    private static final RequestProcessor RP = new RequestProcessor(TargetExecutor.class.getName());
 
     /**
      * All tabs which were used for some process which has now ended.
@@ -320,6 +325,7 @@ public final class TargetExecutor implements Runnable {
      */
     public ExecutorTask execute () throws IOException {
         String dn = suggestedDisplayName != null ? suggestedDisplayName : getProcessDisplayName(pcookie, targetNames);
+        synchronized (activeDisplayNames) {
         if (activeDisplayNames.contains(dn)) {
             // Uniquify: "prj (targ) #2", "prj (targ) #3", etc.
             int i = 2;
@@ -332,6 +338,7 @@ public final class TargetExecutor implements Runnable {
         assert !activeDisplayNames.contains(dn);
         displayName = dn;
         activeDisplayNames.add(displayName);
+        }
         
         final ExecutorTask task;
         synchronized (this) {
@@ -367,7 +374,7 @@ public final class TargetExecutor implements Runnable {
             task = ExecutionEngine.getDefault().execute(null, this, InputOutput.NULL);
         }
         WrapperExecutorTask wrapper = new WrapperExecutorTask(task, io);
-        RequestProcessor.getDefault().post(wrapper);
+        RP.post(wrapper);
         return wrapper;
     }
     
@@ -415,7 +422,8 @@ public final class TargetExecutor implements Runnable {
   
     /** Call execute(), not this method directly!
      */
-    synchronized public void run () {
+    @SuppressWarnings("NestedSynchronizedStatement")
+    synchronized public @Override void run () {
         final LastTargetExecuted[] thisExec = new LastTargetExecuted[1];
         final StopAction sa = stopActions.get(io);
         assert sa != null;
@@ -423,11 +431,19 @@ public final class TargetExecutor implements Runnable {
         assert ras != null;
         try {
             
-        final boolean[] displayed = new boolean[] {AntSettings.getAlwaysShowOutput()};
+        final AtomicBoolean displayed = new AtomicBoolean(AntSettings.getAlwaysShowOutput());
         
         if (outputStream == null) {
-            if (displayed[0]) {
+            if (displayed.get()) {
                 io.select();
+            } else if (IOSelect.isSupported(io)) {
+                boolean onlyProcessRunning;
+                synchronized (activeDisplayNames) {
+                    onlyProcessRunning = activeDisplayNames.size() == 1;
+                }
+                if (onlyProcessRunning) {
+                    IOSelect.select(io, EnumSet.noneOf(IOSelect.AdditionalOperation.class));
+                }
             }
         }
         
@@ -463,8 +479,7 @@ public final class TargetExecutor implements Runnable {
         final Runnable interestingOutputCallback = new Runnable() {
             public void run() {
                 // #58513: display output now.
-                if (!displayed[0]) {
-                    displayed[0] = true;
+                if (!displayed.getAndSet(true)) {
                     io.select();
                 }
             }
@@ -535,7 +550,9 @@ public final class TargetExecutor implements Runnable {
                 setEnabledEQ(ra, true);
                 ra.reinit(this);
             }
-            activeDisplayNames.remove(displayName);
+            synchronized (activeDisplayNames) {
+                activeDisplayNames.remove(displayName);
+            }
         }
     }
     

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
+import java.awt.font.TextLayout;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Position;
@@ -58,12 +59,14 @@ import javax.swing.text.View;
  * @author Miloslav Metelka
  */
 
-public class ParagraphView extends EditorBoxView {
+public class ParagraphView extends EditorBoxView<EditorView> {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ParagraphView.level=FINE
     private static final Logger LOG = Logger.getLogger(ParagraphView.class.getName());
 
-    private Position startPos;
+    private Position startPos; // 40 + 4 = 44 bytes
+
+    private int length; // 44 + 4 = 48 bytes
 
     public ParagraphView(Position startPos) {
         super(null);
@@ -82,8 +85,7 @@ public class ParagraphView extends EditorBoxView {
 
     @Override
     public int getEndOffset() {
-        int viewCount = getViewCount();
-        return (viewCount > 0) ? getView(viewCount - 1).getEndOffset() : getStartOffset();
+        return getStartOffset() + getLength();
     }
 
     @Override
@@ -92,8 +94,13 @@ public class ParagraphView extends EditorBoxView {
     }
 
     @Override
+    public int getLength() { // Total length of contained child views
+        return length;
+    }
+
+    @Override
     public boolean setLength(int length) {
-        // Ignore the length setting
+        this.length = length;
         return true; // ParagraphView may grow
     }
 
@@ -108,7 +115,7 @@ public class ParagraphView extends EditorBoxView {
     }
 
     @Override
-    protected EditorBoxViewChildren createChildren(int capacity) {
+    protected EditorBoxViewChildren<EditorView> createChildren(int capacity) {
         return new ParagraphViewChildren(capacity);
     }
 
@@ -119,14 +126,41 @@ public class ParagraphView extends EditorBoxView {
     @Override
     public void setParent(View parent) {
         super.setParent(parent);
-        // Set minor axis span to default line height since this way there should be no need
-        // to notify parent about preferenceChange
+        // Set minor axis span to default line height here when children
+        // are not initialized yet since this way there should be no need
+        // to notify parent about preferenceChange later (unless there's e.g. a word wrap).
         if (parent instanceof EditorBoxView) {
             DocumentView documentView = getDocumentView();
             if (documentView != null) {
                 setMinorAxisSpan(documentView.getDefaultLineHeight());
             }
         }
+    }
+
+    @Override
+    public TextLayout getTextLayout(TextLayoutView textLayoutView) {
+        DocumentView documentView = getDocumentView();
+        return (documentView != null) ? documentView.getTextLayoutCache().get(this, textLayoutView) : null;
+    }
+
+    void recomputeSpans() {
+        if (children != null) {
+            ((ParagraphViewChildren) children).recomputeSpans(this);
+        }
+    }
+
+    @Override
+    public String findIntegrityError() {
+        String err = super.findIntegrityError();
+        if (err == null) {
+            if (children != null) {
+                int childrenLength = children.getLength();
+                if (getLength() != childrenLength) {
+                    err = "length=" + getLength() + " != childrenLength=" + childrenLength; // NOI18N
+                }
+            }
+        }
+        return err;
     }
 
     @Override

@@ -40,20 +40,14 @@
 package org.netbeans.modules.cnd.makefile.parser;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.makefile.MakefileElement;
+import org.netbeans.modules.cnd.api.makefile.MakefileRule;
+import org.netbeans.modules.cnd.api.makefile.MakefileSupport;
 import org.netbeans.modules.cnd.builds.MakefileTargetProvider;
-import org.netbeans.modules.cnd.makefile.model.AbstractMakefileElement;
-import org.netbeans.modules.cnd.makefile.model.MakefileRule;
-import org.netbeans.modules.cnd.makefile.model.MakefileUtils;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -69,58 +63,45 @@ public class MakefileTargetProviderImpl implements MakefileTargetProvider {
 
     @Override
     public Set<String> getPreferredTargets() throws IOException {
-        return runRetrieverTask().getPreferredTargets();
-    }
-
-    @Override
-    public Set<String> getRunnableTargets() throws IOException {
-        return runRetrieverTask().getRunnableTargets();
-    }
-
-    private TargetRetrieverTask runRetrieverTask() throws IOException {
-        TargetRetrieverTask task = new TargetRetrieverTask();
         try {
-            ParserManager.parse(Collections.singletonList(Source.create(fileObject)), task);
-            return task;
+            List<MakefileElement> elements = MakefileSupport.parseFile(fileObject);
+            return getPreferredTargetNames(elements);
         } catch (ParseException ex) {
             throw new IOException(ex);
         }
     }
 
-    private static class TargetRetrieverTask extends UserTask {
-
-        private final Set<String> preferredTargets;
-        private final Set<String> runnableTargets;
-
-        public TargetRetrieverTask() {
-            preferredTargets = new HashSet<String>();
-            runnableTargets = new HashSet<String>();
+    @Override
+    public Set<String> getRunnableTargets() throws IOException {
+        try {
+            List<MakefileElement> elements = MakefileSupport.parseFile(fileObject);
+            return getRunnableTargetNames(elements);
+        } catch (ParseException ex) {
+            throw new IOException(ex);
         }
+    }
 
-        @Override
-        public void run(ResultIterator resultIterator) throws Exception {
-            Parser.Result result = resultIterator.getParserResult();
-            if (result instanceof MakefileParseResult) {
-                MakefileParseResult makefileResult = (MakefileParseResult) result;
-                for (AbstractMakefileElement element : makefileResult.getElements()) {
-                    if (element.getKind() == ElementKind.RULE) {
-                        MakefileRule rule = (MakefileRule) element;
-                        for (String target : rule.getTargets()) {
-                            if (MakefileUtils.isPreferredTarget(target)) {
-                                preferredTargets.add(target);
-                            }
-                        }
+    private static Set<String> getPreferredTargetNames(List<MakefileElement> elements) {
+        return getTargetNames(elements, true);
+    }
+
+    private static Set<String> getRunnableTargetNames(List<MakefileElement> elements) {
+        return getTargetNames(elements, false);
+    }
+
+    private static Set<String> getTargetNames(List<MakefileElement> elements, boolean preferred) {
+        Set<String> result = new LinkedHashSet<String>();
+        for (MakefileElement element : elements) {
+            if (element.getKind() == MakefileElement.Kind.RULE) {
+                MakefileRule rule = (MakefileRule) element;
+                for (String target : rule.getTargets()) {
+                    if (preferred && MakefileUtils.isPreferredTarget(target)
+                            || !preferred && MakefileUtils.isRunnableTarget(target)) {
+                        result.add(target);
                     }
                 }
             }
         }
-
-        private Set<String> getPreferredTargets() {
-            return preferredTargets;
-        }
-
-        private Set<String> getRunnableTargets() {
-            return runnableTargets;
-        }
+        return result;
     }
 }

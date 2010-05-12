@@ -68,6 +68,9 @@ import org.openide.filesystems.XMLFileSystem;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -139,7 +142,18 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
                 try {
                     // Write to memory and reparse to make sure it is valid according to DTD before writing to disk.
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    XMLUtil.write(doc, baos, "UTF-8");
+                    // #184714: XMLUtil.write has too much overhead.
+                    DOMImplementationLS ls = (DOMImplementationLS) doc.getImplementation().getFeature("LS", "3.0"); // NOI18N
+                    assert ls != null : "No DOM 3 LS supported in " + doc.getClass().getName();
+                    LSOutput output = ls.createLSOutput();
+                    output.setEncoding("UTF-8");
+                    output.setByteStream(baos);
+                    LSSerializer ser = ls.createLSSerializer();
+                    String fpp = "format-pretty-print"; // NOI18N
+                    if (ser.getDomConfig().canSetParameter(fpp, true)) {
+                        ser.getDomConfig().setParameter(fpp, true);
+                    }
+                    ser.write(doc, output);
                     byte[] data = baos.toByteArray();
                     XMLUtil.parse(new InputSource(new ByteArrayInputStream(data)), true, true, ERROR_HANDLER, ENTITY_RESOLVER);
                     FileObject layer = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", GENERATED_LAYER, originatingElementsA);

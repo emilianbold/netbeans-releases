@@ -80,9 +80,11 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
         initComponents();
 
         PathUiSupport.EditMediator.FileChooserDirectoryHandler directoryHandler = new PathUiSupport.EditMediator.FileChooserDirectoryHandler() {
+            @Override
             public File getCurrentDirectory() {
                 return FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project));
             }
+            @Override
             public void setCurrentDirectory(File currentDirectory) {
             }
         };
@@ -96,14 +98,17 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
                                                directoryHandler);
 
         ignorePathList.getModel().addListDataListener(new ListDataListener() {
+            @Override
             public void intervalAdded(ListDataEvent e) {
                 validateData();
             }
 
+            @Override
             public void intervalRemoved(ListDataEvent e) {
                 validateData();
             }
 
+            @Override
             public void contentsChanged(ListDataEvent e) {
                 validateData();
             }
@@ -208,6 +213,7 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
     private JButton removeButton;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerIgnorePath.class);
     }

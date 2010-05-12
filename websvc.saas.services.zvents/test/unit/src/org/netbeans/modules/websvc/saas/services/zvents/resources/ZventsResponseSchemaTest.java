@@ -39,13 +39,13 @@
 package org.netbeans.modules.websvc.saas.services.zvents.resources;
 
 import junit.framework.TestSuite;
-import org.netbeans.modules.websvc.saas.kit.SchemaTest;
+import org.netbeans.modules.websvc.saas.util.SchemaTestBase;
 
 /**
  *
  * @author lukas
  */
-public class ZventsResponseSchemaTest extends SchemaTest {
+public class ZventsResponseSchemaTest extends SchemaTestBase {
 
     private ZventsResponseSchemaTest() {
         super();

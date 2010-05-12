@@ -43,13 +43,7 @@ package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.IOException;
 import javax.swing.JButton;
-import org.w3c.dom.Comment;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -306,39 +300,6 @@ public class UpdateHelper {
     private synchronized EditableProperties getUpdatedProjectProperties () {
         EditableProperties cachedProperties = this.helper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
         return cachedProperties;
-    }
-
-    private static void copyDocument(Document doc, Element from, Element to, String projectConfigurationNamespace) {
-        NodeList nl = from.getChildNodes();
-        int length = nl.getLength();
-        for (int i=0; i< length; i++) {
-            Node node = nl.item (i);
-            Node newNode = null;
-            switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    Element oldElement = (Element) node;
-                    newNode = doc.createElementNS(projectConfigurationNamespace, oldElement.getTagName());
-                    NamedNodeMap m = oldElement.getAttributes();
-                    Element newElement = (Element) newNode;
-                    for (int index = 0; index < m.getLength(); index++) {
-                        Node attr = m.item(index);
-                          newElement.setAttribute(attr.getNodeName(), attr.getNodeValue());
-                    }
-                    copyDocument(doc, oldElement, newElement, projectConfigurationNamespace);
-                    break;
-                case Node.TEXT_NODE:
-                    Text oldText = (Text) node;
-                    newNode = doc.createTextNode(oldText.getData());
-                    break;
-                case Node.COMMENT_NODE:
-                    Comment oldComment = (Comment) node;
-                    newNode = doc.createComment(oldComment.getData());
-                    break;
-            }
-            if (newNode != null) {
-                to.appendChild (newNode);
-            }
-        }
     }
     
 //    private static Element updateMinAntVersion (final Element root, final Document doc) {

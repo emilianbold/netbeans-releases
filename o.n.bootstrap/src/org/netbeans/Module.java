@@ -154,6 +154,7 @@ public abstract class Module extends ModuleInfo {
         return mgr;
     }
     
+    @Override
     public boolean isEnabled() {
         return enabled;
     }
@@ -204,18 +205,22 @@ public abstract class Module extends ModuleInfo {
      * interest, e.g. Class-Path) or enhanced with other information available
      * from the core (if needed).
      */
+    @Override
     public Object getAttribute(String attr) {
         return getManifest().getMainAttributes().getValue(attr);
     }
     
+    @Override
     public String getCodeName() {
         return codeName;
     }
     
+    @Override
     public String getCodeNameBase() {
         return codeNameBase;
     }
     
+    @Override
     public int getCodeNameRelease() {
         return codeNameRelease;
     }
@@ -238,6 +243,7 @@ public abstract class Module extends ModuleInfo {
         return false;
     }
     
+    @Override
     public Set<Dependency> getDependencies() {
         return new HashSet<Dependency>(Arrays.asList(getDependenciesArray()));
     }
@@ -245,10 +251,12 @@ public abstract class Module extends ModuleInfo {
         return dependenciesA == null ? new Dependency[0] : dependenciesA;
     }
     
+    @Override
     public SpecificationVersion getSpecificationVersion() {
         return specVers;
     }
     
+    @Override
     public boolean owns(Class clazz) {
         ClassLoader cl = clazz.getClassLoader();
         if (cl instanceof Util.ModuleProvider) {
@@ -411,7 +419,7 @@ public abstract class Module extends ModuleInfo {
                 }
             } else {
                 // XXX new link?
-                Util.err.warning("module " + codeNameBase + " does not declare OpenIDE-Module-Public-Packages in its manifest, so all packages are considered public by default: http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/upgrade.html#3.4-public-packages");
+                Util.err.log(Level.WARNING, "module {0} does not declare OpenIDE-Module-Public-Packages in its manifest, so all packages are considered public by default: http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/upgrade.html#3.4-public-packages", codeNameBase);
                 publicPackages = null;
             }
             
@@ -524,7 +532,7 @@ public abstract class Module extends ModuleInfo {
     public File getJarFile() {
         return null;
     }
-    
+
     /** Get the JAR manifest.
      * Should never be null, even if disabled.
      * Might change if a module is reloaded.
@@ -578,7 +586,7 @@ public abstract class Module extends ModuleInfo {
     // Access from ChangeFirer:
     final void firePropertyChange0(String prop, Object old, Object nue) {
         if (Util.err.isLoggable(Level.FINE)) {
-            Util.err.fine("Module.propertyChange: " + this + " " + prop + ": " + old + " -> " + nue);
+            Util.err.log(Level.FINE, "Module.propertyChange: {0} {1}: {2} -> {3}", new Object[]{this, prop, old, nue});
         }
         firePropertyChange(prop, old, nue);
     }
@@ -657,7 +665,7 @@ public abstract class Module extends ModuleInfo {
             if (dependencies.size() != 1) {
                 throw new IllegalStateException("Should be singleton: " + dependencies); // NOI18N
             }
-            Util.err.warning("the module " + codeNameBase + " uses OpenIDE-Module-IDE-Dependencies which is deprecated. See http://openide.netbeans.org/proposals/arch/modularize.html"); // NOI18N
+            Util.err.log(Level.WARNING, "the module {0} uses OpenIDE-Module-IDE-Dependencies which is deprecated. See http://openide.netbeans.org/proposals/arch/modularize.html", codeNameBase); // NOI18N
         }
         dependencies.addAll(Dependency.create(Dependency.TYPE_JAVA, attr.getValue("OpenIDE-Module-Java-Dependencies"))); // NOI18N
         dependencies.addAll(Dependency.create(Dependency.TYPE_MODULE, attr.getValue("OpenIDE-Module-Module-Dependencies"))); // NOI18N

@@ -63,7 +63,7 @@ public enum LNS {
     DW_LNS_set_isa(0x0c);
     
     private final int value;
-    static HashMap<Integer, LNS> hashmap = new HashMap<Integer, LNS>();
+    private static final HashMap<Integer, LNS> hashmap = new HashMap<Integer, LNS>();
     
     static {
         for (LNS elem : values()) {

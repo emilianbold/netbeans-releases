@@ -81,6 +81,10 @@ public class NodeActionTest extends NbTestCase {
     protected boolean runInEQ() {
         return true;
     }
+
+    protected @Override int timeOut() {
+        return 300000;
+    }
     
     protected void setUp() throws Exception {
         n1 = new AbstractNode(Children.LEAF);

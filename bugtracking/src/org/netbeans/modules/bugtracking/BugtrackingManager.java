@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -78,8 +79,6 @@ public final class BugtrackingManager implements LookupListener {
     
     private static final BugtrackingManager instance = new BugtrackingManager();
 
-    private boolean initialized;
-
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager"); // NOI18N
 
     private RequestProcessor rp = new RequestProcessor("Bugtracking manager"); // NOI18N
@@ -92,18 +91,16 @@ public final class BugtrackingManager implements LookupListener {
     /**
      * Result of Lookup.getDefault().lookup(new Lookup.Template<RepositoryConnector>(RepositoryConnector.class));
      */
-    private final Lookup.Result<BugtrackingConnector> connectorsLookup;
+    private Lookup.Result<BugtrackingConnector> connectorsLookup;
 
     private Map<String, List<RecentIssue>> recentIssues;
     private KenaiAccessor kenaiAccessor;
 
     public static BugtrackingManager getInstance() {
-        instance.init();
         return instance;
     }
 
     private BugtrackingManager() {
-        connectorsLookup = Lookup.getDefault().lookup(new Lookup.Template<BugtrackingConnector>(BugtrackingConnector.class));
         WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
     }
 
@@ -143,19 +140,11 @@ public final class BugtrackingManager implements LookupListener {
         return rp;
     }
 
-    private synchronized void init() {
-        if (initialized) return;
-
-        connectorsLookup.addLookupListener(this);
-        refreshConnectors();
-
-        BugtrackingRuntime.getInstance(); // force init
-        LOG.fine("Bugtracking manager initialized"); // NOI18N
-        initialized = true;
-    }
-
     public BugtrackingConnector[] getConnectors() {
         synchronized(connectors) {
+            if(connectorsLookup == null) {
+                refreshConnectors();
+            }
             return connectors.toArray(new BugtrackingConnector[connectors.size()]);
         }
     }
@@ -185,7 +174,7 @@ public final class BugtrackingManager implements LookupListener {
         }
         List<RecentIssue> l = getRecentIssues().get(repo.getID());
         if(l == null) {
-            l = new ArrayList<RecentIssue>();
+            l = new LinkedList<RecentIssue>();
             getRecentIssues().put(repo.getID(), l);
         }
         for (RecentIssue i : l) {
@@ -194,21 +183,17 @@ public final class BugtrackingManager implements LookupListener {
                 break;
             }
         }
-        if(l.size() == 5) {
-            l.remove(4);
-        }
         l.add(0, new RecentIssue(issue, System.currentTimeMillis()));
         if(LOG.isLoggable(Level.FINE)) {
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
             for (RecentIssue ri : l) {
-                LOG.fine(
-                        "recent issue: [" +                                     // NOI18N
-                        ri.getIssue().getRepository().getDisplayName() +
-                        ", " +                                                  // NOI18N
-                        ri.getIssue().getID() +
-                        ", " +                                                  // NOI18N
-                        f.format(new Date(ri.getTimestamp())) +
-                        "]");                                                   // NOI18N
+                LOG.log(
+                        Level.FINE,
+                        "recent issue: [{0}, {1}, {2}]",                        // NOI18N
+                        new Object[]{
+                            ri.getIssue().getRepository().getDisplayName(),
+                            ri.getIssue().getID(),
+                            f.format(new Date(ri.getTimestamp()))});                                                   // NOI18N
             }
         }
     }
@@ -232,30 +217,35 @@ public final class BugtrackingManager implements LookupListener {
     }
 
     private void refreshConnectors() {
-        Collection<? extends BugtrackingConnector> conns = connectorsLookup.allInstances();
-        if(LOG.isLoggable(Level.FINER)) {
-            for (BugtrackingConnector repository : conns) {
-                LOG.finer("registered provider: " + repository.getDisplayName()); // NOI18N
-            }
-        }
         synchronized (connectors) {
+            if (connectorsLookup == null) {
+                connectorsLookup = Lookup.getDefault().lookup(new Lookup.Template<BugtrackingConnector>(BugtrackingConnector.class));
+                connectorsLookup.addLookupListener(this);
+            }
+            Collection<? extends BugtrackingConnector> conns = connectorsLookup.allInstances();
+            if(LOG.isLoggable(Level.FINER)) {
+                for (BugtrackingConnector repository : conns) {
+                    LOG.log(Level.FINER, "registered provider: {0}", repository.getDisplayName()); // NOI18N
+                }
+            }
             connectors.clear();
             connectors.addAll(conns);
         }
     }
 
     private class ActivatedTCListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             Registry registry = WindowManager.getDefault().getRegistry();
             if (registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
                 TopComponent tc = registry.getActivated();
-                LOG.finer("activated TC : " + tc); // NOI18N
+                LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
                 if(!(tc instanceof IssueTopComponent)) {
                     return;
                 }
                 IssueTopComponent itc = (IssueTopComponent) tc;
                 Issue issue = itc.getIssue();
-                LOG.fine("activated issue : " + issue); // NOI18N
+                LOG.log(Level.FINE, "activated issue : {0}", issue); // NOI18N
                 if(issue == null || issue.isNew()) {
                     return;
                 }

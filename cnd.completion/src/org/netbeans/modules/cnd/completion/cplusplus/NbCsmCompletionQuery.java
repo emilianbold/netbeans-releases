@@ -40,6 +40,8 @@
  */
 
 package org.netbeans.modules.cnd.completion.cplusplus;
+import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
@@ -52,17 +54,13 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolverImpl;
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.editor.BaseDocument;
@@ -70,18 +68,14 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.openide.filesystems.FileObject;
+import org.openide.text.NbDocument;
 
 /**
  * Java completion query which is aware of project context.
@@ -128,8 +122,23 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
                         LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
                         offsetInFile = (Integer) inputAttributes.getValue(path, "dialogBinding.offset"); //NOI18N
                         Integer length = (Integer) inputAttributes.getValue(path, "dialogBinding.length"); //NOI18N
-                        if (offsetInFile != null && length != null) {
+                        if ((offsetInFile != null) && (offsetInFile.intValue() != -1) && (length != null)) {
                             offsetInFile = Integer.valueOf(offsetInFile.intValue() - length.intValue());
+                        }
+                        if ((offsetInFile == null) || (offsetInFile.intValue() == -1)) {
+                            // try line number info
+                            Integer lineInFile = (Integer) inputAttributes.getValue(path, "dialogBinding.line"); //NOI18N
+                            if (lineInFile != null && (lineInFile.intValue() >= 0)) {
+                                FileObject fo = (FileObject) inputAttributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
+                                Document aDoc = CsmUtilities.getDocument(fo);
+                                if (aDoc instanceof StyledDocument) {
+                                    try {
+                                        offsetInFile = NbDocument.findLineOffset((StyledDocument)aDoc, lineInFile.intValue());
+                                    } catch (IndexOutOfBoundsException ex) {
+                                        // skip
+                                    }
+                                }
+                            }
                         }
                     }
                     CompletionSupport sup = CompletionSupport.get(bDoc);

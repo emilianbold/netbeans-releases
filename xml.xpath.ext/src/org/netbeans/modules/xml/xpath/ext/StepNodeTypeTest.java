@@ -26,7 +26,7 @@ package org.netbeans.modules.xml.xpath.ext;
  * @author nk160297
  * @version 
  */
-public class StepNodeTypeTest extends StepNodeTest {
+public class StepNodeTypeTest implements StepNodeTest {
 
     private static StepNodeTestType[] int2Type = new StepNodeTestType[] {
         StepNodeTestType.NODETYPE_NODE, 
@@ -95,7 +95,7 @@ public class StepNodeTypeTest extends StepNodeTest {
         return false;
     }
     
-    public String getXPathText() {
+    public String getExpressionString() {
         StepNodeTestType type = getNodeType();
         if (type == StepNodeTestType.NODETYPE_PI && 
                 mInstruction != null && mInstruction.length() != 0) {
@@ -106,6 +106,7 @@ public class StepNodeTypeTest extends StepNodeTest {
     
     @Override
     public String toString() {
-        return getXPathText();
+        return getExpressionString();
     }
+
 }

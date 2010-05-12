@@ -54,12 +54,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.IndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
@@ -73,6 +75,7 @@ import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -242,52 +245,56 @@ public final class QuerySupport {
         Parameters.notNull("fieldName", fieldName); //NOI18N
         Parameters.notNull("fieldValue", fieldValue); //NOI18N
         Parameters.notNull("kind", kind); //NOI18N
+        try {
+            return Utilities.runPriorityIO(new Callable<Collection<? extends IndexResult>>() {
 
-        Iterable<? extends Pair<URL, IndexImpl>> indices = indexerQuery.getIndices(roots);
-        
-        // check if there are stale indices
-        for (Pair<URL, IndexImpl> pair : indices) {
-            final IndexImpl index = pair.second;
-            final Collection<? extends String> staleFiles = index.getStaleFiles();
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Index: " + index + ", staleFiles: " + staleFiles); //NOI18N
-            }
-
-            if (staleFiles != null && staleFiles.size() > 0) {
-                final URL root = pair.first;
-                LinkedList<URL> list = new LinkedList<URL>();
-                for(String staleFile : staleFiles) {
-                    try {
-                        list.add(Util.resolveUrl(root, staleFile));
-                    } catch (MalformedURLException ex) {
-                        LOG.log(Level.WARNING, null, ex);
+                @Override
+                public Collection<? extends IndexResult> call() throws Exception {
+                    Iterable<? extends Pair<URL, IndexImpl>> indices = indexerQuery.getIndices(roots);
+                    // check if there are stale indices
+                    for (Pair<URL, IndexImpl> pair : indices) {
+                        final IndexImpl index = pair.second;
+                        final Collection<? extends String> staleFiles = index.getStaleFiles();
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("Index: " + index + ", staleFiles: " + staleFiles); //NOI18N
+                        }
+                        if (staleFiles != null && staleFiles.size() > 0) {
+                            final URL root = pair.first;
+                            LinkedList<URL> list = new LinkedList<URL>();
+                            for (String staleFile : staleFiles) {
+                                try {
+                                    list.add(Util.resolveUrl(root, staleFile));
+                                } catch (MalformedURLException ex) {
+                                    LOG.log(Level.WARNING, null, ex);
+                                }
+                            }
+                            IndexingManager.getDefault().refreshIndexAndWait(root, list);
+                        }
                     }
+                    final List<IndexResult> result = new LinkedList<IndexResult>();
+                    for (Pair<URL, IndexImpl> pair : indices) {
+                        final IndexImpl index = pair.second;
+                        final URL root = pair.first;
+                        final Collection<? extends IndexDocumentImpl> pr = index.query(fieldName, fieldValue, kind, fieldsToLoad);
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("query(\"" + fieldName + "\", \"" + fieldValue + "\", " + kind + ", " + printFiledToLoad(fieldsToLoad) + ") invoked at " + getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) + "[indexer=" + indexerQuery.getIndexerId() + "]:"); //NOI18N
+                            for (IndexDocumentImpl idi : pr) {
+                                LOG.fine(" " + idi); //NOI18N
+                            }
+                            LOG.fine("----"); //NOI18N
+                        }
+                        for (IndexDocumentImpl di : pr) {
+                            result.add(new IndexResult(di, root));
+                        }
+                    }
+                    return result;
                 }
-
-                IndexingManager.getDefault().refreshIndexAndWait(root, list);
-            }
+            });
+        } catch (IOException ioe) {
+            throw ioe;
+        } catch (Exception ex) {
+            throw new IOException(ex);
         }
-
-        final List<IndexResult> result = new LinkedList<IndexResult>();
-        for (Pair<URL, IndexImpl> pair : indices) {
-            final IndexImpl index = pair.second;
-            final URL root = pair.first;
-            final Collection<? extends IndexDocumentImpl> pr = index.query(fieldName, fieldValue, kind, fieldsToLoad);
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("query(\"" + fieldName + "\", \"" + fieldValue + "\", " + kind + ", " //NOI18N
-                    + printFiledToLoad(fieldsToLoad) + ") invoked at " //NOI18N
-                    + getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) //NOI18N
-                    + "[indexer=" + indexerQuery.getIndexerId() + "]:"); //NOI18N
-                for(IndexDocumentImpl idi : pr) {
-                    LOG.fine(" " + idi); //NOI18N
-                }
-                LOG.fine("----"); //NOI18N
-            }
-            for (IndexDocumentImpl di : pr) {
-                result.add(new IndexResult(di,root));
-            }
-        }
-        return result;
     }
 
     /**

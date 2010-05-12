@@ -70,8 +70,11 @@ import org.openide.util.RequestProcessor;
  * @author Rico
  * @author Nam Nguyen
  */
-public abstract class AbstractModel<T extends Component<T>> implements Model<T>, UndoableEditListener {
+public abstract class AbstractModel<T extends Component<T>>
+        implements Model<T>, UndoableEditListener {
     
+    private static Logger logger = Logger.getLogger(AbstractModel.class.getName());
+
     private PropertyChangeSupport pcs;
     protected ModelUndoableEditSupport ues;
     private State status;
@@ -94,6 +97,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
 
     public abstract ModelAccess getAccess();
 
+    @Override
     public void removePropertyChangeListener(java.beans.PropertyChangeListener pcl) {
         pcs.removePropertyChangeListener(pcl);
     }
@@ -102,6 +106,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
      * Add property change listener which will receive events for any element
      * in the underlying schema model.
      */
+    @Override
     public void addPropertyChangeListener(java.beans.PropertyChangeListener pcl) {
         pcs.addPropertyChangeListener(pcl);
     }
@@ -110,16 +115,20 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         assert transaction != null;
         transaction.addPropertyChangeEvent(event);
     }
-    
-    public void removeUndoableEditListener(javax.swing.event.UndoableEditListener uel) {
+
+    @Override
+    public void removeUndoableEditListener(UndoableEditListener uel) {
         ues.removeUndoableEditListener(uel);
     }
-    
-    public void addUndoableEditListener(javax.swing.event.UndoableEditListener uel) {
+
+    @Override
+    public void addUndoableEditListener(UndoableEditListener uel) {
         ues.addUndoableEditListener(uel);
     }
 
-    public synchronized void addUndoableRefactorListener(javax.swing.event.UndoableEditListener uel) {
+    @Override
+    public synchronized void addUndoableRefactorListener(UndoableEditListener uel) {
+        //
         savedUndoableEditListeners = ues.getUndoableEditListeners();
         if (savedUndoableEditListeners != null) {
             for (UndoableEditListener saved : savedUndoableEditListeners) {
@@ -131,8 +140,10 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         ues = new ModelUndoableEditSupport();
         ues.addUndoableEditListener(uel);
     }
-    
-    public synchronized void removeUndoableRefactorListener(javax.swing.event.UndoableEditListener uel) {
+
+    @Override
+    public synchronized void removeUndoableRefactorListener(UndoableEditListener uel) {
+        //
         ues.removeUndoableEditListener(uel);
         if (savedUndoableEditListeners != null) {
             ues = new ModelUndoableEditSupport();
@@ -159,9 +170,10 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
             mue.justUndo();
             super.compoundEdit = createCompoundEdit();
             super.updateLevel = 0;
+        }
     }
-    }
-    
+
+    @Override
     public boolean inSync() {
         return inSync;
     }
@@ -169,7 +181,11 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
     protected void setInSync(boolean v) {
         inSync = v;
     }
-    
+
+    /**
+     * Indicates if the model in Undo/Redo stage.
+     * @return
+     */
     public boolean inUndoRedo() {
         return inUndoRedo;
     }
@@ -178,6 +194,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         inUndoRedo = v;
     }
 
+    @Override
     public State getState() {
         return status;
     }
@@ -188,7 +205,8 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         }
         State old = status;
         status = s;
-        PropertyChangeEvent event = new PropertyChangeEvent(this, STATE_PROPERTY, old, status);
+        PropertyChangeEvent event =
+                new PropertyChangeEvent(this, STATE_PROPERTY, old, status);
         if (isIntransaction()) {
             firePropertyChangeEvent(event);
         } else {
@@ -201,7 +219,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
      * performed. The default implementation simply returns true.
      */
     protected boolean needsSync() {
-    return true;
+        return true;
     }
     
     /**
@@ -238,8 +256,8 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
     
     /**
      * Prepare for sync.  This allow splitting calculation intensive work from
-     * event firing tasks that are mostly running on UI threads.  This should be
-     * optional step, meaning the actual call sync() should task care of the
+     * event firing tasks that are mostly running on UI threads. This should be
+     * optional step, meaning the actual call sync() should take care of the
      * preparation if it is not done.
      */
     private void prepareSync() {
@@ -247,7 +265,8 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
             getAccess().prepareSync();
         }
     }
-    
+
+    @Override
     public synchronized void sync() throws java.io.IOException {
         if (needsSync()) {
             syncStarted();
@@ -268,7 +287,8 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
                     try {
                         endTransaction(true); // do not fire events
                     } catch(Exception ex) {
-                        Logger.getLogger(getClass().getName()).log(Level.INFO, "Sync cleanup error.", ex); //NOI18N
+                        Logger.getLogger(getClass().getName()).log(Level.INFO,
+                                "Sync cleanup error.", ex); //NOI18N
                     }
                 }
 
@@ -284,18 +304,26 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
     }
     
     /**
-     * Refresh the domain model component trees.  The model state should be VALID as the 
-     * result of this call.
+     * Refresh the domain model component trees. Refresh actually means recreation 
+     * of root component from XDM root. The old model's content is totally lost after 
+     * the operation. 
+     * 
+     * Because the fresh model is created, the model's state should be VALID
+     * as the result of this call.
+     * 
      * Note: subclasses need to override to provide the actual refresh service.
+     * Note: direct links to model's components become invalid after this operation.
      */
     protected void refresh() {
         setState(State.VALID);
     }
-    
+
+    @Override
     public void removeComponentListener(ComponentListener cl) {
         componentListeners.remove(ComponentListener.class, cl);
     }
 
+    @Override
     public void addComponentListener(ComponentListener cl) {
         componentListeners.add(ComponentListener.class, cl);
     }
@@ -304,11 +332,13 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         assert transaction != null;
         transaction.addComponentEvent(evt);
     }
-    
+
+    @Override
     public boolean isIntransaction() {
         return transaction != null;
     }
-    
+
+    @Override
     public synchronized void endTransaction() {
         endTransaction(false);
     }
@@ -337,18 +367,29 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         }
     }
 
+    @Override
     public boolean startTransaction() {
         return startTransaction(false, false);
     }
-    
+
+    /**
+     * Starts a transaction.
+     *
+     * @param inSync indicates that the model is in synchronization stage
+     * @param inUndoRedo indicates that the model is in undo/redo stage
+     * @return a flag which indicates if the transaction was started.
+     */
     private synchronized boolean startTransaction(boolean inSync, boolean inUndoRedo) {
         if (transaction != null && transaction.currentThreadIsTransactionThread()) {
             throw new IllegalStateException(
-            "Current thread has already started a transaction");
+            "Current thread has already started a transaction"); // NOI18N
         }
-        
+
+        // If model is being synchronized, then the changes are taken from the source document.
+        // Otherwise, the changes can be going to be pushed to the source document and
+        // it is impossible if the document is not editable. 
         if (! inSync && ! getModelSource().isEditable()) {
-            throw new IllegalArgumentException("Model source is read-only.");
+            throw new IllegalArgumentException("Model source is read-only."); // NOI18N
         }
         
         transactionSemaphore.acquireUninterruptibly();
@@ -358,7 +399,8 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         assert transaction == null;
         
         if (! inSync && getState() == State.NOT_WELL_FORMED) {
-        transactionSemaphore.release();
+            transactionSemaphore.release();
+            // It's allowed ot modify underlaing document if it's not well formed
             return false;
         }
 
@@ -379,7 +421,8 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         validateWrite(); // ensures that the releasing thread really owns trnx
         try {
             if (inSync() || inUndoRedo()) {
-                throw new IllegalArgumentException("Should never call rollback during sync or undo/redo.");
+                throw new IllegalArgumentException(
+                        "Should never call rollback during sync or undo/redo."); // NOI18N
             }
             ues.abortUpdate();
         } finally {
@@ -397,7 +440,8 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         validateWrite(); // ensures that the releasing thread really owns trnx
         try {
             if (inSync() || inUndoRedo()) {
-                throw new IllegalArgumentException("Should never call rollback during sync or undo/redo.");
+                throw new IllegalArgumentException(
+                        "Should never call rollback during sync or undo/redo."); // NOI18N
             }
         } finally {
             transaction = null;
@@ -539,6 +583,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
     protected class ModelUndoableEdit extends CompoundEdit {
         static final long serialVersionUID = 1L;
         
+        @Override
         public boolean addEdit(UndoableEdit anEdit) {
             if (! isInProgress()) return false;
             UndoableEdit last = lastEdit();
@@ -621,13 +666,15 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
             super.undo();
             AbstractModel.this.getAccess().finishUndoRedo();
             AbstractModel.this.inUndoRedo = oldValue;
+        }
     }
-    }
-    
+
+    @Override
     public void undoableEditHappened(UndoableEditEvent e) {
         ues.postEdit(e.getEdit());
     }
 
+    @Override
     public ModelSource getModelSource() {
         return source;
     }
@@ -645,11 +692,21 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
     }
     
     void runAutoSync() {
+        if (logger.getLevel() == Level.FINEST) {
+            logger.finest("Initiate auto sync for XAM model: " + toString()); // NOI18N
+        }
+        //
         prepareSync();
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     sync();
+                    //
+                    if (logger.getLevel() == Level.FINEST) {
+                        logger.finest("Auto sync is finished for XAM model: " + 
+                                AbstractModel.this.toString()); // NOI18N
+                    }
                 } catch(Exception ioe) {
                     // just have to be quiet during background autosync
                     // sync() should have handled all faults
@@ -657,6 +714,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
             }
         });
     }
+
 }
 
 

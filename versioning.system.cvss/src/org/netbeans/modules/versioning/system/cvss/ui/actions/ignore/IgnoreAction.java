@@ -62,7 +62,7 @@ public class IgnoreAction extends AbstractSystemAction {
     public static final int UNIGNORING = 2;
     
     protected String getBaseName(Node [] activatedNodes) {
-        int actionStatus = getActionStatus(activatedNodes);
+        int actionStatus = getActionStatus(activatedNodes, true);
         switch (actionStatus) {
         case UNDEFINED:
         case IGNORING:
@@ -74,18 +74,29 @@ public class IgnoreAction extends AbstractSystemAction {
         }
     }
 
-    public int getActionStatus(Node [] nodes) {
-        return getActionStatus(Utils.getCurrentContext(nodes).getFiles());
+    public int getActionStatus(Node [] nodes, boolean cached) {
+        return getActionStatus((cached ? getCachedContext(nodes) : getContext(nodes)).getFiles(), cached);
     }
 
-    public int getActionStatus(File [] files) {
+    @Override
+    protected int getFileEnabledStatus() {
+        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+    }
+
+    @Override
+    protected int getDirectoryEnabledStatus() {
+        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+    }
+
+    public int getActionStatus(File [] files, boolean cached) {
         int actionStatus = -1;
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         for (int i = 0; i < files.length; i++) {
-            FileInformation info = cache.getStatus(files[i]);
-            if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+            FileInformation info = cached ? cache.getCachedStatus(files[i]) : cache.getStatus(files[i]);
+            int status = info == null ? FileInformation.STATUS_VERSIONED_UPTODATE : info.getStatus();
+            if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                 actionStatus = (actionStatus == -1 || actionStatus == IGNORING) ? IGNORING : UNDEFINED;
-            } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+            } else if (status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
                 actionStatus = (actionStatus == -1 || actionStatus == UNIGNORING) ? UNIGNORING : UNDEFINED;
             } else {
                 actionStatus = UNDEFINED;
@@ -96,11 +107,11 @@ public class IgnoreAction extends AbstractSystemAction {
     }
     
     protected boolean enable(Node[] nodes) {
-        return getActionStatus(nodes) != UNDEFINED;
+        return getActionStatus(nodes, true) != UNDEFINED;
     }
 
     public void performCvsAction(Node[] nodes) {
-        int actionStatus = getActionStatus(nodes);
+        int actionStatus = getActionStatus(nodes, false);
         if (actionStatus == IGNORING) {
             CvsVersioningSystem.getInstance().setIgnored(Utils.getCurrentContext(nodes).getFiles());
         } else if (actionStatus == UNIGNORING) {

@@ -44,8 +44,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.remote.ConnectionNotifier;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.compilerset.SPIAccessor;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -78,11 +82,20 @@ public final class CompilerSetManagerEvents {
         return instance;
     }
 
-    public void runOnCodeModelReadiness(Runnable task) {
+    public void runOnCodeModelReadiness(NamedRunnable task) {
         if (executionEnvironment.isLocal() || isCodeModelInfoReady) {
             task.run();
         } else {
             tasks.add(task);
+            final ServerRecord record = ServerList.get(executionEnvironment);
+            if (record.isOffline()) {
+                ConnectionNotifier.addTask(executionEnvironment, new NamedRunnable(task.getName()) {
+                    @Override
+                    protected void runImpl() {
+                        // nothing :)
+                    }
+                });
+            }
         }
     }
 

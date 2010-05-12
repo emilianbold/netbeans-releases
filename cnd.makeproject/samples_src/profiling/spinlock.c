@@ -37,7 +37,7 @@
 
 static long mem_min(int threads, work_t* works) {
     int i;
-    unsigned long min = -1;
+    unsigned long min = (unsigned long) -1;
     for (i = 0; i < threads; ++i) {
         if (works[i].mem_usage && works[i].mem_size < min) {
             min = works[i].mem_size;
@@ -97,10 +97,11 @@ static void* spinlock_threadfunc(void *p) {
         pthread_spin_unlock(&spinlock);
         usleep(MICROS_PER_SECOND / 100);
     }
+    return NULL;
 }
 
 void spinlock_demo(int threads, work_t* works, int seconds) {
-    long i;
+    int i;
     pthread_t *t;
     spinlock_demo_header(threads, works);
     t = calloc(threads, sizeof (pthread_t));

@@ -100,6 +100,7 @@ public final class ModuleUpdater extends Thread {
     
     public static final String UPDATER_JAR = "updater.jar"; // NOI18N
     public static final String AUTOUPDATE_UPDATER_JAR_PATH = "netbeans/modules/ext/" + UPDATER_JAR; // NOI18N
+    public static final String AUTOUPDATE_UPDATER_JAR_LOCALE_PATTERN = "netbeans/modules/ext/locale/updater(_[a-zA-Z0-9]+)+"; // NOI18N
 
     public static final String EXECUTABLE_FILES_ENTRY = "Info/executables.list";
     
@@ -399,7 +400,8 @@ public final class ModuleUpdater extends Thread {
                         checkStop();
                         if ( entry.getName().startsWith( UPDATE_NETBEANS_DIR ) ) {
                             if (! entry.isDirectory ()) {
-                                if (AUTOUPDATE_UPDATER_JAR_PATH.equals (entry.getName ())) {
+                                if (AUTOUPDATE_UPDATER_JAR_PATH.equals (entry.getName ()) ||
+                                        entry.toString().matches(AUTOUPDATE_UPDATER_JAR_LOCALE_PATTERN)) {
                                     // skip updater.jar
                                     continue;
                                 }

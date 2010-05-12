@@ -61,6 +61,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Exceptions;
@@ -75,6 +76,7 @@ import org.openide.util.Exceptions;
 public final class Stamps {
     private static final Logger LOG = Logger.getLogger(Stamps.class.getName());
     private static AtomicLong moduleJARs;
+    private static File moduleNewestFile;
     
     private Worker worker = new Worker();
 
@@ -160,10 +162,12 @@ public final class Stamps {
     final File file(String cache, int[] len) {
         String ud = getUserDir();
         if (ud == null) {
+            LOG.log(Level.FINE, "No userdir when asking for {0}", cache); // NOI18N
             return null;
         }
         synchronized (this) {
             if (worker.isProcessing(cache)) {
+                LOG.log(Level.FINE, "Worker processing when asking for {0}", cache); // NOI18N
                 return null;
             }
         }
@@ -171,10 +175,12 @@ public final class Stamps {
         File cacheFile = new File(new File(new File(ud, "var"), "cache"), cache.replace('/', File.separatorChar)); // NOI18N
         long last = cacheFile.lastModified();
         if (last <= 0) {
+            LOG.log(Level.FINE, "Cache does not exist when asking for {0}", cache); // NOI18N
             return null;
         }
 
         if (moduleJARs() > last) {
+            LOG.log(Level.FINE, "Timestamp does not pass when asking for {0}. Newest file {1}", new Object[] { cache, moduleNewestFile }); // NOI18N
             return null;
         }
 
@@ -187,6 +193,7 @@ public final class Stamps {
             len[0] = (int)longLen;
         }
         
+        LOG.log(Level.FINE, "Cache found: {0}", cache); // NOI18N
         return cacheFile;
     }
     
@@ -291,7 +298,11 @@ public final class Stamps {
     static long moduleJARs() {
         AtomicLong local = moduleJARs;
         if (local == null) {
-            local = moduleJARs = stamp(true);
+            local = new AtomicLong();
+            AtomicReference<File> newestFile = new AtomicReference<File>();
+            stamp(true, local, newestFile);
+            moduleJARs = local;
+            moduleNewestFile = newestFile.get();
         }
         return local.longValue();
     }
@@ -308,12 +319,18 @@ public final class Stamps {
 
     private static AtomicLong stamp(boolean checkStampFile) {
         AtomicLong result = new AtomicLong();
+        AtomicReference<File> newestFile = new AtomicReference<File>();
+        stamp(checkStampFile, result, newestFile);
+        return result;
+    }
+
+    private static void stamp(boolean checkStampFile, AtomicLong result, AtomicReference<File> newestFile) {
         StringBuilder sb = new StringBuilder();
         
         Set<File> processedDirs = new HashSet<File>();
         String home = System.getProperty ("netbeans.home"); // NOI18N
         if (home != null) {
-            long stamp = stampForCluster (new File (home), result, processedDirs, checkStampFile, true, null);
+            long stamp = stampForCluster (new File (home), result, newestFile, processedDirs, checkStampFile, true, null);
             sb.append(home).append('=').append(stamp).append('\n');
         }
         String nbdirs = System.getProperty("netbeans.dirs"); // NOI18N
@@ -321,7 +338,7 @@ public final class Stamps {
             StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 String t = tok.nextToken();
-                long stamp = stampForCluster(new File(t), result, processedDirs, checkStampFile, true, null);
+                long stamp = stampForCluster(new File(t), result, newestFile, processedDirs, checkStampFile, true, null);
                 if (stamp != -1) {
                     sb.append(t).append('=').append(stamp).append('\n');
                 }
@@ -330,7 +347,7 @@ public final class Stamps {
         String user = getUserDir();
         if (user != null) {
             AtomicInteger crc = new AtomicInteger();
-            stampForCluster (new File (user), result, new HashSet<File> (), false, false, crc);
+            stampForCluster (new File (user), result, newestFile, new HashSet<File> (), false, false, crc);
             sb.append(user).append('=').append(result.longValue()).append('\n');
             sb.append("crc=").append(crc.intValue()).append('\n');
             
@@ -340,18 +357,17 @@ public final class Stamps {
                 discardCachesImpl(result);
             }
         }
-        
-        return result;
     }
     
     private static long stampForCluster(
-        File cluster, AtomicLong result, Set<File> hashSet, 
+        File cluster, AtomicLong result, AtomicReference<File> newestFile, Set<File> hashSet,
         boolean checkStampFile, boolean createStampFile, AtomicInteger crc
     ) {
         File stamp = new File(cluster, ".lastModified"); // NOI18N
         long time;
         if (checkStampFile && (time = stamp.lastModified()) > 0) {
             if (time > result.longValue()) {
+                newestFile.set(stamp);
                 result.set(time);
             }
             return time;
@@ -362,6 +378,7 @@ public final class Stamps {
             stamp = new File(new File(new File(new File(userDir, "var"), "cache"), "lastModified"), cluster.getName());
             if (checkStampFile && (time = stamp.lastModified()) > 0) {
                 if (time > result.longValue()) {
+                    newestFile.set(stamp);
                     result.set(time);
                 }
                 return time;
@@ -374,7 +391,8 @@ public final class Stamps {
         File modulesDir = new File(cluster, "modules"); // NOI18N
 
         AtomicLong clusterResult = new AtomicLong();
-        if (highestStampForDir(configDir, clusterResult, crc) && highestStampForDir(modulesDir, clusterResult, crc)) {
+        AtomicReference<File> newestInCluster = new AtomicReference<File>();
+        if (highestStampForDir(configDir, newestInCluster, clusterResult, crc) && highestStampForDir(modulesDir, newestInCluster, clusterResult, crc)) {
             // ok
         } else {
             if (!cluster.isDirectory()) {
@@ -384,6 +402,7 @@ public final class Stamps {
         }
 
         if (clusterResult.longValue() > result.longValue()) {
+            newestFile.set(newestInCluster.get());
             result.set(clusterResult.longValue());
         }
         
@@ -399,7 +418,7 @@ public final class Stamps {
         return clusterResult.longValue();
     }
 
-    private static boolean highestStampForDir(File file, AtomicLong result, AtomicInteger crc) {
+    private static boolean highestStampForDir(File file, AtomicReference<File> newestFile, AtomicLong result, AtomicInteger crc) {
         if (file.getName().equals(".nbattrs")) { // NOI18N
             return true;
         }
@@ -411,13 +430,14 @@ public final class Stamps {
             }
             long time = file.lastModified();
             if (time > result.longValue()) {
+                newestFile.set(file);
                 result.set(time);
             }
             return false;
         }
         
         for (File f : children) {
-            highestStampForDir(f, result, crc);
+            highestStampForDir(f, newestFile, result, crc);
         }
         return true;
     }

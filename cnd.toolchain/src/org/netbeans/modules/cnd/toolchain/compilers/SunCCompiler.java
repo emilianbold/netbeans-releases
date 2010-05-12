@@ -59,8 +59,8 @@ import org.openide.ErrorManager;
     }
     
     @Override
-    public SunCCompiler createCopy() {
-        SunCCompiler copy = new SunCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
+    public SunCCompiler createCopy(CompilerFlavor flavor) {
+        SunCCompiler copy = new SunCCompiler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath());
         if (isReady()) {
             copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
             copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
@@ -76,32 +76,20 @@ import org.openide.ErrorManager;
     public CompilerDescriptor getDescriptor() {
         return getFlavor().getToolchainDescriptor().getC();
     }
-    
+
     @Override
     protected void parseCompilerOutput(BufferedReader reader, Pair pair) {
         try {
             String line;
             while ((line = reader.readLine()) != null) {
-                //System.out.println(line);
-                int includeIndex = line.indexOf("-I"); // NOI18N
-                while (includeIndex > 0) {
-                    String token;
-                    int spaceIndex = line.indexOf(' ', includeIndex + 1); // NOI18N
-                    if (spaceIndex > 0) {
-                        token = line.substring(includeIndex+2, spaceIndex);
-                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
-                        includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
-                    } else {
-                        token = line.substring(includeIndex+2);
-                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
-                        break;
-                    }
+                for(String token : getSystemPaths(line)){
+                    addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(token));
                 }
                 parseUserMacros(line, pair.systemPreprocessorSymbolsList);
             }
             // Adding "__STDC__=0". It's missing from dryrun output
-            pair.systemPreprocessorSymbolsList.addUnique("__STDC__=0"); // NOI18N
-            
+            addUnique(pair.systemPreprocessorSymbolsList, "__STDC__=0"); // NOI18N
+
             reader.close();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP

@@ -48,6 +48,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -199,8 +200,14 @@ public class TabbedController extends OptionsPanelController {
                 } else {
                     comp = controller.getComponent(masterLookup);
                 }
-                pane.setComponentAt(selectedIndex, new JScrollPane(comp));
-                ((JComponent) pane.getSelectedComponent()).setBorder(new EmptyBorder(11, 11, 11, 11));
+                if( null == comp.getBorder() ) {
+                    comp.setBorder(BorderFactory.createEmptyBorder(11,11,11,11));
+                }
+                JScrollPane scroll = new JScrollPane(comp);
+                scroll.setBorder(BorderFactory.createEmptyBorder());
+                scroll.setOpaque(false);
+                scroll.getViewport().setOpaque(false);
+                pane.setComponentAt(selectedIndex, scroll);
                 controller.update();
             }
             pcs.firePropertyChange(OptionsPanelController.PROP_HELP_CTX, null, null);

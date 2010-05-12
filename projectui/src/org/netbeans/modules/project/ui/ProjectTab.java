@@ -45,9 +45,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -57,16 +57,20 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JLabel;
@@ -84,7 +88,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.ui.groups.Group;
-import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -104,7 +107,9 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -127,7 +132,9 @@ public class ProjectTab extends TopComponent
     
     private static final Image ICON_LOGICAL = ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/projectTab.png" );
     private static final Image ICON_PHYSICAL = ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/filesTab.png" );
-    
+
+    private static final Logger LOG = Logger.getLogger(ProjectTab.class.getName());
+
     private static Map<String, ProjectTab> tabs = new HashMap<String, ProjectTab>();                            
                             
     private transient final ExplorerManager manager;
@@ -361,32 +368,74 @@ public class ProjectTab extends TopComponent
         out.writeObject( getSelectedPaths() );
     }
 
-    @SuppressWarnings("unchecked") 
-    @Override
-    public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {        
+    public @Override void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal( in );
         id = (String)in.readObject();
         rootNode = ((Node.Handle)in.readObject()).getNode();
-	List<String[]> exPaths = (List<String[]>)in.readObject();
-        List<String[]> selPaths = null;
+        final List<String[]> exPaths = NbCollections.checkedListByCopy((List<?>) in.readObject(), String[].class, true);
+        final List<String[]> selPaths = new ArrayList<String[]>();
         try {
-            selPaths = (List<String[]>)in.readObject();
+            selPaths.addAll(NbCollections.checkedListByCopy((List<?>) in.readObject(), String[].class, true));
         }
         catch ( java.io.OptionalDataException e ) {
             // Sel paths missing
         }
         initValues();
-// fix for #55701 (Expanding of previously expanded folder in explorer slows down startup)
-// the expansion scales very bad now and can prolong startup up to several minutes
-// disabling the expansion of nodes after start altogether
-// (thus getting back to how it worked in NB 4.0 FCS, but letting the user turn it back on)
-        if (System.getProperty ("netbeans.keep.expansion") != null)
-        {
-            btv.expandNodes( exPaths );
-            selectPaths( selPaths );
+        if (!"false".equals(System.getProperty("netbeans.keep.expansion"))) { // #55701
+            KeepExpansion ke = new KeepExpansion(id, exPaths, selPaths);
+            ke.task.schedule(0);
+        }
+    }
+
+    private class KeepExpansion implements Runnable {
+        final String id;
+        final RequestProcessor.Task task;
+        final List<String[]> exPaths;
+        final List<String[]> selPaths;
+
+        public KeepExpansion(String id, List<String[]> exPaths, List<String[]> selPaths) {
+            this.id = id;
+            this.exPaths = exPaths;
+            this.selPaths = selPaths;
+            this.task = RP.create(this);
+        }
+
+        @Override
+        public void run() {
+            if (EventQueue.isDispatchThread()) {
+                LOG.log(Level.FINE, "{0}: selecting paths: {1}", new Object[] { id, selPaths });
+                selectPaths(selPaths);
+                LOG.log(Level.FINE, "{0}: done.", id);
+                return;
+            }
+            
+            try {
+                LOG.log(Level.FINE, "{0}: waiting for projects being open", id);
+                OpenProjects.getDefault().openProjects().get(10, TimeUnit.SECONDS);
+            } catch (TimeoutException ex) {
+                LOG.log(Level.FINE, "{0}: Timeout. Will retry in a second", id);
+                task.schedule(1000);
+                return;
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            LOG.log(Level.FINE, "{0}: Checking node state", id);
+            for (Node n : rootNode.getChildren().getNodes()) {
+                if (btv.isExpanded(n)) {
+                    LOG.log(Level.FINE, "{0}: Node {1} has been expanded. Giving up.", new Object[] {id, n});
+                    return;
+                }
+            }
+            LOG.log(Level.FINE, "{0}: Expanding paths: {1}", new Object[] { id, exPaths });
+            btv.expandNodes(exPaths);
+            LOG.log(Level.FINE, "{0}: Switching to AWT", id);
+            EventQueue.invokeLater(this);
         }
 
     }
+
     
     // MANAGING ACTIONS
     
@@ -455,7 +504,7 @@ public class ProjectTab extends TopComponent
 
     // Called from the SelectNodeAction
     
-    private final RequestProcessor RP = new RequestProcessor();
+    private final static RequestProcessor RP = new RequestProcessor(ProjectTab.class);
     
     public void selectNodeAsync(FileObject object) {
         setCursor( Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) );
@@ -567,35 +616,27 @@ public class ProjectTab extends TopComponent
     }
     
     private List<String[]> getSelectedPaths() {
-        Node selectedNodes[] = manager.getSelectedNodes();
         List<String[]> result = new ArrayList<String[]>();
-        Node rootNode = manager.getRootContext();
-                
-        for( int i = 0; i < selectedNodes.length; i++ ) {
-            String[] path = NodeOp.createPath( selectedNodes[i], rootNode );
-            if ( path != null ) {
-                result.add( path );
+        Node root = manager.getRootContext();
+        for (Node n : manager.getSelectedNodes()) {
+            String[] path = NodeOp.createPath(n, root);
+            LOG.log(Level.FINE, "path from {0} to {1}: {2}", new Object[] {root, n, Arrays.asList(path)});
+            if (path != null) {
+                result.add(path);
             }
         }
-        
         return result;
     }
     
     
-    private void selectPaths( List<String[]> paths ) {
-        
-        if ( paths == null ) {
-            return;
-        }
-        
+    private void selectPaths(List<String[]> paths) {
         List<Node> selectedNodes = new ArrayList<Node>();
         
-        Node rootNode = manager.getRootContext();
+        Node root = manager.getRootContext();
         
-        for( Iterator<String[]> it = paths.iterator(); it.hasNext(); ) {
-            String[] sp = it.next();
+        for (String[] sp : paths) {
             try {
-                Node n = NodeOp.findPath( rootNode, sp );
+                Node n = NodeOp.findPath(root, sp);
                 if ( n != null ) {
                     selectedNodes.add( n );
                 }
@@ -620,11 +661,16 @@ public class ProjectTab extends TopComponent
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-            if (OpenProjects.getDefault().getOpenProjects().length > 0) {
-                restoreTreeView();
-            } else {
-                showNoProjectsLabel();
-            }
+            final boolean someProjectsOpen = OpenProjects.getDefault().getOpenProjects().length > 0;
+            Mutex.EVENT.readAccess(new Runnable() {
+                public @Override void run() {
+                    if (someProjectsOpen) {
+                        restoreTreeView();
+                    } else {
+                        showNoProjectsLabel();
+                    }
+                }
+            });
         }
     }
 
@@ -699,44 +745,37 @@ public class ProjectTab extends TopComponent
         
         /** Expands all the paths, when exists
          */
-        public void expandNodes( List exPaths ) {
-            
-            for( Iterator it = exPaths.iterator(); it.hasNext(); ) {
-                String[] sp = (String[])it.next();
-                TreePath tp = stringPath2TreePath( sp );
-                
-                if ( tp != null ) {                
-                    showPath( tp );
+        public void expandNodes(List<String[]> exPaths) {
+            for (final String[] sp : exPaths) {
+                Node n;
+                try {
+                    n = NodeOp.findPath(rootNode, sp);
+                } catch (NodeNotFoundException e) {
+                    LOG.log(Level.FINE, "got {0}", e);
+                    n = e.getClosestNode();
                 }
-            }
-        }
-        
-                
-        
-        /** Converts path of strings to TreePath if exists null otherwise
-         */
-        private TreePath stringPath2TreePath( String[] sp ) {
-
-            try {
-                Node n = NodeOp.findPath( rootNode, sp ); 
-                
-                // Create the tree path
-                TreeNode tns[] = new TreeNode[ sp.length + 1 ];
-                
-                for ( int i = sp.length; i >= 0; i--) {
-                    if ( n == null ) { // Fix for 54832 it seems that sometimes                         
-                        return null;   // we get unparented node
+                if (n == null) { // #54832: it seems that sometimes we get unparented node
+                    LOG.log(Level.FINE, "nothing from {0} via {1}", new Object[] {rootNode, Arrays.toString(sp)});
+                    continue;
+                }
+                final Node leafNode = n;
+                EventQueue.invokeLater(new Runnable() {
+                    public @Override void run() {
+                        TreeNode tns[] = new TreeNode[sp.length + 1];
+                        Node n = leafNode;
+                        for (int i = sp.length; i >= 0; i--) {
+                            if (n == null) {
+                                LOG.log(Level.FINE, "lost parent node at #{0} from {1}", new Object[] {i, leafNode});
+                                return;
+                            }
+                            tns[i] = Visualizer.findVisualizer(n);
+                            n = n.getParentNode();
+                        }
+                        showPath(new TreePath(tns));
                     }
-                    tns[i] = Visualizer.findVisualizer( n );
-                    n = n.getParentNode();                    
-                }                
-                return new TreePath( tns );
-            }
-            catch ( NodeNotFoundException e ) {
-                return null;
+                });
             }
         }
-        
     }
     
 

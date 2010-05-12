@@ -79,6 +79,8 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.project.ant.ProjectLibraryProvider.ProjectLibraryArea;
+import org.netbeans.modules.project.ant.ProjectLibraryProvider.ProjectLibraryImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -92,6 +94,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -109,6 +112,7 @@ import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -117,8 +121,8 @@ import org.w3c.dom.Element;
  * Supplier of libraries declared in open projects.
  * @see "issue #44035"
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.libraries.ArealLibraryProvider.class)
-public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibraryProvider.ProjectLibraryArea,ProjectLibraryProvider.ProjectLibraryImplementation>, PropertyChangeListener, AntProjectListener {
+@ServiceProvider(service=ArealLibraryProvider.class)
+public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibraryArea,ProjectLibraryImplementation>, PropertyChangeListener, AntProjectListener {
 
     private static final String NAMESPACE = "http://www.netbeans.org/ns/ant-project-libraries/1"; // NOI18N
     private static final String EL_LIBRARIES = "libraries"; // NOI18N
@@ -436,9 +440,9 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     public static String getLibrariesLocationText(AuxiliaryConfiguration aux) {
         Element libraries = aux.getConfigurationFragment(EL_LIBRARIES, NAMESPACE, true);
         if (libraries != null) {
-            for (Element definitions : Util.findSubElements(libraries)) {
+            for (Element definitions : XMLUtil.findSubElements(libraries)) {
                 assert definitions.getLocalName().equals(EL_DEFINITIONS) : definitions;
-                String text = Util.findText(definitions);
+                String text = XMLUtil.findText(definitions);
                 assert text != null : aux;
                 return text;
             }
@@ -679,7 +683,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 try {
                     resolvedUrls.add(LibrariesSupport.resolveLibraryEntryURI(mainPropertiesFile.toURI().toURL(), u).toURL());
                 } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getLogger(ProjectLibraryProvider.class.getName()).log(Level.INFO, "#184304: " + u, ex);
                 }
             }
             return resolvedUrls;
@@ -723,6 +727,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     jarFolder = getJarFolder(entry);
                     entry = LibrariesSupport.getArchiveFile(entry);
                 } else if (entry.isAbsolute() && !"file".equals(entry.getScheme())) { // NOI18N
+                    verifyAbsoluteURI(entry);
                     value.add(entry.toString());
                     Logger.getLogger(ProjectLibraryProvider.class.getName()).fine("Setting uri=" + entry + " as content for library volume type: " + volumeType);
                     continue;
@@ -736,9 +741,10 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     // for example libs.struts.classpath=${MAVEN_REPO}/struts/struts.jar
                     s.append(entryPath.replace('\\', '/')); // NOI18N
                 } else if (entry.isAbsolute()) {
+                    verifyAbsoluteURI(entry);
                     s.append(entryPath);
                 } else {
-                    s.append("${base}/" + entryPath); // NOI18N
+                    s.append("${base}/").append(entryPath); // NOI18N
                 }
                 if (jarFolder != null) {
                     s.append("!/"); // NOI18N
@@ -756,6 +762,13 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 throw new IllegalArgumentException(x);
             }
             pcs.firePropertyChange(LibraryImplementation.PROP_CONTENT, null, null);
+        }
+        private void verifyAbsoluteURI(URI entry) throws IllegalArgumentException {
+            try {
+                entry.toURL();
+            } catch (MalformedURLException x) {
+                throw new IllegalArgumentException("#184304: " + entry + ": " + x, x);
+            }
         }
 
         public void setLocalizingBundle(String resourceName) {
@@ -1012,7 +1025,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         if (libraries == null) {
             libraries = XMLUtil.createDocument("dummy", null, null, null).createElementNS(NAMESPACE, EL_LIBRARIES); // NOI18N
         } else {
-            List<Element> elements = Util.findSubElements(libraries);
+            List<Element> elements = XMLUtil.findSubElements(libraries);
             if (elements.size() == 1) {
                 libraries.removeChild(elements.get(0));
             }

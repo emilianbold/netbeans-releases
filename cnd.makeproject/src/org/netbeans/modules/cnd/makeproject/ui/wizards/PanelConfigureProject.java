@@ -76,6 +76,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         title = NbBundle.getMessage(PanelConfigureProject.class, "LAB_ConfigureProject"); // NOI18N
     }
 
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new PanelConfigureProjectVisual(this, this.name, this.wizardTitle, this.wizardACSD, showMakefileTextField, type);
@@ -83,16 +84,18 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         return component;
     }
 
+    @Override
     public String getName() {
         return title;
     }
 
+    @Override
     public HelpCtx getHelp() {
-        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION) {
+        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION || type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
             return new HelpCtx("NewAppWizard"); // NOI18N
-        } else if (type == NewMakeProjectWizardIterator.TYPE_DYNAMIC_LIB) {
+        } else if (type == NewMakeProjectWizardIterator.TYPE_DYNAMIC_LIB || type == NewMakeProjectWizardIterator.TYPE_QT_DYNAMIC_LIB) {
             return new HelpCtx("NewDynamicLibWizard"); // NOI18N
-        } else if (type == NewMakeProjectWizardIterator.TYPE_STATIC_LIB) {
+        } else if (type == NewMakeProjectWizardIterator.TYPE_STATIC_LIB || type == NewMakeProjectWizardIterator.TYPE_QT_STATIC_LIB) {
             return new HelpCtx("NewStaticLibWizard"); // NOI18N
         } else if (type == NewMakeProjectWizardIterator.TYPE_MAKEFILE) {
             return new HelpCtx("NewMakeWizardP1"); // NOI18N
@@ -101,18 +104,21 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         }
     }
 
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -130,6 +136,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         }
     }
 
+    @Override
     public void readSettings(WizardDescriptor settings) {
         if (initialized) {
             return;
@@ -146,11 +153,14 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         initialized = true;
     }
 
+    @Override
     public void storeSettings(WizardDescriptor settings) {
         WizardDescriptor d = settings;
         component.store(d);
+        initialized = false;
     }
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }

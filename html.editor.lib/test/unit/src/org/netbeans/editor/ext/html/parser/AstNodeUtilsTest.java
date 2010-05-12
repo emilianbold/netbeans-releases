@@ -68,7 +68,7 @@ public class AstNodeUtilsTest extends TestBase {
 
     public static Test xsuite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new AstNodeUtilsTest("testGetPossibleOpenTagElements"));
+        suite.addTest(new AstNodeUtilsTest("testIssue185837"));
         return suite;
     }
 
@@ -81,7 +81,7 @@ public class AstNodeUtilsTest extends TestBase {
 
         assertDescendant(root, 0, "p", NodeType.OPEN_TAG, 0, 18);
         assertDescendant(root, 4, "a", NodeType.OPEN_TAG, 3, 14);
-        assertDescendant(root, 8, null, NodeType.TEXT, 6, 10);
+//        assertDescendant(root, 8, null, NodeType.TEXT, 6, 10);
         AstNode node = assertDescendant(root, 12, "a", NodeType.OPEN_TAG, 3, 14);
         AstNode adjusted = AstNodeUtils.getTagNode(node, 12);
 
@@ -188,6 +188,35 @@ public class AstNodeUtilsTest extends TestBase {
         //p can contain another p - will close the previous one with opt. end
         assertPossibleElements(root, 47, arr("p"), Match.CONTAINS);
 
+
+    }
+
+    public void testIssue169206() throws BadLocationException {
+        String code = "<html><head><title></title></head><body><table> </table></body></html>";
+        //             0123456789012345678901234567890123456789012345678901234
+        //             0         1         2         3         4         5
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+//        assertPossibleElements(root, 47, arr("thead","tbody","tr"), Match.CONTAINS);
+
+
+    }
+
+    public void testIssue185837() throws BadLocationException {
+        String code = "<html><head><title></title></head><body><b><del>xxx</del></b></body></html>";
+        //             0123456789012345678901234567890123456789012345678901234
+        //             0         1         2         3         4         5
+
+        AstNode root = parse(code, null);
+        assertNotNull(root);
+
+//        AstNodeUtils.dumpTree(root);
+
+        //root node allows all dtd elements
+        assertPossibleElements(root, 40, arr("del", "ins"), Match.CONTAINS);
+        assertPossibleElements(root, 43, arr("del", "ins"), Match.CONTAINS);
 
     }
 

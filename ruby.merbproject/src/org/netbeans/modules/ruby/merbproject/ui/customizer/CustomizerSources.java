@@ -41,23 +41,14 @@
 
 package org.netbeans.modules.ruby.merbproject.ui.customizer;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.IllegalCharsetNameException;
-import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import javax.swing.plaf.UIResource;
 import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import org.netbeans.modules.ruby.merbproject.MerbProject;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -118,8 +109,8 @@ public class CustomizerSources extends JPanel implements HelpCtx.Provider {
             this.originalEncoding = Charset.defaultCharset().name();
         }
         
-        this.encoding.setModel(new EncodingModel(this.originalEncoding));
-        this.encoding.setRenderer(new EncodingRenderer());
+        this.encoding.setModel(ProjectCustomizer.encodingModel(this.originalEncoding));
+        this.encoding.setRenderer(ProjectCustomizer.encodingRenderer());
         
         final String lafid = UIManager.getLookAndFeel().getID();
         if (!"Aqua".equals(lafid)) { //NOI18N
@@ -161,84 +152,6 @@ public class CustomizerSources extends JPanel implements HelpCtx.Provider {
     public HelpCtx getHelpCtx() {
         return new HelpCtx (CustomizerSources.class);
     }
-
-    private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
-        
-        public EncodingRenderer() {
-            setOpaque(true);
-        }
-        
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof Charset;
-            setName("ComboBox.listRenderer"); // NOI18N
-            setText(((Charset) value).displayName());
-            setIcon(null);
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());             
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-            return this;
-        }
-        
-        @Override
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name; // NOI18N
-        }
-        
-    }
-    
-    private static class EncodingModel extends DefaultComboBoxModel {
-        
-        public EncodingModel (String originalEncoding) {
-            Charset defEnc = null;
-            for (Charset c : Charset.availableCharsets().values()) {
-                if (c.name().equals(originalEncoding)) {
-                    defEnc = c;
-                }
-                addElement(c);
-            }
-            if (defEnc == null) {
-                //Create artificial Charset to keep the original value
-                //May happen when the project was set up on the platform
-                //which supports more encodings
-                try {
-                    defEnc = new UnknownCharset (originalEncoding);
-                    addElement(defEnc);
-                } catch (IllegalCharsetNameException e) {
-                    //The source.encoding property is completely broken
-                    Logger.getLogger(this.getClass().getName()).info("IllegalCharsetName: " + originalEncoding);
-                }
-            }
-            if (defEnc == null) {
-                defEnc = Charset.defaultCharset();
-            }
-            setSelectedItem(defEnc);
-        }
-    }
-    
-    private static class UnknownCharset extends Charset {
-        
-        UnknownCharset (String name) {
-            super (name, new String[0]);
-        }
-    
-        public boolean contains(Charset c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public CharsetDecoder newDecoder() {
-            throw new UnsupportedOperationException();
-        }
-
-        public CharsetEncoder newEncoder() {
-            throw new UnsupportedOperationException();
-        }
-}
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

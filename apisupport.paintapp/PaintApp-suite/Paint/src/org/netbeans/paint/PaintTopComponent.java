@@ -204,7 +204,7 @@ public final class PaintTopComponent extends TopComponent implements ActionListe
             String savedMessage = NbBundle.getMessage(Saver.class, "MSG_Saved", f.getName());
             StatusDisplayer.getDefault().setStatusText(savedMessage);
             FileObject fob = FileUtil.toFileObject(FileUtil.normalizeFile(f));
-            assert fob != null;
+            assert fob != null : "MasterFS excluded from suite?";
             //Store the file, so we don't show the Save dialog again
             content.add(DataObject.find(fob));
             setDisplayName(fob.getName());

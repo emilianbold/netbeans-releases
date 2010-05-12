@@ -87,7 +87,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         }
     }
     
-    void refresh() {
+    protected void refresh() {
         UIUtil.setText(jarFileValue, getProperties().getJarFile());
         needsRestart.setSelected(getBooleanProperty(SingleModuleProperties.NBM_NEEDS_RESTART));
         UIUtil.setText(homePageValue, getProperty(SingleModuleProperties.NBM_HOMEPAGE));
@@ -271,9 +271,9 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            String relPath = PropertyUtils.relativizeFile(
-                    getProperties().getProjectDirectoryFile(), chooser.getSelectedFile());
-            licenseValue.setText(relPath);
+            File f = chooser.getSelectedFile();
+            String relPath = PropertyUtils.relativizeFile(getProperties().getProjectDirectoryFile(), f);
+            licenseValue.setText(relPath != null ? relPath : f.getAbsolutePath());
         }
     }//GEN-LAST:event_browseLicense
     

@@ -9,4 +9,6 @@ catalog_1*
       invoice_id
     purchase_order_tab
       order_id
+    unrelated_tab
+      unrelated_id
 catalog_2

@@ -46,16 +46,17 @@ package org.netbeans.modules.xml.search.api;
  */
 public class SearchException extends Exception {
 
-  /**
-   * Creates a new instance of SearchException.
-   */
-  public SearchException() {}
+    /**
+     * Creates a new instance of SearchException.
+     */
+    public SearchException() {
+    }
 
-  /**
-   * Creates a new instance of SearchException.
-   * @param message the message
-   */
-  public SearchException(String message) {
-    super(message);
-  }
+    /**
+     * Creates a new instance of SearchException.
+     * @param message the message
+     */
+    public SearchException(String message) {
+        super(message);
+    }
 }

@@ -62,7 +62,6 @@ public class ExceptionsSettingsTest extends NbTestCase {
         String str = "Moje_Jmeno";
         String previous;
         ExceptionsSettings settings = new ExceptionsSettings();
-        assertNotNull(settings);
         previous = settings.getUserName();
         settings.setUserName(str);
         assertEquals(str, settings.getUserName());
@@ -73,14 +72,12 @@ public class ExceptionsSettingsTest extends NbTestCase {
     public void testPasswd() {
         char[] str = "MY_PASSWD".toCharArray();
         ExceptionsSettings settings = new ExceptionsSettings();
-        assertNotNull(settings);
         settings.setPasswd(str);
         assertArraysEquals("MY_PASSWD".toCharArray(), settings.getPasswd());
     }
 
     public void testIsGuest() {
         ExceptionsSettings settings = new ExceptionsSettings();
-        assertNotNull(settings);
         boolean previous = settings.isGuest();
         settings.setGuest(true);
         assertTrue(settings.isGuest());
@@ -92,16 +89,14 @@ public class ExceptionsSettingsTest extends NbTestCase {
 
     public void testSaveUserData(){
         ExceptionsSettings settings = new ExceptionsSettings();
-        assertNotNull(settings);
         settings.setGuest(false);
+        settings.setUserName("HALLO");
         settings.setPasswd("HALLO".toCharArray());
-        settings.setRememberPasswd(false);
-        ReportPanel panel = new ReportPanel();
+        settings.setRememberPasswd(true);
+        settings.save();
+
+        ReportPanel panel = new ReportPanel(false, new ExceptionsSettings());
         assertArraysEquals("correctly loaded", "HALLO".toCharArray(), panel.getPasswdChars());
-        assertEquals("correctly loaded", false, panel.asAGuest());
-        panel.saveUserData();
-        panel = new ReportPanel();
-        assertArraysEquals("should not save passwd", new char[0], panel.getPasswdChars());
         assertEquals("correctly loaded", false, panel.asAGuest());
     }
 

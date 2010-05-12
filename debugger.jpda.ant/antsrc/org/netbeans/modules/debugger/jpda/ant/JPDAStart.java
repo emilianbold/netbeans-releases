@@ -90,7 +90,6 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
@@ -125,7 +124,7 @@ public class JPDAStart extends Task implements Runnable {
         Pattern.compile(".*jre.lib.sunrsasign\\.jar$"),
         Pattern.compile(".*jre.classes$"),
     };
-    
+
     /** Name of the property to which the JPDA address will be set.
      * Target VM should use this address and connect to it
      */
@@ -151,22 +150,22 @@ public class JPDAStart extends Task implements Runnable {
     private String                  stopClassName = null;
     private String                  listeningCP = null;
 
-
-    // properties ..............................................................
     
+    // properties ..............................................................
+
     public void setAddressProperty (String propertyName) {
         this.addressProperty = propertyName;
     }
-    
+
     private String getAddressProperty () {
         return addressProperty;
     }
-    
+
     public void setTransport (String transport) {
         logger.fine("Set transport: '"+transport+"'");
         this.transport = transport;
     }
-    
+
     private String getTransport () {
         return transport;
     }
@@ -182,15 +181,15 @@ public class JPDAStart extends Task implements Runnable {
     public void setName (String name) {
         this.name = name;
     }
-    
+
     private String getName () {
         return name;
     }
-    
+
     public void setStopClassName (String stopClassName) {
         this.stopClassName = stopClassName;
     }
-    
+
     private String getStopClassName () {
         return stopClassName;
     }
@@ -198,34 +197,34 @@ public class JPDAStart extends Task implements Runnable {
     public void setListeningcp(String listeningCP) {
         this.listeningCP = listeningCP;
     }
-    
+
     public void addClasspath (Path path) {
         logger.fine("addClasspath("+path+")");
         if (classpath != null)
             throw new BuildException ("Only one classpath subelement is supported");
         classpath = path;
     }
-    
+
     public void addBootclasspath (Path path) {
         logger.fine("addBootclasspath("+path+")");
         if (bootclasspath != null)
             throw new BuildException ("Only one bootclasspath subelement is supported");
         bootclasspath = path;
     }
-    
+
     public void addSourcepath (Sourcepath path) {
         logger.fine("addSourcepath("+path+")");
         if (sourcepath != null)
             throw new BuildException ("Only one sourcepath subelement is supported");
         sourcepath = path;
     }
-    
+
     static void verifyPaths(Project project, Path path) {
         if (path == null) return ;
         String[] paths = path.list();
         for (int i = 0; i < paths.length; i++) {
             String pathName = project.replaceProperties(paths[i]);
-            File file = FileUtil.normalizeFile 
+            File file = FileUtil.normalizeFile
                 (project.resolveFile (pathName));
             if (!file.exists()) {
                 project.log("Non-existing path \""+pathName+"\" provided.", Project.MSG_WARN);
@@ -248,7 +247,7 @@ public class JPDAStart extends Task implements Runnable {
         }
         return null;
     }
-
+    
     // main methods ............................................................
 
     @Override
@@ -297,7 +296,7 @@ public class JPDAStart extends Task implements Runnable {
             throw new BuildException (t);
         }
     }
-    
+
     public void run () {
         logger.fine("JPDAStart.run()"); // NOI18N
         debug ("Entering synch lock"); // NOI18N
@@ -340,7 +339,7 @@ public class JPDAStart extends Task implements Runnable {
                         }
                     }
                 }
-                if (lc == null) 
+                if (lc == null)
                     throw new BuildException
                         ("No transports named " + transport + " found!");
 
@@ -427,7 +426,7 @@ public class JPDAStart extends Task implements Runnable {
                 debug ("Creating source path"); // NOI18N
                 ClassPath sourcePath = createSourcePath (
                     getProject (),
-                    classpath, 
+                    classpath,
                     plainSourcepath,
                     isSourcePathExclusive
                 );
@@ -443,22 +442,22 @@ public class JPDAStart extends Task implements Runnable {
                     logger.fine("    >> sourcePath : " + sourcePath); // NOI18N
                     logger.fine("    >> jdkSourcePath : " + jdkSourcePath); // NOI18N
                 }
-                
+
                 Breakpoint first = null;
-                
+
                 if (stopClassName != null && stopClassName.length() > 0) {
                     logger.fine(
                             "create method breakpoint, class name = " + // NOI18N
                             stopClassName
                         );
                     first = createBreakpoint (stopClassName);
-                }                
-                
+                }
+
                 debug ("Debugger started"); // NOI18N
                 logger.fine("start listening at " + address); // NOI18N
-                
+
                 final Map properties = new HashMap ();
-                // uncomment to implement smart stepping with step-outs 
+                // uncomment to implement smart stepping with step-outs
                 // rather than step-ins (for J2ME)
                 // props.put("SS_ACTION_STEPOUT", Boolean.TRUE);
                 properties.put ("sourcepath", sourcePath); // NOI18N
@@ -478,7 +477,7 @@ public class JPDAStart extends Task implements Runnable {
 
                 final ListeningConnector flc = lc;
                 final WeakReference<Session> startedSessionRef[] = new WeakReference[] { new WeakReference<Session>(null) };
-                
+
                 Map<URL, ArtifactsUpdated> listeners = new HashMap<URL, ArtifactsUpdated>();
                 List<Breakpoint> artificialBreakpoints = new LinkedList<Breakpoint>();
                 if (listeningCP != null) {
@@ -520,7 +519,7 @@ public class JPDAStart extends Task implements Runnable {
                 });
 
                 getProject().addBuildListener(new BuildListener() {
-                    
+
                     public void messageLogged(BuildEvent event) {}
                     public void taskStarted(BuildEvent event) { }
                     public void taskFinished(BuildEvent event) {}
@@ -566,7 +565,7 @@ public class JPDAStart extends Task implements Runnable {
                             s.kill();
                         }
                     }
-                    
+
                 });
             } catch (java.io.IOException ioex) {
                 lock[1] = ioex;
@@ -582,9 +581,9 @@ public class JPDAStart extends Task implements Runnable {
         }
     } // run ()
 
-    
+
     // support methods .........................................................
-    
+
     private MethodBreakpoint createBreakpoint (String stopClassName) {
         MethodBreakpoint breakpoint = MethodBreakpoint.create (
             stopClassName,
@@ -640,13 +639,13 @@ public class JPDAStart extends Task implements Runnable {
     private final static void debug (String msg) {
         if (!logger.isLoggable(Level.FINER)) return;
         logger.finer (
-            new Date() + " [" + Thread.currentThread().getName() + 
+            new Date() + " [" + Thread.currentThread().getName() +
             "] - " + msg
         );
     }
 
     static ClassPath createSourcePath (
-        Project project, 
+        Project project,
         Path classpath,
         Path sourcepath,
         boolean isSourcePathExclusive
@@ -656,7 +655,7 @@ public class JPDAStart extends Task implements Runnable {
         }
         ClassPath cp = convertToSourcePath (project, classpath, null);
         ClassPath sp = convertToClassPath (project, sourcepath);
-        
+
         ClassPath sourcePath = ClassPathSupport.createProxyClassPath (
             new ClassPath[] {cp, sp}
         );
@@ -664,7 +663,7 @@ public class JPDAStart extends Task implements Runnable {
     }
 
     static ClassPath createJDKSourcePath (
-        Project project, 
+        Project project,
         Path bootclasspath
     ) {
         if (bootclasspath == null) {
@@ -679,7 +678,7 @@ public class JPDAStart extends Task implements Runnable {
             return convertToSourcePath (project, bootclasspath, BOOT_CLASSPATH_WARNING_FILTER);
         }
     }
-    
+
     private static ClassPath convertToClassPath (Project project, Path path) {
         String[] paths = path == null ? new String [0] : path.list ();
         List l = new ArrayList ();
@@ -695,7 +694,7 @@ public class JPDAStart extends Task implements Runnable {
         URL[] urls = (URL[]) l.toArray (new URL [l.size ()]);
         return ClassPathSupport.createClassPath (urls);
     }
-    
+
     /**
      * This method uses SourceForBinaryQuery to find sources for each
      * path item and returns them as ClassPath instance. All path items for which
@@ -709,7 +708,7 @@ public class JPDAStart extends Task implements Runnable {
         int i, k = paths.length;
         for (i = 0; i < k; i++) {
             String pathName = project.replaceProperties(paths[i]);
-            File file = FileUtil.normalizeFile 
+            File file = FileUtil.normalizeFile
                 (project.resolveFile (pathName));
             if (!isValid (file, project)) continue;
             URL url = fileToURL (file, project, warningFilters);
@@ -735,7 +734,7 @@ public class JPDAStart extends Task implements Runnable {
                     try {
                         url = fos [j].getURL ();
                     } catch (FileStateInvalidException ex) {
-                        ErrorManager.getDefault ().notify 
+                        ErrorManager.getDefault ().notify
                             (ErrorManager.EXCEPTION, ex);
                         continue;
                     }
@@ -803,7 +802,7 @@ public class JPDAStart extends Task implements Runnable {
         return true;
     }
 
-    
+
     // innerclasses ............................................................
 
     public static class Sourcepath extends Path {
@@ -854,16 +853,17 @@ public class JPDAStart extends Task implements Runnable {
         }
 
     }
-    
+
     private static class Listener extends DebuggerManagerAdapter {
-        
-        private Set                 debuggers = new HashSet ();
+
+        private Set<DebuggerEngine> engines = new HashSet<DebuggerEngine>();
 
         private Breakpoint first;
         private final List<Breakpoint> artificalBreakpoints;
         private final Map<URL, ArtifactsUpdated> listeners;
         private final WeakReference<Session> startedSessionRef[];
-        
+        private boolean enginesCheckDone = false;
+
         private Listener(Breakpoint first,
                          List<Breakpoint> artificalBreakpoints,
                          Map<URL, ArtifactsUpdated> listeners,
@@ -873,12 +873,12 @@ public class JPDAStart extends Task implements Runnable {
             this.listeners = listeners;
             this.startedSessionRef = startedSessionRef;
         }
-        
+
         @Override
         public void propertyChange (final PropertyChangeEvent e) {
             if (JPDADebugger.PROP_STATE.equals(e.getPropertyName ())) {
                 int state = ((Integer) e.getNewValue ()).intValue ();
-                if (state == JPDADebugger.STATE_STOPPED) {
+                if (state == JPDADebugger.STATE_STOPPED || state == JPDADebugger.STATE_DISCONNECTED) {
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
                             if (first != null) {
@@ -898,7 +898,7 @@ public class JPDAStart extends Task implements Runnable {
                 DebuggerManager.PROP_DEBUGGER_ENGINES,
                 this
             );
-            RequestProcessor.getDefault ().post (new Runnable () {
+            RequestProcessor.getDefault().post (new Runnable () {
                 public void run () {
                     if (artificalBreakpoints != null) {
                         for (Breakpoint b : artificalBreakpoints) {
@@ -916,26 +916,26 @@ public class JPDAStart extends Task implements Runnable {
                 }
             });
         }
-        
+
         @Override
         public void engineAdded (DebuggerEngine engine) {
             // Consider only engines from the started session.
-            Session s;
+            Session session;
             synchronized (startedSessionRef) {
-                s = startedSessionRef[0].get();
+                session = startedSessionRef[0].get();
             }
-            if (s == null) {
-                return ;
-            }
-            boolean haveEngine = false;
-            for (String l : s.getSupportedLanguages()) {
-                if (engine.equals(s.getEngineForLanguage(l))) {
-                    haveEngine = true;
-                    break;
+            if (session != null) {
+                // perform check
+                boolean hasEngine = false;
+                for (String l : session.getSupportedLanguages()) {
+                    if (engine.equals(session.getEngineForLanguage(l))) {
+                        hasEngine = true;
+                        break;
+                    }
                 }
-            }
-            if (!haveEngine) {
-                return ;
+                if (!hasEngine) {
+                    return;
+                }
             }
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             if (debugger == null) return;
@@ -943,18 +943,41 @@ public class JPDAStart extends Task implements Runnable {
                 JPDADebugger.PROP_STATE,
                 this
             );
-            debuggers.add (debugger);
+            engines.add(engine);
         }
-        
+
         @Override
         public void engineRemoved (DebuggerEngine engine) {
+            Session session;
+            synchronized (startedSessionRef) {
+                session = startedSessionRef[0].get();
+            }
+            if (session != null && !enginesCheckDone) {
+                // check each registered engine if it belong to the session
+                enginesCheckDone = true;
+                List<DebuggerEngine> list = new ArrayList<DebuggerEngine>(engines);
+                for (DebuggerEngine eng : list) {
+                    boolean hasEngine = false;
+                    for (String l : session.getSupportedLanguages()) {
+                        if (engine.equals(session.getEngineForLanguage(l))) {
+                            hasEngine = true;
+                            break;
+                        }
+                    }
+                    if (!hasEngine) {
+                        engines.remove(eng);
+                    }
+                }
+            }
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             if (debugger == null) return;
-            if (debuggers.remove (debugger) && debuggers.isEmpty()) {
+            if (engines.remove(engine)) {
                 debugger.removePropertyChangeListener (
                     JPDADebugger.PROP_STATE,
                     this
                 );
+            }
+            if (engines.isEmpty()) {
                 dispose();
             }
         }

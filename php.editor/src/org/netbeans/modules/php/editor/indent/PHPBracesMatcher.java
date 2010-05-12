@@ -135,22 +135,22 @@ public final class PHPBracesMatcher implements BracesMatcher {
                 
                 OffsetRange r;
                 if (LexUtilities.textEquals(token.text(), '(')) {
-                    r = LexUtilities.findFwd(doc, ts, '(', ')');
+                    r = LexUtilities.findFwd(doc, ts, PHPTokenId.PHP_TOKEN, '(', PHPTokenId.PHP_TOKEN, ')');
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (LexUtilities.textEquals(token.text(), ')')) {
-                    r = LexUtilities.findBwd(doc, ts, '(', ')');
+                    r = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_TOKEN, '(', PHPTokenId.PHP_TOKEN, ')');
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == PHPTokenId.PHP_CURLY_OPEN) {
-                    r= LexUtilities.findFwd(doc, ts, '{', '}');
+                    r= LexUtilities.findFwd(doc, ts, PHPTokenId.PHP_CURLY_OPEN ,'{', PHPTokenId.PHP_CURLY_CLOSE, '}');
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == PHPTokenId.PHP_CURLY_CLOSE) {
-                    r = LexUtilities.findBwd(doc, ts, '{', '}');
+                    r = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_CURLY_OPEN, '{', PHPTokenId.PHP_CURLY_CLOSE, '}');
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (LexUtilities.textEquals(token.text(), '[')) {
-                    r = LexUtilities.findFwd(doc, ts, '[', ']');
+                    r = LexUtilities.findFwd(doc, ts, PHPTokenId.PHP_TOKEN, '[', PHPTokenId.PHP_TOKEN, ']');
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (LexUtilities.textEquals(token.text(), ']')) {
-                    r = LexUtilities.findBwd(doc, ts, '[', ']');
+                    r = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_TOKEN, '[', PHPTokenId.PHP_TOKEN, ']');
                     return new int [] {r.getStart(), r.getEnd() };
                 }
             }

@@ -50,6 +50,7 @@ public final class FetchHostInfoTask implements Computable<ExecutionEnvironment,
 
     private static final java.util.logging.Logger log = Logger.getInstance();
 
+    @Override
     public final HostInfo compute(ExecutionEnvironment execEnv) throws InterruptedException {
         final Collection<? extends HostInfoProvider> providers = Lookup.getDefault().lookupAll(HostInfoProvider.class);
         HostInfo result = null;
@@ -58,12 +59,8 @@ public final class FetchHostInfoTask implements Computable<ExecutionEnvironment,
             try {
                 result = provider.getHostInfo(execEnv);
             } catch (IOException ex) {
-                if (log.isLoggable(Level.FINE)) {
-                    String msg = "Exception while recieving hostinfo for " + execEnv.toString(); // NOI18N
-                    log.log(Level.FINE, msg, ex);
-                    System.err.println(msg);
-                    ex.printStackTrace();
-                }
+                // TODO: should we throw exception instead?
+                log.log(Level.INFO, "Exception while receiving hostinfo for " + execEnv.toString(), ex); //NOI18N
             }
             if (result != null) {
                 break;

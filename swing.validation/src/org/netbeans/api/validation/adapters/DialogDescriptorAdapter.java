@@ -55,10 +55,12 @@ public final class DialogDescriptorAdapter implements ValidationUI {
         this.d = d;
     }
 
+    @Override
     public void clearProblem() {
         d.setValid(true);
     }
 
+    @Override
     public void setProblem(Problem problem) {
         d.setValid (!problem.isFatal());
     }

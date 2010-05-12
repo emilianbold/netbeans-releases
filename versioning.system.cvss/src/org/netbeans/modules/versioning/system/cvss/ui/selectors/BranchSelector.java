@@ -122,7 +122,7 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
         rootNode = new AbstractNode(rootKids);
 
         // load on background
-        RequestProcessor.getDefault().post(this);
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(this);
 
         try {
             NodeOperation2 op = new NodeOperation2();

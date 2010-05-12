@@ -83,6 +83,7 @@ import org.openide.awt.Mnemonics;
  */
 public class ParametersPanel extends JPanel implements ProgressListener, ChangeListener, InvalidationListener {
     private static final Logger LOGGER = Logger.getLogger(ParametersPanel.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(ParametersPanel.class.getName(), 1, false, false);
     /** @see #result */
     private final Object RESULT_LOCK = new Object();
     // refactoring elements that will be returned as a result of showDialog method
@@ -480,7 +481,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         
         dialog.pack();
         
-        RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor.Task task = RP.post(new Runnable() {
             public void run() {
                 try {
                     problem = rui.getRefactoring().preCheck();

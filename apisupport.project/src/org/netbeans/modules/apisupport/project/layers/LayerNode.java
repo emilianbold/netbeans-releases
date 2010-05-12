@@ -206,19 +206,20 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
         private void initialize(boolean showContextNode) {
             try {
                 FileObject layer = handle.getLayerFile();
-                p = FileOwnerQuery.getOwner(layer);
-                if (p == null) { // #175861: inside JAR etc.
+                Project prj = FileOwnerQuery.getOwner(layer);
+                if (prj == null) { // #175861: inside JAR etc.
                     setKeys(Collections.<LayerChildren.KeyType>emptySet());
                     return;
                 }
+                p = prj;
                 try {
-                    cp = createClasspath(p);
+                    cp = createClasspath(prj);
                 } catch (IOException e) {
                     Util.err.notify(ErrorManager.INFORMATIONAL, e);
                 }
                 // just this project's source path, whole cp is too slow
-                ClassPathProvider cpp = p.getLookup().lookup(ClassPathProvider.class);
-                ClassPath srcPath = cpp.findClassPath(p.getProjectDirectory(), ClassPath.SOURCE);
+                ClassPathProvider cpp = prj.getLookup().lookup(ClassPathProvider.class);
+                ClassPath srcPath = cpp.findClassPath(prj.getProjectDirectory(), ClassPath.SOURCE);
                 layerfs = handle.layer(false, srcPath);
                 if( !showContextNode ) {
                     setKeys(Collections.singleton(KeyType.RAW));

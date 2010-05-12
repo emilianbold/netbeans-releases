@@ -68,5 +68,5 @@ public abstract class BugzillaCommand {
     public String getErrorMessage() {
         return errorMessage;
     }
-
+    
 }

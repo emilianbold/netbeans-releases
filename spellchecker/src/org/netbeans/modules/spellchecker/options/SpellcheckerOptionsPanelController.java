@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.netbeans.spi.options.OptionsPanelController.SubRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -51,16 +52,13 @@ import org.openide.util.Lookup;
  *
  * @author Jan Lahoda
  */
+@SubRegistration(displayName="#TITLE_OptionsPanel")
 public class SpellcheckerOptionsPanelController extends OptionsPanelController {
 
     private SpellcheckerOptionsPanel comp;
     private boolean valid = true;
 
-    /**
-     * Creates a new instance of SpellcheckerOptionsPanelController
-     */
-    public SpellcheckerOptionsPanelController() {
-    }
+    public SpellcheckerOptionsPanelController() {}
 
     public void update() {
         getComponentImpl().update();

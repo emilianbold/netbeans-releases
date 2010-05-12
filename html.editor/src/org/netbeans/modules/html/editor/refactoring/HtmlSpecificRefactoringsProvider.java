@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.html.editor.refactoring;
 
+import java.awt.Cursor;
+import java.awt.Frame;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
@@ -54,6 +57,9 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -70,6 +76,14 @@ public class HtmlSpecificRefactoringsProvider extends HtmlSpecificActionsImpleme
         if(ec == null) {
             return false;
         }
+
+        //workaround for bug 185814 -  LowPerformance took 3917 ms >>>
+        //do not call blocking ec.getOpenedPanes() if the document is not loaded
+        if(ec.getDocument() == null) {
+            return false;
+        }
+        //<<<
+
         JEditorPane[] panes = ec.getOpenedPanes();
         if(panes == null || panes.length == 0) {
             return false;
@@ -98,21 +112,58 @@ public class HtmlSpecificRefactoringsProvider extends HtmlSpecificActionsImpleme
         if(pane == null) {
             return ;
         }
-        Document doc = ec.getDocument();
-
-//        FileObject file = lookup.lookup(FileObject.class);
-        FileObject file = DataLoadersBridge.getDefault().getFileObject(doc);
+        final Document doc = ec.getDocument();
+        final FileObject file = DataLoadersBridge.getDefault().getFileObject(doc);
         assert file != null;
 
         //widen the context range to tags' start/end if only partially selected
-        OffsetRange adjusted = adjustContextRange(doc, pane.getSelectionStart(), pane.getSelectionEnd());
+        final OffsetRange adjusted = adjustContextRange(doc, pane.getSelectionStart(), pane.getSelectionEnd());
 
-        try {
-            RefactoringContext context = RefactoringContext.create(file, doc, adjusted.getStart(), adjusted.getEnd());
-            UI.openRefactoringUI(new ExtractInlinedStyleRefactoringUI(context));
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        //RefactoringContext.create() may take a long time, should run off the AWT thread
+        //show wait cursor
+        final Frame main = WindowManager.getDefault().getMainWindow();
+        final Runnable setDefaultCursorTask = new Runnable() {
+
+            @Override
+            public void run() {
+                main.setCursor(null);
+            }
+
+        };
+
+        main.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    //create the refactoring context - time consuming task
+                    final RefactoringContext context = RefactoringContext.create(file, doc, adjusted.getStart(), adjusted.getEnd());
+
+                    //open the UI in AWT
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            try {
+                                UI.openRefactoringUI(new ExtractInlinedStyleRefactoringUI(context));
+                            } finally {
+                                //set the original cursor
+                                setDefaultCursorTask.run();
+                            }
+                        }
+                        
+                    });
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (Throwable t) {
+                    //set the original cursor if the task fails so the subsequent
+                    //swing task doesn't run
+                    SwingUtilities.invokeLater(setDefaultCursorTask);
+                }
+            }
+
+        });
         
     }
 
@@ -124,6 +175,12 @@ public class HtmlSpecificRefactoringsProvider extends HtmlSpecificActionsImpleme
             @Override
             public void run() {
                 TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, from);
+                if(ts == null) {
+                    //no html token sequence at the offset, try to 
+                    //TODO possibly try to travese the top level sequence backward
+                    //and try to find an html embedding.
+                    return ;
+                }
                 Token<HTMLTokenId> openTag = Utils.findTagOpenToken(ts);
                 if(openTag == null) {
                     return ;

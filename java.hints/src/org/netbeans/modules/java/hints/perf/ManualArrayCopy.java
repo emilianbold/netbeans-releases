@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="performance")
+@Hint(category="performance", suppressWarnings={"ManualArrayToCollectionCopy", "", "ManualArrayToCollectionCopy"})
 public class ManualArrayCopy {
 
 

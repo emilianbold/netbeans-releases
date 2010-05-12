@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,6 +42,7 @@ package org.netbeans.modules.spellchecker;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Locale;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.spellchecker.spi.dictionary.ValidityType;
 
@@ -59,7 +60,7 @@ public class DictionaryImplTest extends NbTestCase {
         clearWorkDir();
         
         File source = new File(getWorkDir(), "dictionary.cache");
-        DictionaryImpl d = new DictionaryImpl(source);
+        DictionaryImpl d = new DictionaryImpl(source, Locale.ENGLISH);
         
         assertEquals(ValidityType.INVALID, d.validateWord("dddd"));
         assertEquals(Collections.emptyList(), d.findProposals("dddd"));
@@ -81,4 +82,33 @@ public class DictionaryImplTest extends NbTestCase {
         assertEquals(Collections.emptyList(), d.findProposals("ddddd"));
     }
     
+    public void testCapitalized() throws Exception {
+        clearWorkDir();
+
+        File source = new File(getWorkDir(), "dictionary.cache");
+        DictionaryImpl d = new DictionaryImpl(source, Locale.ENGLISH);
+
+        d.addEntry("Foo");
+        d.addEntry("bar");
+
+        assertEquals(ValidityType.VALID, d.validateWord("Foo"));
+    }
+
+    public void testSorting() throws Exception {
+        clearWorkDir();
+
+        File source = new File(getWorkDir(), "dictionary.cache");
+        DictionaryImpl d = new DictionaryImpl(source, Locale.ENGLISH);
+
+        d.addEntry("Zzz");
+        d.addEntry("yyy");
+        d.addEntry("xxx");
+        d.addEntry("ttt");
+
+        assertEquals(ValidityType.VALID, d.validateWord("Zzz"));
+        assertEquals(ValidityType.VALID, d.validateWord("yyy"));
+        assertEquals(ValidityType.VALID, d.validateWord("xxx"));
+        assertEquals(ValidityType.VALID, d.validateWord("ttt"));
+    }
+
 }

@@ -59,6 +59,10 @@ public final class MakeProjectType implements AntBasedProjectType {
     public static final String MAKE_DEP_PROJECTS = "make-dep-projects"; // NOI18N
     public static final String MAKE_DEP_PROJECT = "make-dep-project"; // NOI18N
     public static final String SOURCE_ENCODING_TAG = "sourceEncoding"; // NOI18N
+    public final static String SOURCE_ROOT_LIST_ELEMENT = "sourceRootList"; // NOI18N
+    public final static String SOURCE_ROOT_ELEMENT = "sourceRootElem"; // NOI18N
+    public final static String CONFIGURATION_LIST_ELEMENT = "confList"; // NOI18N
+    public final static String CONFIGURATION_ELEMENT = "confElem"; // NOI18N
     
     /**
      * Do nothing, just a service.
@@ -66,20 +70,85 @@ public final class MakeProjectType implements AntBasedProjectType {
      */
     public MakeProjectType() {}
     
+    @Override
     public String getType() {
         return TYPE;
     }
     
+    @Override
     public Project createProject(AntProjectHelper helper) throws IOException {
         return new MakeProject(helper);
     }
 
+    @Override
     public String getPrimaryConfigurationDataElementName(boolean shared) {
         return shared ? PROJECT_CONFIGURATION_NAME : PRIVATE_CONFIGURATION_NAME;
     }
     
+    @Override
     public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
         return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
     }
-    
+
+    /**
+     * Get the path in the system filesystem where other modules could place
+     * objects to include them in the projects' lookup
+     * @return A path in the system filesystem
+     */
+    public String getLookupMergerPath() {
+        return projectLayerPath() + "/Lookup"; //NOI18N
+    }
+
+    /**
+     * System filesystem path for modules to place Node factories to include additional
+     * nodes under this project
+     * @return A path
+     */
+    public String nodeFactoryPath() {
+        return projectLayerPath() + "/Nodes"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add children to the Important Files subnode
+     * @return A path
+     */
+    public String importantFilesPath() {
+        return projectLayerPath() + "/ImportantFiles"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add customizer panels
+     * @return A path
+     */
+    public String customizerPath() {
+        return projectLayerPath() + "/Customizer"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add make project specific actions
+     * @return A path
+     */
+    public String projectActionsPath() {
+        return projectLayerPath() + "/Actions"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add make project folders' specific actions
+     * @return A path
+     */
+    public String folderActionsPath() {
+        return projectLayerPath() + "/ActionsFolder"; //NOI18N
+    }
+
+    /**
+     * System fs path for other modules to add make project external folders' specific actions
+     * @return A path
+     */
+    public String extFolderActionsPath() {
+        return projectLayerPath() + "/ActionsExtFolder"; //NOI18N
+    }
+
+    private String projectLayerPath() {
+        return "Projects/org-netbeans-modules-cnd-makeproject"; //NOI18N
+    }
 }

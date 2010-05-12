@@ -70,6 +70,7 @@ public class CCCompletionTest extends CndBaseTestSuite {
         this.addTestSuite(TemplateInstantiationTestCase.class);
         this.addTestSuite(AutosTestCase.class);
         this.addTestSuite(FunctionCallsTestCase.class);
+        this.addTestSuite(NonGlobalCompletionTestCase.class);
     }
 
     public static Test suite() {

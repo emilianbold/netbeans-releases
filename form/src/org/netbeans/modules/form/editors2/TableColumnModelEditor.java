@@ -512,6 +512,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
     }
 
     public static class FormTableColumn {
+        private int index; // just a suffix of names of sub-properties
         private int minWidth;
         private int prefWidth;
         private int maxWidth;
@@ -521,6 +522,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
         private Property renderer;
 
         public FormTableColumn(RADProperty prop, int index) {
+            this.index = index;
             minWidth = -1;
             prefWidth = -1;
             maxWidth = -1;
@@ -528,6 +530,10 @@ public class TableColumnModelEditor extends PropertyEditorSupport
             title = new Property(prop, "title"+index, String.class, null, null); // NOI18N
             editor = new Property(prop, "editor"+index, TableCellEditor.class, null, null); // NOI18N
             renderer = new Property(prop, "renderer"+index, TableCellRenderer.class, null, null); // NOI18N
+        }
+
+        public int getIndex() {
+            return index;
         }
 
         public int getMinWidth() {

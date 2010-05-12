@@ -82,7 +82,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -151,7 +151,7 @@ public class CsmContextUtilities {
 
     private static List<CsmMacro> findMacros(CsmContext context, CharSequence strPrefix,
             boolean match, boolean caseSensitive, int kind) {
-        strPrefix = CharSequenceKey.create(strPrefix);
+        strPrefix = CharSequences.create(strPrefix);
         List<CsmMacro> res = new ArrayList<CsmMacro>();
         for (Iterator itContext = context.iterator(); itContext.hasNext();) {
             CsmContext.CsmContextEntry entry = (CsmContext.CsmContextEntry) itContext.next();

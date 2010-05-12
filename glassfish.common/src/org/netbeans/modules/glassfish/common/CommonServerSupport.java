@@ -242,6 +242,9 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     
     public synchronized String getDomainsRoot() {
         String retVal = properties.get(DOMAINS_FOLDER_ATTR);
+        if (null == retVal) {
+            return null;
+        }
         File candidate = new File(retVal);
         if (candidate.exists() && !Utils.canWrite(candidate)) {
             // we need to do some surgury here...
@@ -350,6 +353,8 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return recognizers;
     }
     
+    private static final RequestProcessor RP = new RequestProcessor("CommonServerSupport - stop/refresh",5); // NOI18N
+
     @Override
     public Future<OperationState> stopServer(final OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.stopServer called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
@@ -375,7 +380,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             }
             return task;
         }
-        RequestProcessor.getDefault().post(task);
+        RP.post(task);
         return task;
     }
 
@@ -622,7 +627,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         // server state from stopped or running states -- leave stopping or starting
         // states alone.
         if(refreshRunning.compareAndSet(false, true)) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     // Can block for up to a few seconds...

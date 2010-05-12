@@ -270,28 +270,15 @@ public final class PtyExecutor {
         return wrapperCmd;
     }
 
-    /**
-     * Construct a ProcessBuilder from the given Program.
-     * @param program
-     * @return
-     */
-    private static ProcessBuilder processBuilder(Program program) {
-        ProcessBuilder pb = new ProcessBuilder(program.command());
-        pb.directory(program.directory());
-        pb.environment().putAll(program.environment());
-        // LATER pb.redirectErrorStream(program.redirectErrorStream());
-        return pb;
-    }
-
     public final PtyProcess start(Program program, Pty pty) {
         Process process;
         int pid = -1;
         try {
-            List<String> wrappedCmd = wrappedCmd(program.command(), pty);
-            // OLD program.processBuilder().command(wrappedCmd);
-            program.command(wrappedCmd);
-            // OLD process = program.processBuilder().start();
-            process = processBuilder(program).start();
+	    ProcessBuilder pb = new ProcessBuilder(wrappedCmd(program.command(), pty));
+	    pb.directory(program.directory());
+	    pb.environment().putAll(program.environment());
+	    // LATER pb.redirectErrorStream(program.redirectErrorStream());
+	    process = pb.start();
         } catch (IOException ex) {
             Logger.getLogger(Program.class.getName()).log(Level.SEVERE, null, ex);
             return null;

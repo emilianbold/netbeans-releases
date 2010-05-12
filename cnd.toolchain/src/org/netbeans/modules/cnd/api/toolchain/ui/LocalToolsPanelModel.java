@@ -47,17 +47,13 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     
     private String compilerSetName;
     private String selectedCompilerSetName;
-//    private String cCompilerName;
-//    private String cppCompilerName;
-//    private String fortranCompilerName;
-//    private String gdbPath;
-//    private boolean gdbEnabled;
     private boolean enableDevelopmentHostChange = true;
     private boolean makeRequired;
     private boolean gdbRequired;
     private boolean cRequired;
     private boolean cppRequired;
     private boolean fortranRequired;
+    private boolean qmakeRequired;
     private boolean asRequired;
     private boolean showBuildTools;
     private boolean showDebugTools;
@@ -66,30 +62,17 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     public LocalToolsPanelModel() {
         compilerSetName = null;
         selectedCompilerSetName = null;
-//        cCompilerName = null;
-//        cppCompilerName = null;
-//        fortranCompilerName = null;
-//        gdbPath = null;
-//        gdbEnabled = super.isGdbEnabled();
         makeRequired = false;
         gdbRequired = false;
         cRequired = false;
         cppRequired = false;
         fortranRequired = false;
+        qmakeRequired = false;
         asRequired = false;
         showBuildTools = false;
         showDebugTools = false;
         enableRequiredCompilersCB = true;
     }
-    
-//    @Override
-//    public boolean isGdbEnabled() {
-//        return gdbEnabled;
-//    }
-//    
-//    public void setGdbEnabled(boolean enabled) {
-//        // gdbEnabled = enabled;
-//    }
     
     @Override
     public void setCompilerSetName(String name) {
@@ -113,53 +96,6 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     public String getSelectedCompilerSetName() {
         return selectedCompilerSetName;
     }
-    
-//    protected void setCompilerSetDirectories(String directories) {
-//        CppSettings.getDefault().setCompilerSetDirectories(directories);
-//    }
-//    
-//    protected String getCCompilerName() {
-//        if (cCompilerName == null) {
-//            cCompilerName = CppSettings.getDefault().getCCompilerName();
-//        }
-//        return cCompilerName;
-//    }
-//    
-//    protected void setCCompilerName(String name) {
-//        cCompilerName = name;
-//    }
-//    
-//    protected String getCppCompilerName() {
-//        if (cppCompilerName == null) {
-//            cppCompilerName = CppSettings.getDefault().getCppCompilerName();
-//        }
-//        return cppCompilerName;
-//    }
-//    
-//    protected void setCppCompilerName(String name) {
-//        cppCompilerName = name;
-//    }
-//    
-//    protected String getFortranCompilerName() {
-//        if (fortranCompilerName == null) {
-//            fortranCompilerName = CppSettings.getDefault().getFortranCompilerName();
-//        }
-//        return fortranCompilerName;
-//    }
-//    
-//    protected void setFortranCompilerName(String name) {
-//        fortranCompilerName = name;
-//    }
-//    
-//    @Override
-//    public String getGdbPath() {
-//        return gdbPath;
-//    }
-//    
-//    @Override
-//    public void setGdbPath(String gdbPath) {
-//        this.gdbPath = gdbPath;
-//    }
     
     @Override
     public boolean isMakeRequired() {
@@ -209,6 +145,16 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
     @Override
     public void setFortranRequired(boolean enabled) {
         fortranRequired = enabled;
+    }
+
+    @Override
+    public void setQMakeRequired(boolean value) {
+        qmakeRequired = value;
+    }
+
+    @Override
+    public boolean isQMakeRequired() {
+        return qmakeRequired;
     }
 
     @Override

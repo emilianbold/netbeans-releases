@@ -22,8 +22,14 @@ package org.netbeans.modules.xml.xpath.ext;
 /**
  * Represents a node test in a location path step.
  * 
- * @author Enrico Lelina
+ * @author Nikita Krjukov
  * @version 
  */
-public abstract class StepNodeTest {
+public interface StepNodeTest {
+
+    /**
+     * Generates correct XPath expression text.
+     * @return
+     */
+    String getExpressionString();
 }

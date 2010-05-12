@@ -65,7 +65,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -241,6 +240,8 @@ public class ProjectsRootNode extends AbstractNode {
     // XXX Needs to listen to project rename
     // However project rename is currently disabled so it is not a big deal
     static class ProjectChildren extends Children.Keys<ProjectChildren.Pair> implements ChangeListener, PropertyChangeListener {
+
+        static final RequestProcessor RP = new RequestProcessor(ProjectChildren.class);
         
         private java.util.Map <Sources,Reference<Project>> sources2projects = new WeakHashMap<Sources,Reference<Project>>();
         
@@ -350,7 +351,11 @@ public class ProjectsRootNode extends AbstractNode {
         
         public void propertyChange( PropertyChangeEvent e ) {
             if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
-                setKeys( getKeys() );
+                RP.post(new Runnable() {
+                    public @Override void run() {
+                        setKeys(getKeys());
+                    }
+                });
             }
         }
         
@@ -370,8 +375,8 @@ public class ProjectsRootNode extends AbstractNode {
             }
             
             // Fix for 50259, callers sometimes hold locks
-            SwingUtilities.invokeLater( new Runnable() {
-                public void run() {
+            RP.post(new Runnable() {
+                public @Override void run() {
                     refresh(project);
                 }
             } );
@@ -385,7 +390,7 @@ public class ProjectsRootNode extends AbstractNode {
         
         public Collection<Pair> getKeys() {
             List<Project> projects = Arrays.asList( OpenProjectList.getDefault().getOpenProjects() );
-            Collections.sort( projects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
+            Collections.sort(projects, OpenProjectList.projectByDisplayName());
             
             List<Pair> dirs = Arrays.asList( new Pair[projects.size()] );
             
@@ -479,10 +484,10 @@ public class ProjectsRootNode extends AbstractNode {
             this.ch = ch;
             this.pair = p;
             this.logicalView = logicalView;
-            OpenProjectList.log(Level.FINE, "BadgingNode init {0}", toStringForLog()); // NOI18N
+            OpenProjectList.log(Level.FINER, "BadgingNode init {0}", toStringForLog()); // NOI18N
             OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
             setProjectFiles();
-            OpenProjectList.log(Level.FINE, "BadgingNode finished {0}", toStringForLog()); // NOI18N
+            OpenProjectList.log(Level.FINER, "BadgingNode finished {0}", toStringForLog()); // NOI18N
         }
         
         private static Lookup badgingLookup(Node n, boolean addSearchInfo) {

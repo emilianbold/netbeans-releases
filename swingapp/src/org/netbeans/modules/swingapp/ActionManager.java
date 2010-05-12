@@ -74,6 +74,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
+import java.beans.Introspector;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -379,7 +380,7 @@ public class ActionManager {
                 lineObj.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
             }
         } catch (Exception ex) {
-            Logger.getLogger(ActionMethodTask.class.getName()).log(Level.INFO, null, ex);
+            Logger.getLogger(ActionManager.class.getName()).log(Level.INFO, null, ex);
         }
     }
 
@@ -759,9 +760,9 @@ public class ActionManager {
                         prop.setValue(null);
                         prop.setValue(action);
                     } catch (IllegalAccessException ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(ActionManager.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     } catch (InvocationTargetException ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(ActionManager.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
             }
@@ -1112,7 +1113,7 @@ public class ActionManager {
                     FormModel mod = getFormModel(formfile);
                     deleteAction(action, mod);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(ActionManager.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             }
         }
@@ -1280,8 +1281,10 @@ public class ActionManager {
                         if(el.getModifiers().contains(Modifier.PUBLIC)) {
                             if(TypeKind.BOOLEAN.equals(el.getReturnType().getKind())) {
                                 String name = el.getSimpleName().toString();
-                                if(name.startsWith("is")) {
-                                    props.add(name.substring(2,3).toLowerCase()+name.substring(3));//el.getSimpleName().toString().substring(3));
+                                if(name.startsWith("is") && name.length()>2) { // NOI18N
+                                    props.add(Introspector.decapitalize(name.substring(2)));
+                                } else if (name.startsWith("get") && name.length()>3) { // NOI18N
+                                    props.add(Introspector.decapitalize(name.substring(3)));
                                 }
                             }
                         }
@@ -1290,6 +1293,7 @@ public class ActionManager {
                 }
             }.execute();
         } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return new ArrayList<String>();
         }
     }

@@ -54,8 +54,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
     }
 
     @Override
-    public Assembler createCopy() {
-        return new Assembler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
+    public Assembler createCopy(CompilerFlavor flavor) {
+        return new Assembler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath());
     }
 
     public static Assembler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {

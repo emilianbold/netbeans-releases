@@ -285,7 +285,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     private Acceptor whitespaceAcceptor;
 
-    private final ArrayList<Syntax> syntaxList = new ArrayList<Syntax>();
+//    private final ArrayList<Syntax> syntaxList = new ArrayList<Syntax>();
 
     /** Root element of line elements representation */
     LineRootElement lineRootElement;
@@ -518,6 +518,15 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         putProperty(MIME_TYPE_PROP, new MimeTypePropertyEvaluator(this));
         putProperty(VERSION_PROP, new AtomicLong());
         putProperty(LAST_MODIFICATION_TIMESTAMP_PROP, new AtomicLong());
+        putProperty(SimpleValueNames.TAB_SIZE, new BaseDocument_PropertyHandler() {
+            public @Override Object setValue(Object value) {
+                return null;
+            }
+
+            public @Override Object getValue() {
+                return getTabSize();
+            }
+        });
         putProperty(PropertyChangeSupport.class, new PropertyChangeSupport(this));
 
         lineRootElement = new LineRootElement(this);
@@ -574,25 +583,31 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     }
 
     Syntax getFreeSyntax() {
-        synchronized (syntaxList) {
-            int cnt = syntaxList.size();
-            if (cnt > 0) {
-                return syntaxList.remove(cnt - 1);
-            } else {
-                EditorKit kit = getEditorKit();
-                if (kit instanceof BaseKit) {
-                    return ((BaseKit) kit).createSyntax(this);
-                } else {
-                    return new BaseKit.DefaultSyntax();
-                }
-            }
+        EditorKit kit = getEditorKit();
+        if (kit instanceof BaseKit) {
+            return ((BaseKit) kit).createSyntax(this);
+        } else {
+            return new BaseKit.DefaultSyntax();
         }
+//        synchronized (syntaxList) {
+//            int cnt = syntaxList.size();
+//            if (cnt > 0) {
+//                return syntaxList.remove(cnt - 1);
+//            } else {
+//                EditorKit kit = getEditorKit();
+//                if (kit instanceof BaseKit) {
+//                    return ((BaseKit) kit).createSyntax(this);
+//                } else {
+//                    return new BaseKit.DefaultSyntax();
+//                }
+//            }
+//        }
     }
 
     void releaseSyntax(Syntax syntax) {
-        synchronized (syntaxList) {
-            syntaxList.add(syntax);
-        }
+//        synchronized (syntaxList) {
+//            syntaxList.add(syntax);
+//        }
     }
 
     /**
@@ -981,7 +996,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         boolean notifyMod;
         if (notifyModifyStatus == null) { // not in atomic lock
             notifyModifyStatus = new NotifyModifyStatus (this);
-            STATUS.set (notifyModifyStatus);
+            setThreadStatusVar(notifyModifyStatus);
             notifyModify(notifyModifyStatus);
             notifyMod = true;
         } else {
@@ -990,7 +1005,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
         if (notifyModifyStatus.isModificationVetoed()) {
             if (notifyMod) {
-                STATUS.set (null);
+                setThreadStatusVar(null);
             }
             BadLocationException ble = new BadLocationException(vetoExceptionText, offset);
             PropertyVetoException veto = notifyModifyStatus.veto;
@@ -1015,10 +1030,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      */
     void notifyModifyCheckEnd(boolean modFinished) {
         NotifyModifyStatus notifyModifyStatus = (NotifyModifyStatus)STATUS.get();
-        STATUS.set (null);
+        setThreadStatusVar(null);
         if (!modFinished) {
             notifyUnmodify(notifyModifyStatus);
         }
+    }
+
+    private void setThreadStatusVar(Object value) {
+        STATUS.set(value);
     }
 
     /** This method is called automatically before the document
@@ -1722,7 +1741,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (notifyModifyStatus == null) {
                 // Notify that the modification will be done prior locking
                 notifyModifyStatus = new NotifyModifyStatus (this);
-                STATUS.set (notifyModifyStatus);
+                setThreadStatusVar(notifyModifyStatus);
                 //assert atomicDepth == 0 : "New status only on depth 0, but: " + atomicDepth; // NOI18N
             } else {
                 //assert atomicDepth > 0 : "When there is a status: " + notifyModifyStatus+ " there needs to be a lot as well: " + atomicDepth; // NOI18N
@@ -1758,6 +1777,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     }
     
     final void atomicUnlockImpl () {
+        atomicUnlockImpl(true);
+    }
+
+    final void atomicUnlockImpl (boolean doNotifyModify) {
         boolean modsDone = false;
         boolean lastAtomic = false;
         synchronized (this) {
@@ -1766,8 +1789,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 throw new IllegalStateException("atomicUnlock() without atomicLock()"); // NOI18N
             }
 
-
             if (--atomicDepth == 0) { // lock really ended
+                AtomicCompoundEdit localAtomicEdits = null;
                 lastAtomic = true;
                 fireAtomicUnlock(atomicLockEventInstance);
 
@@ -1775,30 +1798,36 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                     modsDone = true;
                     // Some edits performed
                     atomicEdits.end();
-                    fireUndoableEditUpdate(new UndoableEditEvent(this, atomicEdits));
-                    atomicEdits = null;
+                    localAtomicEdits = atomicEdits;
+                    atomicEdits = null; // Clear the var to allow doc.runAtomic() in undoableEditHappened()
                 }
 
                 if (modsUndoneOrRedone) { // Check whether any modifications were undone or redone
                     modsUndoneOrRedone = false;
                     modsDone = true;
                 }
+
+                if (localAtomicEdits != null) {
+                    fireUndoableEditUpdate(new UndoableEditEvent(this, localAtomicEdits));
+                }
                 atomicLockListenerList = null;
             }
         }
 
-        // Notify unmodification if there were document modifications
-        // inside the atomic section
-        // or in case when in undo/redo because in such case
-        // no insertString() or remove() would be done (just undoing
-        // physical changes in the buffer and firing document listeners)
-        if (modsDone) {
-            NotifyModifyStatus notifyModifyStatus = (NotifyModifyStatus)STATUS.get();
-            notifyModify(notifyModifyStatus);
-        }
+        if (doNotifyModify) {
+            // Notify unmodification if there were document modifications
+            // inside the atomic section
+            // or in case when in undo/redo because in such case
+            // no insertString() or remove() would be done (just undoing
+            // physical changes in the buffer and firing document listeners)
+            if (modsDone) {
+                NotifyModifyStatus notifyModifyStatus = (NotifyModifyStatus) STATUS.get();
+                notifyModify(notifyModifyStatus);
+            }
 
-        if (lastAtomic) {
-            STATUS.set (null);
+            if (lastAtomic) {
+                setThreadStatusVar(null);
+            }
         }
     }
 

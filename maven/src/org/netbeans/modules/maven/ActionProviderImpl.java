@@ -45,22 +45,22 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.execute.ModelRunConfig;
@@ -73,21 +73,26 @@ import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.MavenExecutor;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
 import org.netbeans.modules.maven.options.MavenSettings;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
+import org.netbeans.modules.maven.nodes.MavenProjectNode;
 import org.netbeans.modules.maven.operations.Operations;
+import org.netbeans.modules.maven.problems.ProblemReporterImpl;
+import org.netbeans.modules.maven.problems.ProblemsPanel;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
+import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.execution.ExecutorTask;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
@@ -208,7 +213,7 @@ public class ActionProviderImpl implements ActionProvider {
         
         RunConfig rc = ActionToGoalUtils.createRunConfig(convertedAction, project, enhanced);
         if (rc == null) {
-            Logger.getLogger(ActionProviderImpl.class.getName()).log(Level.INFO, "No handling for action:" + action + ". Ignoring."); //NOI18N
+            Logger.getLogger(ActionProviderImpl.class.getName()).log(Level.INFO, "No handling for action: {0}. Ignoring.", action); //NOI18N
 
         } else {
             if (rc instanceof BeanRunConfig) {
@@ -221,11 +226,11 @@ public class ActionProviderImpl implements ActionProvider {
                 }
             }
             setupTaskName(action, rc, lookup);
-            runGoal(lookup, rc, true);
+            runGoal(rc, true);
         }
     }
 
-    private void runGoal(Lookup lookup, RunConfig config, boolean checkShowDialog) {
+    private void runGoal(RunConfig config, boolean checkShowDialog) {
         // save all edited files.. maybe finetune for project's files only, however that would fail for multiprojects..
         LifecycleManager.getDefault().saveAll();
 
@@ -340,26 +345,11 @@ public class ActionProviderImpl implements ActionProvider {
         return ActionToGoalUtils.isActionEnable(convertedAction, project, lookup);
     }
 
-    public Action createBasicMavenAction(String name, String action) {
-        return new BasicAction(name, action);
-    }
-
-    public Action createCustomMavenAction(String name, NetbeansActionMapping mapping) {
-        return createCustomMavenAction(name, mapping, true);
-    }
-
     public Action createCustomMavenAction(String name, NetbeansActionMapping mapping, boolean showUI) {
         return new CustomAction(name, mapping, showUI);
     }
 
-    public Action createCustomPopupAction() {
-        return new CustomPopupActions();
-    }
-
-    public Action createProfilesPopupAction() {
-        return new ProfilesPopupActions();
-    }
-
+    /*
     private final static class BasicAction extends AbstractAction implements ContextAwareAction {
 
         private String actionid;
@@ -401,6 +391,7 @@ public class ActionProviderImpl implements ActionProvider {
             return new BasicAction((String) getValue(Action.NAME), actionid, actionContext);
         }
     }
+     */
 
     private final class CustomAction extends AbstractAction {
 
@@ -421,7 +412,7 @@ public class ActionProviderImpl implements ActionProvider {
                 rc.setTaskDisplayName(NbBundle.getMessage(ActionProviderImpl.class, "TXT_Build"));
 
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
-                runGoal(Lookup.EMPTY, rc, true); //NOI18N
+                runGoal(rc, true); //NOI18N
 
                 return;
             }
@@ -447,10 +438,8 @@ public class ActionProviderImpl implements ActionProvider {
                         String tit = "CUSTOM-" + pnl.isRememberedAs(); //NOI18N
 
                         mapping.setActionName(tit);
-                        Iterator it = mappings.getActions().iterator();
                         NetbeansActionMapping exist = null;
-                        while (it.hasNext()) {
-                            NetbeansActionMapping m = (NetbeansActionMapping) it.next();
+                        for (NetbeansActionMapping m : mappings.getActions()) {
                             if (tit.equals(m.getActionName())) {
                                 exist = m;
                                 break;
@@ -476,12 +465,45 @@ public class ActionProviderImpl implements ActionProvider {
                 rc.setTaskDisplayName(NbBundle.getMessage(ActionProviderImpl.class, "TXT_Build"));
 
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
-                runGoal(Lookup.EMPTY, rc, false); //NOI18N
+                runGoal(rc, false); //NOI18N
 
             }
         }
     }
 
+    // XXX should this be an API somewhere?
+    private static abstract class ConditionallyShownAction extends AbstractAction implements ContextAwareAction {
+
+        protected ConditionallyShownAction() {
+            setEnabled(false);
+            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        }
+
+        public final @Override void actionPerformed(ActionEvent e) {
+            assert false;
+        }
+
+        protected abstract Action forProject(Project p);
+
+        public final @Override Action createContextAwareInstance(Lookup actionContext) {
+            Collection<? extends Project> projects = actionContext.lookupAll(Project.class);
+            if (projects.size() != 1) {
+                return this;
+            }
+            Action a = forProject(projects.iterator().next());
+            return a != null ? a : this;
+        }
+
+    }
+
+    public static Action customPopupActions() {
+        return new ConditionallyShownAction() {
+            protected @Override Action forProject(Project p) {
+                ActionProviderImpl ap = p.getLookup().lookup(ActionProviderImpl.class);
+                return ap != null ? ap.new CustomPopupActions() : null;
+            }
+        };
+    }
     private final class CustomPopupActions extends AbstractAction implements Presenter.Popup {
 
         private CustomPopupActions() {
@@ -512,7 +534,7 @@ public class ActionProviderImpl implements ActionProvider {
                         item.setText(mapp.getDisplayName() == null ? mapp.getActionName() : mapp.getDisplayName());
                         menu.add(item);
                     }
-                    menu.add(new JMenuItem(createCustomMavenAction(NbBundle.getMessage(ActionProviderImpl.class, "LBL_Custom_run_goals"), new NetbeansActionMapping())));
+                    menu.add(new JMenuItem(createCustomMavenAction(NbBundle.getMessage(ActionProviderImpl.class, "LBL_Custom_run_goals"), new NetbeansActionMapping(), true)));
                     SwingUtilities.invokeLater(new Runnable() {
 
                         @Override
@@ -531,6 +553,66 @@ public class ActionProviderImpl implements ActionProvider {
         }
     }
 
+    public static Action closeSubprojectsAction() {
+        return new ConditionallyShownAction() {
+            protected @Override Action forProject(Project p) {
+                NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
+                if (project != null && NbMavenProject.TYPE_POM.equalsIgnoreCase(project.getProjectWatcher().getPackagingType())) {
+                    return new CloseSubprojectsAction(project);
+                } else {
+                    return null;
+                }
+            }
+        };
+    }
+    private static class CloseSubprojectsAction extends AbstractAction {
+        private final NbMavenProjectImpl project;
+        public CloseSubprojectsAction(NbMavenProjectImpl project) {
+            this.project = project;
+            putValue(Action.NAME, NbBundle.getMessage(MavenProjectNode.class, "ACT_CloseRequired"));
+        }
+        public @Override void actionPerformed(ActionEvent e) {
+            SubprojectProvider subs = project.getLookup().lookup(SubprojectProvider.class);
+            Set<? extends Project> lst = subs.getSubprojects();
+            Project[] arr = lst.toArray(new Project[lst.size()]);
+            OpenProjects.getDefault().close(arr);
+        }
+    }
+
+    public static Action showProblemsAction() {
+        return new ConditionallyShownAction() {
+            protected @Override Action forProject(Project p) {
+                ProblemReporterImpl reporter = p.getLookup().lookup(ProblemReporterImpl.class);
+                return reporter != null && reporter.getReports().size() > 0 ? new ShowProblemsAction(reporter) : null;
+            }
+        };
+    }
+    private static class ShowProblemsAction extends AbstractAction {
+        private final ProblemReporterImpl reporter;
+        public ShowProblemsAction(ProblemReporterImpl reporter) {
+            this.reporter = reporter;
+            putValue(Action.NAME, NbBundle.getMessage(MavenProjectNode.class, "ACT_ShowProblems"));
+        }
+        public @Override void actionPerformed(ActionEvent arg0) {
+            JButton butt = new JButton();
+            ProblemsPanel panel = new ProblemsPanel(reporter);
+            panel.setActionButton(butt);
+            JButton close = new JButton();
+            panel.setCloseButton(close);
+            close.setText(NbBundle.getMessage(MavenProjectNode.class, "BTN_Close"));
+            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(MavenProjectNode.class, "TIT_Show_Problems"));
+            dd.setOptions(new Object[] { butt,  close});
+            dd.setClosingOptions(new Object[] { close });
+            dd.setModal(false);
+            DialogDisplayer.getDefault().notify(dd);
+        }
+    }
+
+    public static Action buildWithDependenciesAction() {
+        return ProjectSensitiveActions.projectCommandAction("build-with-dependencies", NbBundle.getMessage(MavenProjectNode.class, "ACT_Build_Deps"), null);
+    }
+
+    /*
     private final class ProfilesPopupActions extends AbstractAction implements Presenter.Popup {
 
         private ProfilesPopupActions() {
@@ -548,7 +630,7 @@ public class ActionProviderImpl implements ActionProvider {
             final JMenuItem loading = new JMenuItem(NbBundle.getMessage(ActionProviderImpl.class, "LBL_Loading", new Object[]{}));
 
             menu.add(loading);
-            /*using lazy construction strategy*/
+            // using lazy construction strategy
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
@@ -595,4 +677,6 @@ public class ActionProviderImpl implements ActionProvider {
             return menu;
         }
     }
+    */
+            
 }

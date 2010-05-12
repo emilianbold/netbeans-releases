@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.grammar;
 
+import hidden.org.codehaus.plexus.util.StringUtils;
 import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
 import java.io.File;
 import java.io.FileFilter;
@@ -429,16 +430,34 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             FileObject fo = getEnvironment().getFileObject();
             if (fo != null) {
                 File dir = FileUtil.toFile(fo).getParentFile();  
-            
+                String prefix = virtualTextCtx.getCurrentPrefix();
+                boolean endingSlash = prefix.endsWith("/");
+                String[] elms = StringUtils.split(prefix, "/");
+                String lastElement = "";
+                for (int i = 0; i < elms.length; i++) {
+                    if ("..".equals(elms[i])) { //NOI18N
+                        dir = dir != null ? dir.getParentFile() : null;
+                    } else if (i < elms.length - (endingSlash ? 0 : 1)) {
+                        dir = dir != null ? new File(dir, elms[i]) : null;
+                    } else {
+                        lastElement = elms[i];
+                    }
+                }
+                prefix = lastElement != null ? lastElement : prefix;
+                if (dir == null || !dir.exists() || !dir.isDirectory()) {
+                    return null;
+                }
+                
                 File[] modules = dir.listFiles(new FileFilter() {
+                    @Override
                     public boolean accept(File pathname) {
                          return pathname.isDirectory() && new File(pathname, "pom.xml").exists(); //NOI18N
                     }
                 });
                 Collection<GrammarResult> elems = new ArrayList<GrammarResult>();
                 for (int i = 0; i < modules.length; i++) {
-                    if (modules[i].getName().startsWith(virtualTextCtx.getCurrentPrefix())) {
-                        elems.add(new MyTextElement(modules[i].getName(), virtualTextCtx.getCurrentPrefix()));
+                    if (modules[i].getName().startsWith(prefix)) {
+                        elems.add(new MyTextElement(modules[i].getName(), prefix));
                     }
                 }
                 return Collections.enumeration(elems);

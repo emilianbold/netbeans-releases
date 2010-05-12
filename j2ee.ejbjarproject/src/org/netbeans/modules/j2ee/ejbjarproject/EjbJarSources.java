@@ -149,7 +149,7 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
         sourcesHelper.addNonSourceRoot(BUILD_DIR_PROP);
         sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
         
-        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, false);
         sgmi = sourcesHelper.createSourceGroupModifierImplementation();
         return sourcesHelper.createSources();
     }

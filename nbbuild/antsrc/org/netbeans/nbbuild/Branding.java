@@ -100,7 +100,7 @@ public final class Branding extends Task {
         // Cannot just call matchPath on the pathAbs because a relative pattern will *never* match an absolute path!
         String path = pathAbs.substring(prefix.length());
         for (String exclude : DirectoryScanner.getDefaultExcludes()) {
-            if (SelectorUtils.matchPath(exclude, path)) {
+            if (SelectorUtils.matchPath(exclude.replace('/', File.separatorChar), path)) {
                 return true;
             }
         }

@@ -46,12 +46,12 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -86,32 +86,32 @@ final class FreeformSources implements Sources, AntProjectListener {
     private Sources initSources() {
         SourcesHelper h = new SourcesHelper(project, project.helper(), project.evaluator());
         Element genldata = project.getPrimaryConfigurationData();
-        Element foldersE = Util.findElement(genldata, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
+        Element foldersE = XMLUtil.findElement(genldata, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
         if (foldersE != null) {
-            for (Element folderE : Util.findSubElements(foldersE)) {
-                Element locationE = Util.findElement(folderE, "location", FreeformProjectType.NS_GENERAL); // NOI18N
-                String location = Util.findText(locationE);
+            for (Element folderE : XMLUtil.findSubElements(foldersE)) {
+                Element locationE = XMLUtil.findElement(folderE, "location", FreeformProjectType.NS_GENERAL); // NOI18N
+                String location = XMLUtil.findText(locationE);
                 if (folderE.getLocalName().equals("build-folder")) { // NOI18N
                     h.addNonSourceRoot(location);
                 } else if (folderE.getLocalName().equals("build-file")) { // NOI18N
                     h.addOwnedFile(location);
                 } else {
                     assert folderE.getLocalName().equals("source-folder") : folderE;
-                    Element nameE = Util.findElement(folderE, "label", FreeformProjectType.NS_GENERAL); // NOI18N
-                    String name = Util.findText(nameE);
-                    Element typeE = Util.findElement(folderE, "type", FreeformProjectType.NS_GENERAL); // NOI18N
+                    Element nameE = XMLUtil.findElement(folderE, "label", FreeformProjectType.NS_GENERAL); // NOI18N
+                    String name = XMLUtil.findText(nameE);
+                    Element typeE = XMLUtil.findElement(folderE, "type", FreeformProjectType.NS_GENERAL); // NOI18N
                     String includes = null;
-                    Element includesE = Util.findElement(folderE, "includes", FreeformProjectType.NS_GENERAL); // NOI18N
+                    Element includesE = XMLUtil.findElement(folderE, "includes", FreeformProjectType.NS_GENERAL); // NOI18N
                     if (includesE != null) {
-                        includes = Util.findText(includesE);
+                        includes = XMLUtil.findText(includesE);
                     }
                     String excludes = null;
-                    Element excludesE = Util.findElement(folderE, "excludes", FreeformProjectType.NS_GENERAL); // NOI18N
+                    Element excludesE = XMLUtil.findElement(folderE, "excludes", FreeformProjectType.NS_GENERAL); // NOI18N
                     if (excludesE != null) {
-                        excludes = Util.findText(excludesE);
+                        excludes = XMLUtil.findText(excludesE);
                     }
                     if (typeE != null) {
-                        String type = Util.findText(typeE);
+                        String type = XMLUtil.findText(typeE);
                         h.addTypedSourceRoot(location, includes, excludes, type, name, null, null);
                     } else {
                         h.addPrincipalSourceRoot(location, includes, excludes, name, null, null);

@@ -48,6 +48,7 @@ import java.sql.Clob;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -64,7 +65,7 @@ import org.openide.util.NbBundle;
  */
 public class DBReadWriteHelper {
 
-    private static Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
+    private static final Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
 
     @SuppressWarnings(value = "fallthrough") // NOI18N
     public static Object readResultSet(ResultSet rs, DBColumn col, int index) throws SQLException {
@@ -80,7 +81,7 @@ public class DBReadWriteHelper {
                 if (rs.wasNull()) {
                     return null;
                 } else {
-                    return new Boolean(bdata);
+                    return bdata;
                 }
             }
             case Types.TIME: {
@@ -200,19 +201,34 @@ public class DBReadWriteHelper {
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY: {
-                byte[] bdata = rs.getBytes(index);
-                if (rs.wasNull()) {
-                    return null;
-                } else {
-                    Byte[] internal = new Byte[bdata.length];
-                    for (int i = 0; i < bdata.length; i++) {
-                        internal[i] = new Byte(bdata[i]);
+                try {
+                    byte[] bdata = rs.getBytes(index);
+                    if (rs.wasNull()) {
+                        return null;
+                    } else {
+                        Byte[] internal = new Byte[bdata.length];
+                        for (int i = 0; i < bdata.length; i++) {
+                            internal[i] = new Byte(bdata[i]);
+                        }
+                        String bStr = BinaryToStringConverter.convertToString(internal, BinaryToStringConverter.BINARY, true);
+                        if (colType == Types.BIT && col.getPrecision() != 0 && col.getPrecision() < bStr.length()) {
+                            return bStr.substring(bStr.length() - col.getPrecision());
+                        }
+                        return bStr;
                     }
-                    String bStr = BinaryToStringConverter.convertToString(internal, BinaryToStringConverter.BINARY, true);
-                    if (colType == Types.BIT && col.getPrecision() != 0 && col.getPrecision() < bStr.length()) {
-                        return bStr.substring(bStr.length() - col.getPrecision());
+                } catch (SQLDataException x) {
+                    // wrong mapping JavaDB JDBC Type -4
+                    try {
+                        String sdata = rs.getString(index);
+                        if (rs.wasNull()) {
+                            return null;
+                        } else {
+                            return sdata;
+                        }
+                    } catch (SQLException ex) {
+                        // throw the original SQLDataException intead of this one
+                        throw x;
                     }
-                    return bStr;
                 }
             }
             case Types.BLOB: {

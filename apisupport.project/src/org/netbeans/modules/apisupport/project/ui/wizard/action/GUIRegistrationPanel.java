@@ -361,9 +361,12 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             final LayerItemPresenter parent) {
         DefaultComboBoxModel newModel = new DefaultComboBoxModel();
         LayerItemPresenter previous = null;
-        for (int i = 0; i < files.length; i++) {
+        for (FileObject file : files) {
+            if (file.getNameExt().endsWith(LayerUtils.HIDDEN)) {
+                continue;
+            }
             LayerItemPresenter current = new LayerItemPresenter(
-                    files[i],
+                    file,
                     parent.getFileObject());
             newModel.addElement(createPosition(previous, current));
             previous = current;

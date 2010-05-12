@@ -67,8 +67,10 @@ public final class OpenKenaiProjectAction extends AbstractAction {
 
         final JButton open = new JButton(NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectAction.OpenFromKenai"));
         open.setDefaultCapable(true);
+        open.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectAction.OpenFromKenai"));
 
         JButton cancel = new JButton(NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectAction.Cancel"));
+        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectAction.Cancel"));
 
         KenaiSearchPanel openPanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.OPEN, true, kenai!=null?kenai:Utilities.getPreferredKenai());
         openPanel.addPropertyChangeListener(new PropertyChangeListener() {

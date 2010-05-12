@@ -121,7 +121,7 @@ public class WindowsSupportTest {
         String cygwinPath = "/cygdrive/c/Documents and Settings";
         WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertToCygwinPath(winPath);
-        assertEquals(cygwinPath, result);
+        assertEquals(cygwinPath.toLowerCase(), result.toLowerCase());
     }
 
     /**
@@ -236,21 +236,5 @@ public class WindowsSupportTest {
 //        assertEquals(expResult, result);
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getEnv method, of class WindowsSupport.
-     */
-    @Test
-    public void testGetEnv() {
-        System.out.println("--- getEnv ---");
-
-        if (na()) {
-            return;
-        }
-
-        WindowsSupport instance = WindowsSupport.getInstance();
-        Map result = instance.getEnv();
-        assertNotNull(result);
     }
 }

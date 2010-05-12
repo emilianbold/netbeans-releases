@@ -98,7 +98,7 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
                                 InputSource input = new InputSource(is);
                                 input.setSystemId(config.getURL().toString());
                                 Element root = XMLUtil.parse(input, false, true, /*XXX*/null, null).getDocumentElement();
-                                return findElement(root, elementName, namespace);
+                                return XMLUtil.findElement(root, elementName, namespace);
                             } finally {
                                 is.close();
                             }
@@ -163,7 +163,7 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
                             doc = XMLUtil.createDocument("auxiliary-configuration", "http://www.netbeans.org/ns/auxiliary-configuration/1", null, null);
                         }
                         Element root = doc.getDocumentElement();
-                        Element oldFragment = findElement(root, elementName, namespace);
+                        Element oldFragment = XMLUtil.findElement(root, elementName, namespace);
                         if (oldFragment != null) {
                             root.removeChild(oldFragment);
                         }
@@ -230,7 +230,7 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
                             is.close();
                         }
                         Element root = doc.getDocumentElement();
-                        Element toRemove = findElement(root, elementName, namespace);
+                        Element toRemove = XMLUtil.findElement(root, elementName, namespace);
                         if (toRemove != null) {
                             root.removeChild(toRemove);
                             if (root.getElementsByTagName("*").getLength() > 0) {
@@ -274,25 +274,6 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
                 return result;
             }
         });
-    }
-
-    private static Element findElement(Element parent, String name, String namespace) {
-        Element result = null;
-        NodeList l = parent.getChildNodes();
-        int len = l.getLength();
-        for (int i = 0; i < len; i++) {
-            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                Element el = (Element) l.item(i);
-                if (name.equals(el.getLocalName()) && namespace.equals(el.getNamespaceURI())) {
-                    if (result == null) {
-                        result = el;
-                    } else {
-                        return null;
-                    }
-                }
-            }
-        }
-        return result;
     }
 
 }

@@ -64,7 +64,10 @@ public final class CustomizerRootNodeProvider {
 
         // Add nodes from providers register via services
         for (CustomizerNodeProvider provider : getCustomizerNodeProviders()) {
-            list.add(provider.factoryCreate(lookup));
+            CustomizerNode node = provider.factoryCreate(lookup);
+            if (node != null) {
+                list.add(node);
+            }
         }
         return list;
     }

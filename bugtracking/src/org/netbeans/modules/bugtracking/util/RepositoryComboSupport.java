@@ -55,6 +55,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -168,6 +169,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         }
         return repositoryComboSupport;
     }
+    private final RequestProcessor rp;
 
     private RepositoryComboSupport(JComboBox comboBox, Repository defaultRepo,
                                                        File refFile,
@@ -186,6 +188,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         defaultRepoComputationPending = (defaultRepo == null);
 
         progress.set(Progress.INITIALIZED);
+        rp = BugtrackingManager.getInstance().getRequestProcessor();
     }
 
     private void checkOldComboBoxModel(JComboBox comboBox) {
@@ -237,7 +240,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
         updateProgress(Progress.STARTED);
 
-        RequestProcessor.getDefault().post(this);
+        rp.post(this);
     }
 
     private void shutdown() {
@@ -289,6 +292,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         private DisplayabilityListener(Component triggerComponent) {
             this.triggerComponent = triggerComponent;
         }
+        @Override
         public void hierarchyChanged(HierarchyEvent e) {
             if ((e.getChangeFlags() & DISPLAYABILITY_CHANGED) == 0) {
                 return;
@@ -319,6 +323,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      * @param  e  {@code ItemEvent} that holds information about the
      *            (de)selection event
      */
+    @Override
     public void itemStateChanged(ItemEvent e) {
         if ((e.getStateChange() == ItemEvent.DESELECTED)
                 && (e.getItem() == SELECT_REPOSITORY)
@@ -338,18 +343,21 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
                 comboBox.removeItemListener(this);
 
                 comboBox.addPopupMenuListener(new PopupMenuListener() {
+                    @Override
                     public void popupMenuCanceled(PopupMenuEvent e) {
                         comboBox.removePopupMenuListener(this);
 
                         /* Restore the item selection listener: */
                         comboBox.addItemListener(RepositoryComboSupport.this);
                     }
+                    @Override
                     public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                         comboBox.removePopupMenuListener(this);
 
                         /* Restore the item selection listener: */
                         comboBox.addItemListener(RepositoryComboSupport.this);
                     }
+                    @Override
                     public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                         comboBox.removePopupMenuListener(this);
                         if (comboBox.getSelectedItem() != SELECT_REPOSITORY) {
@@ -367,8 +375,9 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         }
     }
 
+    @Override
     public void run() {
-        if (RequestProcessor.getDefault().isRequestProcessorThread()) {
+        if (rp.isRequestProcessorThread()) {
             loadRepositories();
 
             if (defaultRepoComputationPending) {
@@ -498,11 +507,14 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         if (comboBox.isPopupVisible()) {
             LOG.finest(" - the popup is visible - deferred");           //NOI18N
             comboBox.addPopupMenuListener(new PopupMenuListener() {
+                @Override
                 public void popupMenuWillBecomeVisible(PopupMenuEvent e) { }
+                @Override
                 public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                     LOG.finer("popupMenuWillBecomeInvisible()");        //NOI18N
                     comboBox.removePopupMenuListener(this);
                 }
+                @Override
                 public void popupMenuCanceled(PopupMenuEvent e) {
                     LOG.finer("popupMenuCanceled()");                   //NOI18N
                     comboBox.removePopupMenuListener(this);
@@ -567,9 +579,10 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
     public void refreshRepositoryModel() {
         LOG.finer("refreshRepositoryModel()");                          //NOI18N
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp.post(new Runnable() {
+            @Override
             public void run() {
-                if (RequestProcessor.getDefault().isRequestProcessorThread()) {
+                if (rp.isRequestProcessorThread()) {
                     loadRepositories();
                     EventQueue.invokeLater(this);
                 } else {
@@ -581,7 +594,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     }
 
     private void loadRepositories() {
-        assert RequestProcessor.getDefault().isRequestProcessorThread();
+        assert rp.isRequestProcessorThread();
         LOG.finer("loadRepositories()");                                //NOI18N
         updateProgress(Progress.WILL_LOAD_REPOS);
 
@@ -598,7 +611,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     }
 
     private void findDefaultRepository() {
-        assert RequestProcessor.getDefault().isRequestProcessorThread();
+        assert rp.isRequestProcessorThread();
         LOG.finer("findDefaultRepository()");                           //NOI18N
         updateProgress(Progress.WILL_DETERMINE_DEFAULT_REPO);
 
@@ -666,6 +679,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
             assert !EventQueue.isDispatchThread();
 
             Runnable doneNotifier = new Runnable() {
+                @Override
                 public void run() {
                     updateProgress(Progress.THREAD_PROGRESS_DONE);
                 }

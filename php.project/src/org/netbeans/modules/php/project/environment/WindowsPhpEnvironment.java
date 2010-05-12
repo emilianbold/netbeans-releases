@@ -44,6 +44,7 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.util.NbBundle;
@@ -56,6 +57,7 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
     private static final String PHP = "php.exe"; // NOI18N
     private static final String XAMPP = "xampp"; // NOI18N
     private static final FilenameFilter XAMPP_FILENAME_FILTER = new FilenameFilter() {
+        @Override
         public boolean accept(File dir, String name) {
             return name.toLowerCase().startsWith(XAMPP);
         }
@@ -73,9 +75,9 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
         }
         File htDocs = null;
         for (File root : fsRoots) {
-            LOGGER.fine("FS root: " + root);
+            LOGGER.log(Level.FINE, "FS root: {0}", root);
             if (isFloppy(root)) {
-                LOGGER.fine("Skipping floppy: " + root);
+                LOGGER.log(Level.FINE, "Skipping floppy: {0}", root);
                 continue;
             }
             // standard apache installation
@@ -119,7 +121,7 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
 
     private static boolean isFloppy(File root) {
         String absolutePath = root.getAbsolutePath();
-        LOGGER.fine("Testing floppy on " + absolutePath);
+        LOGGER.log(Level.FINE, "Testing floppy on {0}", absolutePath);
         return absolutePath.toLowerCase().startsWith("a:") // NOI18N
                 || absolutePath.toLowerCase().startsWith("b:"); // NOI18N
     }

@@ -87,7 +87,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-openide-actions-FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="300"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
                     <file name="org-openide-actions-PropertiesAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>

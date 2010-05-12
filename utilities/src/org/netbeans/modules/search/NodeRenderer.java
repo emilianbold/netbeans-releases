@@ -138,8 +138,8 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
         Image iconImage;
         boolean checked;
         
-        if (isRoot) {
-            assert value instanceof ResultTreeModel;
+        if (isRoot &&
+            value instanceof ResultTreeModel ) { // #179796
             
             final ResultTreeModel resultTreeModel = (ResultTreeModel) value;
             text = resultTreeModel.getRootDisplayName();

@@ -81,13 +81,13 @@ final class SunStudioDataProvider extends SSStackDataProvider
 
         for (FunctionCallTreeTableNode node : nodes) {
             FunctionCallWithMetric call = node.getDeligator();
-            List<Object> data = new ArrayList<Object>();
+            List<Object> data = new ArrayList<Object>(columns.size());
             for (Column c : columns) {
                 if (c.getColumnName().equals("name")) { // NOI18N
                     data.add(call.getFunction().getName());
-                    continue;
+                } else {
+                    data.add(call.getMetricValue(c.getColumnName()));
                 }
-                data.add(call.getMetricValue(c.getColumnName()));
             }
 
             result.add(new DataRow(columnNames, data));

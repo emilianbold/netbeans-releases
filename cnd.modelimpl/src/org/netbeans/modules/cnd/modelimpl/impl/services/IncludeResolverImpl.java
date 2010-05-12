@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -159,16 +160,20 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
     public String getIncludeDirective(CsmFile currentFile, CsmObject item) {
         if (CsmKindUtilities.isOffsetable(item)) {
             CsmFile file = ((CsmOffsetable) item).getContainingFile();
-            if (file.equals(currentFile) || file.isHeaderFile()) {
-                return getIncludeDerectiveByFile(currentFile, item).replace('\\', '/'); // NOI18N;
-            } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
-                Collection<CsmOffsetableDeclaration> decls = file.getProject().findDeclarations(((CsmVariable) item).getUniqueName() + " (EXTERN)"); // NOI18N
-                if (!decls.isEmpty()) {
-                    return getIncludeDerectiveByFile(currentFile, decls.iterator().next()).replace('\\', '/'); // NOI18N;
+            if (file != null) {
+                if (file.equals(currentFile) || file.isHeaderFile()) {
+                    return getIncludeDerectiveByFile(currentFile, item).replace('\\', '/'); // NOI18N;
+                } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
+                    Collection<CsmOffsetableDeclaration> decls = file.getProject().findDeclarations(((CsmVariable) item).getUniqueName() + " (EXTERN)"); // NOI18N
+                    if (!decls.isEmpty()) {
+                        return getIncludeDerectiveByFile(currentFile, decls.iterator().next()).replace('\\', '/'); // NOI18N;
+                    }
                 }
+            } else {
+                System.err.println("can not find for item " + item); // NOI18N;
             }
         } else if (!CsmKindUtilities.isNamespace(item)) {
-            System.err.println("not yet handled object " + item);
+            System.err.println("not yet handled object " + item); // NOI18N;
         }
         return ""; // NOI18N
     }
@@ -204,7 +209,8 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
         if (CsmKindUtilities.isOffsetable(item)) {
             if (currentFile instanceof FileImpl) {
                 NativeFileItem nativeFile = ((FileImpl) currentFile).getNativeFileItem();
-                String incFilePath = ((CsmOffsetable) item).getContainingFile().getAbsolutePath().toString();
+                CsmFile incFile = ((CsmOffsetable) item).getContainingFile();
+                String incFilePath = incFile.getAbsolutePath().toString();
 
                 StringBuilder includeDirective = new StringBuilder("#include "); // NOI18N
 
@@ -260,6 +266,52 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
         return ""; // NOI18N
     }
 
+    @Override
+    public String getLocalIncludeDerectiveByFilePath(String path, CsmObject item) {
+        if (CsmKindUtilities.isOffsetable(item)) {
+            CsmFile incFile = ((CsmOffsetable) item).getContainingFile();
+            if (incFile != null) {
+                if (incFile.isHeaderFile()) {
+                    return getLocalIncludeDerectiveByHeaderFilePath(path, item).replace('\\', '/'); // NOI18N;
+                } else if (incFile.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
+                    Collection<CsmOffsetableDeclaration> decls = incFile.getProject().findDeclarations(((CsmVariable) item).getUniqueName() + " (EXTERN)"); // NOI18N
+                    if (!decls.isEmpty()) {
+                        return getLocalIncludeDerectiveByHeaderFilePath(path, decls.iterator().next()).replace('\\', '/'); // NOI18N;
+                    }
+                } else if (incFile.isSourceFile() && CsmKindUtilities.isFunctionDefinition(item)) {
+                    return getLocalIncludeDerectiveByHeaderFilePath(path, ((CsmFunction) item).getDeclaration()).replace('\\', '/'); // NOI18N;
+                }
+            } else {
+                System.err.println("can not find for item " + item); // NOI18N;
+            }
+        } else if (!CsmKindUtilities.isNamespace(item)) {
+            System.err.println("not yet handled object " + item); // NOI18N;
+        }
+        return ""; // NOI18N
+    }
+
+    public String getLocalIncludeDerectiveByHeaderFilePath(String path, CsmObject item) {
+        CsmFile incFile = ((CsmOffsetable) item).getContainingFile();
+        if(incFile.isHeaderFile()) {
+            String incFilePath = incFile.getAbsolutePath().toString();
+
+            StringBuilder includeDirective = new StringBuilder("#include "); // NOI18N
+            includeDirective.append("\""); // NOI18N
+            String projectPath = path;
+            if (!incFilePath.startsWith(projectPath)) {
+                projectPath = ""; // NOI18N
+            }
+            includeDirective.append(CndPathUtilitities.toRelativePath(projectPath, incFilePath));
+            if (!projectPath.equals("")) // NOI18N
+            {
+                includeDirective.append("\""); // NOI18N
+                return includeDirective.toString();
+            }
+        }
+        return "";
+    }
+
+    
     // Returns relative path for file from list of paths
     private String getRelativePath(List<String> paths, String filePath) {
         String goodPath = ""; // NOI18N

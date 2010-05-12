@@ -789,7 +789,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
             String infoSuffix = null;
 
             if (action.isEnabled()) {
-                result.append("<font color='black'>" + dispName + "</font>"); // NOI18N
+                result.append("<font color='#000000'>" + dispName + "</font>"); // NOI18N
 
                 SourceFileInfo sourceInfo = action.getSource();
                 if (sourceInfo != null && sourceInfo.isSourceKnown()) {
@@ -800,10 +800,10 @@ public class FunctionsListViewVisualizer extends JPanel implements
                             : getMessage("FunctionCallNode.prefix.withoutLine"); // NOI18N
 
                     infoSuffix = infoPrefix + "&nbsp;" + fname + (line > 0 ? ":" + line : ""); // NOI18N
-                    result.append("<font color='gray'>" + infoSuffix + "</font>"); // NOI18N
+                    result.append("<font color='#808080'>" + infoSuffix + "</font>"); // NOI18N
                 }
             } else {
-                result.append("<font color='gray'>" + dispName + "</font>"); // NOI18N
+                result.append("<font color='#808080'>" + dispName + "</font>"); // NOI18N
             }
 
             result.append("</html>"); // NOI18N
@@ -997,8 +997,8 @@ public class FunctionsListViewVisualizer extends JPanel implements
             String sblack = String.format("color='#%02x%02x%02x'", black.getRed(), black.getGreen(), black.getBlue()); // NOI18N
             String sgray = String.format("color='#%02x%02x%02x'", gray.getRed(), gray.getGreen(), gray.getBlue()); // NOI18N
 
-            html = html.replace("color='black'", sblack); // NOI18N
-            return html.replace("color='gray'", sgray); // NOI18N
+            html = html.replace("color='#000000'", sblack); // NOI18N
+            return html.replace("color='#808080'", sgray); // NOI18N
         }
     }
 

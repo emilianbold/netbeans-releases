@@ -21,10 +21,14 @@ package org.netbeans.modules.xml.xpath.ext.schema.resolver;
 
 import java.util.HashSet;
 import java.util.Set;
+import javax.xml.namespace.NamespaceContext;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
+import org.netbeans.modules.xml.xpath.ext.schema.SchemaModelsStack;
 
 /**
- * This schema context references to multiple schema components. 
+ * This schema context references to multiple schema components.
+ *
+ * TODO: this class looks like unnecessary
  * 
  * @author nk160297
  */
@@ -34,11 +38,13 @@ public class MultiCompSchemaContext implements XPathSchemaContext {
     private Set<SchemaCompPair> mSchemaCompPairSet;
     private Set<SchemaCompHolder> mUsedSchemaCompSet;
     private boolean lastInChain = false;
+    private boolean mIsAttribute;
     
     public MultiCompSchemaContext(XPathSchemaContext parentContext, 
-            Set<SchemaCompPair> compPairSet) {
+            Set<SchemaCompPair> compPairSet, boolean isAttribute) {
         mParentContext = parentContext;
         mSchemaCompPairSet = compPairSet;
+        mIsAttribute = isAttribute;
     }
 
     public XPathSchemaContext getParentContext() {
@@ -110,23 +116,35 @@ public class MultiCompSchemaContext implements XPathSchemaContext {
         return sb.toString();
     }
     
+    public String getExpressionString(NamespaceContext nsContext, SchemaModelsStack sms) {
+        String ending = mIsAttribute ? "/@*" : "/*";
+        if (mParentContext == null) {
+            return ending;
+        } else {
+            return mParentContext.getExpressionString(nsContext, sms) + ending;
+        }
+    }
+
     @Override
-    public boolean equals(Object obj)  {
-        if (obj instanceof XPathSchemaContext) {
-            return XPathSchemaContext.Utilities.equals(
-                    this, (XPathSchemaContext)obj);
+    public boolean equals(Object other)  {
+        if (other instanceof MultiCompSchemaContext) {
+            return XPathSchemaContext.Utilities.equalCompPairs(
+                    this, XPathSchemaContext.class.cast(other));
         }
         //
         return false;
     }
 
-    public boolean equalsChain(XPathSchemaContext obj) {
-        if (obj instanceof XPathSchemaContext) {
-            return XPathSchemaContext.Utilities.equalsChain(
-                    this, (XPathSchemaContext)obj);
-        }
-        //
-        return false;
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 31 * hash + (this.mParentContext != null ? this.mParentContext.hashCode() : 0);
+        hash = 31 * hash + (this.mIsAttribute ? 1 : 0);
+        return hash;
+    }
+
+    public boolean equalsChain(XPathSchemaContext other) {
+        return XPathSchemaContext.Utilities.equalsChain(this, other);
     }
 
     public boolean isLastInChain() {

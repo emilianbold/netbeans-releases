@@ -115,6 +115,11 @@ public final class MutualExclusionSupport {
         }
     }
 
+    synchronized boolean isBeingWritten(FileObj file) {
+        final WeakSet counter = (WeakSet) exclusive.get(file);
+        return counter != null && !counter.isEmpty();
+    }
+
 
     public final class Closeable {
         private final boolean isShared;

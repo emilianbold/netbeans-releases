@@ -60,7 +60,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=30)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=50)
 public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
 
     private static final int TASK_DELAY = getInt("cnd.overrides.delay", 500); // NOI18N
@@ -71,9 +71,11 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
 
     private static boolean isEnabled() {
         NamedEntity namedEntity = new NamedEntity() {
+            @Override
             public String getName() {
                 return "overrides-annotations"; //NOI18N
             }
+            @Override
             public boolean isEnabledByDefault() {
                 return true;
             }

@@ -78,9 +78,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-
-
-
 /**
  *
  * @author Sonali Kochar
@@ -90,7 +87,6 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
     private RenameRefactoring rename;
           
     public void cancelRequest() {
-        
     }
     
     public Problem fastCheckParameters() {
@@ -109,7 +105,6 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
         
         return null;
     }
-    
     
     /**
      * Creates a new instance of XMLWhereUsedRefactoringPlugin
@@ -147,10 +142,7 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
         if(error != null)
             return new Problem(isFatal(error), error.getMessage());
         
-              
         return null;
-       
-        
     }
     
     /** Collects refactoring elements for a given refactoring.
@@ -166,8 +158,7 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
             return null;
         if( !((obj instanceof Model) ||  (obj instanceof Nameable)) )
             return null;
-        
-       
+
         //get the session obj to pass to the FindSchemaUsageVisitor
         this.session = refactoringElements.getSession();
         //get the transaction object 
@@ -234,9 +225,6 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
         return null;
     }
 
-      
-       
-        
     /** Does the change for a given refactoring.
      * @param refactoringElements Collection of refactoring elements 
      */
@@ -268,7 +256,4 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin  {
         }
         return null;
     }
-
-      
 }
-

@@ -70,6 +70,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.web.common.api.FileReference;
 import org.netbeans.modules.web.common.api.FileReferenceModification;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -105,12 +106,44 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
     @Override
     public Problem checkParameters() {
+        String newName = refactoring.getNewName();
+        if(newName.length() == 0) {
+            return new Problem(true, NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Error_ElementEmpty")); //NOI18N
+        }
+
+        Lookup lookup = refactoring.getRefactoringSource();
+        CssElementContext context = lookup.lookup(CssElementContext.class);
+        if(context instanceof CssElementContext.Editor) {
+            CssElementContext.Editor editorContext = (CssElementContext.Editor)context;
+            char firstChar = refactoring.getNewName().charAt(0);
+            switch(editorContext.getElement().kind()) {
+                case CssParserTreeConstants.JJTHASH:
+                case CssParserTreeConstants.JJTHEXCOLOR:
+                    //hex color code
+                    //id
+                    if(firstChar != '#') {
+                        return new Problem(true, NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Error_MissingHash")); //NOI18N
+                    }
+                    break;
+                case CssParserTreeConstants.JJT_CLASS:
+                    //class
+                    if(firstChar != '.') {
+                        return new Problem(true, NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Error_MissingDot")); //NOI18N
+                    }
+                    break;
+            }
+            if(newName.length() == 1) {
+                return new Problem(true, NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Error_ElementShortName")); //NOI18N
+            }
+
+        }
+
         return null;
     }
 
     @Override
     public Problem fastCheckParameters() {
-        return null;
+        return checkParameters();
     }
 
     @Override
@@ -205,7 +238,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                     source = Source.create(file);
                 }
 
-                CssFileModel model = new CssFileModel(source);
+                CssFileModel model = CssFileModel.create(source);
 
                 List<Difference> diffs = new ArrayList<Difference>();
                 for (Entry entry : model.getImports()) {
@@ -264,7 +297,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                         CssFileModel model = modelsCache.get(source);
                         if (model == null) {
                             try {
-                                model = new CssFileModel(Source.create(source)); //use file to parse
+                                model = CssFileModel.create(Source.create(source)); //use file to parse
                                 modelsCache.put(source, model);
                             } catch (ParseException ex) {
                                 Exceptions.printStackTrace(ex);
@@ -308,7 +341,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
         SimpleNode element = context.getElement();
         String elementImage = element.image();
 
-        CssFileModel model = new CssFileModel(context.getParserResult());
+        CssFileModel model = CssFileModel.create(context.getParserResult());
         List<Difference> diffs = new ArrayList<Difference>();
         CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(context.getFileObject());
         for (Entry entry : model.getHtmlElements()) {
@@ -369,14 +402,15 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                     source = Source.create(file);
                 }
 
-                CssFileModel model = new CssFileModel(source);
+                CssFileModel model = CssFileModel.create(source);
                 Collection<Entry> entries = model.get(type);
 
                 boolean related = relatedFiles.contains(file);
 
                 List<Difference> diffs = new ArrayList<Difference>();
                 for (Entry entry : entries) {
-                    if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
+                    if (entry.isValidInSourceDocument() && 
+                            LexerUtils.equals(elementImage, entry.getName(), type == RefactoringElementType.COLOR, false)) {
                         diffs.add(new Difference(Difference.Kind.CHANGE,
                                 editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
                                 editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),

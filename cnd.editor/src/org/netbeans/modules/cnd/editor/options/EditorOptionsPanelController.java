@@ -62,55 +62,66 @@ public class EditorOptionsPanelController extends OptionsPanelController impleme
     private final EditorPropertySheet panel;
     private final CodeStyle.Language language;
     private static final boolean TRACE = false;
+    private static final PreviewPreferencesModel preferencesModel = new PreviewPreferencesModel();
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
     
-    public EditorOptionsPanelController(CodeStyle.Language language){
+    public EditorOptionsPanelController(CodeStyle.Language language, PreviewPreferencesModel.Filter filter){
         if (TRACE) {System.out.println("EditorOptionsPanelController.ctor()");} // NOI18N
         this.language = language;
-        this.panel = new EditorPropertySheet(this, language);
+        this.panel = new EditorPropertySheet(this, language, preferencesModel, filter);
     }
-    
+
+    @Override
     public void update() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.update()");} // NOI18N
         changed = false;
         panel.load();
     }
     
+    @Override
     public void applyChanges() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.applyChanges()");} // NOI18N
         panel.store();
     }
     
+    @Override
     public void cancel() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.cancel()");} // NOI18N
         panel.cancel();
     }
     
+    @Override
     public boolean isValid() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.isValid()");} // NOI18N
         return true;
     }
     
+    @Override
     public boolean isChanged() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.isChanged()");} // NOI18N
         return changed;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("netbeans.optionsDialog.advanced.formEditor"); // NOI18N
     }
     
+    @Override
     public JComponent getComponent(Lookup masterLookup) {
+        if (TRACE) {System.out.println("EditorOptionsPanelController.getComponent()");} // NOI18N
         return panel;
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pcs.addPropertyChangeListener(l);
     }
     
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         pcs.removePropertyChangeListener(l);
     }
@@ -123,6 +134,7 @@ public class EditorOptionsPanelController extends OptionsPanelController impleme
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
+    @Override
     public JComponent getPreviewComponent() {
         if (previewPane == null) {
             previewPane = new JEditorPane();
@@ -146,20 +158,66 @@ public class EditorOptionsPanelController extends OptionsPanelController impleme
         return previewPane;
     }
 
+    @Override
     public void refreshPreview() {
         panel.repaintPreview();
     }
 
     public static OptionsPanelController getCController() {
-        return new EditorOptionsPanelController(CodeStyle.Language.C);
+        return new EditorOptionsPanelController(CodeStyle.Language.C, PreviewPreferencesModel.Filter.All);
+    }
+    public static OptionsPanelController getCControllerTabs() {
+        return new EditorOptionsPanelController(CodeStyle.Language.C, PreviewPreferencesModel.Filter.TabsAndIndents);
+    }
+    public static OptionsPanelController getCControllerAlignment() {
+        return new EditorOptionsPanelController(CodeStyle.Language.C, PreviewPreferencesModel.Filter.Alignment);
+    }
+    public static OptionsPanelController getCControllerBraces() {
+        return new EditorOptionsPanelController(CodeStyle.Language.C, PreviewPreferencesModel.Filter.Braces);
+    }
+    public static OptionsPanelController getCControllerBlank() {
+        return new EditorOptionsPanelController(CodeStyle.Language.C, PreviewPreferencesModel.Filter.BlankLines);
+    }
+    public static OptionsPanelController getCControllerSpaces() {
+        return new EditorOptionsPanelController(CodeStyle.Language.C, PreviewPreferencesModel.Filter.Spaces);
     }
 
     public static OptionsPanelController getCCController() {
-        return new EditorOptionsPanelController(CodeStyle.Language.CPP);
+        return new EditorOptionsPanelController(CodeStyle.Language.CPP, PreviewPreferencesModel.Filter.All);
+    }
+    public static OptionsPanelController getCCControllerTabs() {
+        return new EditorOptionsPanelController(CodeStyle.Language.CPP, PreviewPreferencesModel.Filter.TabsAndIndents);
+    }
+    public static OptionsPanelController getCCControllerAlignment() {
+        return new EditorOptionsPanelController(CodeStyle.Language.CPP, PreviewPreferencesModel.Filter.Alignment);
+    }
+    public static OptionsPanelController getCCControllerBraces() {
+        return new EditorOptionsPanelController(CodeStyle.Language.CPP, PreviewPreferencesModel.Filter.Braces);
+    }
+    public static OptionsPanelController getCCControllerBlank() {
+        return new EditorOptionsPanelController(CodeStyle.Language.CPP, PreviewPreferencesModel.Filter.BlankLines);
+    }
+    public static OptionsPanelController getCCControllerSpaces() {
+        return new EditorOptionsPanelController(CodeStyle.Language.CPP, PreviewPreferencesModel.Filter.Spaces);
     }
 
     public static OptionsPanelController getHController() {
-        return new EditorOptionsPanelController(CodeStyle.Language.HEADER);
+        return new EditorOptionsPanelController(CodeStyle.Language.HEADER, PreviewPreferencesModel.Filter.All);
+    }
+    public static OptionsPanelController getHControllerTabs() {
+        return new EditorOptionsPanelController(CodeStyle.Language.HEADER, PreviewPreferencesModel.Filter.TabsAndIndents);
+    }
+    public static OptionsPanelController getHControllerAlignment() {
+        return new EditorOptionsPanelController(CodeStyle.Language.HEADER, PreviewPreferencesModel.Filter.Alignment);
+    }
+    public static OptionsPanelController getHControllerBraces() {
+        return new EditorOptionsPanelController(CodeStyle.Language.HEADER, PreviewPreferencesModel.Filter.Braces);
+    }
+    public static OptionsPanelController getHControllerBlank() {
+        return new EditorOptionsPanelController(CodeStyle.Language.HEADER, PreviewPreferencesModel.Filter.BlankLines);
+    }
+    public static OptionsPanelController getHControllerSpaces() {
+        return new EditorOptionsPanelController(CodeStyle.Language.HEADER, PreviewPreferencesModel.Filter.Spaces);
     }
 
 }

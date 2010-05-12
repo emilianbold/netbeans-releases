@@ -42,13 +42,10 @@
 package org.netbeans.modules.apisupport.project.layers;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import javax.swing.JFileChooser;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -66,15 +63,18 @@ import org.openide.windows.WindowManager;
  */
 public class PickIconAction extends CookieAction {
     
-    protected void performAction(Node[] activatedNodes) {
-        FileObject f = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
-        URL location = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
-        assert location != null : f;
-        NbModuleProject p = (NbModuleProject) FileOwnerQuery.getOwner(URI.create(location.toExternalForm()));
-        assert p != null : location;
+    protected @Override void performAction(Node[] activatedNodes) {
+        FileObject f = PickNameAction.findFile(activatedNodes);
+        if (f == null) {
+            return;
+        }
+        NbModuleProvider p = PickNameAction.findProject(f);
+        if (p == null) {
+            return;
+        }
         FileObject src = p.getSourceDirectory();
         JFileChooser chooser = UIUtil.getIconFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, FileUtil.toFile(src));
+        chooser.setCurrentDirectory(FileUtil.toFile(src));
         if (chooser.showOpenDialog(WindowManager.getDefault().getMainWindow()) != JFileChooser.APPROVE_OPTION) {
             return;
         }
@@ -84,7 +84,7 @@ public class PickIconAction extends CookieAction {
         try {
             if (iconPath == null) {
                 String folderPath;
-                String layerPath = ManifestManager.getInstance(p.getManifest(), false).getLayer();
+                String layerPath = ManifestManager.getInstance(Util.getManifest(p.getManifestFile()), false).getLayer();
                 if (layerPath != null) {
                     folderPath = layerPath.substring(0, layerPath.lastIndexOf('/'));
                 } else {
@@ -94,38 +94,44 @@ public class PickIconAction extends CookieAction {
                 FileUtil.copyFile(icon, folder, icon.getName(), icon.getExt());
                 iconPath = folderPath + '/' + icon.getNameExt();
             }
-            f.setAttribute("SystemFileSystem.icon", new URL("nbresloc:/" + iconPath)); // NOI18N
+            f.setAttribute("iconBase", iconPath); // NOI18N
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         }
     }
     
-    protected boolean enable(Node[] activatedNodes) {
+    protected @Override boolean enable(Node[] activatedNodes) {
         if (!super.enable(activatedNodes)) {
             return false;
         }
-        FileObject f = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
-        URL location = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
-        return location != null; // #63458
+        FileObject f = PickNameAction.findFile(activatedNodes);
+        if (f == null) {
+            return false;
+        }
+        NbModuleProvider p = PickNameAction.findProject(f);
+        if (p == null) {
+            return false;
+        }
+        return true;
     }
 
-    public String getName() {
+    public @Override String getName() {
         return NbBundle.getMessage(PickIconAction.class, "LBL_pick_icon");
     }
     
-    protected Class[] cookieClasses() {
-        return new Class[] {DataObject.class};
+    protected @Override Class<?>[] cookieClasses() {
+        return new Class<?>[] {DataObject.class};
     }
     
-    protected int mode() {
+    protected @Override int mode() {
         return MODE_EXACTLY_ONE;
     }
     
-    public HelpCtx getHelpCtx() {
+    public @Override HelpCtx getHelpCtx() {
         return null;
     }
     
-    protected boolean asynchronous() {
+    protected @Override boolean asynchronous() {
         return false;
     }
 

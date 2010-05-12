@@ -52,10 +52,11 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -133,14 +134,17 @@ public class AddTableColumnDialog extends JPanel {
         add(colnamefield, con);
         DocumentListener docListener = new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 updateState();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 updateState();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 updateState();
             }
@@ -152,7 +156,7 @@ public class AddTableColumnDialog extends JPanel {
         sizelesstypes = (Collection) spe.getProperties().get("SizelessTypes"); // NOI18N
 
         Map tmap = spe.getTypeMap();
-        Vector<TypeElement> ttab = new Vector<TypeElement>(tmap.size());
+        List<TypeElement> ttab = new ArrayList<TypeElement>(tmap.size());
         Iterator iter = tmap.keySet().iterator();
         while (iter.hasNext()) {
             String iterkey = (String) iter.next();
@@ -161,7 +165,7 @@ public class AddTableColumnDialog extends JPanel {
         }
 
         ColumnItem item = new ColumnItem();
-        item.setProperty(ColumnItem.TYPE, ttab.elementAt(0));
+        item.setProperty(ColumnItem.TYPE, ttab.get(0));
         dmodel.addRow(item);
 
         label = new JLabel();
@@ -187,9 +191,10 @@ public class AddTableColumnDialog extends JPanel {
         con.insets = new java.awt.Insets(12, 12, 0, 0);
         con.weightx = 1.0;
         con.weighty = 0.0;
-        coltypecombo = new JComboBox(ttab);
+        coltypecombo = new JComboBox(ttab.toArray());
         coltypecombo.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 updateState();
             }
@@ -309,6 +314,7 @@ public class AddTableColumnDialog extends JPanel {
 
         ItemListener checkBoxListener = new ItemListener() {
 
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 JCheckBox cbx = (JCheckBox) e.getSource();
                 // just set value. Validation is handled in model
@@ -437,6 +443,7 @@ public class AddTableColumnDialog extends JPanel {
         // update changes of model to check boxes
         item.addPropertyChangeListener(new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 String pname = evt.getPropertyName();
                 Object nval = evt.getNewValue();
@@ -557,7 +564,7 @@ public class AddTableColumnDialog extends JPanel {
     }
 
     private ColumnItem getColumnItem() {
-        return (ColumnItem)dmodel.getData().elementAt(0);
+        return (ColumnItem)dmodel.getData().get(0);
     }
 
     /** Sets UI controls according to given ColumnItem. */
@@ -626,15 +633,17 @@ public class AddTableColumnDialog extends JPanel {
 
         ActionListener listener = new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent event) {
                 if (event.getSource() != DialogDescriptor.OK_OPTION) {
                     return;
                 }
-                final ColumnItem columnItem = (ColumnItem) panel.dmodel.getData().elementAt(0);
+                final ColumnItem columnItem = (ColumnItem) panel.dmodel.getData().get(0);
                 boolean wasException;
                 try {
                     wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
 
+                        @Override
                         public Boolean call() throws Exception {
                             return ddl.execute(panel.colnamefield.getText(), columnItem);
                         }
@@ -644,7 +653,7 @@ public class AddTableColumnDialog extends JPanel {
                     if (cause instanceof DDLException) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                     } else {
-                        LOGGER.log(Level.INFO, null, cause);
+                        LOGGER.log(Level.INFO, cause.getLocalizedMessage(), cause);
                         DbUtilities.reportError(NbBundle.getMessage(AddTableColumnDialog.class, "ERR_UnableToAddColumn"), e.getMessage());
                     }
                     return;

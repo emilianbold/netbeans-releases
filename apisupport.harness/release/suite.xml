@@ -103,7 +103,7 @@ made subject to such option by the copyright holder.
                 </filtermapper>
             </chainedmapper>
         </pathconvert>
-        <tempfile property="old.project.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true"/>
+        <tempfile property="old.project.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true" prefix="duplicates"/>
         <mkdir dir="${basedir}/build"/>
         <echo file="${old.project.clusters.duplicates.file}" message="${old.project.clusters.duplicates}"/>
 
@@ -166,12 +166,15 @@ made subject to such option by the copyright holder.
             </fileset>
         </copy>
     </target>
-    
 
-    <target name="build" depends="-init,branding,release" description="Build all modules in the suite.">
+
+    <target name="build" depends="-init,branding,release,-hide-excluded-modules" description="Build all modules in the suite.">
         <subant target="netbeans" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false">
             <property name="cluster.path.evaluated" value="${cluster.path.evaluated}"/> <!-- Just for speed of pre-7.0 projects -->
         </subant>
+    </target>
+
+    <target name="-hide-excluded-modules" depends="-init">
         <mkdir dir="${cluster}/config/Modules"/>
         <pathconvert pathsep="," property="disabled.modules.paths.list">
             <pathfileset>
@@ -185,7 +188,7 @@ made subject to such option by the copyright holder.
         <createmodulexml xmldir="${cluster}/config/Modules" hidden="${disabled.modules.paths.list}"/>
     </target>
 
-    <target name="nbms" depends="build" description="Build NBMs and an Auto Update site descriptor for all modules in the suite.">
+    <target name="nbms" depends="-init,branding,release,-hide-excluded-modules" description="Build NBMs and an Auto Update site descriptor for all modules in the suite.">
         <property name="build.updates.dir" location="build/updates"/>
         <!-- reads from suite/project.properties first -->
         <condition property="help.target.cluster" value="${nbm.target.cluster}" >
@@ -265,7 +268,7 @@ made subject to such option by the copyright holder.
                 <selector refid="zip.platform.included.files"/>
             </pathfileset>
             <chainedmapper>
-                <mapper type="regexp" from="(^.+)[/\\]config[/\\]Modules[/\\]" to="\1"/> <!-- #71849 -->
+                <mapper type="regexp" from="(^.+)[/\\](config[/\\]Modules[/\\]|lib[/\\]|core[/\\])" to="\1"/> <!-- #71849, #185047 -->
                 <filtermapper>
                     <linecontainsregexp negate="true">
                         <regexp pattern="update[/\\]backup[/\\]netbeans[/\\]?$"/>
@@ -273,7 +276,7 @@ made subject to such option by the copyright holder.
                 </filtermapper>
             </chainedmapper>
         </pathconvert>
-        <tempfile property="zip.platform.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true"/>
+        <tempfile property="zip.platform.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true" prefix="duplicates"/>
         <echo file="${zip.platform.clusters.duplicates.file}" message="${zip.platform.clusters.duplicates}"/>
 
         <union id="zip.platform.clusters"> <!-- union removes duplicates -->
@@ -287,7 +290,7 @@ made subject to such option by the copyright holder.
                         <regexp pattern="platform[0-9]*[/\\]?$"/>
                     </linecontainsregexp>
                 </filtermapper>
-                <mapper type="regexp" from="[/\\]([^/\\]+)[/\\]?$" to="\1"/> <!-- #71849 -->
+                <mapper type="regexp" from="[/\\]([^/\\]+)([/\\]build[/\\]cluster)?[/\\]?$" to="\1"/> <!-- #71849, #179410 -->
             </chainedmapper>
         </pathconvert>
 
@@ -328,8 +331,8 @@ made subject to such option by the copyright holder.
         <mkdir dir="${dist.dir}"/>
         <!-- pathfileset does not support 'prefix' and 'filemode' parameters,
              we have to copy them to temp location -->
-        <tempfile property="temp.dir.nbexec" destdir="${basedir}/build" deleteonexit="true"/>
-        <tempfile property="temp.dir.rest" destdir="${basedir}/build" deleteonexit="delete"/>
+        <tempfile property="temp.dir.nbexec" destdir="${basedir}/build" deleteonexit="true" prefix="nbexec"/>
+        <tempfile property="temp.dir.rest" destdir="${basedir}/build" deleteonexit="delete" prefix="rest"/>
         <subant genericantfile="${harness.dir}/suite.xml" target="copy-cluster" inheritrefs="true">
             <property name="dest.dir" value="${temp.dir.rest}"/>
             <property name="nbexec.dir" value="${temp.dir.nbexec}"/>
@@ -353,7 +356,7 @@ made subject to such option by the copyright holder.
     <target name="copy-cluster" description="Copies cluster specified by basedir to dir ${dest.dir}">
         <pathconvert property="cluster.name">
             <path path="${basedir}"/>
-            <mapper type="regexp" from="[/\\]([^/\\]+)[/\\]?$" to="\1"/>
+            <mapper type="regexp" from="[/\\]([^/\\]+)([/\\]build[/\\]cluster)?[/\\]?$" to="\1"/>
         </pathconvert>
         <copy todir="${dest.dir}/${cluster.name}">
             <fileset dir="${basedir}">
@@ -396,7 +399,9 @@ See: http://wiki.netbeans.org/DevFaqHowToReuseModules
         <mkdir dir="${dist.dir}/${app.name}.app/Contents"/>
         <mkdir dir="${dist.dir}/${app.name}.app/Contents/MacOS"/>
         <mkdir dir="${dist.dir}/${app.name}.app/Contents/Resources"/>
-        <copy file="${harness.dir}/etc/applicationIcon.icns" tofile="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}.icns"/>
+        <property name="app.icon.icns" value="${harness.dir}/etc/applicationIcon.icns"/>
+        <copy file="${app.icon.icns}" tofile="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}.icns"/>
+
         <copy todir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/bin">
             <fileset dir="${build.launcher.dir}/bin/" />
         </copy>

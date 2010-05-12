@@ -1,4 +1,4 @@
-select * from accounting.invoice, accounting.customer foo where accounting.|
+select * from accounting.invoice, accounting.customer foo, accounting.asummary where accounting.|
 
 --
 <unknown>
@@ -11,3 +11,5 @@ select * from accounting.invoice, accounting.customer foo where accounting.|
       customer_id
     customer
       customer_id
+    asummary[view]
+      asummary_id

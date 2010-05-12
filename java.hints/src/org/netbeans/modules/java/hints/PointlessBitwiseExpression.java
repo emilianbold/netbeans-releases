@@ -45,19 +45,15 @@ import com.sun.source.util.TreePath;
 import java.util.Map;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix.UpgradeUICallback;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 
@@ -65,7 +61,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="bitwise_operations")
+@Hint(category="bitwise_operations", suppressWarnings="PointlessBitwiseExpression")
 public class PointlessBitwiseExpression {
 
     @TriggerPatterns ({
@@ -77,7 +73,7 @@ public class PointlessBitwiseExpression {
         TreePath treePath = ctx.getPath ();
         Map<String,TreePath> variables = ctx.getVariables ();
         CompilationInfo compilationInfo = ctx.getInfo ();
-        Tree tree = variables.get ("$c").getLeaf ();
+        TreePath tree = variables.get ("$c");
         Long value = IncompatibleMask.getConstant (tree, ctx);
         if (value == null) return null;
         if (value == 0)
@@ -85,14 +81,15 @@ public class PointlessBitwiseExpression {
                 ctx,
                 treePath,
                 NbBundle.getMessage (PointlessBitwiseExpression.class, "MSG_PointlessBitwiseExpression"),
-                new FixImpl (
+                JavaFix.toEditorFix(new FixImpl (
+                    compilationInfo,
+                    treePath,
                     NbBundle.getMessage (
                         LoggerNotStaticFinal.class,
                         "MSG_PointlessBitwiseExpression_fix"
                     ),
-                    true,
-                    TreePathHandle.create (treePath, compilationInfo)
-                )
+                    true
+                ))
             );
         return null;
     }
@@ -105,7 +102,7 @@ public class PointlessBitwiseExpression {
         TreePath treePath = ctx.getPath ();
         CompilationInfo compilationInfo = ctx.getInfo ();
         Map<String,TreePath> variables = ctx.getVariables ();
-        Tree tree = variables.get ("$c").getLeaf ();
+        TreePath tree = variables.get ("$c");
         Long value = IncompatibleMask.getConstant (tree, ctx);
         if (value != null &&
             value == 0
@@ -114,16 +111,17 @@ public class PointlessBitwiseExpression {
                 ctx,
                 treePath,
                 NbBundle.getMessage (PointlessBitwiseExpression.class, "MSG_PointlessBitwiseExpression"),
-                new FixImpl (
+                JavaFix.toEditorFix(new FixImpl (
+                    compilationInfo,
+                    treePath,
                     NbBundle.getMessage (
                         LoggerNotStaticFinal.class,
                         "MSG_PointlessBitwiseExpression_fix"
                     ),
-                    true,
-                    TreePathHandle.create (treePath, compilationInfo)
-                )
+                    true
+                ))
             );
-        tree = variables.get ("$v").getLeaf ();
+        tree = variables.get ("$v");
         value = IncompatibleMask.getConstant (tree, ctx);
         if (value != null &&
             value == 0
@@ -132,33 +130,33 @@ public class PointlessBitwiseExpression {
                 ctx,
                 treePath,
                 NbBundle.getMessage (PointlessBitwiseExpression.class, "MSG_PointlessBitwiseExpression"),
-                new FixImpl (
+                JavaFix.toEditorFix(new FixImpl (
+                    compilationInfo,
+                    treePath,
                     NbBundle.getMessage (
                         LoggerNotStaticFinal.class,
                         "MSG_PointlessBitwiseExpression_fix"
                     ),
-                    false,
-                    TreePathHandle.create (treePath, compilationInfo)
-                )
+                    false
+                ))
             );
         return null;
     }
 
-    private static final class FixImpl implements Fix {
+    private static final class FixImpl extends JavaFix {
 
         private final String    text;
         private boolean         right;
-        private final TreePathHandle
-                                treePathHandle;
 
         public FixImpl (
+            CompilationInfo     info,
+            TreePath            tp,
             String              text,
-            boolean             right,
-            TreePathHandle      loggerFieldHandle
+            boolean             right
         ) {
+            super(info, tp);
             this.text = text;
             this.right = right;
-            this.treePathHandle = loggerFieldHandle;
         }
 
         @Override
@@ -167,20 +165,10 @@ public class PointlessBitwiseExpression {
         }
 
         @Override
-        public ChangeInfo implement () throws Exception {
-            JavaSource.forFileObject (treePathHandle.getFileObject ()).runModificationTask (new Task<WorkingCopy> () {
-
-                @Override
-                public void run (WorkingCopy wc) throws Exception {
-                    wc.toPhase (Phase.RESOLVED);
-                    TreePath tp = treePathHandle.resolve (wc);
-                    if (tp == null) return;
-                    Tree vt = tp.getLeaf();
-                    BinaryTree e = (BinaryTree) vt;
-                    wc.rewrite (vt, right ? e.getLeftOperand () : e.getRightOperand ());
-                }
-            }).commit ();
-            return null;
+        protected void performRewrite(WorkingCopy wc, TreePath tp, UpgradeUICallback callback) {
+            Tree vt = tp.getLeaf();
+            BinaryTree e = (BinaryTree) vt;
+            wc.rewrite (vt, right ? e.getLeftOperand () : e.getRightOperand ());
         }
     } // End of FixImpl class
 }

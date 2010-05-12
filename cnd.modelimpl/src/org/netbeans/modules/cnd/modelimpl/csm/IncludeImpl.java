@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * Implements CsmInclude
@@ -113,7 +113,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
     
     private static final boolean equals(IncludeImpl one, IncludeImpl other) {
         // compare only name, type and start offset
-        return (CharSequenceKey.Comparator.compare(one.getIncludeName(),other.getIncludeName()) == 0) &&
+        return (CharSequences.comparator().compare(one.getIncludeName(),other.getIncludeName()) == 0) &&
                 (one.system == other.system) && 
                 (one.getStartOffset() == other.getStartOffset());
     }

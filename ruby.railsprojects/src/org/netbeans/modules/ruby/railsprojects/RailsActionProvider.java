@@ -479,14 +479,24 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
     private void openRailsConsole(Lookup context) {
         String displayName = NbBundle.getMessage(RailsActionProvider.class, "RailsConsole");
         File pwd = FileUtil.toFile(project.getProjectDirectory());
-        String script = "script" + File.separator + "console"; // NOI18N
-        String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        String script = null;
         List<String> additionalArgs = new ArrayList<String>();
-        if (Utilities.isWindows() && !getPlatform().isJRuby()) {
-            // see #133066
-            additionalArgs.add("--irb=irb.bat --noreadline"); //NOI18N
+        boolean rails3 = RailsProjectUtil.getRailsVersion(project).isRails3OrHigher();
+        if (rails3) {
+             script = "script" + File.separator + "rails"; // NOI18N
+             additionalArgs.add("console");
         } else {
-            additionalArgs.add("--irb=irb --noreadline"); //NOI18N
+            script = "script" + File.separator + "console"; // NOI18N
+        }
+        String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        // --irb not supported in rails3
+        if (!rails3) {
+            if (Utilities.isWindows() && !getPlatform().isJRuby()) {
+                // see #133066
+                additionalArgs.add("--irb=irb.bat --noreadline"); //NOI18N
+            } else {
+                additionalArgs.add("--irb=irb --noreadline"); //NOI18N
+            }
         }
         String railsEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
         if (railsEnv != null && !"".equals(railsEnv.trim())) {
@@ -506,15 +516,14 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         ExecutionService.newService(rpc, descriptor.toExecutionDescriptor(), displayName).run();
                 
         // request focus for the output window - see #133519
+        getOutputWindow().requestActive();
+    }
+
+    private static TopComponent getOutputWindow() {
         final String outputWindowId = "output"; //NOI18N
         TopComponent outputWindow = WindowManager.getDefault().findTopComponent(outputWindowId);
-        // outputWindow should not be null as the output window id is not likely to change, but 
-        // checking for null anyway since we are not relying on an API.
-        if (outputWindow != null) {
-            outputWindow.requestActive();
-        } else {
-            LOGGER.info("Could not find the output window using id " + outputWindowId);
-        }
+        assert outputWindow != null : "Could not find the output window using id " + outputWindowId;  //NOI18N
+        return outputWindow;
     }
     
     public RubyExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target,
@@ -641,6 +650,13 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
     }
     
     private void runServer(String path, final boolean serverDebug, final boolean clientDebug) {
+        TopComponent outputWindow = getOutputWindow();
+        if (!outputWindow.isOpened()) {
+            outputWindow.open();
+        }
+        outputWindow.requestActive();
+        outputWindow.toFront();
+
         RailsServerManager server = project.getLookup().lookup(RailsServerManager.class);
         if (server != null) {
             server.setDebug(serverDebug);

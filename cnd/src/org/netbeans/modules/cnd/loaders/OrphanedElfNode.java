@@ -53,15 +53,7 @@ public class OrphanedElfNode extends CndDataNode {
     private static final String ORPHAN_ICON = ICON_BASE + "OrphanedElfObject.gif"; // NOI18N
 
     public OrphanedElfNode(OrphanedElfObject obj) {
-	this(obj, Children.LEAF);
-    }
-
-    private OrphanedElfObject getOrphanedElfObject() {
-	return (OrphanedElfObject) getDataObject();
-    }
-
-    public OrphanedElfNode(OrphanedElfObject obj, Children ch) {
-	super(obj, ch);
+	super(obj, Children.LEAF, obj.getLookup());
 	setIconBaseWithExtension(ORPHAN_ICON);
     }
 }

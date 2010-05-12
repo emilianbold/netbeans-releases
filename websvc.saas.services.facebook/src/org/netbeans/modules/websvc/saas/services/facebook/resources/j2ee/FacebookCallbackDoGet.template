@@ -2,18 +2,22 @@
     response.setContentType("text/html;charset=UTF-8");
     java.io.PrintWriter out = response.getWriter();
     try {
-        javax.servlet.http.HttpSession session = request.getSession(false);
-        String authToken = request.getParameter("auth_token");
-        session.setAttribute("facebook_auth_token", authToken);
-
-        dispatch(request, response);
-
-        String returnUrl = (String) session.getAttribute("facebook_return_url");
-        if (returnUrl != null) {
-            session.removeAttribute("facebook_return_url");
-            response.sendRedirect(returnUrl);
+        javax.servlet.http.HttpSession session = request.getSession(true);
+        String fb_session_key = request.getParameter("fb_sig_session_key");
+        if (fb_session_key != null) {
+            // use session key obtained from Facebook
+            session.setAttribute("facebook_session_key", fb_session_key);
+            //redirecting to application context path (application root)
+            response.sendRedirect(request.getContextPath());
         }
-
+        String authToken = request.getParameter("auth_token");
+        if (authToken != null) {
+            // auth_token obtained from Login servlet response
+            // sent back to dispatch method to get session key from Facebook, using auth_token
+            session.setAttribute("facebook_auth_token", authToken);
+            dispatch(request, response);
+        }
+        // otherwise display something
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Servlet Facebook Callback</title>");

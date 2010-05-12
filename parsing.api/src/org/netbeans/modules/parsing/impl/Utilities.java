@@ -40,6 +40,8 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.util.Collections;
+import java.util.concurrent.Callable;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
@@ -48,12 +50,18 @@ import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.util.Parameters;
 
 /**
- * Temporary helpe functions needed by the java.source
+ * Temporary helper functions needed by the java.source
  * @author Tomas Zezula
  */
 public class Utilities {
     
     private Utilities () {}
+
+    //MasterFS bridge
+    public static <T> T runPriorityIO (final Callable<T> r) throws Exception {
+        assert r != null;
+        return ProvidedExtensions.priorityIO(r);
+    }
 
     //Helpers for java reformatter, may be removed when new reformat api will be done
     public static void acquireParserLock () {

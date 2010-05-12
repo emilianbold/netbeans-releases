@@ -6,6 +6,7 @@
         <ext name="S"/>
         <ext name="asm"/>
         <ext name="as"/>
+        <ext name="il"/>
         <resolver mime="text/x-asm"/>        
     </file>
 </MIME-resolver>

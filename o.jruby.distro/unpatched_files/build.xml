@@ -398,9 +398,9 @@
   <target name="_osgify-jar_">
     <filter token="JRUBY_VERSION" value="${version.jruby}"/>
     <copy file="${basedir}/jruby.bnd.template" tofile="${build.dir}/${bndfile}" filtering="true"/>
-     <!-- Modified for NB: using 0.0.396 instead of 0.0.249 due to #180840 -->
+     <!-- Modified for NB: using 0.0.401 instead of 0.0.249 due to #180840 -->
     <taskdef resource="aQute/bnd/ant/taskdef.properties"
-      classpath="${build.lib.dir}/bnd-0.0.396.jar"/>
+      classpath="${build.lib.dir}/bnd-0.0.401.jar"/>
     <bndwrap definitions="${build.dir}" output="${dest.lib.dir}">
       <fileset file="${lib.dir}/jruby.jar" />
     </bndwrap>

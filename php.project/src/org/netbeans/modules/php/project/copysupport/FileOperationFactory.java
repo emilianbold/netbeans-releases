@@ -169,6 +169,7 @@ abstract class FileOperationFactory {
 
     protected void showCustomizer() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.SOURCES);
             }

@@ -91,6 +91,7 @@ public class SelectCompletionQueryTest extends NbTestCase {
         suite.addTest(new SelectCompletionQueryTest("selectQualColumnWhenTableInSyntheticSchema"));
         suite.addTest(new SelectCompletionQueryTest("selectDoubleQualColumn"));
         suite.addTest(new SelectCompletionQueryTest("selectTripleQualColumn"));
+        suite.addTest(new SelectCompletionQueryTest("selectViews"));
 
         suite.addTest(new SelectCompletionQueryTest("selectAllFrom"));
         suite.addTest(new SelectCompletionQueryTest("selectAllWhenFromClauseEmpty"));

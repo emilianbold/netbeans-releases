@@ -41,6 +41,7 @@ package org.netbeans.modules.remote.ui;
 
 import java.awt.Image;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -86,8 +87,15 @@ public class ToolchainListRootNode extends AbstractNode {
         return NbBundle.getMessage(getClass(), "LBL_ToolchainRootNode");
     }
 
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[] {
+                new AddToolchainAction(env),
+                new RestoreToolchainsAction(env),
+                new ShowToolchainsAction(env, null) };
+    }
 
-    private static class ToolchainListChildren extends ChildFactory<CompilerSet> implements ChangeListener {
+    /*package*/ static class ToolchainListChildren extends ChildFactory<CompilerSet> implements ChangeListener {
 
         private final ExecutionEnvironment env;
 
@@ -146,6 +154,18 @@ public class ToolchainListRootNode extends AbstractNode {
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            if (compilerSet.getName().equals(CompilerSet.None)) {
+                return new Action[]{new ShowToolchainsAction(env, compilerSet)};
+            } else {
+                return new Action[]{
+                        new ShowToolchainsAction(env, compilerSet),
+                        new SetDefaultToolchainAction(env, compilerSet),
+                        new RemoveToolchainAction(env, compilerSet)};
+            }
+        }
     }
 
     private static class ToolChildren extends ChildFactory<Tool> {
@@ -160,9 +180,11 @@ public class ToolchainListRootNode extends AbstractNode {
 
         @Override
         protected boolean createKeys(List<Tool> toPopulate) {
-            for (Tool tool : compilerSet.getTools()) {
-                if (!tool.getPath().isEmpty()) {
-                    toPopulate.add(tool);
+            if (!compilerSet.getName().equals(CompilerSet.None)) {
+                for (Tool tool : compilerSet.getTools()) {
+                    if (!tool.getPath().isEmpty()) {
+                        toPopulate.add(tool);
+                    }
                 }
             }
             return true;
@@ -195,7 +217,6 @@ public class ToolchainListRootNode extends AbstractNode {
             return tool.getDisplayName() + "  <font color='!controlShadow'> [" + tool.getPath() + ']'; //NOI18N
         }
 
-
         @Override
         public Image getIcon(int type) {
             return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/tool.png"); // NOI18N
@@ -204,6 +225,11 @@ public class ToolchainListRootNode extends AbstractNode {
         @Override
         public String getShortDescription() {
             return tool.getPath();
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
         }
     }
 

@@ -728,7 +728,7 @@ public class FormI18nSupport extends JavaI18nSupport {
                                     found = true;
                                 }
                             }
-                        } else {
+                        } else if(value instanceof String) { // #179872
                             // Has to be plain String, there is other Property Editor for String RAD Property.
                             // It's converted via toAscii method cause for this value is used org.netbeans.core.editors.StringEditor 
                             // which does the same thing.
@@ -737,6 +737,9 @@ public class FormI18nSupport extends JavaI18nSupport {
                             if ((validProp.getSkip() == 0) && string.equals(toAscii(hardString))) {
                                 found = true;
                             }
+                        } else {
+                            // TODO: now, do nothing, but see #179872 :
+                            // org.netbeans.modules.swingapp.ResourceValueImpl
                         }
                     } else {
                         // Node.Property, the value should be plain String.

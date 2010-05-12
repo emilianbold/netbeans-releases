@@ -104,7 +104,7 @@ public final class TabView extends EditorView implements TabableView {
     public float getPreferredSpan(int axis) {
         DocumentView docView = getDocumentView();
         return (axis == View.X_AXIS)
-            ? width
+            ? width // Return last width computed by getTabbedSpan()
             : ((docView != null) ? docView.getDefaultLineHeight() : 0f);
     }
 
@@ -150,7 +150,7 @@ public final class TabView extends EditorView implements TabableView {
 
     @Override
     public int getStartOffset() {
-        ParagraphView parent = (ParagraphView) getParent();
+        EditorView.Parent parent = (EditorView.Parent) getParent();
         return (parent != null) ? parent.getViewOffset(rawOffset) : rawOffset;
     }
 

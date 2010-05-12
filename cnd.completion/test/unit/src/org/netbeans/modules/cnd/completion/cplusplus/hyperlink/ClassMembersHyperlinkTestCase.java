@@ -891,7 +891,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testIZ174581() throws Exception {
         // IZ#174581 : template: Unable to resolve identifier
-        performTest("iz174581.cc", 22, 17, "iz174581.cc", 2, 5);
+        performTest("iz174581.cc", 24, 17, "iz174581.cc", 4, 5);
     }
 
     public void testIZ157786() throws Exception {
@@ -907,6 +907,42 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ179373() throws Exception {
         // Bug#179373: unable to resolve a member of the result of an operator
         performTest("iz179373.cc", 17, 13, "iz179373.cc", 3, 5);
+    }
+
+    public void testIZ142674() throws Exception {
+        // Bug 142674 - Function-try-catch (C++) in editor shows error
+        performTest("iz142674.cc", 6, 9, "iz142674.cc", 3, 5);
+    }
+
+    public void testIZ184315() throws Exception {
+        // Bug 184315 - unresolved identifier on class method
+        performTest("iz184315.cc", 20, 26, "iz184315.cc", 9, 5);
+        performTest("iz184315.cc", 21, 26, "iz184315.cc", 9, 5);
+        performTest("iz184315.cc", 22, 26, "iz184315.cc", 9, 5);
+    }
+
+    public void testIZ179095() throws Exception {
+        // Bug 179095 - [code model] Go To declaration doesn't work properly
+        performTest("iz179095.cc", 26, 15, "iz179095.cc", 72, 1);
+        performTest("iz179095.cc", 72, 25, "iz179095.cc", 26, 5);
+
+        performTest("iz179095.cc", 28, 15, "iz179095.cc", 104, 1);
+        performTest("iz179095.cc", 104, 25, "iz179095.cc", 28, 5);
+
+        performTest("iz179095.cc", 32, 15, "iz179095.cc", 75, 1);
+        performTest("iz179095.cc", 75, 25, "iz179095.cc", 32, 5);
+
+        performTest("iz179095.cc", 44, 15, "iz179095.cc", 67, 1);
+        performTest("iz179095.cc", 67, 25, "iz179095.cc", 44, 5);
+
+        performTest("iz179095.cc", 48, 15, "iz179095.cc", 109, 1);
+        performTest("iz179095.cc", 109, 25, "iz179095.cc", 48, 5);
+
+        performTest("iz179095.cc", 48, 15, "iz179095.cc", 109, 1);
+        performTest("iz179095.cc", 109, 25, "iz179095.cc", 48, 5);
+
+        performTest("iz179095.cc", 51, 15, "iz179095.cc", 89, 1);
+        performTest("iz179095.cc", 89, 25, "iz179095.cc", 51, 5);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

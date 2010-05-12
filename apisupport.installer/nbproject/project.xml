@@ -143,7 +143,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.apisupport.installer.maven</friend>
+                <package>org.netbeans.modules.apisupport.installer.ui</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

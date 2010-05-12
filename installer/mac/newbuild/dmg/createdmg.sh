@@ -26,11 +26,16 @@ bunzip2 -d -c `dirname $0`/template.sparseimage.bz2 > ./dist/template.sparseimag
 
 mkdir ./dist/mountpoint
 hdiutil mount -verbose -mountpoint ./dist/mountpoint ./dist/template.sparseimage
+
 rm -rf ./dist/mountpoint/*
+echo "Running rsync..."
 rsync -a ./dist_dmg/ --exclude .DS_Store ./dist/mountpoint/
-diskutil rename ./dist/mountpoint "$volname"
+echo "Running diskutil rename..."
+diskutil rename `pwd`/dist/mountpoint "$volname"
+echo "Running hdiutil detach..."
 hdiutil detach -verbose ./dist/mountpoint
 
+echo "Running hdiutil create..."
 hdiutil create -verbose -srcdevice `pwd`/dist/template.sparseimage ./dist/"$dmgname"
 rm -f ./dist/template.sparseimage
 rmdir ./dist/mountpoint

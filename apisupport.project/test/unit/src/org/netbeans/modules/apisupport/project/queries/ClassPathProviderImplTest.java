@@ -42,6 +42,7 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,15 +67,18 @@ import org.netbeans.modules.apisupport.project.TestAntLogger;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.test.TestFileUtils;
 
 // XXX test GPR usage
 
@@ -83,7 +87,7 @@ import org.openide.execution.ExecutorTask;
  * @author Jesse Glick
  */
 public class ClassPathProviderImplTest extends TestBase {
-    
+
     public ClassPathProviderImplTest(String name) {
         super(name);
     }
@@ -145,20 +149,22 @@ public class ClassPathProviderImplTest extends TestBase {
             T t1 = null, t2 = null;
             if (it1.hasNext()) {
                 t1 = it1.next();
-                sb1.append("\t" + t1.toString() + "\n");
+                sb1.append("\t").append(t1.toString()).append("\n");
             } else {
                 dif = true;
             }
             if (it2.hasNext()) {
                 t2 = it2.next();
-                sb2.append("\t" + t2.toString() + "\n");
+                sb2.append("\t").append(t2.toString()).append("\n");
             } else {
                 dif = true;
             }
             if (!dif && !t1.equals(t2)) {
                 dif = true;
             }
-            if (! dif) i++;
+            if (!dif) {
+                i++;
+            }
             cnt++;
         }
         if (!dif) {
@@ -233,7 +239,6 @@ public class ClassPathProviderImplTest extends TestBase {
 //        cp = ClassPath.getClassPath(src, ClassPath.SOURCE);
 //        assertNotNull("have a SOURCE classpath", cp);
 //        assertEquals("right SOURCE classpath", Collections.singleton(src), new HashSet<FileObject>(Arrays.asList(cp.getRoots())));
-//        // XXX test BOOT
 //    }
 
     /**
@@ -465,7 +470,6 @@ public class ClassPathProviderImplTest extends TestBase {
         cp = ClassPath.getClassPath(srcbridge, ClassPath.SOURCE);
         assertNotNull("have a SOURCE classpath", cp);
         assertEquals("right SOURCE classpath", Collections.singleton(srcbridge), new HashSet<FileObject>(Arrays.asList(cp.getRoots())));
-        // XXX test BOOT
     }
      */
 
@@ -653,8 +657,9 @@ public class ClassPathProviderImplTest extends TestBase {
         public int c;
         @Override
         public void publish(LogRecord record) {
-            if (record.getMessage().startsWith("computeTestType: processing "))
+            if (record.getMessage().startsWith("computeTestType: processing ")) {
                 c++;
+            }
         }
         @Override
         public void flush() {
@@ -1069,4 +1074,50 @@ public class ClassPathProviderImplTest extends TestBase {
 //            expectedRoots, urlsOfCp(cp));
 //    }
     
+    public void testClassPathExtensionChanges() throws Exception { // #179578
+        NbModuleProject p = generateStandaloneModule("prj");
+        ClassPath cp = ClassPath.getClassPath(p.getSourceDirectory(), ClassPath.COMPILE);
+        assertEquals("", cp.toString());
+        FileObject xJar = TestFileUtils.writeZipFile(p.getProjectDirectory(), "release/modules/ext/x.jar", "META-INF/MANIFEST.MF:Manifest-Version: 1.0\n\n");
+        ProjectXMLManager pxm = new ProjectXMLManager(p);
+        pxm.replaceClassPathExtensions(Collections.singletonMap("ext/x.jar", "release/modules/ext/x.jar"));
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals(FileUtil.toFile(xJar).getAbsolutePath(), cp.toString());
+        pxm.replaceClassPathExtensions(Collections.singletonMap("ext/y.jar", (String) null));
+        ProjectManager.getDefault().saveProject(p);
+        assertEquals(p.getHelper().resolveFile("build/cluster/modules/ext/y.jar").getAbsolutePath(), cp.toString());
+    }
+
+    public void testBootClasspath() throws Exception {
+        NbModuleProject p = generateStandaloneModule("prj");
+        ClassPath boot = ClassPath.getClassPath(p.getSourceDirectory(), ClassPath.BOOT);
+        // XXX test that it is sane... although by default, ${nbjdk.home} will be undefined
+        FileObject xtra = TestFileUtils.writeZipFile(FileUtil.toFileObject(getWorkDir()), "xtra.jar", "META-INF/MANIFEST.MF:Manifest-Version: 1.0\n\n");
+        EditableProperties ep = p.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.put(ClassPathProviderImpl.BOOTCLASSPATH_PREPEND, FileUtil.toFile(xtra).getAbsolutePath());
+        p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ProjectManager.getDefault().saveProject(p);
+        assertTrue(boot.toString(), Arrays.asList(boot.getRoots()).contains(FileUtil.getArchiveRoot(xtra)));
+    }
+
+    public void testSourcePathForWrappedJarSource() throws Exception { // #176983
+        NbModuleProject p = generateStandaloneModule("prj");
+        String relpath = "release/sources/x.zip";
+        FileObject srcZip = TestFileUtils.writeZipFile(p.getProjectDirectory(), relpath, "pkg/C.java:package pkg; public class C {}");
+        EditableProperties ep = p.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.put(NbModuleProject.SOURCE_START + "x.jar", relpath);
+        // could also create a <class-path-extension> named release/modules/ext/x.jar, but don't have to
+        p.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ProjectManager.getDefault().saveProject(p);
+        FileObject srcZipRoot = FileUtil.getArchiveRoot(srcZip);
+        ClassPath cp = ClassPath.getClassPath(srcZipRoot, ClassPath.SOURCE);
+        assertNotNull(cp);
+        assertEquals(Collections.singletonList(srcZipRoot), Arrays.asList(cp.getRoots()));
+        /* Currently fails; maybe not worth implementing:
+        assertEquals(cp, ClassPath.getClassPath(srcZipRoot.getFileObject("pkg/C.java"), ClassPath.SOURCE));
+         */
+        assertEquals(Collections.singletonList(srcZipRoot),
+                Arrays.asList(ClassPath.getClassPath(srcZipRoot.getFileObject("pkg/C.java"), ClassPath.SOURCE).getRoots()));
+    }
+
 }

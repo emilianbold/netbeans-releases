@@ -105,14 +105,20 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="prepare-javame-sdk-zip">
         <mkdir dir="build"/> 
-        <get src="${javame_sdk30_bits_location}"  dest="${common.name}${ml.suffix}-mobility-sdk.zip"/>
+        <get src="${javame_sdk30_bits_location}"         dest="${common.name}${ml.suffix}-mobility-sdk.zip"/>
+        <get src="${javame_sdk30_bits_update_location}"  dest="${common.name}${ml.suffix}-mobility-sdk-update.zip"/>
 
         <mkdir dir="${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="unzip -o -d ${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0 ${common.name}${ml.suffix}-mobility-sdk.zip"/>
-        </exec>      
+        </exec>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="unzip -o -d ${basedir}/javametmpdir/mobility/Java_ME_platform_SDK_3.0 ${common.name}${ml.suffix}-mobility-sdk-update.zip"/>
+        </exec>
         <delete file="${common.name}${ml.suffix}-mobility-sdk.zip"/>
+        <delete file="${common.name}${ml.suffix}-mobility-sdk-update.zip"/>
 
         <!-- see netBeans/javame/pkg/scripts/postflight for more info on this -->
         <exec executable="sh" failonerror="yes">
@@ -275,16 +281,22 @@ Microsystems, Inc. All Rights Reserved.
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value=" ${packagemaker.path} -build -v -p ${basedir}/build/${module.name}-${nb.id}.pkg -f ${module.builddir}/netbeans -i ${module.builddir}/Info.plist -r ${scriptsdir} -d ${module.builddir}/Description.plist"/>
-        </exec>                                         
+        </exec>
+        <echo message="Deleting TokenDefinitions.plist and IFPkgPathMappings, see Issue #184419 for details"/>
+        <property name="token.def.plist" value="${basedir}/build/${module.name}-${nb.id}.pkg/Contents/Resources/TokenDefinitions.plist"/>
+        <exec executable="sh" failonerror="no">
+            <arg value="-c"/>
+            <arg value="[ -e  '${token.def.plist}' ] &amp;&amp; rm -f '${token.def.plist}' &amp;&amp; /usr/libexec/PlistBuddy -c 'Delete IFPkgPathMappings' '${basedir}/build/${module.name}-${nb.id}.pkg/Contents/Info.plist'"/>
+        </exec>
     </target>          
 
 
     <target name="init-bundles">
-        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                              -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg),
-                                             -java(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                             -java(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),
-                                             -ruby(./build/baseide-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg),
+                                             -ruby(./build/baseide-${nb.id}.pkg ./build/ruby-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg),
                                              -php(./build/baseide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
                                              "/>
 
@@ -297,7 +309,7 @@ Microsystems, Inc. All Rights Reserved.
             <equals arg1="${javafx.build}" arg2="0"/>
         </condition>
     </target>
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-sun-pkg,build-tomcat-pkg,init-bundles">
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg"/>                          
             <ant target="build-dmg">
@@ -517,8 +529,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
             <filterset>
                 <filter token="NB_ID" value="${nb.id}"/>
-                <!--<filter token="GLASSFISHV3_ID" value="${glassfish.v3.id}"/>-->
-                <filter token="GLASSFISHV3_SUN_ID" value="${glassfish.v3.sun.id}"/>
+                <filter token="GLASSFISHV3_ID" value="${glassfish.v3.id}"/>
+                <!--<filter token="GLASSFISHV3_SUN_ID" value="${glassfish.v3.sun.id}"/>-->
                 <!--<filter token="GLASSFISH_ID" value="${glassfish.id}"/>
                 <filter token="SJSAS_ID" value="${sjsas.id}"/>-->
                 <filter token="TOMCAT_ID" value="${tomcat.id}"/>
@@ -533,7 +545,8 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
                 <!--<filter token="SIZE_SOA" value="${sizeof.soa}"/>-->
                 <filter token="SIZE_ERGONOMICS" value="${sizeof.ergonomics}"/>
-                <filter token="SIZE_GLASSFISHV3_SUN" value="${sizeof.glassfish.v3.sun}"/>
+                <!--<filter token="SIZE_GLASSFISHV3_SUN" value="${sizeof.glassfish.v3.sun}"/>-->
+                <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3}"/>
                 <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
                 <!--<filter token="SIZE_OPENESB" value="${sizeof.openesb}"/>-->
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                

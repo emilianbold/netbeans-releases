@@ -39,6 +39,8 @@
 package org.netbeans.modules.dlight.api.support;
 
 import java.net.ConnectException;
+import java.nio.charset.Charset;
+import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -176,13 +178,12 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                 case CANCELLED:
                     doNotify = false;
                     state = State.TERMINATED;
-                    log.fine("NativeTask " + process.toString() + " cancelled!"); // NOI18N
+                    log.log(Level.FINE, "NativeTask {0} cancelled!", process.toString()); // NOI18N
                     break;
                 case ERROR:
                     doNotify = false;
                     state = State.FAILED;
-                    log.fine("NativeTask " + process.toString() + // NOI18N
-                            " finished with error! "); // NOI18N
+                    log.log(Level.FINE, "NativeTask {0} finished with error! ", process.toString()); // NOI18N
                     break;
                 case FINISHED:
                     doNotify = false;
@@ -318,6 +319,18 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                     notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, stateToNotify, statusToNotify));
                 }
             });
+
+            Charset charset = Charset.defaultCharset();
+
+            String charsetName = getInfo(Charset.class.getName());
+            if (charsetName != null) {
+                try {
+                    charset = Charset.forName(charsetName);
+                } catch (Exception ex) {
+                }
+            }
+            
+            descr.charset(charset);
 
             final NativeExecutionService es = NativeExecutionService.newService(
                     pb,

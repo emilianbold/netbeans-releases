@@ -120,11 +120,11 @@ public final class FileBasedFileSystem extends FileSystem {
         return FileObjectFactory.factories();
     }        
 
-    public static final FileObject getFileObject(final File file) {
+    public static FileObject getFileObject(final File file) {
         return getFileObject(file, FileObjectFactory.Caller.GetFileObject);
     }
     
-    public static final FileObject getFileObject(final File file, FileObjectFactory.Caller caller) {
+    public static FileObject getFileObject(final File file, FileObjectFactory.Caller caller) {
         FileObjectFactory fs = FileObjectFactory.getInstance(file);
         FileObject retval = null;
         if (fs != null) {
@@ -145,12 +145,14 @@ public final class FileBasedFileSystem extends FileSystem {
     @Override
     public void refresh(final boolean expected) {                        
         final Runnable r = new Runnable() {
+            @Override
             public void run() {
                 refreshImpl(expected);
             }            
         };
         try {
             FileBasedFileSystem.getInstance().runAtomicAction(new FileSystem.AtomicAction() {
+                @Override
                 public void run() throws IOException {
                     FileBasedFileSystem.runAsInconsistent(r);
                 }
@@ -243,6 +245,7 @@ public final class FileBasedFileSystem extends FileSystem {
             return new ProvidedExtensionsProxy(c);
         }
 
+        @Override
         public void resultChanged(org.openide.util.LookupEvent ev) {
             Collection<? extends AnnotationProvider> now = annotationProviders.allInstances();
             Collection<? extends AnnotationProvider> add;
@@ -295,10 +298,12 @@ public final class FileBasedFileSystem extends FileSystem {
             return null;
         }
 
+        @Override
         public void annotationChanged(org.openide.filesystems.FileStatusEvent ev) {
             fireFileStatusChanged(ev);
         }
 
+        @Override
         public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
             Image retVal = null;
 
@@ -314,6 +319,7 @@ public final class FileBasedFileSystem extends FileSystem {
             return icon;
         }
 
+        @Override
         public String annotateName(String name, Set<? extends FileObject> files) {
             String retVal = null;
             Iterator<? extends AnnotationProvider> it = annotationProviders.allInstances().iterator();
@@ -327,6 +333,7 @@ public final class FileBasedFileSystem extends FileSystem {
             return name;
         }
 
+        @Override
         public String annotateNameHtml(String name, Set<? extends FileObject> files) {
             String retVal = null;
             Iterator<? extends AnnotationProvider> it = annotationProviders.allInstances().iterator();

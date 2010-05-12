@@ -70,11 +70,19 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     private Category category;
     
     private AutoscrollSupport support;
+
+    private static Color aquaBackground;
     
     // Workaround for JDK bug in GTK #6527149 - use Metal UI class
     static {
         if (isGTK) {
             UIManager.put("MetalCheckBoxUI_4_GTK", "javax.swing.plaf.metal.MetalCheckBoxUI");
+        }
+        if( isAqua ) {
+            Color defBk = UIManager.getColor("NbExplorerView.background"); //NOI18N
+            aquaBackground = new Color( Math.max(0,defBk.getRed()-15)
+                    , Math.max(0,defBk.getGreen()-15)
+                    , Math.max(0,defBk.getBlue()-15));
         }
     }
 
@@ -225,8 +233,10 @@ class CategoryButton extends JCheckBox implements Autoscroll {
                 return UIManager.getColor("Tree.selectionBackground"); //NOI18N
             return UIManager.getColor( "PropSheet.selectedSetBackground" ); //NOI18N
         } else {
-            if( isAqua )
-                return UIManager.getColor("NbExplorerView.background");
+            if( isAqua ) {
+                Color defBk = UIManager.getColor("NbExplorerView.background");
+                return new Color( defBk.getRed()-10, defBk.getGreen()-10, defBk.getBlue()-10);
+            }
             if( isGTK || isNimbus ) {
                 if( getModel().isRollover() )
                     return new Color( UIManager.getColor( "Menu.background" ).getRGB() ).darker(); //NOI18N

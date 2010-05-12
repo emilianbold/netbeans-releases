@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -48,9 +48,9 @@ made subject to such option by the copyright holder.
     <folder name="AutoupdateType">
       <!-- this ordering left because backward compatibility with deserialized autoupdate types -->
       <file name="standard-update-provider.instance">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
-        <attr name="url_key" stringvalue="URL_LatestBuild"/>
+        <attr name="displayName" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#Services/AutoupdateType/standard-update-provider.instance"/>
+        <attr name="iconBase" stringvalue="org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
+        <attr name="url" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#URL_LatestBuild"/>
         <attr name="category" stringvalue="STANDARD"/>
         <attr name="enabled" boolvalue="true"/>
         <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
@@ -58,9 +58,9 @@ made subject to such option by the copyright holder.
       </file>
     
       <file name="dev-update-provider.instance">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
-          <attr name="url_key" stringvalue="URL_Default_N"/>
+          <attr name="displayName" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#Services/AutoupdateType/dev-update-provider.instance"/>
+          <attr name="iconBase" stringvalue="org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
+          <attr name="url" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#URL_Default_N"/>
           <attr name="category" stringvalue="STANDARD"/> 
           <attr name="enabled" boolvalue="true"/>
           <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />

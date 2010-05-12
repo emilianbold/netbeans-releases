@@ -103,7 +103,7 @@ made subject to such option by the copyright holder.
                 </filtermapper>
             </chainedmapper>
         </pathconvert>
-        <tempfile property="old.project.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true"/>
+        <tempfile property="old.project.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true" prefix="duplicates"/>
         <mkdir dir="${basedir}/build"/>
         <echo file="${old.project.clusters.duplicates.file}" message="${old.project.clusters.duplicates}"/>
 
@@ -287,6 +287,7 @@ made subject to such option by the copyright holder.
     <target name="reload" depends="netbeans">
         <ant antfile="${harness.dir}/run.xml" target="run">
             <property name="run.args" value='--reload "${cluster}/${module.jar}"'/>
+            <property name="run.args.extra" value=""/>
             <reference refid="cluster.path.id"/>
         </ant>
     </target>

@@ -81,6 +81,7 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
             ProjectPropertiesSupport.addWeakIgnoredFilesListener(project, this);
         }
 
+        @Override
         public boolean acceptDataObject(DataObject object) {
             return !isNbProject(object)
                     && !isTestDirectory(object)
@@ -112,14 +113,17 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
             return false;
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             changeSupport.fireChange();
         }
 
+        @Override
         public void addChangeListener(ChangeListener listener) {
             changeSupport.addChangeListener(listener);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
         }

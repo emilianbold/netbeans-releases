@@ -113,12 +113,14 @@ public class RADComponentRenameRefactoringSupport {
                         Trees trees = info.getTrees();
                         TreePath path = new TreePath(getCurrentPath(), tr);
                         Element el = trees.getElement(path);
-                        String sname = el.getSimpleName().toString();
-                        if(sname.equals(this.member)){
-                            this.handle = TreePathHandle.create(path, info);
-                            variableElement = el;
-                            if (findUsages) {
-                                usagesPositions = new ArrayList<Integer>();
+                        if (el != null) { // Issue 185420
+                            String sname = el.getSimpleName().toString();
+                            if(sname.equals(this.member)){
+                                this.handle = TreePathHandle.create(path, info);
+                                variableElement = el;
+                                if (findUsages) {
+                                    usagesPositions = new ArrayList<Integer>();
+                                }
                             }
                         }
                     }

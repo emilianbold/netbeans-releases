@@ -123,6 +123,10 @@ public class APTHandlersSupport {
         return APTHandlersSupportImpl.createInvalidPreprocState(orig);
     }
 
+    public static boolean equalsIgnoreInvalid(APTPreprocHandler.State state1, APTPreprocHandler.State state2) {
+        return APTHandlersSupportImpl.equalsIgnoreInvalid(state1, state2);
+    }
+
     public static final class StateKey {
         private final int crc1,crc2;
         public StateKey(int crc1, int crc2){

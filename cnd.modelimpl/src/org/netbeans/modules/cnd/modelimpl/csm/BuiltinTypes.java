@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.ObjectBasedUID;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  * Implementation for built-in types
@@ -81,7 +81,7 @@ public class BuiltinTypes {
         }
 
         public CharSequence getUniqueName() {
-            return CharSequenceKey.create(Utils.getCsmDeclarationKindkey(getKind()) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +  getQualifiedName());
+            return CharSequences.create(Utils.getCsmDeclarationKindkey(getKind()) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +  getQualifiedName());
         }
         
         public CharSequence getName() {

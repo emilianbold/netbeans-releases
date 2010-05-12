@@ -70,6 +70,7 @@ import javax.swing.JEditorPane;
 import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Keymap;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseTextUI;
@@ -105,6 +106,7 @@ import org.openide.modules.PatchedPublic;
  */
 public class ToolTipSupport {
 
+    // -J-Dorg.netbeans.editor.ext.ToolTipSupport.level=FINE
     private static final Logger LOG = Logger.getLogger(ToolTipSupport.class.getName());
 
     static {
@@ -179,39 +181,46 @@ public class ToolTipSupport {
     private final Action HIDE_ACTION = new TextAction("tooltip-hide-action") { //NOI18N
         public @Override void actionPerformed(ActionEvent e) {
             ToolTipSupport.this.setToolTipVisible(false);
+            JTextComponent jtc = extEditorUI.getComponent();
+            if (jtc != null) {
+                Utilities.requestFocus(jtc);
+            }
         }
     };
 
     private static final MouseListener NO_OP_MOUSE_LISTENER = new MouseAdapter() {};
 
+    /** @Since 2.10 */
+    public static final int FLAG_HIDE_ON_MOUSE_MOVE = 1;
+    /** @Since 2.10 */
+    public static final int FLAG_HIDE_ON_TIMER = 2;
+    /** @Since 2.10 */
+    public static final int FLAG_PERMANENT = 4;
+
+    /** @Since 2.10 */
+    public static final int FLAGS_LIGHTWEIGHT_TOOLTIP = FLAG_HIDE_ON_MOUSE_MOVE | FLAG_HIDE_ON_TIMER;
+    /** @Since 2.10 */
+    public static final int FLAGS_HEAVYWEIGHT_TOOLTIP = FLAG_PERMANENT;
+
     private final EditorUI extEditorUI;
-
-    private JComponent toolTip;
-
-    private String toolTipText;
-    
     private final Timer enterTimer;
-
     private final Timer exitTimer;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final Listener listener = new Listener();
 
     private boolean enabled;
-    
-    /** Status of the tooltip visibility. */
-    private int status;
-
     private MouseEvent lastMouseEvent;
-
-    private PropertyChangeSupport pcs;
-    
-    private PopupManager.HorizontalBounds horizontalBounds = PopupManager.ViewPortBounds;
-    private PopupManager.Placement placement = PopupManager.AbovePreferred;
-
-    private int verticalAdjustment;
-    private int horizontalAdjustment;
-    
     private boolean glyphListenerAdded = false;
 
-    private final Listener listener = new Listener();
+    // The actual tooltip instance related information
+    private int status; // Status of the tooltip visibility
+    private JComponent toolTip;
+    private String toolTipText;
+    private PopupManager.HorizontalBounds horizontalBounds = PopupManager.ViewPortBounds;
+    private PopupManager.Placement placement = PopupManager.AbovePreferred;
+    private int verticalAdjustment;
+    private int horizontalAdjustment;
+    private int flags;
 
     /** Construct new support for tooltips.
      */
@@ -253,22 +262,45 @@ public class ToolTipSupport {
         setToolTip(toolTip, PopupManager.ViewPortBounds, PopupManager.AbovePreferred);
     }
 
-    public void setToolTip(JComponent toolTip, PopupManager.HorizontalBounds horizontalBounds, 
-        PopupManager.Placement placement) {
+    public void setToolTip(JComponent toolTip, PopupManager.HorizontalBounds horizontalBounds, PopupManager.Placement placement) {
         setToolTip(toolTip, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0);
     }
     
-    public void setToolTip(JComponent toolTip, PopupManager.HorizontalBounds horizontalBounds, 
-        PopupManager.Placement placement, int horizontalAdjustment, int verticalAdjustment) {
+    public void setToolTip(
+        JComponent toolTip,
+        PopupManager.HorizontalBounds horizontalBounds,
+        PopupManager.Placement placement,
+        int horizontalAdjustment,
+        int verticalAdjustment
+    ) {
+        setToolTip(toolTip, horizontalBounds, placement, horizontalAdjustment, verticalAdjustment, FLAGS_LIGHTWEIGHT_TOOLTIP);
+    }
+
+    /**
+     * @Since 2.10
+     */
+    public void setToolTip(
+        JComponent toolTip,
+        PopupManager.HorizontalBounds horizontalBounds,
+        PopupManager.Placement placement,
+        int horizontalAdjustment,
+        int verticalAdjustment,
+        int flags
+    ) {
         JComponent oldToolTip = this.toolTip;
 
-        LOG.log(Level.FINE, "setTooltip: {0}", toolTip); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "setTooltip: {0}, horizontalBounds={1}, placement={2}, horizontalAdjustment={3}, verticalAdjustment={4}, flags={5}", new Object [] { //NOI18N
+                toolTip, horizontalBounds, placement, horizontalAdjustment, verticalAdjustment, flags
+            });
+        }
         
         this.toolTip = toolTip;
         this.horizontalBounds = horizontalBounds;
         this.placement = placement;
         this.horizontalAdjustment = horizontalAdjustment;
         this.verticalAdjustment = verticalAdjustment;
+        this.flags = flags;
 
         if (this.toolTip.getClientProperty(MOUSE_LISTENER) == null) {
             this.toolTip.putClientProperty(MOUSE_LISTENER, NO_OP_MOUSE_LISTENER);
@@ -306,6 +338,13 @@ public class ToolTipSupport {
                     height = prefSize.height;
                 }
                 super.setSize(width, height);
+            }
+            @Override
+            public void setKeymap(Keymap map) {
+                //#181722: keymaps are shared among components with the same UI
+                //a default action will be set to the Keymap of this component below,
+                //so it is necessary to use a Keymap that is not shared with other components
+                super.setKeymap(addKeymap(null, map));
             }
         }
 
@@ -390,6 +429,13 @@ public class ToolTipSupport {
                     }
                 }
                 super.setSize(width, height);
+            }
+            @Override
+            public void setKeymap(Keymap map) {
+                //#181722: keymaps are shared among components with the same UI
+                //a default action will be set to the Keymap of this component below,
+                //so it is necessary to use a Keymap that is not shared with other JTextAreas
+                super.setKeymap(addKeymap(null, map));
             }
         }
 
@@ -480,6 +526,10 @@ public class ToolTipSupport {
      * @since 2.3
      */
     public void setToolTipVisible(boolean visible) {
+        LOG.log(Level.FINE, "setToolTipVisible: visible={0}, status={1}, enabled={2}", new Object [] { //NOI18N
+            visible, status, enabled
+        });
+
         if (!visible) { // ensure the timers are stopped
             enterTimer.stop();
             exitTimer.stop();
@@ -505,13 +555,10 @@ public class ToolTipSupport {
                             pm.uninstall(toolTip);
                         }
                     }
+                    toolTip = null;
                 }
 
                 setStatus(STATUS_HIDDEN);
-                JTextComponent jtc = extEditorUI.getComponent();
-                if (jtc != null) {
-                    jtc.requestFocusInWindow();
-                }
             }
         }
     }
@@ -521,6 +568,10 @@ public class ToolTipSupport {
      */
     public boolean isToolTipVisible() {
         return status > STATUS_VISIBILITY_ENABLED;
+    }
+
+    private boolean isToolTipShowing() {
+        return toolTip != null && toolTip.isShowing();
     }
     
     /** @return status of the tooltip visibility. It can
@@ -834,24 +885,17 @@ public class ToolTipSupport {
         setToolTipText(component.getToolTipText());
     }
 
-    private synchronized PropertyChangeSupport getPCS() {
-        if (pcs == null) {
-            pcs = new PropertyChangeSupport(this);
-        }
-        return pcs;
-    }
-
     /** Add the listener for the property changes. The names
      * of the supported properties are defined
      * as "PROP_" public static string constants.
      * @param listener listener to be added.
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        getPCS().addPropertyChangeListener(listener);
+        pcs.addPropertyChangeListener(listener);
     }
     
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        getPCS().removePropertyChangeListener(listener);
+        pcs.removePropertyChangeListener(listener);
     }
     
     /** Fire the change of the given property.
@@ -859,9 +903,8 @@ public class ToolTipSupport {
      * @param oldValue old value of the property
      * @param newValue new value of the property.
      */
-    protected void firePropertyChange(String propertyName,
-    Object oldValue, Object newValue) {
-        getPCS().firePropertyChange(propertyName, oldValue, newValue);
+    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        pcs.firePropertyChange(propertyName, oldValue, newValue);
     }
     
     private static void filterBindings(ActionMap actionMap) {
@@ -941,10 +984,14 @@ public class ToolTipSupport {
 
         public @Override void actionPerformed(ActionEvent evt) {
             if (evt.getSource() == enterTimer) {
-                setToolTipVisible(true);
+                if (!isToolTipShowing() || (flags & FLAG_PERMANENT) == 0) {
+                    setToolTipVisible(true);
+                }
 
             } else if (evt.getSource() == exitTimer) {
-                setToolTipVisible(false);
+                if (!isToolTipShowing() || (flags & FLAG_HIDE_ON_TIMER) != 0) {
+                    setToolTipVisible(false);
+                }
             }
         }
 
@@ -986,7 +1033,7 @@ public class ToolTipSupport {
 
         public @Override void mouseExited(MouseEvent evt) {
             lastMouseEvent = evt;
-            if (toolTip != null && toolTip.isShowing()) {
+            if (isToolTipShowing()) {
                 Rectangle r = new Rectangle(toolTip.getLocationOnScreen(), toolTip.getSize());
 
                 if (LOG.isLoggable(Level.FINE)) {
@@ -998,7 +1045,10 @@ public class ToolTipSupport {
                     return;
                 }
             }
-            setToolTipVisible(false);
+
+            if (!isToolTipShowing() || (flags & FLAG_HIDE_ON_MOUSE_MOVE) != 0) {
+                setToolTipVisible(false);
+            }
         }
 
         // -------------------------------------------------------------------
@@ -1011,6 +1061,10 @@ public class ToolTipSupport {
         }
 
         public @Override void mouseMoved(MouseEvent evt) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "mouseMoved: x=" + evt.getX() + "; y=" + evt.getY() + "enabled=" + enabled + ", status=" + status + ", flags=" + flags); //NOI18N
+            }
+
             if (toolTip != null) {
                 Rectangle r = (Rectangle) toolTip.getClientProperty(MOUSE_MOVE_IGNORED_AREA);
                 if (LOG.isLoggable(Level.FINE)) {
@@ -1022,7 +1076,10 @@ public class ToolTipSupport {
                 }
             }
 
-            setToolTipVisible(false);
+            if (!isToolTipShowing() || (flags & FLAG_HIDE_ON_MOUSE_MOVE) != 0) {
+                setToolTipVisible(false);
+            }
+            
             if (enabled) {
                 enterTimer.restart();
             }

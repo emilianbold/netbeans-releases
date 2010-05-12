@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="performance")
+@Hint(category="performance", suppressWarnings="StringBufferMayBeStringBuilder")
 public class StringBuffer2Builder {
 
     @TriggerPattern(value="java.lang.StringBuffer $buffer = new java.lang.StringBuffer($args$);")

@@ -95,6 +95,15 @@ public class ExeElfObject extends ExeObject {
         return getPrimaryFile ();
     }
 
+    /*
+     * Return name with extension so renaming etc works
+     */
+    @Override
+    public String getName() {
+	String ename = getPrimaryFile().getNameExt();
+	return ename;
+    }
+
     @Override
     protected DataObject handleCopy(DataFolder df) throws IOException {
 	// let super do the job and then set the execution flag on the copy

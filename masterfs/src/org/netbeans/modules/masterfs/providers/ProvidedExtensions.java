@@ -43,6 +43,9 @@ package org.netbeans.modules.masterfs.providers;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.Callable;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -186,5 +189,38 @@ public class ProvidedExtensions implements InterceptionListener {
      */
     public Object getAttribute(File file, String attrName) {
         return null;
+    }
+
+    /** Allows versioning system to exclude some children from recursive
+     * listening check. Also notifies the versioning whenever a refresh
+     * is required and allows the versiniong to provide special timestamp
+     * for a directory.
+     * <p>
+     * Default implementation of this method returns -1.
+     *
+     * @param dir the directory to check timestamp for
+     * @param lastTimeStamp the previously known timestamp or -1
+     * @param children add subfiles that shall be interated into this array
+     * @return the timestamp that shall represent this directory, it will
+     *   be compared with timestamps of all children and the newest
+     *   one will be kept and next time passed as lastTimeStamp. Return
+     *   0 if the directory does not have any special timestamp. Return
+     *   -1 if you are not providing any special implementation
+     * @since 2.23
+     */
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        return -1;
+    }
+
+    /** Allows registered exceptions to execute some I/O priority action.
+     * This will stop all other "idle I/O" operations (like background refresh
+     * after window is activated).
+     *
+     * @param callable the {@link Callable} to run
+     * @throws Exception the exception thrown by the callable
+     * @since 2.35
+     */
+    public static <T> T priorityIO(Callable<T> run) throws Exception {
+        return FileChangedManager.priorityIO(run);
     }
 }

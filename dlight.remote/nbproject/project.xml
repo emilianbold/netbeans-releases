@@ -62,11 +62,6 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.cnd.remote</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -99,6 +94,7 @@
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
                 <package>org.netbeans.modules.remote.api</package>
+                <package>org.netbeans.modules.remote.api.ui</package>
                 <package>org.netbeans.modules.remote.impl.spi</package>
                 <package>org.netbeans.modules.remote.spi</package>
             </friend-packages>

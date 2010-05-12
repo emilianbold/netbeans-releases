@@ -49,7 +49,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -64,6 +63,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -125,7 +125,7 @@ public abstract class BugtrackingOwnerSupport {
             case ALL_PROJECTS:
                 return getRepository(OpenProjects.getDefault().getOpenProjects());
             case SELECTED_FILE_AND_ALL_PROJECTS:
-                File contextFile = BugtrackingUtil.getLargerContext();
+                File contextFile = getLargerContext();
                 if (contextFile != null) {
                     return getRepositoryForContext(contextFile, false);
                 }
@@ -230,13 +230,13 @@ public abstract class BugtrackingOwnerSupport {
         }
 
         FileToRepoMappingStorage.getInstance().setFirmAssociation(
-                BugtrackingUtil.getLargerContext(files[0]),
+                getLargerContext(files[0]),
                 repository);
     }
 
     public void setFirmAssociation(File file, Repository repository) {
         FileToRepoMappingStorage.getInstance().setFirmAssociation(
-                BugtrackingUtil.getLargerContext(file),
+                getLargerContext(file),
                 repository);
     }
 
@@ -249,20 +249,20 @@ public abstract class BugtrackingOwnerSupport {
             case MAIN_PROJECT_ONLY:
                 Project mainProject = projects.getMainProject();
                 if (mainProject != null) {
-                    context = BugtrackingUtil.getLargerContext(mainProject);
+                    context = getLargerContext(mainProject);
                 }
                 break;
             case MAIN_OR_SINGLE_PROJECT:
                 Project mainOrSingleProject = getMainOrSingleProject();
                 if (mainOrSingleProject != null) {
-                    context = BugtrackingUtil.getLargerContext(mainOrSingleProject);
+                    context = getLargerContext(mainOrSingleProject);
                 }
                 break;
             case ALL_PROJECTS:
-                context = BugtrackingUtil.getContextFromProjects();
+                context = getContextFromProjects();
                 break;
             case SELECTED_FILE_AND_ALL_PROJECTS:
-                context = BugtrackingUtil.getLargerContext();
+                context = getLargerContext();
                 break;
             default:
                 assert false;
@@ -278,7 +278,7 @@ public abstract class BugtrackingOwnerSupport {
 
     public void setLooseAssociation(File file, Repository repository) {
         FileToRepoMappingStorage.getInstance().setLooseAssociation(
-                BugtrackingUtil.getLargerContext(file),
+                getLargerContext(file),
                 repository);
     }
 
@@ -290,12 +290,135 @@ public abstract class BugtrackingOwnerSupport {
         return FileToRepoMappingStorage.getInstance().getAllFirmlyAssociatedUrls();
     }
 
+    private static File getLargerContext() {
+        FileObject openFile = getOpenFileObj();
+        if (openFile != null) {
+            File largerContext = getLargerContext(openFile);
+            if (largerContext != null) {
+                return largerContext;
+            }
+        }
+
+        return getContextFromProjects();
+    }
+
+    private static File getContextFromProjects() {
+        final OpenProjects projects = OpenProjects.getDefault();
+
+        Project mainProject = projects.getMainProject();
+        if (mainProject != null) {
+            return getLargerContext(mainProject);       //null or non-null
+        }
+
+        Project[] openProjects = projects.getOpenProjects();
+        if ((openProjects != null) && (openProjects.length == 1)) {
+            return getLargerContext(openProjects[0]);
+        }
+
+        return null;
+    }
+
+    private static File getLargerContext(File file) {
+        return getLargerContext(file, null);
+    }
+
+    private static File getLargerContext(FileObject fileObj) {
+        return getLargerContext(null, fileObj);
+    }
+
+    private static File getLargerContext(File file, FileObject fileObj) {
+        if ((file == null) && (fileObj == null)) {
+            throw new IllegalArgumentException(
+                    "both File and FileObject are null");               //NOI18N
+        }
+
+        assert (file == null)
+               || (fileObj == null)
+               || FileUtil.toFileObject(file).equals(fileObj);
+
+        if (fileObj == null) {
+            fileObj = getFileObjForFileOrParent(file);
+        } else if (file == null) {
+            file = FileUtil.toFile(fileObj);
+        }
+
+        if (fileObj == null) {
+            return null;
+        }
+        if (!fileObj.isValid()) {
+            return null;
+        }
+
+        Project parentProject = FileOwnerQuery.getOwner(fileObj);
+        if (parentProject != null) {
+            FileObject parentProjectFolder = parentProject.getProjectDirectory();
+            if (parentProjectFolder.equals(fileObj) && (file != null)) {
+                return file;
+            }
+            File folder = FileUtil.toFile(parentProjectFolder);
+            if (folder != null) {
+                return folder;
+            }
+        }
+
+        if (fileObj.isFolder()) {
+            return file;                        //whether it is null or non-null
+        } else {
+            fileObj = fileObj.getParent();
+            assert fileObj != null;      //every non-folder should have a parent
+            return FileUtil.toFile(fileObj);    //whether it is null or non-null
+        }
+    }
+
+
+    private static FileObject getFileObjForFileOrParent(File file) {
+        FileObject fileObj = FileUtil.toFileObject(file);
+        if (fileObj != null) {
+            return fileObj;
+        }
+
+        File closestParentFile = file.getParentFile();
+        while (closestParentFile != null) {
+            fileObj = FileUtil.toFileObject(closestParentFile);
+            if (fileObj != null) {
+                return fileObj;
+            }
+            closestParentFile = closestParentFile.getParentFile();
+        }
+
+        return null;
+    }
+
+    private static File getLargerContext(Project project) {
+        FileObject projectFolder = project.getProjectDirectory();
+        assert projectFolder != null;
+
+        return FileUtil.toFile(projectFolder);
+    }
+
+    private static FileObject getOpenFileObj() {
+        TopComponent activatedTopComponent = TopComponent.getRegistry()
+                                             .getActivated();
+        if (activatedTopComponent == null) {
+            return null;
+        }
+
+        DataObject dataObj = activatedTopComponent.getLookup()
+                             .lookup(DataObject.class);
+        if ((dataObj == null) || !dataObj.isValid()) {
+            return null;
+        }
+
+        return dataObj.getPrimaryFile();
+    }
+
     //--------------------------------------------------------------------------
 
     private static class DefaultImpl extends BugtrackingOwnerSupport {
 
-        private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport");   // NOI18N
+        private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport");   // NOI18N
 
+        @Override
         protected Repository getRepository(DataObject dataObj) {
             FileObject fileObj = dataObj.getPrimaryFile();
             if (fileObj == null) {
@@ -319,6 +442,7 @@ public abstract class BugtrackingOwnerSupport {
             return repo;
         }
 
+        @Override
         public Repository getRepository(Project project, boolean askIfUnknown) {
             Repository repo;
 
@@ -332,14 +456,15 @@ public abstract class BugtrackingOwnerSupport {
                 return null;
             }
 
-            File context = BugtrackingUtil.getLargerContext(project);
+            File context = getLargerContext(project);
             if (context != null) {
                 return getRepositoryForContext(context, null, askIfUnknown);
             } else {
-                return askUserToSpecifyRepository(null, null);
+                return askUserToSpecifyRepository(null);
             }
         }
 
+        @Override
         public Repository getRepository(File file, String issueId, boolean askIfUnknown) {
             //TODO - synchronization/threading
             FileObject fileObject = FileUtil.toFileObject(file);
@@ -352,7 +477,7 @@ public abstract class BugtrackingOwnerSupport {
                         return repo;
                     }
                 } catch (IOException ex) {
-                    LOG.log(Level.WARNING,
+                    LOG.log(Level.INFO,
                           " communication with Kenai failed while loading " //NOI18N
                               + "information about bugtracking repository", //NOI18N
                           ex);
@@ -360,7 +485,7 @@ public abstract class BugtrackingOwnerSupport {
                 }
             }
 
-            File context = BugtrackingUtil.getLargerContext(file, fileObject);
+            File context = getLargerContext(file, fileObject);
             if (context == null) {
                 context = file;
             }
@@ -373,8 +498,9 @@ public abstract class BugtrackingOwnerSupport {
             Repository repo = FileToRepoMappingStorage.getInstance()
                               .getFirmlyAssociatedRepository(context);
             if (repo != null) {
-                LOG.log(Level.FINER, " found stored repository [" + repo    //NOI18N
-                                     + "] for directory " + context); //NOI18N
+                LOG.log(Level.FINER, 
+                        " found stored repository [{0}] for directory {1}",     //NOI18N
+                        new Object[]{repo, context});
                 return repo;
             }
 
@@ -384,7 +510,7 @@ public abstract class BugtrackingOwnerSupport {
                 return suggestedRepository;
             }
 
-            repo = askUserToSpecifyRepository(issueId, suggestedRepository);
+            repo = askUserToSpecifyRepository(suggestedRepository);
             if (repo != null) {
                 return repo;
             }
@@ -427,15 +553,15 @@ public abstract class BugtrackingOwnerSupport {
                     }
                 } catch (IOException ex) {
                     /* the remote location (URL) denotes a Kenai project */
-                    if ("Not Found".equals(ex.getMessage())) {              //NOI18N
-                        BugtrackingManager.LOG.log(Level.INFO,
-                                "Kenai project corresponding to URL "       //NOI18N
-                                        + attValue
-                                        + " does not exist.");              //NOI18N
+                    if ("Not Found".equals(ex.getMessage())) {              // NOI18N
+                        BugtrackingManager.LOG.log(
+                                Level.INFO,
+                                "Kenai project corresponding to URL {0} does not exist.",  // NOI18N
+                                attValue);
                     } else {
                         BugtrackingManager.LOG.throwing(
                                 BugtrackingOwnerSupport.class.getName(),    //class name
-                                "getRepository(String)",    //method name //NOI18N
+                                "getRepository(String)",    //method name       // NOI18N
                                 ex);
                     }
                     throw ex;
@@ -462,8 +588,7 @@ public abstract class BugtrackingOwnerSupport {
             return KenaiUtil.getRepository(remoteLocation);
         }
 
-        private Repository askUserToSpecifyRepository(String issueId,
-                                                      Repository suggestedRepo) {
+        private Repository askUserToSpecifyRepository(Repository suggestedRepo) {
             Repository[] repos = BugtrackingUtil.getKnownRepositories(true);
             BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
 

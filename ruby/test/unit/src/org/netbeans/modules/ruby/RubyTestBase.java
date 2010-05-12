@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.jrubyparser.ast.Node;
@@ -223,5 +224,16 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
 
     protected String getText(Parser.Result parserResult) {
         return parserResult.getSnapshot().getText().toString();
+    }
+
+    protected void failsDueToIssue182494(Callable<Void> test) throws Exception {
+        try {
+            test.call();
+            System.out.println("Expected " + getName() + " to fail, but it passes.");
+        } catch (AssertionError ae) {
+            String msg = "Skipping " + getName() + " - fails due to #182494";
+            System.out.println(msg);
+            log(msg);
+        }
     }
 }

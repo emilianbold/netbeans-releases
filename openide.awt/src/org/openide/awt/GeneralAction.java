@@ -120,7 +120,7 @@ final class GeneralAction {
         if (obj instanceof String) {
             return ContextSelection.valueOf((String)obj);
         }
-        throw new IllegalStateException("Cannot parse selectionType value: " + obj); // NOI18N
+        throw new IllegalStateException("Cannot parse 'selectionType' value: " + obj); // NOI18N
     }
     private static Class<?> readClass(Object obj) {
         if (obj instanceof Class) {
@@ -137,10 +137,10 @@ final class GeneralAction {
             try {
                 return Class.forName((String)obj, false, l);
             } catch (Exception ex) {
-                throw (IllegalStateException)new IllegalStateException(ex.getMessage()).initCause(ex);
+                throw new IllegalStateException(ex);
             }
         }
-        throw new IllegalStateException("Cannot parse selectionType value: " + obj); // NOI18N
+        throw new IllegalStateException("Cannot read 'type' value: " + obj); // NOI18N
     }
     static final Object extractCommonAttribute(Map fo, Action action, String name) {
         return AlwaysEnabledAction.extractCommonAttribute(fo, name);
@@ -283,12 +283,16 @@ final class GeneralAction {
             }
             if (now != null) {
                 Action nowAction = now.get(key);
+                boolean nowEnabled;
                 if (nowAction != null) {
                     nowAction.addPropertyChangeListener(weakL);
-                    PropertyChangeSupport sup = fire ? support : null;
-                    if (sup != null && nowAction.isEnabled() != prevEnabled) {
-                        sup.firePropertyChange("enabled", prevEnabled, !prevEnabled); // NOI18N
-                    }
+                    nowEnabled = nowAction.isEnabled();
+                } else {
+                    nowEnabled = fallback != null && fallback.isEnabled();
+                }
+                PropertyChangeSupport sup = fire ? support : null;
+                if (sup != null && nowEnabled != prevEnabled) {
+                    sup.firePropertyChange("enabled", prevEnabled, !prevEnabled); // NOI18N
                 }
             }
         }
@@ -308,7 +312,11 @@ final class GeneralAction {
             if (f instanceof ContextAwareAction) {
                 f = ((ContextAwareAction)f).createContextAwareInstance(actionContext);
             }
-            return new DelegateAction(map, key, actionContext, f, global.isSurvive(), async);
+            DelegateAction other = new DelegateAction(map, key, actionContext, f, global.isSurvive(), async);
+            if (attrs != null) {
+                other.attrs = new HashMap<String,Object>(attrs);
+            }
+            return other;
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

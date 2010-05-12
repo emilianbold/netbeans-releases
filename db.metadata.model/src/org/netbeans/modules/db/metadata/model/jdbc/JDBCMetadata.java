@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.metadata.model.jdbc;
@@ -94,15 +94,18 @@ public class JDBCMetadata extends MetadataImplementation {
         }
     }
 
+    @Override
     public final Catalog getDefaultCatalog() {
         initCatalogs();
         return defaultCatalog;
     }
 
+    @Override
     public final Collection<Catalog> getCatalogs() {
         return initCatalogs().values();
     }
 
+    @Override
     public final Catalog getCatalog(String name) {
         Catalog catalog = MetadataUtilities.find(name, initCatalogs());
         if (catalog == null && name == null) {
@@ -112,6 +115,7 @@ public class JDBCMetadata extends MetadataImplementation {
         return catalog;
     }
 
+    @Override
     public Schema getDefaultSchema() {
         Catalog catalog = getDefaultCatalog();
         if (catalog != null) {
@@ -120,6 +124,7 @@ public class JDBCMetadata extends MetadataImplementation {
         return null;
     }
 
+    @Override
     public final void refresh() {
         LOGGER.fine("Refreshing metadata");
         defaultCatalog = null;
@@ -139,7 +144,7 @@ public class JDBCMetadata extends MetadataImplementation {
         Map<String, Catalog> newCatalogs = new LinkedHashMap<String, Catalog>();
         try {
             String defaultCatalogName = conn.getCatalog();
-            LOGGER.log(Level.FINE, "Default catalog is ''{0}''", defaultCatalogName);
+            LOGGER.log(Level.FINE, "Default catalog is ''{0}'', supportsCatalogsInTableDefinitions()? {1}", new Object[] { defaultCatalogName, dmd.supportsCatalogsInTableDefinitions()});
             if (dmd.supportsCatalogsInTableDefinitions()) {
                 ResultSet rs = dmd.getCatalogs();
                 try {
@@ -170,7 +175,7 @@ public class JDBCMetadata extends MetadataImplementation {
             
             // Issue 154407 - Don't put the default catalog in the list of catalogs if its name is null,
             // unless it's the *only* catalog (e.g. with Derby, where it doesn't have a concept of catalogs)
-            if (newCatalogs.size() == 0) {
+            if (newCatalogs.isEmpty()) {
                 newCatalogs.put(null, defaultCatalog);
             }
             

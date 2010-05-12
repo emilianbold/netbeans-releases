@@ -41,9 +41,12 @@ package org.netbeans.modules.java.freeform;
 
 import java.net.URL;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.openide.filesystems.FileObject;
 
@@ -56,8 +59,8 @@ class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplemen
 
     public @Override Result getAnnotationProcessingOptions(FileObject file) {
         return new Result() {
-            public @Override boolean annotationProcessingEnabled() {
-                return true;
+            public @Override Set<? extends Trigger> annotationProcessingEnabled() {
+                return EnumSet.allOf(Trigger.class);
             }
             public @Override Iterable<? extends String> annotationProcessorsToRun() {
                 return null;

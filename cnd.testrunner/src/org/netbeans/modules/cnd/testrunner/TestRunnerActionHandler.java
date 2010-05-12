@@ -46,6 +46,7 @@ import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -69,6 +70,8 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
+import org.netbeans.modules.cnd.testrunner.spi.TestHandlerFactory;
+import org.netbeans.modules.cnd.testrunner.spi.TestHandlerFactoryProvider;
 import org.netbeans.modules.cnd.testrunner.ui.CndTestRunnerNodeFactory;
 import org.netbeans.modules.cnd.testrunner.ui.CndUnitHandlerFactory;
 import org.netbeans.modules.cnd.testrunner.ui.TestRunnerLineConvertor;
@@ -88,6 +91,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -104,6 +108,8 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
     private NativeExecutionService execution;
     private TestRunnerLineConvertor convertor;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private TestSession session;
+    private Manager manager;
 
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
@@ -237,16 +243,24 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
     }
 
     private TestRunnerLineConvertor createTestRunnerConvertor(Project project) {
-        final TestSession session = new TestSession("Test", // NOI18N
+        session = new TestSession("Test", // NOI18N
                 project,
                 SessionType.TEST, new CndTestRunnerNodeFactory());
 
         session.setRerunHandler(this);
 
-        final Manager manager = Manager.getInstance();
-        final CndUnitHandlerFactory handlerFactory = new CndUnitHandlerFactory();
+        manager = Manager.getInstance();
+        CndUnitHandlerFactory predefinedFactory = new CndUnitHandlerFactory();
 
-        return new TestRunnerLineConvertor(manager, session, handlerFactory);
+        List<TestHandlerFactory> factories = new ArrayList<TestHandlerFactory>();
+        
+        Collection<? extends TestHandlerFactoryProvider> providers = Lookup.getDefault().lookupAll(TestHandlerFactoryProvider.class);
+        for (TestHandlerFactoryProvider provider : providers) {
+            factories.add(provider.getFactory());
+        }
+        factories.add(predefinedFactory);
+        
+        return new TestRunnerLineConvertor(manager, session, factories);
     }
 
     /**

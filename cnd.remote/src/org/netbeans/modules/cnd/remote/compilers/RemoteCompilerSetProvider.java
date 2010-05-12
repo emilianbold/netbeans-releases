@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.remote.compilers;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetProvider;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
@@ -51,7 +52,6 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.openide.util.Exceptions;
 
 /**
  * @author gordonp
@@ -60,6 +60,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     
     private CompilerSetScriptManager manager;
     private final ExecutionEnvironment env;
+    private AtomicBoolean canceled = new AtomicBoolean(false);
 
     /*package-local*/ RemoteCompilerSetProvider(ExecutionEnvironment env) {
         if (env == null) {
@@ -71,7 +72,19 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     @Override
     public void init() {
         manager = new CompilerSetScriptManager(env);
-        manager.runScript();
+        if (!canceled.get()) {
+            manager.runScript();
+        }
+    }
+
+    @Override
+    public boolean cancel() {
+        canceled.set(true);
+        CompilerSetScriptManager aManager = manager;
+        if (aManager != null) {
+            return aManager.cancel();
+        }
+        return false;
     }
     
     @Override
@@ -100,6 +113,9 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
 
     @Override
     public boolean hasMoreCompilerSets() {
+        if (canceled.get()) {
+            return false;
+        }
         return manager.hasMoreCompilerSets();
     }
 
@@ -118,8 +134,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
         //return null;
         try {
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
-            HostInfo hinfo = HostInfoUtils.getHostInfo(env);
-            pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
+            pb.setExecutable("/bin/sh").setArguments("-s"); // NOI18N
             Process process = pb.call();
             process.getOutputStream().write(ToolchainScriptGenerator.generateScript(path).getBytes());
             process.getOutputStream().close();
@@ -130,7 +145,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             try {
                 status = process.waitFor();
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                //Exceptions.printStackTrace(ex);
             }
 
             if (status != 0) {

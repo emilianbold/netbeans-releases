@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.awt.Component;
 import java.io.CharConversionException;
 import java.util.Arrays;
@@ -226,8 +227,9 @@ public final class CustomizerComponentFactory {
         }
 
         void setDependencies(SortedSet<ModuleDependency> deps) {
-            if (state != State.WAITING)
-                throw new IllegalStateException("Method can be called only on model waiting for bg thread to populate it.");    // NOI18N
+            if (state != State.WAITING) {
+                return; // #179979: unknown how this happens
+            }
             currentDeps.addAll(deps);
             state = State.OK;
             int origSize = currentDeps.size();

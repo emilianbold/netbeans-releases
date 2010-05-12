@@ -40,21 +40,10 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
-import java.util.logging.Level;
-import javax.swing.plaf.UIResource;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.IllegalCharsetNameException;
 import java.util.List;
-import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
@@ -62,13 +51,14 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserInnerPanel;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.Savable {
 
     private SourceRootChooser sourceRootChooser;
-    private TestRootChooser testRootChooser;
+//    private TestRootChooser testRootChooser;
     private Project project;
     private MakeConfigurationDescriptor makeConfigurationDescriptor;
     private String originalEncoding;
@@ -81,9 +71,9 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
         projectTextField.setText(FileUtil.toFile(project.getProjectDirectory()).getPath());
         sourceRootPanel.add(sourceRootChooser = new SourceRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getSourceRoots()));
         ignoreFoldersTextField.setText(makeConfigurationDescriptor.getFolderVisibilityQuery().getRegEx());
-        if (makeConfigurationDescriptor.getActiveConfiguration() != null && makeConfigurationDescriptor.getActiveConfiguration().isMakefileConfiguration()) {
-            testRootPanel.add(testRootChooser = new TestRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getTestRoots()));
-        }
+//        if (makeConfigurationDescriptor.getActiveConfiguration() != null && makeConfigurationDescriptor.getActiveConfiguration().isMakefileConfiguration()) {
+//            testRootPanel.add(testRootChooser = new TestRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getTestRoots()));
+//        }
         MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
 //        makeCustomizerProvider.addActionListener(this);
 
@@ -99,9 +89,8 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
             originalEncoding = Charset.defaultCharset().name();
         }
 
-        encoding.setModel(new EncodingModel(this.originalEncoding));
-        encoding.setRenderer(new EncodingRenderer());
-
+        encoding.setModel(ProjectCustomizer.encodingModel(originalEncoding));
+        encoding.setRenderer(ProjectCustomizer.encodingRenderer());
 
         encoding.addActionListener(new ActionListener() {
 
@@ -127,90 +116,10 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
         ((MakeProject) project).setSourceEncoding(encName);
 
         makeConfigurationDescriptor.setSourceRoots(sourceRootChooser.getListData());
-        if (testRootChooser != null) {
-            makeConfigurationDescriptor.setTestRoots(testRootChooser.getListData());
-        }
+//        if (testRootChooser != null) {
+//            makeConfigurationDescriptor.setTestRoots(testRootChooser.getListData());
+//        }
         makeConfigurationDescriptor.setFolderVisibilityQuery(ignoreFoldersTextField.getText());
-    }
-
-    private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
-
-        public EncodingRenderer() {
-            setOpaque(true);
-        }
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof Charset;
-            setName("ComboBox.listRenderer"); // NOI18N
-            setText(((Charset) value).displayName());
-            setIcon(null);
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-            return this;
-        }
-
-        @Override
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name; // NOI18N
-        }
-    }
-
-    private static class EncodingModel extends DefaultComboBoxModel {
-
-        public EncodingModel(String originalEncoding) {
-            Charset defEnc = null;
-            for (Charset c : Charset.availableCharsets().values()) {
-                if (c.name().equals(originalEncoding)) {
-                    defEnc = c;
-                }
-                addElement(c);
-            }
-            if (defEnc == null) {
-                //Create artificial Charset to keep the original value
-                //May happen when the project was set up on the platform
-                //which supports more encodings
-                try {
-                    defEnc = new UnknownCharset(originalEncoding);
-                    addElement(defEnc);
-                } catch (IllegalCharsetNameException e) {
-                    //The source.encoding property is completely broken
-                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, "IllegalCharsetName: {0}", originalEncoding);
-                }
-            }
-            if (defEnc == null) {
-                defEnc = Charset.defaultCharset();
-            }
-            setSelectedItem(defEnc);
-        }
-    }
-
-    private static class UnknownCharset extends Charset {
-
-        UnknownCharset(String name) {
-            super(name, new String[0]);
-        }
-
-        @Override
-        public boolean contains(Charset c) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public CharsetDecoder newDecoder() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public CharsetEncoder newEncoder() {
-            throw new UnsupportedOperationException();
-        }
     }
 
     private static class SourceRootChooser extends DirectoryChooserInnerPanel {
@@ -242,34 +151,34 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
         }
     }
 
-    private static class TestRootChooser extends DirectoryChooserInnerPanel {
-
-        public TestRootChooser(String baseDir, List<String> feed) {
-            super(baseDir, feed);
-            getCopyButton().setVisible(false);
-            getEditButton().setVisible(false);
-        }
-
-        @Override
-        public String getListLabelText() {
-            return getString("ProjectPropPanel.testRootLabel.text");
-        }
-
-        @Override
-        public char getListLabelMnemonic() {
-            return getString("ProjectPropPanel.testRootLabel.mn").charAt(0);
-        }
-
-        @Override
-        public char getAddButtonMnemonics() {
-            return getString("ADD_BUTTON_MN").charAt(0);
-        }
-
-        @Override
-        public String getAddButtonText() {
-            return getString("ADD_BUTTON_TXT");
-        }
-    }
+//    private static class TestRootChooser extends DirectoryChooserInnerPanel {
+//
+//        public TestRootChooser(String baseDir, List<String> feed) {
+//            super(baseDir, feed);
+//            getCopyButton().setVisible(false);
+//            getEditButton().setVisible(false);
+//        }
+//
+//        @Override
+//        public String getListLabelText() {
+//            return getString("ProjectPropPanel.testRootLabel.text");
+//        }
+//
+//        @Override
+//        public char getListLabelMnemonic() {
+//            return getString("ProjectPropPanel.testRootLabel.mn").charAt(0);
+//        }
+//
+//        @Override
+//        public char getAddButtonMnemonics() {
+//            return getString("ADD_BUTTON_MN").charAt(0);
+//        }
+//
+//        @Override
+//        public String getAddButtonText() {
+//            return getString("ADD_BUTTON_TXT");
+//        }
+//    }
 
     /** This method is called from within the constructor to
      * initialize the form.

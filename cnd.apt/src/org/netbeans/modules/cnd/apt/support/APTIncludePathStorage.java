@@ -42,12 +42,10 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -60,7 +58,7 @@ public final class APTIncludePathStorage {
     }
 
     public List<IncludeDirEntry> get(CharSequence configID, List<String> sysIncludes) {
-        CharSequence key = CharSequenceKey.create(configID);
+        CharSequence key = CharSequences.create(configID);
         List<IncludeDirEntry> list = allIncludes.get(key);
         if (list == null) {
             // create new one with light char sequences and put in map

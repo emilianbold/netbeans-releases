@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
@@ -141,7 +141,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                     Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(curr, filter);
                     while (it.hasNext()) {
                         CsmDeclaration elem = it.next();
-                        if (CharSequenceKey.Comparator.compare(lastName,elem.getName())==0) {
+                        if (CharSequences.comparator().compare(lastName,elem.getName())==0) {
                             if (!CsmKindUtilities.isExternVariable(elem)) {
                                 referencedDeclaration = elem;
                                 break outer;

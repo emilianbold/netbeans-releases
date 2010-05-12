@@ -908,13 +908,17 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
     private void updateSelections(boolean focusTable) {
         if (tabbedPane.getSelectedIndex() == DEFAULT_TAB) {
             refreshSelection(settingsTable, defSelectedColumn, stSelectedColumn);
-            if (focusTable && refreshSelection(defaultValuesTable, defSelectedRow, defSelectedColumn))
+            if (focusTable && refreshSelection(defaultValuesTable, defSelectedRow, defSelectedColumn)) {
                 defaultValuesTable.requestFocus();
+                defaultValuesTable.scrollRectToVisible(defaultValuesTable.getCellRect(defSelectedRow, defSelectedColumn, false));
+            }
         }
         else if (tabbedPane.getSelectedIndex() == SETTINGS_TAB) {
             refreshSelection(defaultValuesTable, defSelectedRow, stSelectedRow);
-            if (focusTable && refreshSelection(settingsTable, stSelectedRow, stSelectedColumn))
+            if (focusTable && refreshSelection(settingsTable, stSelectedRow, stSelectedColumn)) {
                 settingsTable.requestFocus();
+                settingsTable.scrollRectToVisible(settingsTable.getCellRect(stSelectedRow, stSelectedColumn, false));
+            }
         }
     }
 

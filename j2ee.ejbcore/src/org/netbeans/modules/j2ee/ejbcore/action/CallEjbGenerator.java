@@ -154,16 +154,16 @@ public class CallEjbGenerator {
         }
 
         if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(referencingFO, referencingClassName)) {
-            addProjectToClassPath(enterpriseProject, ejbReference, referencingFO);
+            addProjectToClassPath(enterpriseProject, ejbReference, referencingFO, refIType);
         } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
             switch(refIType){
                 case REMOTE: {
-                    erc.addEjbReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
+                    erc.addEjbReference(ejbReference, refIType, ejbReferenceName, referencingFO, referencingClassName);
                     break;
                 }
                 case NO_INTERFACE:
                 case LOCAL:{
-                    erc.addEjbLocalReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
+                    erc.addEjbLocalReference(ejbReference, refIType, ejbReferenceName, referencingFO, referencingClassName);
                     break;
                 }
             }
@@ -415,9 +415,9 @@ public class CallEjbGenerator {
         }
         if (global){
             String moduleFullName = ProjectUtils.getInformation(ejbProject).getName();
-            Project project = FileOwnerQuery.getOwner(fileObject);
-            if (project != null && !project.equals(ejbProject)){
-                moduleFullName = ProjectUtils.getInformation(project).getName() + "/" + moduleFullName;
+            Project j2eeAppProject = Utils.getNestingJ2eeApp(ejbProject);
+            if (j2eeAppProject != null && !j2eeAppProject.equals(ejbProject)){
+                moduleFullName = ProjectUtils.getInformation(j2eeAppProject).getName() + "/" + moduleFullName;
             }
             body = MessageFormat.format(JNDI_LOOKUP_GLOBAL, new Object[] {moduleFullName, ejbName, componentName});
         } else if (isSimplified && isTargetJavaSE){
@@ -577,9 +577,9 @@ public class CallEjbGenerator {
         return caps.toString();
     }
     
-    private static void addProjectToClassPath(final Project enterpriseProject, final EjbReference ref, FileObject refFO) throws IOException {
+    private static void addProjectToClassPath(final Project enterpriseProject, final EjbReference ref, FileObject refFO, EjbRefIType refIType) throws IOException {
         
-        Project target = Utils.getProject(ref);
+        Project target = Utils.getProject(ref, refIType);
         
         boolean differentProject = target != null && !enterpriseProject.equals(target);
         if (differentProject) {

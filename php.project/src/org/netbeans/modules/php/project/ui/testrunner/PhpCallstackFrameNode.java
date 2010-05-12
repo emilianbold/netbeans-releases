@@ -43,11 +43,9 @@ import javax.swing.Action;
 import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
 
 public class PhpCallstackFrameNode extends CallstackFrameNode {
-    private final String frameInfo;
 
     public PhpCallstackFrameNode(String frameInfo, String displayName) {
         super(frameInfo, displayName);
-        this.frameInfo = frameInfo;
     }
 
     @Override

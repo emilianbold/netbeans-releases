@@ -36,16 +36,20 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.Collection;
+import junit.framework.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
+import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport;
+import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.openide.util.Exceptions;
 
 /**
@@ -56,6 +60,10 @@ public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
 
     public ConnectionManagerTest(String name) {
         super(name);
+    }
+
+    public ConnectionManagerTest(String name, ExecutionEnvironment testExecutionEnvironment) {
+        super(name, testExecutionEnvironment);
     }
 
     @BeforeClass
@@ -74,70 +82,115 @@ public class ConnectionManagerTest extends NativeExecutionBaseTestCase {
     public void tearDown() throws Exception {
     }
 
+    public static Test suite() {
+        return new NativeExecutionBaseTestSuite(ConnectionManagerTest.class);
+    }
 
-//    @Test
-    public void testGetConnectToAction() throws Exception {
-        System.out.println("getConnectToAction"); // NOI18N
+    @ForAllEnvironments(section = "remote.platforms")
+    public void testConnectDisconnect() throws Exception {
+        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        final String id = execEnv.toString();
 
-        ExecutionEnvironment execEnv = NativeExecutionTestSupport.getDefaultTestExecutionEnvironment(false);
-        
+        assert (execEnv != null);
+
+        System.out.println("getConnectToAction test started for " + id); // NOI18N
+
+        ConnectionManager cm = ConnectionManager.getInstance();
+
+        if (cm.isConnectedTo(execEnv)) {
+            System.out.println(id + " initially connected! Disconnect from it to proceed with the test.");
+            cm.disconnect(execEnv);
+        }
+
+        assertFalse(id + " must be disconnected at this point", cm.isConnectedTo(execEnv));
+
         try {
             ConnectionManager.getInstance().connectTo(execEnv);
         } catch (Throwable ex) {
             Exceptions.printStackTrace(ex);
         }
 
-        System.out.println(ConnectionManager.getInstance().isConnectedTo(execEnv));
+        assertTrue(id + " must be connected at this point", cm.isConnectedTo(execEnv));
+        cm.disconnect(execEnv);
+        assertFalse(id + " must be disconnected at this point", cm.isConnectedTo(execEnv));
+        System.out.println("getConnectToAction test finished for " + id);
     }
 
-    @Test
-    public void concurrentAccess() throws Exception {
-        System.out.println("Concurrent access"); // NOI18N
+    public void testGetConnectToAction() throws Exception {
+        final int threadsNum = 10;
+        RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+        Collection<String> mspecs = rcFile.getKeys("remote.platforms");
 
-        int threadsNum = 10;
+        final ConcurrentTasksSupport.Counters counters = new ConcurrentTasksSupport.Counters();
+        final ConcurrentTasksSupport support = new ConcurrentTasksSupport(threadsNum);
 
-        final CountDownLatch startFlag = new CountDownLatch(1);
-        final CountDownLatch doneFlag = new CountDownLatch(threadsNum);
-        Runnable onConnect = new Runnable() {
+        ExecutionEnvironment env;
 
-            public void run() {
-                System.out.println("Perform on connect action!"); // NOI18N
+        for (String mspec : mspecs) {
+            env = NativeExecutionTestSupport.getTestExecutionEnvironment(mspec); // NOI18N
+            if (env == null) {
+                System.out.println("... skip testing on not configured " + mspec + " ... "); // NOI18N
+            } else {
+                System.out.println("... test on " + mspec + " [" + env.toString() + "] ..."); // NOI18N
+                support.addFactory(new GetConnectToActionTaskFactory(counters, env));
             }
-        };
+        }
 
-        ExecutionEnvironment execEnv = NativeExecutionTestSupport.getDefaultTestExecutionEnvironment(false);
 
-        for (int i = 0; i < threadsNum; i++) {
-            final AsynchronousAction action = ConnectionManager.getInstance().getConnectToAction(execEnv, onConnect);
-            new Thread(new Runnable() {
+        support.init();
+        support.start();
+        support.waitCompletion();
 
+        // This is async actions...
+        // Some of them will initiate onConnect() method, but some not...
+        Thread.sleep(1000);
+
+        counters.dump(System.out);
+        counters.assertEquals("Number of started actions", "started", threadsNum);
+        counters.assertEquals("Number of onConnect()", "connected", mspecs.size());
+        counters.assertEquals("Number of connected environments", "connected", mspecs.size());
+        counters.assertEquals("Number of not-connected environments", "not connected", 0);
+        counters.assertEquals("Number of exceptions", "exceptions", 0);
+    }
+
+    private final static class GetConnectToActionTaskFactory implements ConcurrentTasksSupport.TaskFactory {
+
+        private final ExecutionEnvironment env;
+        private final Counters counters;
+
+        private GetConnectToActionTaskFactory(Counters counters, ExecutionEnvironment env) {
+            this.env = env;
+            this.counters = counters;
+        }
+
+        @Override
+        public Runnable newTask() {
+            final AsynchronousAction connectToAction = ConnectionManager.getInstance().getConnectToAction(env, new Runnable() {
+
+                @Override
                 public void run() {
-                    try {
-                        startFlag.await();
-                        System.out.println("trying to connect..."); // NOI18N
-                        try {
-                            action.invoke();
-                        } catch (Throwable ex) {
-                            System.err.println("XXX: " + ex.toString()); // NOI18N
-                        }
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } finally {
-                        doneFlag.countDown();
+                    counters.getCounter("onConnect").incrementAndGet();
+                    if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                        counters.getCounter("connected").incrementAndGet();
+                    } else {
+                        counters.getCounter("not connected").incrementAndGet();
                     }
                 }
-            }).start();
+            });
+
+            return new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        counters.getCounter("started").incrementAndGet();
+                        connectToAction.invoke();
+                    } catch (Exception ex) {
+                        counters.getCounter("exception").incrementAndGet();
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            };
         }
-
-        startFlag.countDown();
-        
-        try {
-            doneFlag.await();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-
     }
-
 }

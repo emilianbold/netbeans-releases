@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -119,9 +119,11 @@ public final class LogViewerSupport extends Thread {
             logViewer.startAtBeginning = startAtBeginning;
             Deployment.getDefault().addInstanceListener(new InstanceListener() {
 
+                @Override
                 public void instanceAdded(String serverInstanceID) {
                 }
 
+                @Override
                 public void instanceRemoved(String serverInstanceID) {
                     //throw new UnsupportedOperationException("Not supported yet.");
                     if (serverInstanceID != null &&
@@ -235,17 +237,18 @@ public final class LogViewerSupport extends Thread {
         
     }
 
+    @Override
     public void run() {
         // The file pointer keeps track of where we are in the file
         long currentIndex = 0;
         FilenameFilter logsDirectoryFilter = new FilenameFilter() {
             
+            @Override
             public boolean accept(File arg0, String arg1) {
                 return arg1.startsWith(logfile.getName());
             }
             
         };
-        long currentNbofFileLogs = logfile.getParentFile().list(logsDirectoryFilter).length;
         boolean needTosleep=true;
         boolean needToRotate=false;
         boolean alreadyRotated=false;
@@ -254,8 +257,14 @@ public final class LogViewerSupport extends Thread {
         int lines =0;
 
         Ring ring = new Ring(OLD_LINES);        
-        currentIndex = logfile.length();
         try{
+            long currentNbofFileLogs = 0;
+            if (null == logfile || !logfile.exists()) {
+                working = false;
+            } else {
+                currentNbofFileLogs = logfile.getParentFile().list(logsDirectoryFilter).length;
+                currentIndex = logfile.length();
+            }
             while( working  /*&& !io.isClosed()*/) {
                 needTosleep=true;
                 try {

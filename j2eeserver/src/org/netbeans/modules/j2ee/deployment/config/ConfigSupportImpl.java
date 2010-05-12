@@ -76,10 +76,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
+import org.openide.util.Mutex.Action;
 import org.openide.util.Parameters;
 
 /**
@@ -88,7 +90,7 @@ import org.openide.util.Parameters;
  * and it is cached for to avoid performance penalty of creating new one for every
  * access to configuration.
  *
- * Whenenver target server of the module changes, a new config support is associate
+ * Whenever target server of the module changes, a new config support is associate
  * with the module providing access to the right configuration data object.
  *
  * @author  nn136682
@@ -98,7 +100,9 @@ import org.openide.util.Parameters;
 
 public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport, 
         ModuleConfigurationProvider {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(ConfigSupportImpl.class.getName());
+
     private static final File[] EMPTY_FILE_LIST = new File[0];
     private static final String GENERIC_EXTENSION = ".dpf"; // NOI18N
     
@@ -706,20 +710,29 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     /**
      * Create and cache deployment configuration for the current server.
      */
-    public synchronized ModuleConfiguration getModuleConfiguration() {
-        if (moduleConfiguration == null) {
-            try {
-                if (server == null) {
-                    return null;
+    @Override
+    public ModuleConfiguration getModuleConfiguration() {
+        return ProjectManager.mutex().readAccess(new Action<ModuleConfiguration>() {
+
+            @Override
+            public ModuleConfiguration run() {
+                synchronized (this) {
+                    if (moduleConfiguration == null) {
+                        try {
+                            if (server == null) {
+                                return null;
+                            }
+                            ModuleConfigurationFactory moduleConfigurationFactory = server.getModuleConfigurationFactory();
+                            moduleConfiguration = moduleConfigurationFactory.create(j2eeModule);
+                        } catch (ConfigurationException ce) {
+                            LOGGER.log(Level.INFO, null, ce);
+                            return null;
+                        }
+                    }
+                    return moduleConfiguration;
                 }
-                ModuleConfigurationFactory moduleConfigurationFactory = server.getModuleConfigurationFactory();
-                moduleConfiguration = moduleConfigurationFactory.create(j2eeModule);
-            } catch (ConfigurationException ce) {
-                Logger.getLogger("global").log(Level.INFO, null, ce);
-                return null;
             }
-        }
-        return moduleConfiguration;
+        });
     }
         
     public J2eeModule getJ2eeModule(String moduleUri) {

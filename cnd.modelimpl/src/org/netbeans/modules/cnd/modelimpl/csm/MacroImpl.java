@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
@@ -99,7 +99,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     
     public MacroImpl(CharSequence macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, Kind kind) {
         super(containingFile, macroPos);
-        macroName = macroName == null ? CharSequenceKey.empty() : macroName;
+        macroName = macroName == null ? CharSequences.empty() : macroName;
         assert(macroBody != null);
         this.name = NameCache.getManager().getString(macroName);
         this.kind = kind;
@@ -171,7 +171,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     private static final boolean equals(MacroImpl one, MacroImpl other) {
         // compare only name and start offset
         return (one.getStartOffset() == other.getStartOffset()) && 
-                (CharSequenceKey.Comparator.compare(one.getName(), other.getName()) == 0);
+                (CharSequences.comparator().compare(one.getName(), other.getName()) == 0);
     }
     
     public @Override int hashCode() {

@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class NewProjectConfigurationPanel extends JPanel implements ChangeListener {
+public final class NewProjectConfigurationPanel extends JPanel implements ChangeListener {
     private static final long serialVersionUID = 1978956424123L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -70,6 +70,7 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
         optionsLabel.setMaximumSize(optionsLabel.getPreferredSize());
 
         generateProjectLabel.addPropertyChangeListener("enabled", new PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 enableOptionsLabel();
             }

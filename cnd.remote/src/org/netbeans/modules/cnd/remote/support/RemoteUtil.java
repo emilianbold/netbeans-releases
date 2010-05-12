@@ -41,10 +41,14 @@ package org.netbeans.modules.cnd.remote.support;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -60,7 +64,31 @@ public class RemoteUtil {
     private static final Map<ExecutionEnvironment, String> homeDirs = new LinkedHashMap<ExecutionEnvironment, String>();
     public static final Logger LOGGER = Logger.getLogger("cnd.remote.logger"); //NOI18N
 
+    public static class PrefixedLogger {
+
+        private final String prefix;
+
+        public PrefixedLogger(String prefix) {
+            this.prefix = prefix;
+        }
+
+        public void log(Level level, String format, Object... args) {
+            if (LOGGER.isLoggable(level)) {
+                String text = String.format(format, args);
+                text = prefix + ": " + text; // NOI18N
+                LOGGER.log(level, text);
+            }
+        }
+    }
+
     private RemoteUtil() {}
+
+//    public static void log(String prefix, Level level, String format, Object... args) {
+//        if (LOGGER.isLoggable(level)) {
+//            String text = String.format(format, args);
+//            LOGGER.log(level, String.format("%s: ", text));
+//        }
+//    }
 
     public static String getEnv(ExecutionEnvironment env, String varName) throws RemoteException {
         String cmd = String.format("echo ${%s}", varName); // NOI18N
@@ -137,6 +165,19 @@ public class RemoteUtil {
             return execEnv.getDisplayName();
         } else {
             return rec.getDisplayName();
+        }
+    }
+
+    public static void checkSetupAfterConnection(ExecutionEnvironment env) {
+        RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
+        if (!record.isOnline()) {
+            record.resetOfflineState();
+            record.init(null);
+            if (record.isOnline()) {
+                ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
+                CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment(), false);
+                csm.initialize(false, true, null);
+            }
         }
     }
 }

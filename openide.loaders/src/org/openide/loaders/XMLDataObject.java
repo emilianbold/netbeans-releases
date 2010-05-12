@@ -189,8 +189,6 @@ public class XMLDataObject extends MultiDataObject {
     throws DataObjectExistsException {
         super (fo, loader);
         
-        fo.addFileChangeListener (FileUtil.weakFileChangeListener (getIP (), fo));
-
         status = STATUS_NOT;
 
         if (registerEditor) {
@@ -342,9 +340,11 @@ public class XMLDataObject extends MultiDataObject {
         if (ERR.isLoggable(Level.FINE)) {
             ERR.fine("getCookie returns " + cake + " for " + this); // NOI18N
         }
-
-        assert cake == null || cls.isInstance(cake) : "Cannot return " + cake + " for " + cls + " from " + this;
-        return cls.cast(cake);
+        if (cake instanceof Node.Cookie) {
+            assert cake == null || cls.isInstance(cake) : "Cannot return " + cake + " for " + cls + " from " + this;
+            return cls.cast(cake);
+        }
+        return null;
     }
 
     @Override
@@ -499,6 +499,12 @@ public class XMLDataObject extends MultiDataObject {
         firePropertyChange (PROP_DOCUMENT, null, null);
     }
 
+    @Override
+    void notifyFileChanged(FileEvent fe) {
+        super.notifyFileChanged(fe);
+        getIP().fileChanged(fe);
+    }
+
     /** 
      * @return one of STATUS_XXX constants representing PROP_DOCUMENT state. 
      */
@@ -605,12 +611,7 @@ public class XMLDataObject extends MultiDataObject {
     @Deprecated
     public static Document parse (URL url, ErrorHandler eh, boolean validate) throws IOException, SAXException {
         
-        DocumentBuilder builder = XMLDataObjectImpl.makeBuilder(validate);
-        builder.setErrorHandler(eh);
-        builder.setEntityResolver(getChainingEntityResolver());
-        
-        return builder.parse (new InputSource(url.toExternalForm()));
-
+        return XMLUtil.parse (new InputSource(url.toExternalForm()),validate, false, eh, getChainingEntityResolver());
     }
 
     /** Creates SAX parse that can be used to parse XML files.

@@ -10,6 +10,8 @@ select * from customer cus inner join customer inner join accounting.invoice whe
     customer
       customer_id
       address_line
+    asummary[view]
+      asummary_id
   accounting
     invoice
       invoice_id

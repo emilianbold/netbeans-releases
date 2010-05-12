@@ -208,7 +208,7 @@ public class ExportDiffAction extends AbstractSystemAction {
                     CvsModuleConfig.getDefault().getPreferences().put("ExportDiff.saveFolder", destination.getParent());
 
                     final File out = destination;
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         public void run() {
                             async(nodes, out);
                         }

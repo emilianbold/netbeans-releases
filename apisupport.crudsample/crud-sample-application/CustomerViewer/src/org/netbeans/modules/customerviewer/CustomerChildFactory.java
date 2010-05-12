@@ -41,11 +41,20 @@
 package org.netbeans.modules.customerviewer;
 
 import demo.Customer;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.persistence.EntityManager;
+import javax.persistence.Persistence;
+import javax.swing.Action;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 public class CustomerChildFactory extends ChildFactory<Customer> {
@@ -66,15 +75,50 @@ public class CustomerChildFactory extends ChildFactory<Customer> {
 
     @Override
     protected Node createNodeForKey(Customer c) {
-        Node node = new AbstractNode(Children.LEAF, Lookups.singleton(c));
+        Node node = new AbstractNode(Children.LEAF, Lookups.singleton(c)) {
+
+            @Override
+            public Action[] getActions(boolean context) {
+                Action[] result = new Action[]{
+                    SystemAction.get(DeleteAction.class),
+                    SystemAction.get(PropertiesAction.class)
+                };
+                return result;
+            }
+
+            @Override
+            public boolean canDestroy() {
+                Customer customer = this.getLookup().lookup(Customer.class);
+                return customer != null;
+            }
+
+            @Override
+            public void destroy() throws IOException {
+                if (deleteCustomer(this.getLookup().lookup(Customer.class).getCustomerId())) {
+                    super.destroy();
+                    CustomerTopComponent.refreshNode();
+                }
+            }
+
+        };
         node.setDisplayName(c.getName());
         node.setShortDescription(c.getCity());
         return node;
-//        try {
-//            return new BeanNode(c);
-//        } catch (IntrospectionException ex) {
-//            Exceptions.printStackTrace(ex);
-//            return null;
-//        }
+    }
+
+    private static boolean deleteCustomer(int customerId) {
+        EntityManager entityManager = Persistence.createEntityManagerFactory("CustomerDBAccessPU").createEntityManager();
+        entityManager.getTransaction().begin();
+        try {
+            Customer toDelete = entityManager.find(Customer.class, customerId);
+            entityManager.remove(toDelete);
+            // so far so good
+            entityManager.getTransaction().commit();
+        } catch(Exception e) {
+            Logger.getLogger(CustomerChildFactory.class.getName()).log(
+                    Level.WARNING, "Cannot delete a customer with id {0}, cause: {1}", new Object[]{customerId, e});
+            entityManager.getTransaction().rollback();
+        }
+        return true;
     }
 }

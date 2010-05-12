@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ModuleDependency;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -66,6 +67,9 @@ final class AddModuleFilter {
         this.dependingModuleCNB = dependingModuleCNB;
         // Prime the cache:
         for (ModuleDependency dep : universe) {
+            if (Thread.interrupted()) {
+                break;
+            }
             dep.getFilterTokens(dependingModuleCNB);
         }
         // To test "Please wait" use:
@@ -83,6 +87,9 @@ final class AddModuleFilter {
             matches.add(new TreeSet<ModuleDependency>(ModuleDependency.LOCALIZED_NAME_COMPARATOR));
         }
         for (ModuleDependency dep : universe) {
+            if (Thread.interrupted()) {
+                break;
+            }
             int matchLevel = 3;
             for (String tok : dep.getFilterTokens(dependingModuleCNB)) {
                 String token = tok.toLowerCase(Locale.ENGLISH);

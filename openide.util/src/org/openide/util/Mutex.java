@@ -107,7 +107,7 @@ public final class Mutex extends Object {
     private static int counter;
 
     /** logger for things that happen in mutex */
-    private static Logger LOG = Logger.getLogger(Mutex.class.getName());
+    private static final Logger LOG = Logger.getLogger(Mutex.class.getName());
 
     /** Mutex that allows code to be synchronized with the AWT event dispatch thread.
      * <P>
@@ -175,7 +175,7 @@ public final class Mutex extends Object {
     private int origMode;
 
     /** protects internal data structures */
-    private /*final*/ Object LOCK;
+    private final Object LOCK;
     
     /** wrapper, if any */
     private final Executor wrapper;
@@ -203,14 +203,14 @@ public final class Mutex extends Object {
     * @param lock lock to use
     */
     public Mutex(Object lock) {
-        init(lock);
+        this.LOCK = init(lock);
         this.wrapper = null;
     }
 
     /** Default constructor.
     */
     public Mutex() {
-        init(new InternalLock());
+        this.LOCK = init(new InternalLock());
         this.wrapper = null;
     }
 
@@ -221,7 +221,7 @@ public final class Mutex extends Object {
         if (privileged == null) {
             throw new IllegalArgumentException("privileged == null"); //NOI18N
         } else {
-            init(new InternalLock());
+            this.LOCK = init(new InternalLock());
             privileged.setParent(this);
         }
         this.wrapper = null;
@@ -247,14 +247,14 @@ public final class Mutex extends Object {
     }
 
     /** Initiates this Mutex */
-    private void init(Object lock) {
-        this.LOCK = lock;
+    private Object init(Object lock) {
         this.registeredThreads = new HashMap<Thread,ThreadInfo>(7);
         this.waiters = new LinkedList<QueueCell>();
         this.cnt = counter++;
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "[" + cnt + "] created here", new Exception());
         }
+        return lock;
     }
 
     /** Run an action only with read access.
@@ -351,7 +351,7 @@ public final class Mutex extends Object {
                 doWrapperAccess(null, action, true);
                 return;
             } catch (MutexException ex) {
-                throw (IllegalStateException)new IllegalStateException().initCause(ex);
+                throw new IllegalStateException(ex);
             }
         }
 
@@ -457,7 +457,7 @@ public final class Mutex extends Object {
             try {
                 doWrapperAccess(null, action, false);
             } catch (MutexException ex) {
-                throw (IllegalStateException)new IllegalStateException().initCause(ex);
+                throw new IllegalStateException(ex);
             }
             return;
         }
@@ -583,13 +583,14 @@ public final class Mutex extends Object {
     }
 
     /** toString */
+    @Override
     public String toString() {
         if (this == EVENT) {
             return "Mutex.EVENT"; // NOI18N
         }
 
         String newline = System.getProperty("line.separator");
-        StringBuffer sbuff = new StringBuffer(512);
+        StringBuilder sbuff = new StringBuilder(512);
 
         synchronized (LOCK) {
             sbuff.append("threads: ").append(registeredThreads).append(newline); // NOI18N
@@ -1115,7 +1116,7 @@ public final class Mutex extends Object {
             throw new IllegalStateException();
         }
 
-        if (waiters.size() == 0) {
+        if (waiters.isEmpty()) {
             return;
         }
 
@@ -1160,7 +1161,7 @@ public final class Mutex extends Object {
     private void wakeUpReaders() {
         assert (grantedMode == NONE) || (grantedMode == S);
 
-        if (waiters.size() == 0) {
+        if (waiters.isEmpty()) {
             return;
         }
 
@@ -1233,6 +1234,7 @@ public final class Mutex extends Object {
         if (info == null) {
             if (exec != null) {
                 class Exec implements Runnable {
+                    @Override
                     public void run() {
                         enter(mutexMode, t, true);
                         try {
@@ -1291,6 +1293,7 @@ public final class Mutex extends Object {
             T ret;
             MutexException e;
             
+            @Override
             public void run() {
                 Mutex m = (Mutex)LOCK;
                 try {
@@ -1308,7 +1311,7 @@ public final class Mutex extends Object {
                         }
                     }
                 } catch (MutexException ex) {
-                    this.e = ex;
+                    e = ex;
                 }
             }
         }
@@ -1365,6 +1368,7 @@ public final class Mutex extends Object {
         try {
             final List<T> res = new ArrayList<T>(1);
             class AWTWorker implements Runnable {
+                @Override
                 public void run() {
                     try {
                         res.add(run.run());
@@ -1413,7 +1417,7 @@ public final class Mutex extends Object {
     }
 
     /** Notify exception and returns new MutexException */
-    private static final MutexException notifyException(Throwable t) {
+    private static MutexException notifyException(Throwable t) {
         if (t instanceof InvocationTargetException) {
             t = unfoldInvocationTargetException((InvocationTargetException) t);
         }
@@ -1434,11 +1438,11 @@ public final class Mutex extends Object {
         return exc;
     }
 
-    private static final void annotateEventStack(Throwable t) {
+    private static void annotateEventStack(Throwable t) {
         //ErrorManager.getDefault().annotate(t, new Exception("Caught here in mutex")); // NOI18N
     }
 
-    private static final Throwable unfoldInvocationTargetException(InvocationTargetException e) {
+    private static Throwable unfoldInvocationTargetException(InvocationTargetException e) {
         Throwable ret;
 
         do {
@@ -1464,6 +1468,7 @@ public final class Mutex extends Object {
         /** Execute the action.
         * @return any object, then returned from {@link Mutex#readAccess(Mutex.Action)} or {@link Mutex#writeAccess(Mutex.Action)}
         */
+        @Override
         T run();
     }
 
@@ -1526,6 +1531,7 @@ public final class Mutex extends Object {
             counts[mode] = 1;
         }
 
+        @Override
         public String toString() {
             return super.toString() + " thread: " + t + " mode: " + mode + " X: " + counts[2] + " S: " + counts[3]; // NOI18N
         }
@@ -1577,6 +1583,7 @@ public final class Mutex extends Object {
             this.priority2 = 0;
         }
 
+        @Override
         public String toString() {
             return super.toString() + " mode: " + mode + " thread: " + t; // NOI18N
         }

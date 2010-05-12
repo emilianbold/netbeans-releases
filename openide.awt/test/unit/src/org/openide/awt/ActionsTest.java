@@ -41,6 +41,7 @@
 package org.openide.awt;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -65,6 +66,11 @@ import org.openide.util.actions.SystemAction;
  * @author David Strupl
  */
 public class ActionsTest extends NbTestCase {
+    static {
+        MockServices.setServices(TestConnector.class);
+        assertFalse("Initialized Actions class outside of AWT thread", EventQueue.isDispatchThread());
+        Actions.cutAmpersand("None");
+    }
     
     // colors of the testing images in this order:
     // (test recognizes the icon by the white/black colors in specified positions :-)))
@@ -106,10 +112,6 @@ public class ActionsTest extends NbTestCase {
     
     public ActionsTest(String name) {
         super(name);
-    }
-    
-    protected void setUp() {
-        MockServices.setServices(TestConnector.class);
     }
     
     /**
@@ -401,6 +403,7 @@ public class ActionsTest extends NbTestCase {
     }
     
     
+    @Override
     protected boolean runInEQ() {
         return true;
     }
@@ -490,7 +493,9 @@ public class ActionsTest extends NbTestCase {
         private int called = 0;
         private boolean active = false;
         
-        public TestConnector() {}
+        public TestConnector() {
+            assertFalse("Don't initialize while calling connect on AWT dispatch thread", EventQueue.isDispatchThread());
+        }
         
         public boolean connect(AbstractButton button, Action action) {
             if (!active) {

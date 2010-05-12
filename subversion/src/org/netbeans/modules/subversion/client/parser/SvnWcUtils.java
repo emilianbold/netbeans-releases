@@ -60,7 +60,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
  */
 public class SvnWcUtils {
 
-    private static final String ENTRIES = "entries";      // NOI18N    
+    static final String ENTRIES = "entries";      // NOI18N    
 
     private static final String PROPS = "props";
     private static final String PROPS_BASE = "prop-base";

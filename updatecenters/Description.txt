@@ -1,2 +1,0 @@
-Author: Jiri Rechtacek
-It's module which contains the declaration of NetBeans's update centers for autoupdate module.

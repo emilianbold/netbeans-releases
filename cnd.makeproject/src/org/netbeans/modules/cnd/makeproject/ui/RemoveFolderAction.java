@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import org.netbeans.api.project.Project;
@@ -53,43 +52,44 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 public class RemoveFolderAction extends NodeAction {
+
     public String getName() {
-	return NbBundle.getBundle(getClass()).getString("CTL_RemoveFolderActionName"); // NOI18N
+        return NbBundle.getBundle(getClass()).getString("CTL_RemoveFolderActionName"); // NOI18N
     }
 
     public void performAction(Node[] activatedNodes) {
-	for (int i = 0; i < activatedNodes.length; i++) {
-	    Node n = activatedNodes[i];
-	    Project project = (Project)n.getValue("Project"); // NOI18N
-	    Folder folder = (Folder)n.getValue("Folder"); // NOI18N
-	    assert folder != null;
-            
-            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        for (int i = 0; i < activatedNodes.length; i++) {
+            Node n = activatedNodes[i];
+            Project project = (Project) n.getValue("Project"); // NOI18N
+            Folder folder = (Folder) n.getValue("Folder"); // NOI18N
+            assert folder != null;
+
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
             if (!makeConfigurationDescriptor.okToChange()) {
                 return;
             }
-            
-	    String txt = NbBundle.getMessage(getClass(), "LBL_RemoveFolderActionDialogTxt", folder.getDisplayName()); // NOI18N
-	    NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, NbBundle.getMessage(getClass(), "LBL_RemoveFolderActionDialogTitle"), NotifyDescriptor.OK_CANCEL_OPTION); // NOI18N
-	    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
-		Folder parentFolder = folder.getParent();
-		assert parentFolder != null;
-		parentFolder.removeFolderAction(folder);
-	    }
-	}
+
+            String txt = NbBundle.getMessage(getClass(), "LBL_RemoveFolderActionDialogTxt", folder.getDisplayName()); // NOI18N
+            NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, NbBundle.getMessage(getClass(), "LBL_RemoveFolderActionDialogTitle"), NotifyDescriptor.OK_CANCEL_OPTION); // NOI18N
+            if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
+                Folder parentFolder = folder.getParent();
+                assert parentFolder != null;
+                parentFolder.removeFolderAction(folder);
+            }
+        }
     }
 
     public boolean enable(Node[] activatedNodes) {
-	return true;
+        return true;
     }
 
     public HelpCtx getHelpCtx() {
-	return null;
+        return null;
     }
 
     @Override
     protected boolean asynchronous() {
-	return false;
+        return false;
     }
 }

@@ -286,13 +286,15 @@ public class CssCompletion implements CodeCompletionHandler {
             all.addAll(completeHtmlSelectors(prefix, caretOffset));
             return new DefaultCompletionResult(all, false);
 
-        } else if (node.kind() == CssParserTreeConstants.JJTMEDIARULE) {
+        } else if (node.kind() == CssParserTreeConstants.JJTMEDIARULE || node.kind() == CssParserTreeConstants.JJTMEDIARULELIST) {
             return new DefaultCompletionResult(completeHtmlSelectors(prefix, caretOffset), false);
 
-        } else if (node.kind() == CssParserTreeConstants.JJTSKIP) {
+        } else if (node.kind() == CssParserTreeConstants.JJTSKIP || node.kind() == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE) {
             //complete at keywords with prefix - parse tree broken
             SimpleNode parent = (SimpleNode) node.jjtGetParent();
-            if (parent != null && parent.kind() == CssParserTreeConstants.JJTUNKNOWNRULE) {  //test the parent node
+            if (parent != null && 
+                    (parent.kind() == CssParserTreeConstants.JJTUNKNOWNRULE ||
+                    parent.kind() == CssParserTreeConstants.JJTRULE)) {  //test the parent node
                 Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
                 return wrapRAWValues(possibleValues, CssCompletionItem.Kind.VALUE, snapshot.getOriginalOffset(parent.startOffset()));
             }
@@ -335,6 +337,9 @@ public class CssCompletion implements CodeCompletionHandler {
             node.visitChildren(propertySearch);
 
             SimpleNode property = result[0];
+            if(property == null) {
+                return CodeCompletionResult.NONE;
+            }
 
             String expressionText = ""; //NOI18N
             if (result[1] != null) {
@@ -607,6 +612,10 @@ public class CssCompletion implements CodeCompletionHandler {
             return Collections.emptyList();
         }
         CssProjectSupport support = CssProjectSupport.findFor(current);
+        if(support == null) {
+            //we are outside of a project
+            return Collections.emptyList();
+        }
         CssIndex index = support.getIndex();
         Map<FileObject, Collection<String>> result = index.findAll(RefactoringElementType.COLOR);
 
@@ -805,7 +814,9 @@ public class CssCompletion implements CodeCompletionHandler {
         int skipPrefixChars = 0;
         if (t.id() == CssTokenId.COLON) {
             return ""; //NOI18N
-        } else if(t.id() == CssTokenId.STRING) {
+        } else if (t.id() == CssTokenId.COMMA) {
+            return ""; //NOI18N
+        } else if (t.id() == CssTokenId.STRING) {
             skipPrefixChars = 1; //skip the leading quotation char
         }
 

@@ -84,6 +84,7 @@ public class RfsSetupProvider implements SetupProvider {
         }
     }
 
+    @Override
     public Map<String, String> getBinaryFiles(ExecutionEnvironment env) {
         Map<String, String> result = new LinkedHashMap<String, String>();
         try {

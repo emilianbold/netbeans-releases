@@ -109,7 +109,7 @@ public class Model {
     }
     
     Boolean isCamelCaseJavaNavigation() {
-        Preferences p = getJavaModulePreferenes();
+        Preferences p = NbPreferences.root ();
         if ( p == null ) {
             return null;
         }
@@ -117,11 +117,7 @@ public class Model {
     }
     
     void setCamelCaseNavigation(boolean value) {
-        Preferences p = getJavaModulePreferenes();
-        if ( p == null ) {
-            return;
-        }
-        p.putBoolean("useCamelCaseStyleNavigation", value); // NOI18N
+        NbPreferences.root ().putBoolean("useCamelCaseStyleNavigation", value); // NOI18N
     }
         
     // private helper methods ..................................................

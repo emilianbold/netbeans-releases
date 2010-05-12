@@ -60,6 +60,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.windows.IOColors;
 import org.openide.windows.IOContainer;
+import org.openide.windows.IOSelect;
 import org.openide.windows.OutputEvent;
 import org.openide.xml.XMLUtil;
 
@@ -376,10 +377,38 @@ public class Controller {
                 if (tab == null) {
                     tab = createOutputTab(io);
                 }
-                if (io.isFocusTaken()) {
-                    ioContainer.requestActive();
+		if (io.isFocusTaken()) {
+		    ioContainer.requestActive();
+		}
+
+		// After fixing bug#185209 IOContainer.select() no longer
+		// performs these operations for us so we have to do them.
+		ioContainer.open();
+		ioContainer.requestVisible();
+
+		ioContainer.select(tab);
+                break;
+            case IOEvent.CMD_FINE_SELECT :
+                if (tab == null) {
+                    tab = createOutputTab(io);
                 }
-                ioContainer.select(tab);
+
+		// We get here via IOSelect.select().
+		assert data == null || data instanceof Set;
+		@SuppressWarnings("unchecked")		// NOI18N
+		Set<IOSelect.AdditionalOperation> extraOps =
+		    (Set<IOSelect.AdditionalOperation>) data;
+
+		if (extraOps != null) {
+		    // the order of these tests mimics the order of calls above.
+		    if (io.isFocusTaken() && extraOps.contains(IOSelect.AdditionalOperation.REQUEST_ACTIVE))
+			ioContainer.requestActive();
+		    if (extraOps.contains(IOSelect.AdditionalOperation.OPEN))
+			ioContainer.open();
+		    if (extraOps.contains(IOSelect.AdditionalOperation.REQUEST_VISIBLE))
+			ioContainer.requestVisible();
+		}
+		ioContainer.select(tab);
                 break;
             case IOEvent.CMD_SET_TOOLBAR_ACTIONS :
                 if (tab != null) {

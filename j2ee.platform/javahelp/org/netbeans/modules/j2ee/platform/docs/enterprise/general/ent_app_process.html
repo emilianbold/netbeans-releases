@@ -1,123 +1,156 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2009 Sun Microsystems, Inc. 
+ * Copyright © 2009 Sun Microsystems, Inc.
  * All rights reserved.
  * Use is subject to license terms.
 -->
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>Working with Enterprise Applications</title>
-<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-<meta name="keywords" content="enterprise" />
-</head>
-<body>
-<h2>Working with Enterprise Applications</h2>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Working with Enterprise Applications</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta name="keywords" content="enterprise" />
+    </head>
 
-<p>The following table shows how to work with enterprise applications.</p> 
-<table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
-   process step. The right column contains detail information to accomplish that process.">
-  <tr valign="top"> 
-    <td align="center"><img src="../../images/circle1.gif" alt="Number one"><br>
-      <b>Create the application and module projects</b></td>
-    <td> 
-      <ol>
-        <li><a href="../../server/server_register.html">Register</a> an application server.</li>
-        <li>Create the project for the <a href="ent_app_creating.html">enterprise application</a>.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="2"> 
-      <hr align="center" width="80%">
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td align="center"><img src="../../images/circle2.gif" alt="Number two"><br>
-      <b>Code the modules</b></td>
-    <td> 
-      <ol>
-	      <li>Create web components in the web application modules.</li>
-	      <li>Create new <a href="../../ejb/general/about_session_beans.html">session beans</a> and
-	      <a href="../../ejb/general/about_msg_driven_beans.html">message-driven beans</a>.</li>
-	      <li>Generate <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_entityclasses.html">entity classes</a> or <a href="../../ejb/general/about_entity_beans.html">entity beans</a> from existing database tables or
-	      use the <a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/dbexpovew.html">Database Explorer</a> to
-	      create database tables.</li>
-        <li>Call <a href="../../ejb/general/about_ejbs.html">enterprise beans</a> from web application modules and other enterprise beans.</li>
-        <li>Use server resources like databases and JMS messages.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="2"> 
-      <hr align="center" width="80%">
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td align="center"><img src="../../images/circle3.gif" alt="Number three"><br>
-      <b>Configure the application</b></td>
-    <td>
-      <ol>
-	      <li><a href="ent_app_configure.html">Edit</a> the enteprise application's
-	      <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-		      <param name="content" value="../../ejb/glossary/deploymentdesc.html">
-      <param name="viewerActivator" value="javax.help.LinkLabel">
-      <param name="viewerStyle" value="javax.help.Popup">
-      <param name="viewerSize" value="400,220">
-      <param name="text" value="deployment descriptors">
-      <param name="textFontSize" value="medium">
-      <param name="textFontFamily" value="SansSerif">
-      <param name="textFontStyle" value="italic">
-      <param name="textFontWeight" value="bold">
-      <param name="textColor" value="blue">
-    </object>.</li>
-	<li>Select libraries and other <a href="add_resources_to_ent_app.html">external resources</a> to bundle with the EAR file.</li>
-        <li>Set runtime options such as the application's default web page and target 
-          application server.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="2"> 
-      <hr align="center" width="80%">
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td align="center"> <img src="../../images/circle4.gif" alt="Number four"><br>
-      <b>Build the project</b> </td>
-    <td> 
-      <ol>
-        <li>Choose Run &gt; <a href="ent_app_build.html">Build 
-          Main Project</a> from the main menu or right-click the project and choose Build.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="2"> 
-      <hr align="center" width="80%">
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td align="center"> <img src="../../images/circle5.gif" alt="Number five"><br>
-      <b>Deploy the application</b> </td>
-    <td> 
-      <ol>
-        <li>Right-click the enterprise application project and choose Deploy to 
-         undeploy the enterprise application if it is already deployed, and then deploy the enterprise application
-        to the target application server and domain.</li>
-        <li>Right-click any of the application's module projects and choose Run 
-        to deploy the module without deploying the other modules in the application.</li>
-      </ol>
-    </td>
-  </tr>
-</table>
+    <body>
+        <h2>Working with Enterprise Applications</h2>
 
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="50" border="0">
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-</table>
-</body>
+        <p>The following table shows how to work with enterprise applications.</p>
+
+        <table border="0" cellpadding="0" cellspacing="0"
+               summary="The left column contains each process step. The right column contains
+               detail information to accomplish that process.">
+
+            <tr valign="top">
+                <td align="center">
+                    <img src="../../images/circle1.gif" alt="Number one">
+                    <br>
+                    <strong>
+                    Create the application
+                    <br>
+                    and module projects</strong>
+                </td>
+
+                <td>
+                    <ol>
+                        <li><a href="../../server/server_register.html">Register</a> an application server.</li>
+                        <li>Create the project for the <a href="ent_app_creating.html">enterprise application</a>.</li>
+                    </ol>
+                </td>
+            </tr>
+
+            <tr><td colspan="2"><hr align="center" width="80%"></td></tr>
+
+            <tr valign="top">
+                <td align="center">
+                    <img src="../../images/circle2.gif" alt="Number two">
+                    <br>
+                    <strong>Code the modules</strong>
+                </td>
+
+                <td>
+                    <ol>
+                        <li>Create web components in the web application modules.</li>
+
+                        <li>Create new <a href="../../ejb/general/about_session_beans.html">session beans</a> and
+                            <a href="../../ejb/general/about_msg_driven_beans.html">message-driven beans</a>.</li>
+
+                        <li>Generate <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_entityclasses.html">entity
+                            classes</a> or <a href="../../ejb/general/about_entity_beans.html">entity beans</a>
+                            from existing database tables or use the <a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/dbexpovew.html">Database
+                            Explorer</a> to create database tables.</li>
+
+                        <li>Call <a href="../../ejb/general/about_ejbs.html">enterprise beans</a> from
+                            web application modules and other enterprise beans.</li>
+
+                        <li>Use server resources like databases and JMS messages.</li>
+                    </ol>
+                </td>
+            </tr>
+
+            <tr><td colspan="2"><hr align="center" width="80%"></td></tr>
+
+            <tr valign="top">
+                <td align="center">
+                    <img src="../../images/circle3.gif" alt="Number three">
+                    <br>
+                    <strong>Configure the application</strong>
+                </td>
+
+                <td>
+                    <ol>
+                        <li><a href="ent_app_configure.html">Edit</a> the enteprise application's
+
+                            <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+                                <param name="content" value="../../ejb/glossary/deploymentdesc.html">
+                                <param name="viewerActivator" value="javax.help.LinkLabel">
+                                <param name="viewerStyle" value="javax.help.Popup">
+                                <param name="viewerSize" value="400,220">
+                                <param name="text" value="deployment descriptors">
+                                <param name="textFontSize" value="medium">
+                                <param name="textFontFamily" value="SansSerif">
+                                <param name="textFontStyle" value="italic">
+                                <param name="textFontWeight" value="bold">
+                                <param name="textColor" value="blue">
+                            </object>.</li>
+
+                        <li>Select libraries and other <a href="add_resources_to_ent_app.html">external resources</a>
+                            to bundle with the EAR file.</li>
+
+                        <li>Set runtime options such as the application's default web page and target
+                            application server.</li>
+                    </ol>
+                </td>
+            </tr>
+
+            <tr><td colspan="2"><hr align="center" width="80%"></td></tr>
+
+            <tr valign="top">
+                <td align="center"> <img src="../../images/circle4.gif" alt="Number four">
+                    <br>
+                    <strong>Build the project</strong>
+                </td>
+
+                <td>
+                    <ol>
+                        <li>Choose Run &gt; <a href="ent_app_build.html">Build Main Project</a> from
+                            the main menu or right-click the project and choose Build.</li>
+                    </ol>
+                </td>
+            </tr>
+
+            <tr><td colspan="2"><hr align="center" width="80%"></td></tr>
+
+            <tr valign="top">
+                <td align="center">
+                    <img src="../../images/circle5.gif" alt="Number five">
+                    <br>
+                    <strong>Deploy and run the application</strong>
+                </td>
+
+                <td>
+                    <ol>
+                        <li>Right-click the enterprise application project and choose Run. Module
+                            projects are compiled, new and changed files are copied from module projects'
+                            build directories to the EAR's deployment directory. The EAR &quot;client&quot;
+                            is triggered (e.g., a web application opens in the browser).
+
+                            <br><br>
+                            You can also right-click any of the application's module projects
+                            and choose Run to deploy the individual module without deploying
+                            other modules in the application.
+                        </li>
+                    </ol>
+                </td>
+            </tr>
+        </table>
+
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
 </html>

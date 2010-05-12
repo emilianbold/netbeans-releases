@@ -65,4 +65,11 @@ public abstract class Tuple extends MetadataElement {
      */
     public abstract Column getColumn(String name);
 
+    /**
+     * Returns the schema containing this tuple.
+     *
+     * @return the parent schema.
+     * @since 0.8
+     */
+    public abstract Schema getParent();
 }

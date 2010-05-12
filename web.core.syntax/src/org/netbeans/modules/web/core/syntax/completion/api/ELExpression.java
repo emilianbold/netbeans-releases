@@ -545,6 +545,55 @@ public class ELExpression {
 
         // Find the start of the expression. It doesn't have to be an EL delimiter (${ #{)
         // it can be start of the function or start of a simple expression.
+
+        //-----------------------------------------------------------------------------------
+        //#185426 fix. Since the code below is extremely unreadable, fragile and not tested
+        //I do not dare to touch it. It must be reimplemented from scratch!!!
+        //to make the issue work I create following extra check which will cover only
+        //the specific case (completion of taglibs' functions) and fallback to the
+        //original mess if its not its context
+        block: {
+            StringBuilder expressionText = new StringBuilder();
+            if(ts.token().id() == ELTokenId.IDENTIFIER) {
+                //append the portion of the identifier before the query offset
+                CharSequence tokenText = ts.token().text();
+                expressionText.append(diff == 0 ? tokenText : tokenText.subSequence(0, diff));
+                if(!ts.movePrevious()) {
+                    break block;
+                }
+            }
+
+            if(ts.token().id() == ELTokenId.COLON) {
+                //insert the colon at the beginning
+                expressionText.insert(0, ts.token().text());
+                if(ts.movePrevious()) {
+                    if(ts.token().id() == ELTokenId.TAG_LIB_PREFIX) {
+                        //insert the tag library prefix at the beginning
+                        expressionText.insert(0, ts.token().text());
+                        //result should look like: "f:funct"
+                        //in case of #{f:funct|ion} where | means the query pffset
+                        //or
+                        //result should look like: "f:"
+                        //in case of #{f:|} where | means the query pffset
+                        expression = replace = expressionText.toString();
+                        return EL_START;
+                    }
+                }
+            }
+
+        }
+
+        //if we got here, that is not our case and we have to reposition the token sequence
+        //back to the original position
+        diff = ts.move(offset);
+        if (diff == 0) {
+            ts.movePrevious();
+        } else {
+            ts.moveNext();
+        }
+
+        //end of #185426 fix
+        //-----------------------------------------------------------------------------------
         Token<?> token = ts.token();
         boolean rBracket = false;
         while (rBracket ||

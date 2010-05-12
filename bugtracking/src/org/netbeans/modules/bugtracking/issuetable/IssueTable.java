@@ -94,6 +94,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugtracking.ui.query.IssueTableSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.view.TreeTableView;
 import org.openide.nodes.Node;
@@ -223,7 +224,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); // NOI18N
-        BugtrackingUtil.fixFocusTraversalKeys(table);
+        UIUtils.fixFocusTraversalKeys(table);
 
         storeColumnsWidthHandler = new StoreColumnsHandler();
         storeColumnsTask = BugtrackingManager.getInstance()
@@ -307,7 +308,12 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
-            initColumns();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    initColumns();
+                }
+            });
         }
     }
 
@@ -555,7 +561,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
                         }
                     }
                     if(query.isSaved()) {
-                        int w = BugtrackingUtil.getColumnWidthInPixels(25, table);
+                        int w = UIUtils.getColumnWidthInPixels(25, table);
                         setColumnWidth(getRecentChangesColumnIdx(), w);
                     }
                 }

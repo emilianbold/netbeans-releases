@@ -40,7 +40,10 @@
 package org.netbeans.modules.java.hints.encapsulation;
 
 
+import java.util.prefs.Preferences;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
+import org.netbeans.modules.java.hints.options.HintsSettings;
 
 /**
  *
@@ -330,5 +333,17 @@ public class FieldEncapsulationTest extends TestBase {
                                 "    }\n"+
                                 "}",
                                 "8:28-8:29:verifier:Access of Private Field of Another Object");
+    }
+
+    public void testEnumIgnore() throws Exception {
+        Preferences p = RulesManager.getPreferences(FieldEncapsulation.class.getName() + ".publicField", HintsSettings.getCurrentProfileId());
+
+        p.putBoolean(FieldEncapsulation.ALLOW_ENUMS_KEY, true);
+
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public java.lang.annotation.RetentionPolicy r = null;\n" +
+                            "}");
     }
 }

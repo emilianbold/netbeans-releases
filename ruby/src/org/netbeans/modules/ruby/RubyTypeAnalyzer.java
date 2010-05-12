@@ -45,10 +45,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.jrubyparser.ast.ArrayNode;
+import org.jrubyparser.ast.DotNode;
+import org.jrubyparser.ast.ForNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.IfNode;
 import org.jrubyparser.ast.ListNode;
+import org.jrubyparser.ast.LocalAsgnNode;
 import org.jrubyparser.ast.MultipleAsgnNode;
+import org.jrubyparser.ast.NilImplicitNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.ToAryNode;
@@ -240,8 +244,24 @@ final class RubyTypeAnalyzer {
                 return;
             }
             case LOCALASGNNODE: {
-                RubyType type = typeInferencer.inferTypesOfRHS(node, currentMethod);
                 String symbol = RubyTypeInferencer.getLocalVarPath(knowledge.getRoot(), node, currentMethod);
+                LocalAsgnNode localAsgnNode = (LocalAsgnNode) node;
+                // see if it is a loop var
+                if (localAsgnNode.getValueNode() instanceof NilImplicitNode) {
+                    AstPath path = new AstPath(knowledge.getRoot(), node);
+                    Node leafParent = path.leafParent();
+                    if (leafParent instanceof ForNode) {
+                        ForNode forNode = (ForNode) leafParent;
+                        Node iterNode = forNode.getIterNode();
+                        if (iterNode instanceof DotNode) {
+                            DotNode dotNode = (DotNode) iterNode;
+                            RubyType type = typeInferencer.inferType(dotNode.getBeginNode());
+                            maybePutTypeForSymbol(typesForSymbols, symbol, type, override, currentMethod);
+                            break;
+                        }
+                    }
+                }
+                RubyType type = typeInferencer.inferTypesOfRHS(node, currentMethod);
                 maybePutTypeForSymbol(typesForSymbols, symbol, type, override, currentMethod);
                 break;
             }

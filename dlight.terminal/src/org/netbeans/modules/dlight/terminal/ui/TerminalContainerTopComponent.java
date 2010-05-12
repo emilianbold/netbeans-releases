@@ -38,15 +38,26 @@
  */
 package org.netbeans.modules.dlight.terminal.ui;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-//import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Utilities;
 import org.openide.windows.IOContainer;
 
 /**
@@ -66,6 +77,8 @@ public final class TerminalContainerTopComponent extends TopComponent {
 
     public TerminalContainerTopComponent() {
         initComponents();
+        initToolbar();
+        fillToolBar();
         final String title = NbBundle.getMessage(TerminalContainerTopComponent.class, "CTL_TerminalContainerTopComponent");// NOI18N
         setName(title);
         setToolTipText(NbBundle.getMessage(TerminalContainerTopComponent.class, "HINT_TerminalContainerTopComponent"));// NOI18N
@@ -87,10 +100,19 @@ public final class TerminalContainerTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        actionsBar = new javax.swing.JToolBar();
+
         setLayout(new java.awt.BorderLayout());
+
+        actionsBar.setFloatable(false);
+        actionsBar.setOrientation(1);
+        actionsBar.setRollover(true);
+        actionsBar.setFocusable(false);
+        add(actionsBar, java.awt.BorderLayout.LINE_START);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JToolBar actionsBar;
     // End of variables declaration//GEN-END:variables
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
@@ -102,6 +124,15 @@ public final class TerminalContainerTopComponent extends TopComponent {
             instance = new TerminalContainerTopComponent();
         }
         return instance;
+    }
+    private static Action[] actions;
+
+    private synchronized static Action[] getToolbarActions() {
+        if (actions == null) {
+            List<? extends Action> termActions = Utilities.actionsForPath("Actions/Terminal");// NOI18N
+            actions = termActions.toArray(new Action[termActions.size()]);
+        }
+        return actions;
     }
 
     /**
@@ -125,7 +156,14 @@ public final class TerminalContainerTopComponent extends TopComponent {
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
+        return TopComponent.PERSISTENCE_ALWAYS;
+    }
+
+    @Override
+    public void requestActive() {
+        super.requestActive();
+        // redirect focus into current terminal
+        tc.requestFocusInWindow();
     }
 
     @Override
@@ -176,5 +214,95 @@ public final class TerminalContainerTopComponent extends TopComponent {
     }
 
     public void addPanel(JComponent panel) {
+    }
+
+    private void fillToolBar() {
+        actionsBar.removeAll();
+        Action[] toolbarActions = getToolbarActions();
+        for (int i = 0; i < toolbarActions.length; i++) {
+            JButton button = new JButton(actions[i]);
+            button.setBorderPainted(false);
+            button.setOpaque(false);
+            button.setText(null);
+            button.putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
+            Object icon = actions[i].getValue(Action.SMALL_ICON);
+            if (!(icon instanceof Icon)) {
+                throw new IllegalStateException("No icon provided for " + actions[i]); //NOI18N
+            }
+            button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) icon));
+            actionsBar.add(button);
+        }
+        actionsBar.revalidate();
+        actionsBar.repaint();
+    }
+
+    private void initToolbar() {
+        Insets ins = actionsBar.getMargin();
+        JButton dummy = new JButton();
+        dummy.setBorderPainted(false);
+        dummy.setOpaque(false);
+        dummy.setText(null);
+        dummy.setIcon(new Icon() {
+
+            @Override
+            public int getIconHeight() {
+                return 16;
+            }
+
+            @Override
+            public int getIconWidth() {
+                return 16;
+            }
+
+            @SuppressWarnings(value = "empty-statement")
+            @Override
+            public void paintIcon(Component c, Graphics g, int x, int y) {
+                ;
+            }
+        });
+        actionsBar.add(dummy);
+        Dimension buttonPref = dummy.getPreferredSize();
+        Dimension minDim = new Dimension(buttonPref.width + ins.left + ins.right, buttonPref.height + ins.top + ins.bottom);
+        actionsBar.setMinimumSize(minDim);
+        actionsBar.setPreferredSize(minDim);
+        actionsBar.remove(dummy);
+        actionsBar.setBorder(new RightBorder());
+        actionsBar.setBorderPainted(true);
+    }
+
+    private static final class RightBorder implements Border {
+
+        public RightBorder() {
+        }
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Color old = g.getColor();
+            g.setColor(getColor());
+            g.drawLine(x + width - 1, y, x + width - 1, y + height);
+            g.setColor(old);
+        }
+
+        public Color getColor() {
+            if (Utilities.isMac()) {
+                Color c1 = UIManager.getColor("controlShadow"); // NOI18N
+                Color c2 = UIManager.getColor("control"); // NOI18N
+                return new Color((c1.getRed() + c2.getRed()) / 2,
+                        (c1.getGreen() + c2.getGreen()) / 2,
+                        (c1.getBlue() + c2.getBlue()) / 2);
+            } else {
+                return UIManager.getColor("controlShadow"); // NOI18N
+            }
+        }
+
+        @Override
+        public Insets getBorderInsets(Component c) {
+            return new Insets(0, 0, 0, 2);
+        }
+
+        @Override
+        public boolean isBorderOpaque() {
+            return true;
+        }
     }
 }

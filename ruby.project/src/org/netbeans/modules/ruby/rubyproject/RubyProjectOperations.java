@@ -83,6 +83,7 @@ public class RubyProjectOperations implements DeleteOperationImplementation, Cop
         FileObject projectDirectory = project.getProjectDirectory();
         List<FileObject> files = new ArrayList<FileObject>();
         addFile(projectDirectory, "nbproject", files); // NOI18N
+        addFile(projectDirectory, "Capfile", files); // NOI18N
         addFile(projectDirectory, "README", files); // NOI18N
         addFile(projectDirectory, "LICENSE", files); // NOI18N
         return files;
