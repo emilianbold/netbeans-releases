@@ -47,7 +47,7 @@ public final class NewAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        EditorTopComponent tc = EditorTopComponent.getDefault();
+        EditorTopComponent tc = EditorTopComponent.findInstance();
         tc.resetFields();
         tc.open();
         tc.requestActive();
