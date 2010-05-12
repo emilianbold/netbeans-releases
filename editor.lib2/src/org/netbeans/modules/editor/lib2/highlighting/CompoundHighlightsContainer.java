@@ -321,12 +321,15 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             }
 
             try {
-                bag.addAllHighlights(new CheckedHighlightsSequence(
+                CheckedHighlightsSequence checked = new CheckedHighlightsSequence(
                     layers[i].getHighlights(startOffset, endOffset),
                     startOffset,
-                    endOffset,
-                    "CHC.Layer[" + i + "]=" + layers[i] //NOI18N
-                ));
+                    endOffset
+                );
+                if (LOG.isLoggable(Level.FINE)) {
+                    checked.setContainerDebugId("CHC.Layer[" + i + "]=" + layers[i]); //NOI18N
+                }
+                bag.addAllHighlights(checked);
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine(dumpLayerHighlights(layers[i], startOffset, endOffset));
                 }
