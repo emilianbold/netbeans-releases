@@ -64,7 +64,7 @@ import org.openide.WizardDescriptor.InstantiatingIterator;
  *
  * @author Kirill Sorokin
  */
-public class WLOptionalFactory extends OptionalDeploymentManagerFactory {
+public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManagerFactory {
 
     /**
      * Returns an object responsible for starting a particular server instance.
