@@ -74,7 +74,6 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                                         <xsd:enumeration value="boot"/>
                                         <xsd:enumeration value="compile"/>
                                         <xsd:enumeration value="execute"/>
-                                        <xsd:enumeration value="processor"/>
                                     </xsd:restriction>
                                 </xsd:simpleType>
                             </xsd:attribute>
@@ -95,6 +94,18 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                     </xsd:restriction>
                 </xsd:simpleType>
             </xsd:element>
+            <xsd:element name="annotation-processing" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="scan-trigger" minOccurs="0"><xsd:complexType/></xsd:element>
+                        <xsd:element name="editor-trigger" minOccurs="0"><xsd:complexType/></xsd:element>
+                        <xsd:element name="source-output" minOccurs="0" type="substitutable-text"/>
+                        <xsd:element name="processor-path" minOccurs="0" type="substitutable-text"/>
+                        <xsd:element name="processor" minOccurs="0" maxOccurs="unbounded" type="substitutable-text"/>
+                        <xsd:element name="processor-option" minOccurs="0" maxOccurs="unbounded" type="processor-option"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -105,4 +116,13 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
             <!-- XXX limit by regexp, perhaps -->
         </xsd:restriction>
     </xsd:simpleType>
+
+    <xsd:complexType name="processor-option">
+        <xsd:sequence>
+            <xsd:element name="key" type="xsd:string"/>     <!-- xsd:token???? -->
+            <xsd:element name="value" type="substitutable-text"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+
 </xsd:schema>
