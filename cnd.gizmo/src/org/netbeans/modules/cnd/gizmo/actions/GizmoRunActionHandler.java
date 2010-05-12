@@ -195,12 +195,12 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
             GizmoConfigurationOptions gizmoConfigurationOptions = ((GizmoConfigurationOptions) options);
             gizmoConfigurationOptions.configure(pae.getProject());
             Collection<String> toolNames  = gizmoConfigurationOptions.getActiveToolNames();
-            String collectedToolNames = "";
+            String collectedToolNames = "";//NOI18N
             Iterator<String> it = toolNames.iterator();
             while (it.hasNext()){
-                collectedToolNames += it.next() + ": " ;
+                collectedToolNames += it.next() + ": " ;//NOI18N
             }
-            UIGesturesSupport.submit("USG_CND_PROFILE_INDICATORS", collectedToolNames);
+            UIGesturesSupport.submit("USG_CND_PROFILE_INDICATORS", collectedToolNames);//NOI18N
         }
 
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);

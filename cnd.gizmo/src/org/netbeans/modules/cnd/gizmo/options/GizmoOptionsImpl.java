@@ -272,7 +272,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         }
         if (oldValue != newValue && PROFILE_ON_RUN_PROP.equals(propertyName)) {
             //TRAKING SYSTEM
-            UIGesturesSupport.submit("USG_CND_PROFILE_ON_RUN", newValue ? "ON" : "OFF");
+            UIGesturesSupport.submit("USG_CND_PROFILE_ON_RUN", newValue ? "ON" : "OFF");//NOI18N
         }
     }
 
