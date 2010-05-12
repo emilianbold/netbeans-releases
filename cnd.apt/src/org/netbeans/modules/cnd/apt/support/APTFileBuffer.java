@@ -53,4 +53,8 @@ public interface APTFileBuffer {
     public File getFile();
     public CharSequence getAbsolutePath();
     public Reader getReader() throws IOException;    
+    public char[] getCharBuffer() throws IOException;
+    public int getLength();
+    public boolean isFileBased();
+
 }
