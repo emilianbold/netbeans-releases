@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.FocusTraversalPolicy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -162,47 +165,70 @@ public class AskForUrlPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        urlLabel = new javax.swing.JLabel();
-        urlComboBox = new javax.swing.JComboBox();
+        urlLabel = new JLabel();
+        urlComboBox = new JComboBox();
+
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return urlComboBox;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return urlComboBox;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return urlComboBox;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                return urlComboBox;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                return urlComboBox;//end getComponentBefore
+
+            }}
+        );
 
         urlLabel.setLabelFor(urlComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.text")); // NOI18N
 
-        urlComboBle(true);
+        urlComboBox.setEditable(true);
 
-        javax.ayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(urlLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(urlComboBox, 0, 341, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swout.Alignment.BASELINE)
-        .addComponent(urlLabel          .addComponent(urlComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(urlLabel)
+                    .addComponent(urlComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
-        urlLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.AccessibleContext.accessibleName")); // NOI18N
-        urlLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        urlComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlComboBox.AccessibleContext.accessibleName")); // NOI18N
-        urlComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlComboBox.AccessibleContext.accessibleDescription")); // NOI18N
-
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.AccessibleContext.accessibleName")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        urlLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.AccessibleContext.accessibleName")); // NOI18N
+        urlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        urlComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlComboBox.AccessibleContext.accessibleName")); // NOI18N
+        urlComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox urlComboBox;
-    private javax.swing.JLabel urlLabel;
+    private JComboBox urlComboBox;
+    private JLabel urlLabel;
     // End of variables declaration//GEN-END:variables
 
 }
