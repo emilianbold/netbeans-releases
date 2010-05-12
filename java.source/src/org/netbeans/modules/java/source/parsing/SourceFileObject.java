@@ -68,6 +68,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -129,11 +130,20 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         }
     }
 
-    public final void update (final CharSequence content) throws IOException {
+    public final void update (CharSequence content) throws IOException {
         if (content == null) {
             update();
         }
         else {
+            if (filter != null) {
+                final FileObject file = handle.resolveFileObject(false);
+                if (file != null) {
+                    final Source source = Source.create(file);
+                    if (source != null && source.getDocument(false) == null) {
+                        content = filter.filterCharSequence(content);
+                    }
+                }
+            }
             this.text = toString(content);
         }
         this.tokens = null;
@@ -391,11 +401,9 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
             throw new IOException("No source for: " + FileUtil.getFileDisplayName(file));   //NOI18N
         }
         CharSequence content = toString(source.createSnapshot().getText());
-        if (source.getDocument(false)!=null) {
-            //Snapshot is from Document we have to filter it
-            if (filter != null) {
-                content = filter.filterCharSequence(content);
-            }
+        if (filter != null && source.getDocument(false)==null) {
+            //Snapshot is not from Document and there is a filter => filter it
+            content = filter.filterCharSequence(content);
         }
         String result = toString(content);
         if (assign) {
