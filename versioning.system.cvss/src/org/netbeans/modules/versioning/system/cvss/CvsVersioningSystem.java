@@ -128,6 +128,7 @@ public class CvsVersioningSystem {
         return instance;
     }
     private RequestProcessor parallelRP;
+    private RequestProcessor serialRP;
 
     private void init() {
         defaultGlobalOptions = CvsVersioningSystem.createGlobalOptions();
@@ -792,5 +793,12 @@ public class CvsVersioningSystem {
             parallelRP = new RequestProcessor("CVS.ParallelTasks", 5, true);
         }
         return parallelRP;
+    }
+
+    public RequestProcessor getRequestProcessor () {
+        if (serialRP == null) {
+            serialRP = new RequestProcessor("CVS.SerializedTasks", 1, true); //NOI18N
+        }
+        return serialRP;
     }
 }

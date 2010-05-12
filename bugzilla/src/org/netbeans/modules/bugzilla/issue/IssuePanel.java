@@ -147,7 +147,7 @@ import org.openide.windows.WindowManager;
  */
 public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
-    private static final RequestProcessor RP = new RequestProcessor("Bugzilla Issue Panel", 5, false);
+    private static final RequestProcessor RP = new RequestProcessor("Bugzilla Issue Panel", 5, false); // NOI18N
     private BugzillaIssue issue;
     private CommentsPanel commentsPanel;
     private AttachmentsPanel attachmentsPanel;

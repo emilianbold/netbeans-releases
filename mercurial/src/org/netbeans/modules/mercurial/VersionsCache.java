@@ -44,6 +44,7 @@ package org.netbeans.modules.mercurial;
 import java.io.*;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.util.*;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * File revisions cache. It can access pristine files.
@@ -80,7 +81,7 @@ public class VersionsCache {
             return base;
         } else {
             try {
-                File tempFile = File.createTempFile("tmp", "-" + base.getName()); //NOI18N
+                File tempFile = new File(Utils.getTempFolder(), "nb-hg-" + base.getName()); //NOI18N
                 tempFile.deleteOnExit();
                 if (Setup.REVISION_BASE.equals(revision)) {
                     HgCommand.doCat(repository, base, tempFile, null);

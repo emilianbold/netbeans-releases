@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,61 +31,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.welcome.content;
-
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import org.openide.awt.StatusDisplayer;
+package org.netbeans.modules.maven.osgi.util;
 
 /**
+ * A simple visitor for parsing Bnd package definitions.
  *
- * @author S. Aubrecht
+ * @author johnsonlau@netbeans.org
  */
-public class WebLink extends LinkButton {
+public interface PackageDefinitionVisitor {
 
-    private String url;
+	public void onCharacter(char c);
 
-    /** Creates a new instance of WebLink */
-    public WebLink( String key, boolean showBorder ) {
-        this( BundleSupport.getLabel( key ), BundleSupport.getURL( key ), showBorder );
-    }
+	public void startPattern();
 
-    public WebLink( String label, String url, boolean showBorder ) {
-        super( label, showBorder, url );
-        this.url = url;
+	public void endPattern();
 
-        getAccessibleContext().setAccessibleName(
-                BundleSupport.getAccessibilityName( "WebLink", label ) ); //NOI18N
-        getAccessibleContext().setAccessibleDescription(
-                BundleSupport.getAccessibilityDescription( "WebLink", url ) ); //NOI18N
+	public void startDirective();
 
-        setUsageTrackingId(url);
-    }
+	public void endDirective();
 
-    public WebLink( String label, String url, Color foreground, boolean showBorder ) {
-        super( label, foreground, showBorder, url );
-        this.url = url;
+	public void startQuotedString();
 
-        setUsageTrackingId(url);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        logUsage();
-        Utils.showURL( url );
-    }
-    
-    @Override
-    protected void onMouseExited(MouseEvent e) {
-        StatusDisplayer.getDefault().setStatusText( "" );
-    }
-
-    @Override
-    protected void onMouseEntered(MouseEvent e) {
-        StatusDisplayer.getDefault().setStatusText( url );
-    }
+	public void endQuotedString();
+	
 }
-

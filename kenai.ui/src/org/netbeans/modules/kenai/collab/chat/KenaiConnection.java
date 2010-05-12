@@ -405,7 +405,7 @@ public class KenaiConnection implements PropertyChangeListener {
             try {
                 createChat(prj);
             } catch (IllegalStateException ise) {
-                Exceptions.printStackTrace(ise);
+                XMPPLOG.log(Level.INFO, "https://netbeans.org/bugzilla/show_bug.cgi?id=176882", ise);
             }
         }
     }
