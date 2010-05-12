@@ -699,6 +699,19 @@ public class TreeModelNode extends AbstractNode {
         }
     }
 
+    @Override
+    public void setDisplayName(String s) {
+        String sOld;
+        synchronized (displayNameLock) {
+            if ((displayName != null) && displayName.equals(s)) {
+                return ;
+            }
+            sOld = displayName;
+            displayName = oldDisplayName = s;
+        }
+        fireDisplayNameChange(sOld, s);
+    }
+
     private void setModelIcon() throws UnknownTypeException {
         String iconBase = null;
         if (model.getRoot() != object) {
