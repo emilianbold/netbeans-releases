@@ -1495,6 +1495,8 @@ public class TokenFormatter {
             private int startOffset = -1;
             private int endOffset = -1;
             private int previousLineIndent = 0;
+            private String previousOldIndentText = "";
+            private String previousNewIndentText = "";
 
 	    private int replaceString(BaseDocument document, int offset, int indexInFormatTokens, String oldText, String newText, int delta, boolean templateEdit) {
 		if (oldText == null) {
@@ -1505,65 +1507,61 @@ public class TokenFormatter {
                     startOffset = formatContext.startOffset();
                     endOffset = formatContext.endOffset();
                 }
-//                if(startOffset == -1) {
-//                    startOffset = formatContext.startOffset() == 0
-//                            ? formatContext.startOffset()
-//                            : formatContext.startOffset() -1;
-//                    System.out.println("char: " + document.getText().charAt(startOffset));
-//                    while (startOffset > 0 && Character.isWhitespace(document.getText().charAt(startOffset))) {
-//                        startOffset --;
-//                    }
-//                    if (startOffset > 0) {
-//                        startOffset ++;
-//                    }
-//                    endOffset = formatContext.endOffset();
-//                    while (endOffset < document.getLength() && Character.isWhitespace(document.getText().charAt(endOffset))) {
-//                        endOffset ++;
-//                    }
-//                    if (endOffset < document.getLength()) {
-//                        endOffset --;
-//                    }
-//
-//                }
+                if (startOffset > 0 && (startOffset - oldText.length()) > offset
+                        && newText != null && newText.indexOf('\n') > -1) {
+                    previousNewIndentText = newText;
+                    previousOldIndentText = oldText;
+                }
                 if (newText != null && (!oldText.equals(newText)
                         || (startOffset > 0 && (startOffset - oldText.length()) == offset))) {
                     int realOffset = offset + delta;
-                    if (startOffset > 0 && (startOffset - oldText.length()) > offset) {
-                        int indexOldTextLine = oldText.lastIndexOf('\n');
-                        int indexNewTextLine = newText.lastIndexOf('\n');
+//                    if (startOffset > 0 && (startOffset - oldText.length()) > offset) {
+//                        int indexOldTextLine = oldText.lastIndexOf('\n');
+//                        int indexNewTextLine = newText.lastIndexOf('\n');
+//                        if (indexOldTextLine > -1 && indexNewTextLine > -1) {
+//                            int oldTextLenght = oldText.length();
+//                            int addToLength = 0;
+//                            int indexOldText = indexOldTextLine;
+//                            while (indexOldText < oldText.length()
+//                                    && (indexOldText =oldText.indexOf('\t', indexOldText)) != -1) {
+//                                addToLength += docOptions.tabSize - 1;
+//                                indexOldText++;
+//                            }
+//                            previousLineIndent = newText.length() - indexNewTextLine - oldText.length() - addToLength + indexOldTextLine;
+//                        }
+//                    }
+                    if (startOffset > 0 && (startOffset - oldText.length()) == offset) {
+                        int indexOldTextLine = previousOldIndentText.lastIndexOf('\n');
+                        int indexNewTextLine = previousNewIndentText.lastIndexOf('\n');
                         if (indexOldTextLine > -1 && indexNewTextLine > -1) {
-                            int oldTextLenght = oldText.length();
                             int addToLength = 0;
                             int indexOldText = indexOldTextLine;
-                            while (indexOldText < oldText.length()
-                                    && (indexOldText =oldText.indexOf('\t', indexOldText)) != -1) {
+                            while (indexOldText < previousOldIndentText.length()
+                                    && (indexOldText =previousOldIndentText.indexOf('\t', indexOldText)) != -1) {
                                 addToLength += docOptions.tabSize - 1;
                                 indexOldText++;
                             }
-                            previousLineIndent = newText.length() - indexNewTextLine - oldText.length() - addToLength + indexOldTextLine;
+                            previousLineIndent = previousNewIndentText.length() - indexNewTextLine - previousOldIndentText.length() - addToLength + indexOldTextLine;
                         }
-                    }
-                    if (startOffset > 0 && (startOffset - oldText.length()) == offset) {
-                        int indexOldTextLine = oldText.lastIndexOf('\n');
-                        int indexNewTextLine = newText.lastIndexOf('\n');
+                        /*int helpIndex = indexInFormatTokens;
+                        while (helpIndex > 0 && formatTokens.get(helpIndex).getId() != FormatToken.Kind.WHITESPACE_INDENT) {
+                            helpIndex --;
+                        }
 
-//                        while (indexInFormatTokens > 0 && formatTokens.get(indexInFormatTokens).isWhitespace()) {
-//                            indexInFormatTokens--;
-//                        }
-//                        if (formatTokens.get(indexInFormatTokens).getId() == FormatToken.Kind.OPEN_TAG) {
-//                            if (indexOldTextLine > -1 && indexNewTextLine > -1) {
-//                                int oldTextLenght = oldText.length();
-//                                int addToLength = 0;
-//                                int indexOldText = indexOldTextLine;
-//                                while (indexOldText < oldText.length()
-//                                        && (indexOldText =oldText.indexOf('\t', indexOldText)) != -1) {
-//                                    addToLength += docOptions.tabSize - 1;
-//                                    indexOldText++;
-//                                }
-//                                previousLineIndent = newText.length() - indexNewTextLine - oldText.length() - addToLength + indexOldTextLine;
-//                            }
-//                        }
+                        try {
+                            int currentLineOffset = IndentUtils.lineStartOffset(doc, offset);
+                            int previousLineOffset = IndentUtils.lineStartOffset(doc, currentLineOffset);
+                            previousLineIndent = IndentUtils.lineIndent(doc, previousLineOffset);
+                            if (helpIndex > 0 && formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_INDENT) {
+                                String oldIndentText = formatTokens.get(helpIndex).getOldText();
+                                oldIndentT
+                            }
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }*/
 
+                        indexOldTextLine = oldText.lastIndexOf('\n');
+                        indexNewTextLine = newText.lastIndexOf('\n');
                         String replaceNew = indexNewTextLine == -1 ? newText : newText.substring(indexNewTextLine + 1);
                         if (previousLineIndent != 0 && indexNewTextLine > -1 && (replaceNew.length()) >= 0) {
                             int newSpaces = replaceNew.length() - previousLineIndent;
