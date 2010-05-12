@@ -10,7 +10,6 @@ import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelParams;
 import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
@@ -69,11 +68,8 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             }
 
             // 3. setup env
-            String envFile = HostInfoUtils.getHostInfo(info.getExecutionEnvironment()).getEnvFile();
-            streams.in.write(EnvWriter.getBytes(". " + envFile + ">/dev/null 2>&1\n", true)); // NOI18N
-
             EnvWriter ew = new EnvWriter(streams.in, true);
-            ew.write(onlyChangedEnv(envVars));
+            ew.write(envVars);
 
             // 4. additional setup
             if (info.getInitialSuspend()) {

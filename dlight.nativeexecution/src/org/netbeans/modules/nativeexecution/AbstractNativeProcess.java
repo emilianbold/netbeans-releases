@@ -478,23 +478,4 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         infoProviderSearchTask = NativeTaskExecutorService.submit(callable,
                 "get info provider for process " + pid); // NOI18N
     }
-
-    protected Map<String, String> onlyChangedEnv(final MacroMap mmap) throws IOException {
-        Map<String, String> orig = HostInfoUtils.getHostInfo(getExecutionEnvironment()).getEnvironment();
-        Map<String, String> res = new HashMap<String, String>();
-        String var, val;
-
-        for (Map.Entry<String, String> entry : mmap.entrySet()) {
-            var = entry.getKey();
-            val = entry.getValue();
-            if (orig.containsKey(var)) {
-                if (orig.get(var).equals(val)) {
-                    continue;
-                }
-            }
-            res.put(var, val);
-        }
-
-        return res;
-    }
 }

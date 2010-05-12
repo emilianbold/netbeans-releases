@@ -234,7 +234,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
                 OutputStream fos = new FileOutputStream(envFileFile);
                 EnvWriter ew = new EnvWriter(fos, false);
-                ew.write(onlyChangedEnv(env));
+                ew.write(env);
                 fos.close();
 
                 /**
