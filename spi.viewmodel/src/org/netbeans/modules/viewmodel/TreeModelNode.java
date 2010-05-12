@@ -581,7 +581,7 @@ public class TreeModelNode extends AbstractNode {
                         synchronized (childrenRefreshModels) {
                             childrenRefreshModels.remove(model);
                         }
-                        refreshTheChildren(model, new TreeModelChildren.RefreshingInfo(false));
+                        refreshTheChildren(Collections.singleton(model), new TreeModelChildren.RefreshingInfo(false));
                     }
                 });
             }
