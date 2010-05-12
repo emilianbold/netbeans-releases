@@ -139,6 +139,7 @@ tokens {
 	CSM_TYPE_COMPOUND<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	CSM_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_EXPLICIT_INSTANTIATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -373,7 +374,9 @@ tokens {
 	protected static final int tsCLASS     = 0x2000;
 	protected static final int tsWCHAR_T   = 0x4000;
 	protected static final int tsBOOL      = 0x8000;
-	protected static final int tsCOMPLEX   = 0x16000;
+	protected static final int tsCOMPLEX   = 0x10000;
+	protected static final int tsREAL      = 0x20000;
+	protected static final int tsIMAG      = 0x40000;
 
 	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
 
@@ -733,6 +736,15 @@ template_explicit_specialization
 		dtor_declarator[false] SEMICOLON
 		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
 
+        |
+        // Template explicit specialisation dtor declaration
+		(class_forward_declaration)=>
+		{if(statementTrace >= 1)
+			printf("template_explicit_specialization_0f[%d]: template " +
+				"class forward explicit-specialisation\n", LT(1).getLine());
+		}
+		declaration_specifiers[false, false] SEMICOLON
+		{ #template_explicit_specialization = #(#[CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
         |
 	// Template explicit specialisation (DW 14/04/03)
 		{if(statementTrace >= 1)
@@ -1699,6 +1711,8 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
         | LITERAL_double        {ts |= tsDOUBLE;}
         | LITERAL_void          {ts |= tsVOID;}
         | literal_complex       {ts |= tsCOMPLEX;}
+        | LITERAL___real        {ts |= tsREAL;}
+        | LITERAL___imag        {ts |= tsIMAG;}
     ;
 
 qualified_type
@@ -3291,6 +3305,8 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL_double
             |   LITERAL_void
             |   literal_complex
+            |   LITERAL___real
+            |   LITERAL___imag
 
             |   LITERAL_struct
             |   LITERAL_union
@@ -3462,6 +3478,8 @@ lazy_expression_predicate
     |   LITERAL_double
     |   LITERAL_void
     |   literal_complex
+    |   LITERAL___real
+    |   LITERAL___imag
 
     |   LITERAL_OPERATOR 
     |   LITERAL_dynamic_cast 
