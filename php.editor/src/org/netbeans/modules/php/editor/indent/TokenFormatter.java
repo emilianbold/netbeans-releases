@@ -1490,8 +1490,6 @@ public class TokenFormatter {
 		return value;
 	    }
 
-//	    private int countOfChanges = 0;
-
             private int startOffset = -1;
             private int endOffset = -1;
             private int previousLineIndent = 0;
@@ -1515,21 +1513,6 @@ public class TokenFormatter {
                 if (newText != null && (!oldText.equals(newText)
                         || (startOffset > 0 && (startOffset - oldText.length()) == offset))) {
                     int realOffset = offset + delta;
-//                    if (startOffset > 0 && (startOffset - oldText.length()) > offset) {
-//                        int indexOldTextLine = oldText.lastIndexOf('\n');
-//                        int indexNewTextLine = newText.lastIndexOf('\n');
-//                        if (indexOldTextLine > -1 && indexNewTextLine > -1) {
-//                            int oldTextLenght = oldText.length();
-//                            int addToLength = 0;
-//                            int indexOldText = indexOldTextLine;
-//                            while (indexOldText < oldText.length()
-//                                    && (indexOldText =oldText.indexOf('\t', indexOldText)) != -1) {
-//                                addToLength += docOptions.tabSize - 1;
-//                                indexOldText++;
-//                            }
-//                            previousLineIndent = newText.length() - indexNewTextLine - oldText.length() - addToLength + indexOldTextLine;
-//                        }
-//                    }
                     if (startOffset > 0 && (startOffset - oldText.length()) == offset) {
                         int indexOldTextLine = previousOldIndentText.lastIndexOf('\n');
                         int indexNewTextLine = previousNewIndentText.lastIndexOf('\n');
@@ -1543,22 +1526,6 @@ public class TokenFormatter {
                             }
                             previousLineIndent = previousNewIndentText.length() - indexNewTextLine - previousOldIndentText.length() - addToLength + indexOldTextLine;
                         }
-                        /*int helpIndex = indexInFormatTokens;
-                        while (helpIndex > 0 && formatTokens.get(helpIndex).getId() != FormatToken.Kind.WHITESPACE_INDENT) {
-                            helpIndex --;
-                        }
-
-                        try {
-                            int currentLineOffset = IndentUtils.lineStartOffset(doc, offset);
-                            int previousLineOffset = IndentUtils.lineStartOffset(doc, currentLineOffset);
-                            previousLineIndent = IndentUtils.lineIndent(doc, previousLineOffset);
-                            if (helpIndex > 0 && formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_INDENT) {
-                                String oldIndentText = formatTokens.get(helpIndex).getOldText();
-                                oldIndentT
-                            }
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }*/
 
                         indexOldTextLine = oldText.lastIndexOf('\n');
                         indexNewTextLine = newText.lastIndexOf('\n');
