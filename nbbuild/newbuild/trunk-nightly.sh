@@ -132,8 +132,8 @@ if [ $UPLOAD_ML == 1 ]; then
 fi
 
 #XXX Remove any javafx related files before upload to public site
-cd $DIST
-find . -name "*javafx*" -exec rm {} \;
+#cd $DIST
+#find . -name "*javafx*" -exec rm {} \;
 
 if [ -z $DIST_SERVER ]; then
     exit 0;
