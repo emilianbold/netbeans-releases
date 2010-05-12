@@ -41,18 +41,14 @@
 
 package org.netbeans.modules.editor.mimelookup.impl;
 
-import java.io.IOException;
 import java.util.List;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import junit.framework.*;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
-import org.openide.actions.CopyAction;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.actions.CutAction;
 import org.openide.actions.FindAction;
-import org.openide.actions.PasteAction;
 import org.openide.actions.RenameAction;
 import org.openide.actions.ReplaceAction;
 import org.openide.util.Lookup;
@@ -113,6 +109,7 @@ public class MimeLookupPopupItemsChangeTest extends NbTestCase {
     }
     
     /** Testing Base level popup items lookup and sorting */
+    @RandomlyFails // NB-Core-Build #4599: resultChangedCount is:2 instead of 1
     public void testDynamicChangeInPopupFolders() throws Exception {
         final int resultChangedCount[] = new int[1];
         resultChangedCount[0] = 0;
