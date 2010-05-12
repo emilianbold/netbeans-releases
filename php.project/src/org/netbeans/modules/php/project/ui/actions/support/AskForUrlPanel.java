@@ -45,6 +45,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -161,40 +162,47 @@ public class AskForUrlPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        urlLabel = new JLabel();
-        urlComboBox = new JComboBox();
+        urlLabel = new javax.swing.JLabel();
+        urlComboBox = new javax.swing.JComboBox();
 
         urlLabel.setLabelFor(urlComboBox);
-        Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.text")); // NOI18N
 
-        urlComboBox.setEditable(true);
+        urlComboBle(true);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        javax.ayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(urlLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(urlComboBox, 0, 337, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(urlComboBox, 0, 341, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(urlLabel)
-                    .addComponent(urlComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swout.Alignment.BASELINE)
+        .addComponent(urlLabel          .addComponent(urlComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
+
+        urlLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.AccessibleContext.accessibleName")); // NOI18N
+        urlLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        urlComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlComboBox.AccessibleContext.accessibleName")); // NOI18N
+        urlComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JComboBox urlComboBox;
-    private JLabel urlLabel;
+    private javax.swing.JComboBox urlComboBox;
+    private javax.swing.JLabel urlLabel;
     // End of variables declaration//GEN-END:variables
 
 }
