@@ -267,6 +267,8 @@ public class TreeModelRoot {
 
     private final class ModelChangeListener implements ModelListener {
 
+        //private final Logger logger = Logger.getLogger(ModelChangeListener.class.getName());
+
         private final Models.CompoundModel model;
 
         public ModelChangeListener(Models.CompoundModel model) {
@@ -276,6 +278,8 @@ public class TreeModelRoot {
         public void modelChanged (final ModelEvent event) {
             //System.err.println("TreeModelRoot.modelChanged("+event.getClass()+") from "+model);
             //Thread.dumpStack();
+            //logger.fine("TreeModelRoot.modelChanged("+event+")");
+            //logger.log(Level.FINE, "Called from ", new IllegalStateException("TEST_MODEL_CHANGED"));
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     if (model == null)
@@ -301,10 +305,12 @@ public class TreeModelRoot {
                     if (event instanceof ModelEvent.NodeChanged) {
                         ModelEvent.NodeChanged nchEvent = (ModelEvent.NodeChanged) event;
                         Object node = nchEvent.getNode();
+                        //logger.fine("NodeChanged("+node+")");
                         //System.err.println("NodeChanged("+node+")");
                         if (node != null) {
                             TreeModelNode[] tmNodes = findNode(node);
                             //System.err.println("  nodes = "+Arrays.toString(tmNodes));
+                            //logger.fine("  nodes = "+Arrays.toString(tmNodes));
                             for (TreeModelNode tmNode : tmNodes) {
                                 tmNode.refresh(model, nchEvent.getChange());
                             }

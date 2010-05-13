@@ -148,9 +148,9 @@ public final class ErrorManager {
         }
         String title = ResourceUtils.getString(ErrorManager.class, titleKey); 
         if(title == null) {
-            titleKey = type.toString();
+            title = type.toString();
         }
-        UiUtils.showMessageDialog(dialogText, titleKey, type);
+        UiUtils.showMessageDialog(dialogText, title, type);
         if(type.equals(UiUtils.MessageType.CRITICAL)) {
             finishHandler.criticalExit();
         }
