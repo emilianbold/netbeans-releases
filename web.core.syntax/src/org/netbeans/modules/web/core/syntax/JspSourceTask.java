@@ -84,7 +84,7 @@ public final class JspSourceTask extends ParserResultTask<JspParserResult> {
     static {
         Map<String, Set<String>> tags = new HashMap<String, Set<String>>();
         tags.put("jsp:useBean",
-                new HashSet<String>(Arrays.asList(new String[]{"class", "type"}))); //NOI18N
+                new HashSet<String>(Arrays.asList(new String[]{"class", "type", "id"}))); //NOI18N
         
         Map<String, Set<String>> dirs = new HashMap<String, Set<String>>();
         dirs.put("page",
