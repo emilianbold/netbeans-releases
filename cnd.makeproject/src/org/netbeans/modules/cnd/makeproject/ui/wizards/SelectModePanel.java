@@ -127,7 +127,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         if (simpleMode.isSelected()){
             String tool = "Makefile"; // NOI18N
             String toolsInfo = getString("SelectModeSimpleInstructionExtraText_Make"); // NOI18N
-            if (controller.getWizardStorage() != null && controller.getWizardStorage().getMake() == null) {
+            if (controller.getWizardStorage() != null) {
                 String configure = controller.getWizardStorage().getConfigure();
                 if (configure != null) {
                     toolsInfo = getString("SelectModeSimpleInstructionExtraText_Configure"); // NOI18N
@@ -426,10 +426,10 @@ public class SelectModePanel extends javax.swing.JPanel {
                     }
                 }
             }
-            if (ConfigureUtils.findMakefile(path) != null){
+            if (ConfigureUtils.findConfigureScript(path) != null){
                 return true;
             }
-            if (ConfigureUtils.findConfigureScript(path) != null){
+            if (ConfigureUtils.findMakefile(path) != null){
                 return true;
             }
             if (simpleMode.isSelected()) {
