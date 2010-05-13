@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.netbeans.editor.DocumentUtilities;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
 import org.openide.text.NbDocument;
@@ -151,29 +152,32 @@ public class CppFile {
             includesFoldRecords.clear();
             List<CppFoldRecord> folds = null;
 
-            final String text[] = new String[]{null};
-            final BadLocationException exc[] = new BadLocationException[]{null};
+            final Object[] res = new Object[]{null, null};
             doc.render(new Runnable() {
-
                 @Override
                 public void run() {
                     try {
-                        text[0] = doc.getText(0, doc.getLength());
-                    } catch (BadLocationException e) {
-                        exc[0] = e;
+                        final int length = doc.getLength();
+                        char[] buf = new char[length];
+                        DocumentUtilities.copyText(doc, 0, length, buf, 0);
+                        res[0] = buf;
+
+                    } catch( BadLocationException e ) {
+                        res[1] = e;
                     }
                 }
             });
-            if (exc[0] != null) {
-                exc[0].printStackTrace();
+
+            if (res[1] != null) {
+                ((BadLocationException)res[1]).printStackTrace();
                 return false;
             }
-            if (text[0] == null) {
+            if (res[0] == null) {
                 return false;
             }
 
             String name = (String) doc.getProperty(Document.TitleProperty);
-            folds = p.parse(name, new StringReader(text[0]));
+            folds = p.parse(name, (char[])res[0]);
             if (folds == null) {
                 return false;
             }

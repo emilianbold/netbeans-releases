@@ -202,7 +202,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>com.severity1.makefilemodule</friend>
+                <package>org.netbeans.modules.cnd.api.makefile</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

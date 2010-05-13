@@ -47,7 +47,6 @@ import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +59,6 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.EnvReader;
-import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.modules.InstalledFileLocator;
@@ -74,9 +72,6 @@ public class UnixHostInfoProvider implements HostInfoProvider {
     private static final String PATH_TO_PREPEND = "/bin:/usr/bin"; // NOI18N
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final File hostinfoScript;
-    private static final List<String> specialVars = Arrays.asList(
-            "_", "SHELL", "HOME", "SSH_CONNECTION", "SSH_CLIENT", // NOI18N
-            "TERM", "PWD", "MAIL", "USER", "LOGNAME"); // NOI18N
 
     static {
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
@@ -211,8 +206,6 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
         ChannelStreams login_shell_channels = null;
 
-        final String envFile = hostInfo.getProperty("ENVFILE"); // NOI18N
-
         try {
             login_shell_channels = JschSupport.startLoginShellSession(execEnv);
             login_shell_channels.in.write(("/bin/env\n").getBytes()); // NOI18N
@@ -220,38 +213,12 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             login_shell_channels.in.close();
 
             EnvReader reader = new EnvReader(login_shell_channels.out, true);
-            Map<String, String> env = reader.call();
-
-            for (Map.Entry<String, String> entry : env.entrySet()) {
-                if (!specialVars.contains(entry.getKey())) {
-                    environmentToFill.put(entry.getKey(), entry.getValue());
-                }
-            }
-
+            environmentToFill.putAll(reader.call());
         } catch (Exception ex) {
         } finally {
             if (login_shell_channels != null) {
                 if (login_shell_channels.channel != null) {
                     login_shell_channels.channel.disconnect();
-                }
-            }
-        }
-
-        ChannelStreams env_channels = null;
-        try {
-            env_channels = JschSupport.startCommand(execEnv, "/bin/sh -s", null); // NOI18N
-            env_channels.in.write(("/bin/cat > " + envFile + "\n").getBytes()); // NOI18N
-            env_channels.in.flush();
-            EnvWriter writer = new EnvWriter(env_channels.in, true);
-            writer.write(environmentToFill);
-            env_channels.in.close();
-//            environmentToFill.putAll(reader.call());
-        } catch (Exception ex) {
-            log.log(Level.SEVERE, "Unable to read environment! {0}", ex.getMessage()); // NOI18N
-        } finally {
-            if (env_channels != null) {
-                if (env_channels.channel != null) {
-                    env_channels.channel.disconnect();
                 }
             }
         }

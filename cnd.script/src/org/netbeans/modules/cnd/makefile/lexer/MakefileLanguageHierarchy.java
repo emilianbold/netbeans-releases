@@ -60,7 +60,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public class MakefileLanguageHierarchy extends LanguageHierarchy<MakefileTokenId> {
 
     @Override
-    protected synchronized Collection<MakefileTokenId> createTokenIds() {
+    protected Collection<MakefileTokenId> createTokenIds() {
         return EnumSet.allOf(MakefileTokenId.class);
     }
 

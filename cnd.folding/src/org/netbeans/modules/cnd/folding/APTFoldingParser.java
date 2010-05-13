@@ -121,6 +121,22 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         }
         return null;
     }
+
+    public static List<CppFoldRecord> parse(String name, char[] buf) {
+        try {
+            TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(name, buf, APTLanguageSupport.GNU_CPP);
+            APTFoldingParser parser = getParser(name, lexer);
+            parser.translation_unit();
+            return new ArrayList<CppFoldRecord>(parser.getFolders());
+        } catch (Exception e) {
+            if (reportErrors) {
+                System.err.println("exception: " + e); // NOI18N
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
     private final static boolean reportErrors = Boolean.getBoolean("folding.parser.report.errors"); // NOI18N
 
     @Override

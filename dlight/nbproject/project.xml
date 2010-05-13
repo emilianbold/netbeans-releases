@@ -95,7 +95,9 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.dlight.amp</friend>
                 <friend>com.sun.dlight.bridge</friend>
+                <friend>com.sun.dlight.targets</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
@@ -126,6 +128,13 @@
                 <friend>org.netbeans.modules.dlight.toolsui</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
+                <friend>com.sun.dlight.apache</friend>
+                <friend>com.sun.dlight.php</friend>
+                <friend>com.sun.dlight.mysql</friend>
+                <friend>com.sun.dlight.spi.impl</friend>
+                <friend>com.sun.dlight.branding</friend>
+                <friend>com.sun.dlight.tools.customizer</friend>
+                <friend>org.netbeans.modules.dlight.xml</friend>
                 <package>org.netbeans.modules.dlight.api.collector</package>
                 <package>org.netbeans.modules.dlight.api.datafilter</package>
                 <package>org.netbeans.modules.dlight.api.datafilter.support</package>

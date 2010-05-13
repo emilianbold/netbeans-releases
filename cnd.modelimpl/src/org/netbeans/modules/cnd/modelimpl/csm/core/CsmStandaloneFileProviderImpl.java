@@ -484,7 +484,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public void runOnCodeModelReadiness(NamedRunnable task) {
+        public void runOnProjectReadiness(NamedRunnable task) {
             task.run();
         }
 
