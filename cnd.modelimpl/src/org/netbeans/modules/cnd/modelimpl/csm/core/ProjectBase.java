@@ -1772,7 +1772,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             impl = getFile(file, treatSymlinkAsSeparateFile);
             if (impl == null) {
                 preprocHandler = (preprocHandler == null) ? getPreprocHandler(file) : preprocHandler;
-                initial = (initial == null) ? preprocHandler.getState() : initial;
+//                initial = (initial == null) ? preprocHandler.getState() : initial;
                 impl = new FileImpl(ModelSupport.getFileBuffer(file), this, fileType, nativeFileItem);
                 if (nativeFileItem != null) {
                     putNativeFileItem(impl.getUID(), nativeFileItem);
