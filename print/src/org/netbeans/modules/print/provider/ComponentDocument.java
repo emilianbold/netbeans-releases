@@ -60,6 +60,10 @@ import static org.netbeans.modules.print.util.UI.*;
 final class ComponentDocument extends JComponent {
 
     ComponentDocument(String text) {
+//out();
+//out();
+//out("TEXT PROVIDER");
+//out(text);
         init();
         prepare(text);
         perform();
@@ -73,6 +77,7 @@ final class ComponentDocument extends JComponent {
 
     private void init() {
 //out();
+//out("INIT");
         myWrapLines = Config.getDefault().isWrapLines();
         myLineNumbers = Config.getDefault().isLineNumbers();
         myTextColor = Config.getDefault().getTextColor();
@@ -88,6 +93,7 @@ final class ComponentDocument extends JComponent {
         while (stk.hasMoreTokens()) {
             ComponentLine line = new ComponentLine(trimEnded(stk.nextToken()), myTextFont, myTextColor);
 //out();
+//out("prepare");
 //out(line.getWidth() + " '" + line + "'");
 //line.show();
             myLines.add(line);
