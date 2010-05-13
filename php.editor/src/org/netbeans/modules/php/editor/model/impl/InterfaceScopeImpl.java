@@ -45,10 +45,12 @@ import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 
 
 /**
@@ -111,10 +113,16 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
         interfaceScopes.addAll(getSuperInterfaceScopes());
         for (InterfaceScope iface : interfaceScopes) {
-            Collection<MethodElement> indexedFunctions = index.getInheritedMethods(iface);
+            Set<MethodElement> indexedFunctions =
+                    org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false).filter(index.getAllMethods(iface));
             for (MethodElement classMember : indexedFunctions) {
                 MethodElement indexedFunction = classMember;
-                allMethods.add(new MethodScopeImpl(iface, indexedFunction));
+                TypeElement type = indexedFunction.getType();
+                if (type.isInterface()) {
+                    allMethods.add(new MethodScopeImpl(new InterfaceScopeImpl(indexScope, (InterfaceElement)type), indexedFunction));
+                } else {
+                    allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement)type), indexedFunction));
+                }
             }
         }
         return allMethods;
