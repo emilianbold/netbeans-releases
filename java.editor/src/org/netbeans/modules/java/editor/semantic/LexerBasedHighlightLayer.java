@@ -104,6 +104,9 @@ public class LexerBasedHighlightLayer extends AbstractHighlightsContainer {
         
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<? extends TokenId> seq = th.tokenSequence();
+        if (seq == null) { // Null when token hierarchy is inactive
+            return HighlightsSequence.EMPTY;
+        }
         
         if (seq.language() == JavaTokenId.language()) {
             return new LexerBasedHighlightSequence(this, seq.subSequence(startOffset, endOffset), colorings);

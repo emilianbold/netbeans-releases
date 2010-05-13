@@ -48,6 +48,18 @@ made subject to such option by the copyright holder.
     </apidefs>
     <changes>
 
+        <change id="annotation-processing">
+            <summary>Support for annotation processing</summary>
+            <version major="1" minor="21"/>
+            <date day="12" month="5" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible"/>
+            <description>
+                Added complete support for annotation processing into freeform-project-java/3 schema which now supports all metadata for
+                AnnotationProcessingQuery.
+            </description>
+            <issue number="185457"/>
+        </change>
         <change id="source-16">
             <summary>Added freeform-project-java/3 schema to support annotation processors and source levels 1.6 and 1.7</summary>
             <version major="1" minor="16"/>
