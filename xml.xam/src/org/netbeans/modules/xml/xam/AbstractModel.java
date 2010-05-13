@@ -691,13 +691,16 @@ public abstract class AbstractModel<T extends Component<T>>
         getAccess().setAutoSync(v);
     }
     
+    private static final RequestProcessor RP = new RequestProcessor(
+            AbstractModel.class.getName(), 3, true);
+
     void runAutoSync() {
         if (logger.getLevel() == Level.FINEST) {
             logger.finest("Initiate auto sync for XAM model: " + toString()); // NOI18N
         }
         //
         prepareSync();
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 try {
