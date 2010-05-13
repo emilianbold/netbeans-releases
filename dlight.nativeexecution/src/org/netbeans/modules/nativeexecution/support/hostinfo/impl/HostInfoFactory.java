@@ -207,11 +207,6 @@ public final class HostInfoFactory {
         }
 
         @Override
-        public String getEnvFile() {
-            return envFile;
-        }
-
-        @Override
         public Map<String, String> getEnvironment() {
             return environment;
         }

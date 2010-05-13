@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.dlight.api.tool;
 
-import org.netbeans.modules.dlight.api.*;
+import java.beans.FeatureDescriptor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -63,7 +63,7 @@ public final class DLightToolConfiguration {
     private boolean visible;
     private String iconPath = null;
     private String shortDescription;
-    private String detailsDescription;
+    FeatureDescriptor detailsDescription;
 
     static {
         DLightToolConfigurationAccessor.setDefault(new DLightToolConfigurationAccessorImpl());
@@ -92,6 +92,10 @@ public final class DLightToolConfiguration {
         dataCollectors = Collections.synchronizedList(new ArrayList<DataCollectorConfiguration>());
         indicators = Collections.synchronizedList(new ArrayList<IndicatorConfiguration>());
         indicatorDataProvidersConfiguration = Collections.synchronizedList(new ArrayList<IndicatorDataProviderConfiguration>());
+    }
+
+    public void setFeatureDescriptor(FeatureDescriptor descriptor){
+        this.detailsDescription = descriptor;
     }
 
     /**

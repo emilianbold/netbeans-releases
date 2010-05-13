@@ -44,6 +44,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -137,7 +138,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             declarationsLock.writeLock().lock();
             o = declarations.get(uniqueName);
 
-            if (o instanceof CsmUID[]) {
+            if (o instanceof CsmUID<?>[]) {
                 @SuppressWarnings("unchecked")
                 CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID<CsmOffsetableDeclaration>[]) o;
                 int size = uids.length;
@@ -169,7 +170,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
                     }
                     declarations.put(uniqueName, newUids);
                 }
-            } else if (o instanceof CsmUID) {
+            } else if (o instanceof CsmUID<?>) {
                 declarations.remove(uniqueName);
             }
         } finally {
@@ -186,7 +187,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
             if (set != null) {
                 set.remove(UIDs.get(cls));
-                if (set.size() == 0) {
+                if (set.isEmpty()) {
                     friends.remove(name);
                 }
             }
@@ -196,7 +197,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
             if (set != null) {
                 set.remove(UIDs.get(fun));
-                if (set.size() == 0) {
+                if (set.isEmpty()) {
                     friends.remove(name);
                 }
             }
@@ -216,7 +217,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             declarationsLock.writeLock().lock();
 
             Object o = declarations.get(name);
-            if (o instanceof CsmUID[]) {
+            if (o instanceof CsmUID<?>[]) {
                 @SuppressWarnings("unchecked")
                 CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID[]) o;
                 boolean find = false;
@@ -236,13 +237,13 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
                     }
                     declarations.put(name, res);
                 }
-            } else if (o instanceof CsmUID) {
+            } else if (o instanceof CsmUID<?>) {
                 @SuppressWarnings("unchecked")
                 CsmUID<CsmOffsetableDeclaration> oldUid = (CsmUID<CsmOffsetableDeclaration>) o;
                 if (UIDUtilities.isSameFile(oldUid, uid)) {
                     declarations.put(name, uid);
                 } else {
-                    CsmUID[] uids = new CsmUID[]{uid, oldUid};
+                    CsmUID<?>[] uids = new CsmUID<?>[]{uid, oldUid};
                     declarations.put(name, uids);
                 }
             } else {
@@ -335,9 +336,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
             // we know the template type to be CsmOffsetableDeclaration
             @SuppressWarnings("unchecked") // checked
             final CsmUID<CsmOffsetableDeclaration>[] uids = (CsmUID<CsmOffsetableDeclaration>[]) o;
-            for (CsmUID<CsmOffsetableDeclaration> uid : uids) {
-                list.add(uid);
-            }
+            list.addAll(Arrays.asList(uids));
         } else if (o instanceof CsmUID<?>) {
             // we know the template type to be CsmOffsetableDeclaration
             @SuppressWarnings("unchecked") // checked

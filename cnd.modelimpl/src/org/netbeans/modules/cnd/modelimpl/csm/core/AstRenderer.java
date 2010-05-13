@@ -171,6 +171,13 @@ public class AstRenderer {
                         DiagnosticExceptoins.register(e);
                     }
                     break;
+                case CPPTokenTypes.CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION:
+                    if (renderForwardClassDeclaration(token, currentNamespace, container, file, isRenderingLocalContext())) {
+                        break;
+                    } else {
+                        renderForwardMemberDeclaration(token, currentNamespace, container, file);
+                    }
+                    break;
                 case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
                     if (isClassSpecialization(token)) {
                         ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
@@ -955,7 +962,7 @@ public class AstRenderer {
             return false;
         }
         if (child.getType() == CPPTokenTypes.LITERAL_template) {
-            child = child.getNextSibling();
+            child = skipTemplateSibling(child);
             if (child == null) {
                 return false;
             }

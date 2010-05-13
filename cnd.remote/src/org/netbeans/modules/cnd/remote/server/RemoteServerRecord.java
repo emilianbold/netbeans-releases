@@ -40,7 +40,9 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
@@ -55,6 +57,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -146,6 +149,17 @@ public class RemoteServerRecord implements ServerRecord {
      */
     public synchronized void init(PropertyChangeSupport pcs) {
         assert !SwingUtilities.isEventDispatchThread() : "RemoteServer initialization must be done out of EDT"; // NOI18N
+        try {
+            ConnectionManager.getInstance().connectTo(executionEnvironment);
+        } catch (IOException ex) {
+            RemoteUtil.LOGGER.log(Level.INFO, "Error connecting to " + executionEnvironment, ex);
+            state = State.OFFLINE;
+            reason = ex.getMessage();
+            return;
+        } catch (CancellationException ex) {
+            state = State.CANCELLED;
+            return;
+        }
         Object ostate = state;
         state = State.INITIALIZING;
         RemoteServerSetup rss = new RemoteServerSetup(getExecutionEnvironment());
