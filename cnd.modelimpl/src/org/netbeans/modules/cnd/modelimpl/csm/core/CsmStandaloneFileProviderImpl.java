@@ -164,7 +164,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         if (project != null && project.isValid()) {
             try {
                 CsmFile out = project.getFile(javaIoFile, false);
-                if (TRACE) {trace("returns standalone file %s", out);} //NOI18N
+                if (TRACE) {trace("RETURNS STANALONE FILE %s", out);} //NOI18N
                 return out;
             } catch (BufferUnderflowException ex) {
                 // FIXUP: IZ#148840
@@ -248,6 +248,17 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean isStandalone(CsmFile file) {
+        if (file instanceof FileImpl) {
+            NativeFileItem nfi = ((FileImpl) file).getNativeFileItem();
+            if (nfi instanceof CsmStandaloneFileProviderImpl.NativeFileItemImpl) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void scheduleProjectRemoval(final CsmProject project) {
@@ -500,7 +511,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         @Override
         public final String toString() {
-            return projectRoot + ' ' + getClass().getName() + " @" + hashCode() + ":" + System.identityHashCode(this); // NOI18N
+            return "SA " + projectRoot + ' ' + getClass().getName() + " @" + hashCode() + ":" + System.identityHashCode(this); // NOI18N
         }
     }
 
@@ -577,6 +588,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         @Override
         public boolean isExcluded() {
             return false;
+        }
+
+        @Override
+        public String toString() {
+            return "SA " + file + " " + System.identityHashCode(this) + " " + lang + " from project:" + project; // NOI18N
         }
     }
 }

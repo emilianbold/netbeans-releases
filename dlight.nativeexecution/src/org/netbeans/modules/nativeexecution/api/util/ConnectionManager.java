@@ -344,12 +344,17 @@ public final class ConnectionManager {
 
     private void reconnect(ExecutionEnvironment env) throws IOException {
         synchronized (sessions) {
-            disconnect(env);
+            disconnectImpl(env);
             connectTo(env);
         }
     }
 
     public void disconnect(ExecutionEnvironment env) {
+        disconnectImpl(env);
+        PasswordManager.getInstance().onExplicitDisconnect(env);
+    }
+
+    private void disconnectImpl(ExecutionEnvironment env) {
         synchronized (sessions) {
             Session session = sessions.remove(env);
             if (session != null) {

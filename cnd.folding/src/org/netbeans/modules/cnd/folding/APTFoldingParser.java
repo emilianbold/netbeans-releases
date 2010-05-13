@@ -80,11 +80,13 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     }
 
     private void createFolder(int folderKind, APTToken begin, APTToken end) {
-        // remove one symbol because we want to leave closing curly
-        if (APTFoldingUtils.isStandalone()) {
-            parserFolders.add(new CppFoldRecord(folderKind, begin.getLine(), begin.getColumn(), end.getEndLine(), end.getEndColumn()));
-        } else {
-            parserFolders.add(new CppFoldRecord(folderKind, begin.getOffset(), end.getEndOffset()));
+        if (begin.getLine() != end.getEndLine()) {
+            // remove one symbol because we want to leave closing curly
+            if (APTFoldingUtils.isStandalone()) {
+                parserFolders.add(new CppFoldRecord(folderKind, begin.getLine(), begin.getOffset(), end.getEndLine(), end.getEndOffset()));
+            } else {
+                parserFolders.add(new CppFoldRecord(folderKind, begin.getOffset(), end.getEndOffset()));
+            }
         }
     }
 

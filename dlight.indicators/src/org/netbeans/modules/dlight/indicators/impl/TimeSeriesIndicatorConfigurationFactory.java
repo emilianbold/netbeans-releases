@@ -67,7 +67,6 @@ public final class TimeSeriesIndicatorConfigurationFactory {
     private TimeSeriesIndicatorConfigurationFactory() {
     }
 
-    // Replaces incomplete TimeSeriesIndicatorConfigurationFactory.create()
     static TimeSeriesIndicatorConfiguration createTimeSeriesIndicator(Map<?, ?> map) {
         IndicatorMetadata metadata = getStringAndCreateInstance(map, "metadata", IndicatorMetadata.class); //NOI18N
         int position = getInt(map, "position");//NOI18N

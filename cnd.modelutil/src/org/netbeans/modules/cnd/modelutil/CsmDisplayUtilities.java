@@ -405,7 +405,7 @@ public class CsmDisplayUtilities {
         return buf.toString();
     }
 
-    private static String getHTMLColor(Color c) {
+    public static String getHTMLColor(Color c) {
         String colorR = "0" + Integer.toHexString(c.getRed()); //NOI18N
         colorR = colorR.substring(colorR.length() - 2);
         String colorG = "0" + Integer.toHexString(c.getGreen()); //NOI18N

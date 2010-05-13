@@ -38,14 +38,9 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
-import javax.swing.JEditorPane;
-import javax.swing.text.Caret;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -300,8 +295,20 @@ public class PHPFormatterTestTemplate extends PHPTestBase {
         reformatFileContents("testfiles/formatting/templates/issue185438_02.php", options, true);
     }
 
-    
+    public void testIssue186008_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue186008_01.php", options, true);
+    }
 
+    public void testIssue186008_02() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue186008_02.php", options, true);
+    }
+
+    public void testIssue186008_03() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue186008_03.php", options, true);
+    }
     
 
     protected void reformatFileContents(String file, Map<String, Object> options, boolean isTemplate) throws Exception {
