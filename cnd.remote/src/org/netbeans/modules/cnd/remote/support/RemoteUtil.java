@@ -165,6 +165,7 @@ public class RemoteUtil {
                 ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
                 CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment(), false);
                 csm.initialize(false, true, null);
+                cacheManager.applyChanges();
             }
         }
     }
