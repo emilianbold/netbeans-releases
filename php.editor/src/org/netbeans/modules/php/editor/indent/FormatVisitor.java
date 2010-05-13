@@ -84,7 +84,7 @@ public class FormatVisitor extends DefaultVisitor {
 	indentLevel = 0;
 	options = new DocumentOptions(document);
 	includeWSBeforePHPDoc = true;
-        tsTokenCount = ts.tokenCount();
+        tsTokenCount = ts == null ? 1 : ts.tokenCount();
 	formatTokens = new ArrayList<FormatToken>(tsTokenCount * 2);
         maxFormattingRules = tsTokenCount * 3;
 	formatTokens.add(new FormatToken.InitToken());
