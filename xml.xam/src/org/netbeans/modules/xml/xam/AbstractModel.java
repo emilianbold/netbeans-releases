@@ -75,6 +75,10 @@ public abstract class AbstractModel<T extends Component<T>>
     
     private static Logger logger = Logger.getLogger(AbstractModel.class.getName());
 
+    private static final RequestProcessor RP = new RequestProcessor(
+            AbstractModel.class.getName(), 3, true);
+
+
     private PropertyChangeSupport pcs;
     protected ModelUndoableEditSupport ues;
     private State status;
@@ -691,9 +695,6 @@ public abstract class AbstractModel<T extends Component<T>>
         getAccess().setAutoSync(v);
     }
     
-    private static final RequestProcessor RP = new RequestProcessor(
-            AbstractModel.class.getName(), 3, true);
-
     void runAutoSync() {
         if (logger.getLevel() == Level.FINEST) {
             logger.finest("Initiate auto sync for XAM model: " + toString()); // NOI18N
