@@ -90,17 +90,6 @@ public class RemoteUtil {
 //        }
 //    }
 
-    public static String getEnv(ExecutionEnvironment env, String varName) throws RemoteException {
-        String cmd = String.format("echo ${%s}", varName); // NOI18N
-        RemoteCommandSupport rcs = new RemoteCommandSupport(env, cmd);
-        int rc = rcs.run();
-        if (rc != 0) {
-            throw new RemoteException(String.format("Failed to run %s at %s", cmd, env.getDisplayName())); // NOI18N
-        }
-        String result = rcs.getOutput().trim();
-        return result;
-    }
-
     /** 
      * Returns home directory for the given host
      * NB: this is a LONG RUNNING method - never call from UI thread
@@ -119,11 +108,10 @@ public class RemoteUtil {
             if (Boolean.getBoolean("cnd.emulate.null.home.dir")) { // to emulate returning null //NOI18N
                 return null;
             }
-//            RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, "echo ${HOME}"); //NOI18N
+            // NB: it's important that /bin/pwd is called since it always reports resolved path
+            // while shell's pwd result depend on shell
             ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", "cd; /bin/pwd"); // NOI18N
             if (res.isOK()) {
-//            if (rcs.run() == 0) {
-//                String s = rcs.getOutput().trim();
                 String s = res.output;
                 if (HostInfoProvider.fileExists(execEnv, s)) {
                     dir = s;
