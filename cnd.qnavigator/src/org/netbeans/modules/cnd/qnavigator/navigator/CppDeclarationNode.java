@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.qnavigator.navigator;
 
 
+import java.awt.Color;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,12 +70,14 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory;
 import org.openide.util.CharSequences;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -83,7 +86,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class CppDeclarationNode extends AbstractCsmNode implements Comparable<CppDeclarationNode> {
     private Image icon;
-    private CsmOffsetable object;
+    private CsmObject object;
     private CsmFile file;
     private boolean isFriend;
     private CsmFileModel model;
@@ -112,6 +115,15 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         this.model = model;
         this.weight = getObjectWeight();
     }
+
+    private CppDeclarationNode(Children children, CsmFile csmFile, CsmFileModel model) {
+        super(children, Lookups.fixed(csmFile, model.getFileObject()));
+        object = csmFile;
+        file = csmFile;
+        this.model = model;
+        this.weight = getObjectWeight();
+    }
+
 
     private CppDeclarationNode(Children children, CsmOffsetableDeclaration element, CsmFileModel model, boolean isFriend) {
         this(children, element, model);
@@ -145,6 +157,8 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
 
         if(CsmKindUtilities.isNamespaceDefinition(object)) {
             return 0*10+2;
+        } else if(CsmKindUtilities.isFile(object)) {
+            return 0*10+0;
         } else if(CsmKindUtilities.isNamespaceAlias(object)) {
             return 0*10+0;
         } else if(CsmKindUtilities.isUsing(object)) {
@@ -182,18 +196,26 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     @Override
     public CsmObject getCsmObject() {
         if (CsmKindUtilities.isCsmObject(object)) {
-            return (CsmObject) object;
+            return object;
         }
         return null;
     }
 
     int getOffset() {
-        return object.getStartOffset();
+        if (CsmKindUtilities.isOffsetable(object)) {
+            return ((CsmOffsetable)object).getStartOffset();
+        } else {
+            return 0;
+        }
     }
 
     void resetNode(CppDeclarationNode node){
         object = node.object;
-        file = object.getContainingFile();
+        if (object instanceof CsmFile) {
+            file = (CsmFile) object;
+        } else {
+            file = ((CsmOffsetable)object).getContainingFile();
+        }
         weight = node.weight;
         scopeName = node.scopeName;
         isFriend = node.isFriend;
@@ -207,7 +229,15 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     public int compareTo(CppDeclarationNode o) {
         int res = compareToWithoutOffset(o);
         if (res == 0) {
-            res = object.getStartOffset() - o.object.getStartOffset();
+            int start1 = 0;
+            if (object instanceof CsmOffsetable) {
+                start1 = ((CsmOffsetable)object).getStartOffset();
+            }
+            int start2 = 0;
+            if (o.object instanceof CsmOffsetable) {
+                start2 = ((CsmOffsetable)o.object).getStartOffset();
+            }
+            res = start1 - start2;
         }
         return res;
     }
@@ -263,7 +293,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         }
         return null;
     }
-    
+
     private CharSequence createHtmlDisplayName() {
         try {
             if (CsmKindUtilities.isFunctionDefinition(getCsmObject())) {
@@ -289,6 +319,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                         return CharSequences.create(displayName + "<font color='!controlShadow'>  " + in + " " + aName); // NOI18N
                     }
                 }
+            } else if (object instanceof CsmFile) {
+                //Restricted code assistance
+                return CharSequences.create("<font color='"+CsmDisplayUtilities.getHTMLColor(Color.red)+">"+ // NOI18N
+                        NbBundle.getMessage(CppDeclarationNode.class, "StandAloneFile")); // NOI18N
+
             }
         } catch (AssertionError ex) {
             ex.printStackTrace();
@@ -304,17 +339,25 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             return icon;
         }
         if (file != null && !file.isValid()){
-            CsmOffsetable obj = object;
-            object = null;
-            Image aIcon = super.getIcon(param);
-            object = obj;
-            return aIcon;
+            if (object instanceof CsmOffsetable) {
+                CsmOffsetable obj = (CsmOffsetable) object;
+                object = null;
+                Image aIcon = super.getIcon(param);
+                object = obj;
+                return aIcon;
+            } else {
+                return ImageUtilities.loadImage("org/netbeans/modules/cnd/qnavigator/resources/exclamation.gif");
+            }
         }
         if (isFriend) {
             CsmFriend csmObj = (CsmFriend)object;
             return (csmObj == null) ? super.getIcon(param) : CsmImageLoader.getFriendFunctionImage(csmObj);
         } else {
-            return super.getIcon(param);
+            if (object instanceof CsmOffsetable) {
+                return super.getIcon(param);
+            } else {
+                return ImageUtilities.loadImage("org/netbeans/modules/cnd/qnavigator/resources/exclamation.gif");
+            }
         }
     }
     
@@ -326,7 +369,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     @Override
     public Action getPreferredAction() {
         if (CsmKindUtilities.isOffsetable(object)){
-            return new GoToDeclarationAction(object);
+            return new GoToDeclarationAction((CsmOffsetable) object);
         }
         return null;
     }
@@ -357,8 +400,10 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     }
 
     public static CppDeclarationNode nodeFactory(CsmObject element, CsmFileModel model, boolean isFriend, List<IndexOffsetNode> lineNumberIndex){
-        if (!model.getFilter().isApplicable((CsmOffsetable)element)){
-            return null;
+        if (!(element instanceof CsmFile)) {
+            if (!model.getFilter().isApplicable((CsmOffsetable)element)){
+                return null;
+            }
         }
         CppDeclarationNode node = null;
         if (CsmKindUtilities.isTypedef(element)){
@@ -430,6 +475,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             node = new CppDeclarationNode(Children.LEAF,(CsmInclude)element,model);
             node.name = ((CsmInclude)element).getIncludeName();
             model.addOffset(node, (CsmOffsetable)element, lineNumberIndex);
+            return node;
+        } else if(element instanceof CsmFile) {
+            node = new CppDeclarationNode(Children.LEAF,(CsmFile)element,model);
+            node.name = ((CsmFile)element).getName();
+            model.addFileOffset(node, (CsmFile)element, lineNumberIndex);
             return node;
         }
         return node;

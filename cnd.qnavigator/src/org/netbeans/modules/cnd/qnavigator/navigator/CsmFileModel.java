@@ -40,6 +40,7 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -55,6 +56,7 @@ public class CsmFileModel {
     private CsmFileFilter filter;
     private Action[] actions;
     private FileObject fileObject;
+    private boolean isStandalone;
 
     public CsmFileModel(CsmFileFilter filter, Action[] actions){
         this.filter = filter;
@@ -82,16 +84,31 @@ public class CsmFileModel {
         return fileObject;
     }
 
+    public boolean isStandalone(){
+        return isStandalone;
+    }
+
     public void addOffset(Node node, CsmOffsetable element, List<IndexOffsetNode> lineNumberIndex) {
         lineNumberIndex.add(new IndexOffsetNode(node,element.getStartOffset(), element.getEndOffset()));
     }
+
+    public void addFileOffset(Node node, CsmFile element, List<IndexOffsetNode> lineNumberIndex) {
+        lineNumberIndex.add(new IndexOffsetNode(node, 0, 0));
+    }
     
     private boolean buildModel(CsmFile csmFile, boolean force) {
+        isStandalone = CsmStandaloneFileProvider.getDefault().isStandalone(csmFile);
         fileObject = CsmUtilities.getFileObject(csmFile);
         boolean res = true;
         List<CppDeclarationNode> newList = new ArrayList<CppDeclarationNode>();
         List<IndexOffsetNode> newLineNumberIndex = new ArrayList<IndexOffsetNode>();
         if (csmFile != null && csmFile.isValid()) {
+            if (isStandalone) {
+                CppDeclarationNode node = CppDeclarationNode.nodeFactory(csmFile, this, false, lineNumberIndex);
+                if (node != null) {
+                    newList.add(node);
+                }
+            }
             if (filter.isApplicableInclude()) {
                 for (CsmInclude element : csmFile.getIncludes()) {
                     CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, newLineNumberIndex);
