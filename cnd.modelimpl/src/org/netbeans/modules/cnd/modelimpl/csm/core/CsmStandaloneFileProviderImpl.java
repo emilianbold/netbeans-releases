@@ -164,7 +164,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         if (project != null && project.isValid()) {
             try {
                 CsmFile out = project.getFile(javaIoFile, false);
-                if (TRACE) {trace("returns standalone file %s", out);} //NOI18N
+                if (TRACE) {trace("RETURNS STANALONE FILE %s", out);} //NOI18N
                 return out;
             } catch (BufferUnderflowException ex) {
                 // FIXUP: IZ#148840
