@@ -418,6 +418,7 @@ public final class Source {
     // private implementation
     // ------------------------------------------------------------------------
 
+    // -J-Dorg.netbeans.modules.parsing.api.Source.level=FINE
     private static final Logger LOG = Logger.getLogger(Source.class.getName());
     private static final Map<FileObject, Reference<Source>> instances = new WeakHashMap<FileObject, Reference<Source>>();
 
