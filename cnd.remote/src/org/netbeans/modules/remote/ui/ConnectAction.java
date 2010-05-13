@@ -59,6 +59,7 @@ public class ConnectAction extends SingleHostAction {
         return NbBundle.getMessage(HostListRootNode.class, "ConnectMenuItem");
     }
 
+    @Override
     protected boolean enable(ExecutionEnvironment env) {
         return !ConnectionManager.getInstance().isConnectedTo(env);
     }
@@ -91,6 +92,11 @@ public class ConnectAction extends SingleHostAction {
                 conectionFailed(env, ex);
             }
         }
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
     }
 
     private void conectionFailed(ExecutionEnvironment env, Exception e) {

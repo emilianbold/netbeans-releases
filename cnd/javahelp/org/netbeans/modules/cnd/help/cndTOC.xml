@@ -87,6 +87,7 @@
 				<tocitem text="Managing C/C++ Remote Development Hosts" target="RemoteDevelopmentManageHosts" />
 				<tocitem text="File Sharing with Remote Development Hosts" target="RemoteDevelopmentFileSharing" />
 				<tocitem text="Setting Up C/C++ Projects for Remote Development" target="RemoteDevelopmentProjects" />
+				<tocitem text="Connecting a Terminal Emulator to a Remote Development Host" target="RemoteDevelopmentTerminal" />
 			</tocitem>
 		</tocitem>
 		<tocitem text="Profiling C/C++/Fortran Applications">

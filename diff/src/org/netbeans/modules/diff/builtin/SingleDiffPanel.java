@@ -41,11 +41,13 @@
 package org.netbeans.modules.diff.builtin;
 
 import java.awt.Container;
+import java.awt.EventQueue;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -65,9 +67,12 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.diff.options.DiffOptionsController;
 import org.openide.awt.UndoRedo;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 /**
@@ -84,12 +89,14 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     private Action              nextAction;
     private Action              prevAction;
     private JComponent innerPanel;
+    private FileChangeListener baseFCL, modifiedFCL;
 
     /** Creates new form SingleDiffPanel */
     public SingleDiffPanel(FileObject left, FileObject right, FileObject type) throws IOException {
         this.base = left;
         this.modified = right;
         this.type = type;
+        setListeners();
         initComponents();
         initMyComponents();
         refreshComponents();
@@ -195,6 +202,17 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     private void refreshComponents() {
         nextAction.setEnabled(controller.getDifferenceIndex() < controller.getDifferenceCount() - 1);
         prevAction.setEnabled(controller.getDifferenceIndex() > 0);
+    }
+
+    private void setListeners () {
+        FileObject baseParent = base.getParent();
+        FileObject modifiedParent = modified.getParent();
+        if (baseParent != null) {
+            baseParent.addFileChangeListener(WeakListeners.create(FileChangeListener.class, baseFCL = new DiffFileChangeListener(), baseParent));
+        }
+        if (baseParent != modifiedParent && modifiedParent != null) {
+            modifiedParent.addFileChangeListener(WeakListeners.create(FileChangeListener.class, modifiedFCL = new DiffFileChangeListener(), modifiedParent));
+        }
     }
 
     /** This method is called from within the constructor to
@@ -344,6 +362,27 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     private javax.swing.JToolBar.Separator jSeparator1;
     // End of variables declaration//GEN-END:variables
 
+    private class DiffFileChangeListener extends FileChangeAdapter {
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            if (fe.getFile() == base || fe.getFile() == modified) {
+                refreshFiles();
+            }
+        }
+
+        private void refreshFiles() {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        refreshController();
+                    } catch (IOException ex) {
+                        Logger.getLogger(SingleDiffPanel.class.getName()).log(Level.SEVERE, "", ex); //NOI18N
+                    }
+                }
+            });
+        }
+    }
 
     private static class DiffStreamSource extends StreamSource {
         

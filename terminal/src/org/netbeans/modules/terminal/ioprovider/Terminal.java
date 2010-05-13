@@ -55,11 +55,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
@@ -276,6 +280,15 @@ import org.openide.windows.OutputListener;
         termOptions.addPropertyChangeListener(termOptionsPCL);
         applyTermOptions(true);
 
+	final Set<Action> actions = new HashSet<Action>();
+	actions.add(copyAction);
+	actions.add(pasteAction);
+	actions.add(findAction);
+	actions.add(wrapAction);
+	actions.add(clearAction);
+	actions.add(closeAction);
+	setupKeymap(actions);
+
         mouseAdapter = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -447,9 +460,11 @@ import org.openide.windows.OutputListener;
     private final class ClearAction extends AbstractAction {
         public ClearAction() {
             super(Catalog.get("CTL_Clear"));	// NOI18N
+	    /* OLD
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_E,
                                                            InputEvent.ALT_MASK);
             putValue(ACCELERATOR_KEY, accelerator);
+	    */
         }
 
 	@Override
@@ -463,8 +478,8 @@ import org.openide.windows.OutputListener;
     private final class CloseAction extends AbstractAction {
         public CloseAction() {
             super(Catalog.get("CTL_Close"));	// NOI18N
-            KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_F4,
-                                                           InputEvent.ALT_MASK);
+            KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_W,
+                                                           InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK);
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
@@ -485,7 +500,7 @@ import org.openide.windows.OutputListener;
         public CopyAction() {
             super(Catalog.get("CTL_Copy"));	// NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_C,
-                                                           InputEvent.ALT_MASK);
+                                                           InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK);
             // System.out.printf("Accelerator for Copy: %s\n", accelerator);
             putValue(ACCELERATOR_KEY, accelerator);
         }
@@ -502,7 +517,7 @@ import org.openide.windows.OutputListener;
         public PasteAction() {
             super(Catalog.get("CTL_Paste"));	// NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_V,
-                                                           InputEvent.ALT_MASK);
+                                                           InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK);
             // System.out.printf("Accelerator for Paste: %s\n", accelerator);
             putValue(ACCELERATOR_KEY, accelerator);
         }
@@ -518,10 +533,11 @@ import org.openide.windows.OutputListener;
     private final class FindAction extends AbstractAction {
         public FindAction() {
             super(Catalog.get("CTL_Find"));	// NOI18N
+	    /* LATER
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_F,
                                                            InputEvent.ALT_MASK);
-            // System.out.printf("Accelerator for Find: %s\n", accelerator);
             putValue(ACCELERATOR_KEY, accelerator);
+	    */
         }
 
 	@Override
@@ -699,6 +715,59 @@ import org.openide.windows.OutputListener;
         }
     }
 
+    private void setupKeymap(Set<Action> actions) {
+	// We need to do two things.
+	// 1) bind various Actions' keystrokes via InputMap/ActionMap
+	// 2_ Tell Term to ignore said keystrokes and not consume them.
+	JComponent comp = term.getScreen();
+
+	ActionMap actionMap = comp.getActionMap();
+	ActionMap newActionMap = new ActionMap();
+	newActionMap.setParent(actionMap);
+
+	InputMap inputMap = comp.getInputMap();
+	InputMap newInputMap = new InputMap();
+	newInputMap.setParent(inputMap);
+
+	Set<KeyStroke> passKeystrokes = new HashSet<KeyStroke>();
+
+	for (Action a : actions) {
+	    String n = (String) a.getValue(Action.NAME);
+            KeyStroke accelerator = (KeyStroke) a.getValue(Action.ACCELERATOR_KEY);
+	    if (accelerator == null)
+		continue;
+	    newInputMap.put(accelerator, n);
+	    newActionMap.put(n, a);
+	    passKeystrokes.add(accelerator);
+	}
+
+	/* LATER
+	 * unsuccessful attempt at fixing bug #185483
+	 * getBoundKeyStrokes is not implemented.
+
+	// get global keymap
+	Collection<? extends Keymap> c = Lookup.getDefault().lookupAll(Keymap.class);
+	System.out.printf("Terminal.setupKeymap() ... lookup returns %d hits\n", c.size());
+	Keymap globalKeymap = Lookup.getDefault().lookup(Keymap.class);
+	if (globalKeymap == null) {
+	    System.out.printf("\tCouldn't find keymap\n");
+	} else {
+	    KeyStroke[] keyStrokes = globalKeymap.getBoundKeyStrokes();
+	    for (KeyStroke ks : keyStrokes) {
+		System.out.printf("\tks %s\n", ks);
+	    }
+
+	}
+
+	// passKeystrokes.add(KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0));
+	// passKeystrokes.add(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0));
+	 */
+
+	comp.setActionMap(newActionMap);
+	comp.setInputMap(JComponent.WHEN_FOCUSED, newInputMap);
+        term.setKeyStrokeSet((HashSet) passKeystrokes);
+    }
+
     private void postPopupMenu(Point p) {
         JPopupMenu menu = new JPopupMenu();
 	menu.putClientProperty("container", ioContainer); // NOI18N
@@ -724,12 +793,13 @@ import org.openide.windows.OutputListener;
         addMenuItem(menu, wrapAction);
         addMenuItem(menu, new JSeparator());
         addMenuItem(menu, clearAction);
-        addMenuItem(menu, closeAction);
+	if (isClosable())
+	    addMenuItem(menu, closeAction);
 
         findAction.setEnabled(! findState.isVisible());
 
-        // just to get it echoed
-        term.setKeyStrokeSet(term.getKeyStrokeSet());
+	// TMP Find is not operation so keep it disabled
+	findAction.setEnabled(false);
 
         menu.addPopupMenuListener(new PopupMenuListener() {
 	    @Override

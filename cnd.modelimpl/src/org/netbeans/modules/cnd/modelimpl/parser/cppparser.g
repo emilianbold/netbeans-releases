@@ -139,6 +139,7 @@ tokens {
 	CSM_TYPE_COMPOUND<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	CSM_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_EXPLICIT_INSTANTIATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -373,7 +374,7 @@ tokens {
 	protected static final int tsCLASS     = 0x2000;
 	protected static final int tsWCHAR_T   = 0x4000;
 	protected static final int tsBOOL      = 0x8000;
-	protected static final int tsCOMPLEX   = 0x16000;
+	protected static final int tsCOMPLEX   = 0x10000;
 
 	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
 
@@ -733,6 +734,15 @@ template_explicit_specialization
 		dtor_declarator[false] SEMICOLON
 		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
 
+        |
+        // Template explicit specialisation dtor declaration
+		(class_forward_declaration)=>
+		{if(statementTrace >= 1)
+			printf("template_explicit_specialization_0f[%d]: template " +
+				"class forward explicit-specialisation\n", LT(1).getLine());
+		}
+		declaration_specifiers[false, false] SEMICOLON
+		{ #template_explicit_specialization = #(#[CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
         |
 	// Template explicit specialisation (DW 14/04/03)
 		{if(statementTrace >= 1)
@@ -3263,7 +3273,6 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
 
             |   LITERAL_typename
             |   LITERAL___interrupt 
-            |   LITERAL_sizeof
             |   LITERAL___extension__
             |   LITERAL_template
             |   LITERAL_new
@@ -3296,6 +3305,10 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL_union
             |   LITERAL_class
             |   LITERAL_enum
+
+            |   LITERAL_sizeof
+            |   LITERAL___real
+            |   LITERAL___imag
 
             |   LITERAL_OPERATOR 
                 (options {warnWhenFollowAmbig = false;}: 
@@ -3434,7 +3447,6 @@ lazy_expression_predicate
     |   constant
 
     |   LITERAL___interrupt 
-    |   LITERAL_sizeof
     |   LITERAL___extension__
     |   LITERAL_template
     |   LITERAL_new
@@ -3468,6 +3480,9 @@ lazy_expression_predicate
     |   LITERAL_static_cast 
     |   LITERAL_reinterpret_cast 
     |   LITERAL_const_cast
+    |   LITERAL_sizeof
+    |   LITERAL___real
+    |   LITERAL___imag
 
     |   GREATERTHAN lazy_expression_predicate
     ;

@@ -107,7 +107,7 @@ public class MakefileLexerTest extends NbTestCase {
         assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "build");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
-        assertNextTokenEquals(ts, MakefileTokenId.KEYWORD, "include");
+        assertNextTokenEquals(ts, MakefileTokenId.INCLUDE, "include");
         assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "foo.mk");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
