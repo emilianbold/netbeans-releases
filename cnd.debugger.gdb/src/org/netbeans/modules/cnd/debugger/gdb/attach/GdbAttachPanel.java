@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.debugger.gdb.attach;
 
 import java.awt.Component;
+import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
 import java.util.List;
@@ -104,7 +105,9 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
         hostComboBox.addItemListener(new java.awt.event.ItemListener() {
             @Override
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                hostComboBoxItemStateChanged(evt);
+                if (evt.getStateChange() == ItemEvent.SELECTED) {
+                    hostComboBoxItemStateChanged(evt);
+                }
             }
         });
         filterField.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
@@ -408,9 +411,10 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     private javax.swing.JLabel projectLabel;
     // End of variables declaration//GEN-END:variables
 
-    private void hostComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {                                              
+    private void hostComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {
+        System.err.println(evt);
         updateProcessList(true);
-    }             
+    }
 
     public static abstract class AnyChangeDocumentListener implements DocumentListener {
         public abstract void documentChanged(DocumentEvent e);
