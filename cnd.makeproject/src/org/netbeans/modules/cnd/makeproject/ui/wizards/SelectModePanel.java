@@ -131,7 +131,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                 String configure = controller.getWizardStorage().getConfigure();
                 if (configure != null) {
                     toolsInfo = getString("SelectModeSimpleInstructionExtraText_Configure"); // NOI18N
-                    tool = "configure"; // NOI18N
+                    tool = configure;
                     File confFile = FileUtil.normalizeFile(new File(configure));
                     FileObject fo = FileUtil.toFileObject(confFile);
                     if (fo != null) {
@@ -143,6 +143,11 @@ public class SelectModePanel extends javax.swing.JPanel {
                             toolsInfo = getString("SelectModeSimpleInstructionExtraText_QMake"); // NOI18N
                             tool = "qmake"; // NOI18N
                         }
+                    }
+                } else {
+                    String makefile = controller.getWizardStorage().getMake();
+                    if (makefile != null) {
+                        tool = makefile;
                     }
                 }
             }
