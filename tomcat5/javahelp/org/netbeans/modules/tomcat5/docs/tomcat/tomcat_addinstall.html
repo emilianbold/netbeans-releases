@@ -1,77 +1,80 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright � 2009 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright (c) 2009 Sun Microsystems, Inc. All rights reserved.
  *	  Use is subject to license terms.
 -->
 
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
+        <title>Registering a Tomcat Web Server</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
 
-<title>Registering a Tomcat Web Server</title>
-<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-<body>
+        <h2>Registering a Tomcat Web Server</h2>
 
-<h2>Registering a Tomcat Web Server</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p> 
-<p>When you download and install a version of the IDE that includes Java EE technologies, you can choose to install and register the Tomcat Web Server
-during the installation process.
-You can also configure the IDE to deploy web applications to other
-installations of supported versions of the Tomcat Web Server. These Tomcat Web Server
-installations must first be registered. Unsupported versions of the Tomcat Web Server
-cannot be registered with the IDE. Instead, you can <a href="tomcat_setup_unsupported.html">create Ant targets</a> that
-you can run from the IDE to deploy an application, JSP page, or servlet to an unsupported version of the Tomcat Web Server.</p>
+        <p><small><a href="#seealso">See Also</a></small></p>
 
-<p><b>To register an instance of the Apache Tomcat web server:</b></p>
-<ol>
-  <li>Make sure the server is not running. If the server is running and there 
-  is a port number conflict with other installed servers, the IDE will not
-  be able to resolve the conflict.</li>
-  <li>Choose Tools &gt; Servers.
-      <p>Alternatively, right-click the Servers node in the Services window and choose Add Server.</p></li>
-  <li>Click Add Server to display the Add Server Instance wizard.</li>
-  <li>Select the version of the Tomcat web server that you want to register. Click Next.</li>
-  <li>Specify the server installation location and login properties in the Add Server Instance wizard.
-      Click Finish.</li>
-</ol>
-  <p>When you click Finsih, the IDE adds a node for the server instance
-    under the Servers node in the Services window.
-    You can place the cursor over the server's node to display a tooltip that
-  contains the server's port number. </p>
-  <ul class="note">
-    <li>If another server instance is using this port, you must change
-    the port number for one of the servers. </li>
-  </ul>
-  <p>To change a port number or any other server settings, stop the server and then choose
-  Properties from the server node's popup menu.
-  After you modify the server settings, close the Servers window and restart the server.</p>
+        <p>When you download and install a version of the IDE that includes Java EE technologies,
+            you can choose to install and register the Tomcat Web Server during the installation
+            process. You can also configure the IDE to deploy web applications to other
+            installations of supported versions of the Tomcat Web Server. These Tomcat Web Server
+            installations must first be registered. Unsupported versions of the Tomcat Web Server
+            cannot be registered with the IDE.</p>
 
+        <p><b>To register an instance of the Apache Tomcat web server:</b></p>
 
-<b>To remove an instance of the Tomcat Web Server:</b>
-<ol>
-    <li>Choose Tools &gt; Servers from the main menu.</li>
-    <li>In the Servers manager, select the Tomcat Web Server from the list of servers in the left pane.</li>
-    <li>Click Remove Server.</li>
-    <li>Click Close.</li>
-</ol>
+        <ol>
+            <li>Make sure the server is not running. If the server is running and there
+                is a port number conflict with other installed servers, the IDE will not
+                be able to resolve the conflict.</li>
+            <li>Choose Tools &gt; Servers.
+                <p>Alternatively, right-click the Servers node in the Services window and choose Add Server.</p></li>
+            <li>Click Add Server to display the Add Server Instance wizard.</li>
+            <li>Select the version of the Tomcat web server that you want to register. Click Next.</li>
+            <li>Specify the server installation location and login properties in the Add Server Instance wizard.
+                Click Finish.</li>
+        </ol>
 
-<dl>
-<dt><a name="seealso">See Also</a></dt>
-<dd><a href="tomcat_plugintro.html">About the Tomcat Web Server</a></dd>
-<dd><a href="tomcat_top_node.html">Viewing the Tomcat Web Server in the IDE</a></dd>
-<dd><a href="tomcat_internal_props.html">Customizing the Tomcat Web Server</a></dd>
-<dd><a href="tomcat_edit_config.html">Customizing the Tomcat Configuration File</a></dd>
-<dd><a href="tomcat_edit_tomcatuser.html">Authenticating the Tomcat Web Server</a></dd>
-</dl>
+        <p>When you click Finsih, the IDE adds a node for the server instance
+            under the Servers node in the Services window.
+            You can place the cursor over the server's node to display a tooltip that
+            contains the server's port number.</p>
 
-<hr>
-<small><a href="../credits.html">Legal Notices</a> </small>
-<table cellpadding="50" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-</table> 
+        <ul class="note">
+            <li>If another server instance is using this port, you must change
+                the port number for one of the servers.</li>
+        </ul>
 
-</body></html>
+        <p>To change a port number or any other server settings, stop the server and then choose
+            Properties from the server node's popup menu.
+            After you modify the server settings, close the Servers window and restart the server.</p>
+
+        <b>To remove an instance of the Tomcat Web Server:</b>
+
+        <ol>
+            <li>Choose Tools &gt; Servers from the main menu.</li>
+            <li>In the Servers manager, select the Tomcat Web Server from the list of servers in the left pane.</li>
+            <li>Click Remove Server.</li>
+            <li>Click Close.</li>
+        </ol>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="tomcat_plugintro.html">About the Tomcat Web Server</a></dd>
+            <dd><a href="tomcat_top_node.html">Viewing the Tomcat Web Server in the IDE</a></dd>
+            <dd><a href="tomcat_internal_props.html">Customizing the Tomcat Web Server</a></dd>
+            <dd><a href="tomcat_edit_config.html">Customizing the Tomcat Configuration File</a></dd>
+            <dd><a href="tomcat_edit_tomcatuser.html">Authenticating the Tomcat Web Server</a></dd>
+        </dl>
+
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+
+        <table cellpadding="50" border="0">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
+</html>

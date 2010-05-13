@@ -76,15 +76,18 @@ public class InvokeOperationAction extends NodeAction {
     }
 
     protected boolean enable(Node[] activatedNodes) {
-        boolean result = false;
-        if (activatedNodes != null && activatedNodes.length == 1 && activatedNodes[0] != null) {
-            return true;
+        if (activatedNodes == null || activatedNodes.length != 1) {
+            return false;
         }
-        return result;
+        FileObject currentFO = getCurrentFileObject(activatedNodes[0]);
+        if (currentFO == null || WebServiceActionProvider.getInvokeOperationAction(currentFO) == null) {
+            return false;
+        }
+        return true;
     }
 
     protected void performAction(Node[] activatedNodes) {
-        if(activatedNodes != null && activatedNodes[0] != null) {
+        if(activatedNodes[0] != null) {
             FileObject currentFO = getCurrentFileObject(activatedNodes[0]);
             if(currentFO != null) {
                 // !PW I wrote this code before I knew about NodeOperation.  Anyway, this
