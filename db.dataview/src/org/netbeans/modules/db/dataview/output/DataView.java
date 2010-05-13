@@ -50,7 +50,6 @@ import javax.swing.JButton;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -98,7 +97,7 @@ public class DataView {
         dv.nbOutputComponent = false;
         try {
             dv.dataPage = new DataViewPageContext(pageSize);
-            dv.execHelper = new SQLExecutionHelper(dv);
+            dv.execHelper = new SQLExecutionHelper(dv, dbConn);
             SQLExecutionHelper.initialDataLoad(dv, dbConn, dv.execHelper);
             dv.stmtGenerator = new SQLStatementGenerator(dv);
         } catch (Exception ex) {
@@ -129,6 +128,29 @@ public class DataView {
             this.dataViewUI = new DataViewUI(this, nbOutputComponent);
             setRowsInTableModel();
             dataViewUI.setEditable(tblMeta == null ? false : tblMeta.hasOneTable());
+            resetToolbar(hasExceptions());
+        }
+        results = new ArrayList<Component>();
+        results.add(dataViewUI);
+        return results;
+    }
+
+    /**
+     * Create the UI component and renders the data fetched from database on create()
+     *
+     * @param dataView DataView Object created using create()
+     * @return a JComponent that after rending the given dataview
+     */
+    public List<Component> createComponents(boolean isDM) {
+        List<Component> results;
+        if (!hasResultSet) {
+            return Collections.emptyList();
+        }
+
+        synchronized (this) {
+            this.dataViewUI = new DataViewUI(this, nbOutputComponent);
+            setRowsInTableModel();
+            dataViewUI.setEditable(!isDM);
             resetToolbar(hasExceptions());
         }
         results = new ArrayList<Component>();
@@ -217,16 +239,10 @@ public class DataView {
     }
 
     SQLExecutionHelper getSQLExecutionHelper() {
-        if (execHelper == null) {
-            execHelper = new SQLExecutionHelper(this);
-        }
         return execHelper;
     }
 
     SQLStatementGenerator getSQLStatementGenerator() {
-        if (stmtGenerator == null) {
-            stmtGenerator = new SQLStatementGenerator(this);
-        }
         return stmtGenerator;
     }
 
@@ -240,27 +256,15 @@ public class DataView {
 
     synchronized void disableButtons() {
         assert dataViewUI != null;
-        Mutex.EVENT.readAccess(new Runnable() {
-
-            @Override
-            public void run() {
-                dataViewUI.disableButtons();
-            }
-        });
+        dataViewUI.disableButtons();
         errMessages.clear();
     }
 
     synchronized void removeComponents() {
-        Mutex.EVENT.readAccess(new Runnable() {
-
-            @Override
-            public void run() {
-                dataViewUI.getParent().setVisible(false);
-                dataViewUI.removeAll();
-                dataViewUI.repaint();
-                dataViewUI.revalidate();
-            }
-        });
+        dataViewUI.getParent().setVisible(false);
+        dataViewUI.removeAll();
+        dataViewUI.repaint();
+        dataViewUI.revalidate();
     }
 
     void setInfoStatusText(String statusText) {
@@ -292,15 +296,9 @@ public class DataView {
         StatusDisplayer.getDefault().setStatusText(title + ": " + message);
     }
 
-    void resetToolbar(final boolean wasError) {
+    void resetToolbar(boolean wasError) {
         assert dataViewUI != null;
-        Mutex.EVENT.readAccess(new Runnable() {
-
-            @Override
-            public void run() {
-                dataViewUI.resetToolbar(wasError);
-            }
-        });
+        dataViewUI.resetToolbar(wasError);
     }
 
     void setLimitSupported(boolean supportsLimit) {
@@ -312,39 +310,21 @@ public class DataView {
         assert dataPage != null;
 
         if (dataPage.getCurrentRows() != null) {
-            Mutex.EVENT.readAccess(new Runnable() {
-
-                @Override
-                public void run() {
-                    dataViewUI.setDataRows(dataPage.getCurrentRows());
-                    dataViewUI.setTotalCount(dataPage.getTotalRows());
-                }
-            });
+            dataViewUI.setDataRows(dataPage.getCurrentRows());
+            dataViewUI.setTotalCount(dataPage.getTotalRows());
         }
     }
 
     synchronized void incrementRowSize(int count) {
         assert dataViewUI != null;
         dataPage.setTotalRows(dataPage.getTotalRows() + count);
-        Mutex.EVENT.readAccess(new Runnable() {
-
-            @Override
-            public void run() {
-                dataViewUI.setTotalCount(dataPage.getTotalRows());
-            }
-        });
+        dataViewUI.setTotalCount(dataPage.getTotalRows());
     }
 
     synchronized void decrementRowSize(int count) {
         assert dataViewUI != null;
         dataPage.decrementRowSize(count);
-        Mutex.EVENT.readAccess(new Runnable() {
-
-            @Override
-            public void run() {
-                dataViewUI.setTotalCount(dataPage.getTotalRows());
-            }
-        });
+        dataViewUI.setTotalCount(dataPage.getTotalRows());
     }
 
     synchronized void syncPageWithTableModel() {
@@ -368,12 +348,5 @@ public class DataView {
     }
 
     private DataView() {
-    }
-
-    public int getPageSize() {
-        if (dataViewUI == null) {
-            return -1;
-        }
-        return dataViewUI.getPageSize();
     }
 }

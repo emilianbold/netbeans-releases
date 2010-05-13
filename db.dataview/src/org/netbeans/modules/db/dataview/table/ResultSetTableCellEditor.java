@@ -89,7 +89,6 @@ public class ResultSetTableCellEditor extends DefaultCellEditor {
     protected Object val;
     protected boolean editable = true;
     protected JTable table;
-    static final boolean isGtk = "GTK".equals (UIManager.getLookAndFeel ().getID ()); //NOI18N
 
     public ResultSetTableCellEditor(final JTextField textField) {
         super(textField);
@@ -129,15 +128,7 @@ public class ResultSetTableCellEditor extends DefaultCellEditor {
         };
 
         textField.addActionListener(delegate);
-    }
-
-    @Override
-    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-        if (DataViewUtils.isSQLConstantString(value)) {
-            value = "";
-        }
-        return super.getTableCellEditorComponent(table, value, isSelected, row, column);
-    }
+    }   
 
     public ResultSetTableCellEditor(final JRendererCheckBox checkBox) {
         super(checkBox);
@@ -203,9 +194,6 @@ class BooleanTableCellEditor extends ResultSetTableCellEditor implements TableCe
         this.table = table;
         Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
         setEditable(column, c);
-        if (isGtk && c instanceof JComponent) {
-            ((JComponent) c).setBorder(BorderFactory.createEmptyBorder());
-        }
         return c;
     }
 }
@@ -257,9 +245,6 @@ class StringTableCellEditor extends ResultSetTableCellEditor implements TableCel
             }
         };
         panel.add(c);
-        if (isGtk) {
-            c.setBorder(BorderFactory.createEmptyBorder());
-        }
         panel.add(customEditorButton, BorderLayout.EAST);
         panel.revalidate();
         panel.repaint();
@@ -471,9 +456,6 @@ class NumberFieldEditor extends ResultSetTableCellEditor {
     public Component getTableCellEditorComponent(final JTable table, Object value, boolean isSelected, int row, int column) {
         this.table = table;
         Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
-        if (isGtk && c instanceof JComponent) {
-            ((JComponent) c).setBorder(BorderFactory.createEmptyBorder());
-        }
         setEditable(column, c);
         return c;
     }

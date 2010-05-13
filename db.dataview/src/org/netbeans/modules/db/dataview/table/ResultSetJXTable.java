@@ -121,16 +121,21 @@ public class ResultSetJXTable extends JXTableDecorator {
     }
 
     public void createTableModel(List<Object[]> rows, final JXTableRowHeader rowHeader) {
-        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
         assert rows != null;
         final TableModel tempModel = createModelFrom(rows);
-        setModel(tempModel);
-        if (!columnWidthList.isEmpty()) {
-            setHeader(ResultSetJXTable.this, columnWidthList);
-        }
-        if (rowHeader != null) {
-            rowHeader.setTable(ResultSetJXTable.this);
-        }
+        Runnable run = new Runnable() {
+
+            public void run() {
+                setModel(tempModel);
+                if (!columnWidthList.isEmpty()) {
+                    setHeader(ResultSetJXTable.this, columnWidthList);
+                }
+                if (rowHeader != null) {
+                    rowHeader.setTable(ResultSetJXTable.this);
+                }
+            }
+        };
+        SwingUtilities.invokeLater(run);
     }
 
     @SuppressWarnings("deprecation")
@@ -163,21 +168,13 @@ public class ResultSetJXTable extends JXTableDecorator {
         b.addKeyListener(kl);
         setDefaultEditor(Boolean.class, new BooleanTableCellEditor(b));
 
-        try {
-            DatePickerCellEditor dateEditor = new DatePickerCellEditor(new SimpleDateFormat (DateType.DEFAULT_FOMAT_PATTERN));
-            setDefaultEditor(java.sql.Date.class, dateEditor);
-        } catch (NullPointerException npe) {
-            mLogger.log(Level.WARNING, "While creating DatePickerCellEditor was thrown " + npe);
-        }
+        DatePickerCellEditor dateEditor = new DatePickerCellEditor(new SimpleDateFormat (DateType.DEFAULT_FOMAT_PATTERN));
+        setDefaultEditor(java.sql.Date.class, dateEditor);
 
-        try{
-            DateTimePickerCellEditor dateTimeEditor = new DateTimePickerCellEditor(new SimpleDateFormat (TimestampType.DEFAULT_FORMAT_PATTERN));
-            dateTimeEditor.addKeyListener(kl);
-            setDefaultEditor(Timestamp.class, dateTimeEditor);
-            setDefaultEditor(java.util.Date.class, dateTimeEditor);
-        } catch (NullPointerException npe) {
-            mLogger.log(Level.WARNING, "While creating DateTimePickerCellEditor was thrown " + npe);
-        }
+        DateTimePickerCellEditor dateTimeEditor = new DateTimePickerCellEditor(new SimpleDateFormat (TimestampType.DEFAULT_FORMAT_PATTERN));
+        dateTimeEditor.addKeyListener(kl);
+        setDefaultEditor(Timestamp.class, dateTimeEditor);
+        setDefaultEditor(java.util.Date.class, dateTimeEditor);
     }
 
     protected KeyListener createControKeyListener() {

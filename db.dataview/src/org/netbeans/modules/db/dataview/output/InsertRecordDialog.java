@@ -43,10 +43,8 @@ package org.netbeans.modules.db.dataview.output;
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FocusTraversalPolicy;
-import java.awt.Rectangle;
 import org.netbeans.modules.db.dataview.table.JXTableRowHeader;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -59,18 +57,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -78,11 +74,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
 /**
@@ -104,13 +96,13 @@ class InsertRecordDialog extends javax.swing.JDialog {
 
             @Override
             public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-                if (rowIndex != -1 && columnIndex != -1 && ((DefaultTableModel) jTable1.getModel()).getRowCount() > 1) {
+                if (rowIndex != -1 && columnIndex != -1) {
                     removeBtn.setEnabled(true);
                 }
                 AWTEvent awtEvent = EventQueue.getCurrentEvent();
                 if (awtEvent instanceof KeyEvent) {
                     KeyEvent keyEvt = (KeyEvent) awtEvent;
-                    if (keyEvt.getSource() != InsertRecordDialog.this) {
+                    if (keyEvt.getSource() != this) {
                         return;
                     }
                     if (rowIndex == 0 && columnIndex == 0 && KeyStroke.getKeyStrokeForEvent(keyEvt).equals(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0))) {
@@ -131,14 +123,15 @@ class InsertRecordDialog extends javax.swing.JDialog {
         addInputFields();
         jTable1.addKeyListener(new TableKeyListener());
 
-        jTable1.getModel().addTableModelListener(new TableListener());
+        TableSelectionListener listener = new TableSelectionListener(jTable1);
+        jTable1.getSelectionModel().addListSelectionListener(listener);
+        jTable1.getColumnModel().getSelectionModel().addListSelectionListener(listener);
 
         jSplitPane1.setBottomComponent(null);
 
         KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false);
         Action enterAction = new AbstractAction() {
 
-            @Override
             public void actionPerformed(ActionEvent e) {
                 executeBtnActionPerformed(null);
             }
@@ -147,7 +140,6 @@ class InsertRecordDialog extends javax.swing.JDialog {
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
         Action escapeAction = new AbstractAction() {
 
-            @Override
             public void actionPerformed(ActionEvent e) {
                 dispose();
             }
@@ -158,22 +150,8 @@ class InsertRecordDialog extends javax.swing.JDialog {
         getRootPane().getActionMap().put("ESCAPE", escapeAction); // NOI18N
         getRootPane().getActionMap().put("ENTER", enterAction); // NOI18N
 
-        Rectangle screenBounds = Utilities.getUsableScreenBounds();
-        Dimension prefSize = getPreferredSize();
-
-        if (prefSize.width > screenBounds.width - 100
-                || prefSize.height > screenBounds.height - 100) {
-            Dimension sz = new Dimension(prefSize);
-            if (sz.width > screenBounds.width - 100) {
-                sz.width = screenBounds.width * 3 / 4;
-            }
-            if (sz.height > screenBounds.height - 100) {
-                sz.height = screenBounds.height * 3 / 4;
-            }
-            setPreferredSize(sz);
-        }
-        pack();
-        setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
+        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        setBounds((screenSize.width - 50) / 2, (screenSize.height - 200) / 2, (screenSize.width - 50) / 2, (screenSize.height - 50) / 2);
     }
 
     /** This method is called from within the constructor to
@@ -201,7 +179,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.title")); // NOI18N
         setBackground(java.awt.Color.white);
-        setFont(new java.awt.Font("Dialog", 0, 12));
+        setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         setForeground(java.awt.Color.black);
         setLocationByPlatform(true);
         setModal(true);
@@ -214,6 +192,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         jTextArea1.setRows(3);
         jTextArea1.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jTextArea1.text")); // NOI18N
         jTextArea1.setWrapStyleWord(true);
+        jTextArea1.setAutoscrolls(false);
         jTextArea1.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         getContentPane().add(jTextArea1, java.awt.BorderLayout.NORTH);
         jTextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "insertRecodrDialog.jTextArea")); // NOI18N
@@ -237,8 +216,10 @@ class InsertRecordDialog extends javax.swing.JDialog {
 
         jScrollPane2.setFont(jScrollPane2.getFont());
 
+        jEditorPane1.setContentType(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jEditorPane1.contentType")); // NOI18N
         jEditorPane1.setEditable(false);
         jEditorPane1.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql"));
+        jEditorPane1.setFont(jEditorPane1.getFont());
         jEditorPane1.setToolTipText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jEditorPane1.toolTipText")); // NOI18N
         jEditorPane1.setOpaque(false);
         jScrollPane2.setViewportView(jEditorPane1);
@@ -254,7 +235,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
 
         previewBtn.setFont(previewBtn.getFont());
         previewBtn.setMnemonic('S');
-        org.openide.awt.Mnemonics.setLocalizedText(previewBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
+        previewBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
         previewBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 previewBtnActionPerformed(evt);
@@ -264,7 +245,8 @@ class InsertRecordDialog extends javax.swing.JDialog {
         previewBtn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
         previewBtn.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.previewBtn.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(addBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.addBtn.text_1")); // NOI18N
+        addBtn.setMnemonic('A');
+        addBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.addBtn.text_1")); // NOI18N
         addBtn.setToolTipText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.addBtn.toolTipText")); // NOI18N
         addBtn.setMaximumSize(previewBtn.getMaximumSize());
         addBtn.setMinimumSize(previewBtn.getMinimumSize());
@@ -276,7 +258,8 @@ class InsertRecordDialog extends javax.swing.JDialog {
         });
         btnPanel.add(addBtn);
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.removeBtn.text_1")); // NOI18N
+        removeBtn.setMnemonic('R');
+        removeBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.removeBtn.text_1")); // NOI18N
         removeBtn.setToolTipText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.removeBtn.toolTipText")); // NOI18N
         removeBtn.setEnabled(false);
         removeBtn.setMaximumSize(previewBtn.getMaximumSize());
@@ -290,7 +273,8 @@ class InsertRecordDialog extends javax.swing.JDialog {
         btnPanel.add(removeBtn);
 
         executeBtn.setFont(executeBtn.getFont());
-        org.openide.awt.Mnemonics.setLocalizedText(executeBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
+        executeBtn.setMnemonic('O');
+        executeBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
         executeBtn.setMaximumSize(previewBtn.getMaximumSize());
         executeBtn.setMinimumSize(previewBtn.getMinimumSize());
         executeBtn.setPreferredSize(previewBtn.getPreferredSize());
@@ -304,7 +288,8 @@ class InsertRecordDialog extends javax.swing.JDialog {
         executeBtn.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.executeBtn.text")); // NOI18N
 
         cancelBtn.setFont(cancelBtn.getFont());
-        org.openide.awt.Mnemonics.setLocalizedText(cancelBtn, org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.cancelBtn.text")); // NOI18N
+        cancelBtn.setMnemonic('C');
+        cancelBtn.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.cancelBtn.text")); // NOI18N
         cancelBtn.setMaximumSize(previewBtn.getMaximumSize());
         cancelBtn.setMinimumSize(previewBtn.getMinimumSize());
         cancelBtn.setPreferredSize(previewBtn.getPreferredSize());
@@ -338,19 +323,17 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         dispose();
     }
 
-    public class TableListener implements TableModelListener {
+    public class TableSelectionListener implements ListSelectionListener {
 
-        @Override
-        public void tableChanged(TableModelEvent e) {
-            if (SwingUtilities.isEventDispatchThread()) {
+        JTable table;
+
+        TableSelectionListener(JTable table) {
+            this.table = table;
+        }
+
+        public void valueChanged(ListSelectionEvent e) {
+            if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
                 refreshSQL();
-            } else {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        refreshSQL();
-                    }
-                });
             }
         }
     }
@@ -359,41 +342,27 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         if (jTable1.isEditing()) {
             jTable1.getCellEditor().stopCellEditing();
         }
-        // Get out of AWT thread because SQLExecutionHelper does calls to AWT
-        // and we need to wait here to show possible exceptions.
-        new Thread("Inserting values") {  //NOI18N
-
-            @Override
-            public void run() {
-                String insertSQL = null;
-                SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
-                SQLExecutionHelper execHelper = dataView.getSQLExecutionHelper();
-                for (int i = 0; i < jTable1.getRowCount(); i++) {
-                    boolean wasException = false;
-                    try {
-                        Object[] insertedRow = getInsertValues(i);
-                        insertSQL = stmtBldr.generateInsertStatement(insertedRow);
-                        RequestProcessor.Task task = execHelper.executeInsertRow(insertSQL, insertedRow);
-                        task.waitFinished();
-                        wasException = dataView.hasExceptions();
-                    } catch (DBException ex) {
-                        Logger.getLogger(InsertRecordDialog.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
-                        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(ex.getLocalizedMessage()));
-                        wasException = true;
-                    }
-                    if (wasException) {
-                        // remove i already inserted
-                        for (int j = 0; j < i; j++) {
-                            ((DefaultTableModel) jTable1.getModel()).removeRow(0);
-                        }
-                        // return without closing
-                        return;
-                    }
+        String insertSQL = null;
+        SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
+        SQLExecutionHelper execHelper = dataView.getSQLExecutionHelper();
+        for (int i = 0; i < jTable1.getRowCount(); i++) {
+            try {
+                Object[] insertedRow = getInsertValues(i);
+                insertSQL = stmtBldr.generateInsertStatement(insertedRow);
+                execHelper.executeInsertRow(insertSQL, insertedRow);
+            } catch (DBException ex) {
+                if (jSplitPane1.getBottomComponent() == null) {
+                    jSplitPane1.setDividerLocation(jSplitPane1.getHeight() / 2);
+                    jSplitPane1.setBottomComponent(jScrollPane2);
+                    previewBtn.setText(NbBundle.getMessage(InsertRecordDialog.class, "LBL_hide_sql"));
                 }
-                // close dialog
-                dispose();
+                jEditorPane1.setContentType("text/html"); // NOI18N
+                String str = "<html> <body><font color=" + "#FF0000" + ">" + ex.getMessage().replaceAll("\\n", "<br>") + "</font></body></html>";
+                jEditorPane1.setText(str);//ex.getMessage());
+                return;
             }
-        }.start();
+        }
+        dispose();
     }
 
     private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
@@ -410,6 +379,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     public void refreshSQL() {
         try {
+            jEditorPane1.setContentType("text/x-sql"); // NOI18N
             String sqlText = "";
             if (jSplitPane1.getBottomComponent() != null) {
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
@@ -417,13 +387,10 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     String sql = stmtBldr.generateRawInsertStatement(getInsertValues(i));
                     sqlText = sqlText + sql + "\n";
                 }
-                jEditorPane1.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql")); // NOI18N
                 jEditorPane1.setText(sqlText);
             }
         } catch (DBException ex) {
             jEditorPane1.setContentType("text/html"); // NOI18N
-            // a hack to avoid Parsing API to don't care about this editor now
-            jEditorPane1.getDocument().putProperty("mimeType", "text/plain"); // NOI18N
             String str = "<html> <body><font color=" + "#FF0000" + ">" + ex.getMessage().replaceAll("\\n", "<br>") + "</font></body></html>";
             jEditorPane1.setText(str);//ex.getMessage());
             return;
@@ -440,17 +407,14 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
             List componentList = Arrays.asList(order);
 
-            @Override
             public Component getFirstComponent(Container focusCycleRoot) {
                 return order[0];
             }
 
-            @Override
             public Component getLastComponent(Container focusCycleRoot) {
                 return order[order.length - 1];
             }
 
-            @Override
             public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {              
                 if (aComponent instanceof JXTableRowHeader) {
                     int rowIndex = jTable1.getRowCount() - 1;
@@ -460,13 +424,11 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 return jTable1;
             }
 
-            @Override
             public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
                 int index = componentList.indexOf(aComponent);
                 return order[(index - 1 + order.length) % order.length];
             }
 
-            @Override
             public Component getDefaultComponent(Container focusCycleRoot) {
                 return order[0];
             }
@@ -479,12 +441,8 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private Object[] getInsertValues(int row) throws DBException {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        int rsColumnCount = jTable1.getRSColumnCount();
-        Object[] insertData = new Object[rsColumnCount];
-        if (jTable1.getRowCount() <= 0) {
-            return insertData;
-        }
-        for (int i = 0; i < rsColumnCount; i++) {
+        Object[] insertData = new Object[jTable1.getRSColumnCount()];
+        for (int i = 0, I = jTable1.getRSColumnCount(); i < I; i++) {
             DBColumn col = jTable1.getDBColumn(i);
             Object val = model.getValueAt(row, i);
 
@@ -504,17 +462,14 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public TableKeyListener() {
         }
 
-        @Override
         public void keyTyped(KeyEvent e) {
             processKeyEvents(e);
         }
 
-        @Override
         public void keyPressed(KeyEvent e) {
             processKeyEvents(e);
         }
 
-        @Override
         public void keyReleased(KeyEvent e) {
             processKeyEvents(e);
         }
@@ -544,7 +499,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private Clipboard clipBoard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
     private void copy() {
-        StringBuilder strBuffer = new StringBuilder();
+        StringBuffer strBuffer = new StringBuffer();
         int numcols = jTable1.getSelectedColumnCount();
         int numrows = jTable1.getSelectedRowCount();
         int[] rowsselected = jTable1.getSelectedRows();

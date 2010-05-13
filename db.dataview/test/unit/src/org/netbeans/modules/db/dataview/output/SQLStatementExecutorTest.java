@@ -43,10 +43,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.db.dataview.meta.DBException;
-import org.netbeans.modules.db.dataview.spi.DBConnectionProviderImpl;
 import org.netbeans.modules.db.dataview.util.DbUtil;
 import org.netbeans.modules.db.dataview.util.TestCaseContext;
 import org.openide.util.Exceptions;
@@ -72,7 +70,6 @@ public class SQLStatementExecutorTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockServices.setServices(new DBConnectionProviderImpl().getClass());
         context = DbUtil.getContext();
         dbconn = DbUtil.getDBConnection();
         DbUtil.createTable();

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -54,7 +54,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
  */
 public class DataView {
 
-    org.netbeans.modules.db.dataview.output.DataView delegate;
+    private org.netbeans.modules.db.dataview.output.DataView delegate;
 
     /**
      * Create and populate a DataView Object. Populates 1st data page of default size.
@@ -86,6 +86,16 @@ public class DataView {
      */
     public List<Component> createComponents() {
         return delegate.createComponents();
+    }
+
+    /**
+     * Create the UI component and renders the data fetched from database on create()
+     *
+     * @param dataView DataView Object created using create()
+     * @return a JComponent that after rending the given dataview
+     */
+    public List<Component> createComponents(boolean isDM) {
+        return delegate.createComponents(isDM);
     }
 
     /**
