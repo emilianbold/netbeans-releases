@@ -511,7 +511,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         @Override
         public final String toString() {
-            return projectRoot + ' ' + getClass().getName() + " @" + hashCode() + ":" + System.identityHashCode(this); // NOI18N
+            return "SA " + projectRoot + ' ' + getClass().getName() + " @" + hashCode() + ":" + System.identityHashCode(this); // NOI18N
         }
     }
 
@@ -588,6 +588,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         @Override
         public boolean isExcluded() {
             return false;
+        }
+
+        @Override
+        public String toString() {
+            return "SA " + file + " " + System.identityHashCode(this) + " " + lang + " from project:" + project; // NOI18N
         }
     }
 }
