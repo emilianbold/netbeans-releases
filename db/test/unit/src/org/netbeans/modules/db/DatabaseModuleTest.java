@@ -70,9 +70,9 @@ public class DatabaseModuleTest extends TestBase {
         runtime2.setAttribute("instanceOf", DatabaseRuntime.class.getName());
         runtime2.setAttribute("instanceCreate", new DatabaseRuntimeImpl());
         
+        DatabaseRuntime[] runtimes = DatabaseRuntimeManager.getDefault().getRuntimes();
         new DatabaseModule().close();
         
-        DatabaseRuntime[] runtimes = DatabaseRuntimeManager.getDefault().getRuntimes();
         int checked = 0;
         for (int i = 0; i < runtimes.length; i++) {
             if (runtimes[i] instanceof DatabaseRuntimeImpl) {
