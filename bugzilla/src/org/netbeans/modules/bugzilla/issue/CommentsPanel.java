@@ -104,6 +104,7 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class CommentsPanel extends JPanel {
+    static final RequestProcessor RP = new RequestProcessor("Bugzilla Comments Panel", 5, false); // NOI18N
     private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
     private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
     private final static String URL_ATTRIBUTE = "url hyperlink";        //NOI18N
@@ -435,7 +436,7 @@ public class CommentsPanel extends JPanel {
     private class IssueAction {
         void openIssue(String hyperlinkText) {
             final String issueNo = issueFinder.getIssueId(hyperlinkText);
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     Issue is = issue.getRepository().getIssue(issueNo);
