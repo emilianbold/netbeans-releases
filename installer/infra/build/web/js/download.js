@@ -643,7 +643,7 @@ function is_compatible(index, platform) {
 	      var uid = group_products[i][j];
               for(var k=0;k<product_uids.length;k++) { 
                  if (product_uids[k] == uid) {
-                    if((k==index) && (i == 0) && uid != "nb-javafx") {//runtimes are not available in zip
+                    if((k==index) && (i == 0) && uid != "nb-javafx" && uid != "nb-javacard") {//runtimes are not available in zip
                         return true;
                     } 
                  }

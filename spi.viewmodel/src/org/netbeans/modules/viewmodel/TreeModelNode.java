@@ -562,7 +562,8 @@ public class TreeModelNode extends AbstractNode {
             if (iconLoaded) {
                 iconLoaded = false;
                 fireIconChange();
-                fireOpenedIconChange();
+                //fireOpenedIconChange(); - not necessary, just adds more events!
+                // VisualizerNode.propertyChange() interprets all name/icon changes as one kind.
             }
             refreshed = true;
         }
@@ -581,7 +582,7 @@ public class TreeModelNode extends AbstractNode {
                         synchronized (childrenRefreshModels) {
                             childrenRefreshModels.remove(model);
                         }
-                        refreshTheChildren(model, new TreeModelChildren.RefreshingInfo(false));
+                        refreshTheChildren(Collections.singleton(model), new TreeModelChildren.RefreshingInfo(false));
                     }
                 });
             }
@@ -698,6 +699,19 @@ public class TreeModelNode extends AbstractNode {
         }
     }
 
+    @Override
+    public void setDisplayName(String s) {
+        String sOld;
+        synchronized (displayNameLock) {
+            if ((displayName != null) && displayName.equals(s)) {
+                return ;
+            }
+            sOld = displayName;
+            displayName = oldDisplayName = s;
+        }
+        fireDisplayNameChange(sOld, s);
+    }
+
     private void setModelIcon() throws UnknownTypeException {
         String iconBase = null;
         if (model.getRoot() != object) {
@@ -755,7 +769,8 @@ public class TreeModelNode extends AbstractNode {
         if (iconLoaded) {
             iconLoaded = false;
             fireIconChange();
-            fireOpenedIconChange();
+            //fireOpenedIconChange(); - not necessary, just adds more events!
+            // VisualizerNode.propertyChange() interprets all name/icon changes as one kind.
         }
         firePropertyChange(null, null, null);
     }
