@@ -142,7 +142,7 @@ public class ToolchainListRootNode extends AbstractNode {
 
         @Override
         public String getDisplayName() {
-            return compilerSet.getDisplayName();
+            return NbBundle.getMessage(ToolchainListRootNode.class, "Toolchain_Name_Text", compilerSet.getName(), compilerSet.getDisplayName()); // NOI18N
         }
 
         @Override
