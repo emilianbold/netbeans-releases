@@ -40,7 +40,6 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -193,87 +192,38 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        runAsLabel = new javax.swing.JLabel();
-        runAsCombo = new javax.swing.JComboBox();
-        urlLabel = new javax.swing.JLabel();
-        urlTextField = new javax.swing.JTextField();
-        indexFileLabel = new javax.swing.JLabel();
-        indexFileTextField = new javax.swing.JTextField();
-        indexFileBrowseButton = new javax.swing.JButton();
-        argsLabel = new javax.swing.JLabel();
-        argsTextField = new javax.swing.JTextField();
-        hintLabel = new javax.swing.JTextArea();
-        advancedButton = new javax.swing.JButton();
+        runAsLabel = new JLabel();
+        runAsCombo = new JComboBox();
+        urlLabel = new JLabel();
+        urlTextField = new JTextField();
+        indexFileLabel = new JLabel();
+        indexFileTextField = new JTextField();
+        indexFileBrowseButton = new JButton();
+        argsLabel = new JLabel();
+        argsTextField = new JTextField();
+        hintLabel = new JTextArea();
+        advancedButton = new JButton();
 
-        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
-            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
-                return indexFileTextField;
-            }//end getDefaultComponent
-
-            public java.awt.Component getFirstComponent(java.at.Container focusCycleRoot){
-                return indexFileTextField;
-            }//end getFirstComponent
-
-            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
-                return advancedButton;
-            }//end getLastComponent
-
-            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  indexFileTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  urlTextField){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  argsTextField){
-                    return advancedButton;
-                }
-                if(aComponent ==  indexFileBrowseButton){
-                    return argsTextField;
-                }
-                if(aComponent ==  runAsCombo){
-                    return urlTextField;
-                }
-                return indexFileTextField;//end getComponentAfter
-            }
-            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component a                if(aCompoexFileBrowseButton){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  indexFileTextField){
-                    return urlTextField;
-                }
-                if(aComponent ==  advancedButton){
-                    return argsTextField;
-                }
-                if(aComponent ==  argsTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  urlTextField){
-                    return runAsCombo;
-                }
-                return advancedButton;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         runAsLabel.setLabelFor(runAsCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
+        Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
 
         urlLabel.setLabelFor(urlTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
+        Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
 
-        indexFileLabel.indexFileTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMescalWeb.class, "LBL_IndexFile")); // NOI18N
+        indexFileLabel.setLabelFor(indexFileTextField);
 
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileBrowseButton, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Browse")); // NOI18N
- FileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile"));
+        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Browse"));
+        indexFileBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 indexFileBrowseButtonActionPerformed(evt);
             }
         });
 
         argsLabel.setLabelFor(argsTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getsLocalWeb.class, "LBL_Arguments")); // NOI18N
+        Mnemonics.setLocalizedText(argsLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Arguments")); // NOI18N
 
         hintLabel.setEditable(false);
         hintLabel.setLineWrap(true);
@@ -281,90 +231,91 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         hintLabel.setWrapStyleWord(true);
         hintLabel.setBorder(null);
         hintLabel.setOpaque(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(advancedButton, org.openide.util.NbBundle.unAsLocalWeb.class, "RunAsLocedButton.text")); // NOI1dvancedButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.advancedButton.text"));
+        advancedButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 advancedButtonActionPerformed(evt);
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.syout(this);
-        this.sett);
-        layout.setHori
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAIL             .addGroup(layouentialGroup()
-            .addContainerGap()
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
                         .addComponent(advancedButton))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(argsLabel)
-                .addComponent(urlLabel)
-                .addComponeLabel)
+                            .addComponent(urlLabel)
+                            .addComponent(indexFileLabel)
                             .addComponent(runAsLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.Compnt.RELATED)
-                Group(layout.createParalle.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(hintLabel, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULt.MAX_VALUE)
-                            .addComponent(argsTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(indexFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(hintLabel, Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(argsTextField, Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(indexFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+                                .addPreferredGap(ComponentPlacement.RELATED)
                                 .addComponent(indexFileBrowseButton))
-                            .addComponent(runAsCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 220, Short.MAX_VALUE)
-                            .addComponent(urlTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))))
+                            .addComponent(runAsCombo, Alignment.TRAILING, 0, 220, Short.MAX_VALUE)
+                            .addComponent(urlTextField, Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))))
                 .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(runAsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(runAsLabel))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(urlLabel)
                     .addComponent(urlTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.CENTER)
                     .addComponent(indexFileBrowseButton)
                     .addComponent(indexFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(indexFileLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.CENTER)
                     .addComponent(argsLabel)
                     .addComponent(argsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(hintLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(advancedButton)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        runAsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsLabel.AccessibleContext.accessibleName")); // NOI18N
-        runAsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        runAsCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsCombo.AccessibleContext.accessibleName")); // NOI18N
-        runAsCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsCombo.AccessibleContext.accessibleDescription")); // NOI18N
-        urlLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlLabel.AccessibleContext.accessibleName")); // NOI18N
-        urlLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        urlTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlTextField.AccessibleContext.accessibleName")); // NOI18N
-        urlTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        indexFileLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileLabel.AccessibleContext.accessibleName")); // NOI18N
-        indexFileLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        indexFileTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileTextField.AccessibleContext.accessibleName")); // NOI18N
-        indexFileTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        indexFileBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileBrowseButton.AccessibleContext.accessibleName")); // NOI18N
-        indexFileBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
-        argsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsLabel.AccessibleContext.accessibleName")); // NOI18N
-        argsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        argsTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsTextField.AccessibleContext.accessibleName")); // NOI18N
-        argsTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        hintLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.hintLabel.AccessibleContext.accessibleName")); // NOI18N
-        hintLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.hintLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        advancedButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.advancedButton.AccessibleContext.accessibleName")); // NOI18N
-        advancedButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.advancedButton.AccessibleContext.accessibleDescription")); // NOI18N
-
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.AccessibleContext.accessibleName")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.AccessibleContext.accessibleDescription")); // NOI18N
+        runAsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsLabel.AccessibleContext.accessibleName")); // NOI18N
+        runAsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        runAsCombo.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsCombo.AccessibleContext.accessibleName")); // NOI18N
+        runAsCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        urlLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlLabel.AccessibleContext.accessibleName")); // NOI18N
+        urlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        urlTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlTextField.AccessibleContext.accessibleName")); // NOI18N
+        urlTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        indexFileLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileLabel.AccessibleContext.accessibleName")); // NOI18N
+        indexFileLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        indexFileTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileTextField.AccessibleContext.accessibleName")); // NOI18N
+        indexFileTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        indexFileBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        indexFileBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        argsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsLabel.AccessibleContext.accessibleName")); // NOI18N
+        argsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        argsTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsTextField.AccessibleContext.accessibleName")); // NOI18N
+        argsTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        hintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.hintLabel.AccessibleContext.accessibleName")); // NOI18N
+        hintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.hintLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        advancedButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.advancedButton.AccessibleContext.accessibleName")); // NOI18N
+        advancedButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.advancedButton.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void indexFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
@@ -392,16 +343,16 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     }//GEN-LAST:event_advancedButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton advancedButton;
-    private javax.swing.JLabel argsLabel;
-    private javax.swing.JTextField argsTextField;
-    private javax.swing.JTextArea hintLabel;
-    private javax.swing.JButton indexFileBrowseButton;
-    private javax.swing.JLabel indexFileLabel;
-    private javax.swing.JTextField indexFileTextField;
-    private javax.swing.JComboBox runAsCombo;
-    private javax.swing.JLabel runAsLabel;
-    private javax.swing.JLabel urlLabel;
-    private javax.swing.JTextField urlTextField;
+    private JButton advancedButton;
+    private JLabel argsLabel;
+    private JTextField argsTextField;
+    private JTextArea hintLabel;
+    private JButton indexFileBrowseButton;
+    private JLabel indexFileLabel;
+    private JTextField indexFileTextField;
+    private JComboBox runAsCombo;
+    private JLabel runAsLabel;
+    private JLabel urlLabel;
+    private JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
 }
