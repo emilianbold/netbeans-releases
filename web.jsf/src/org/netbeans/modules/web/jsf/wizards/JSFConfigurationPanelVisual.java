@@ -655,7 +655,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                 return true;
             }
         } catch (InstanceRemovedException ex) {
-            LOG.log(Level.WARNING, "Server Instance was removed", ex); //NOI18N
+            LOG.log(Level.INFO, "Server Instance was removed", ex); //NOI18N
         }
         return false;
     }
