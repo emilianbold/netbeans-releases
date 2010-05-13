@@ -255,44 +255,28 @@ public class CppFile {
         if (log.isLoggable(Level.FINEST)) {
             log.log(Level.FINEST, "CppFile.addNewFold: " + fold.toString());
         }
-        int startOffset = fold.getStartOffset();
-        int endOffset = fold.getEndOffset();
-        try {
-            int startLine = NbDocument.findLineNumber(doc, startOffset);
-            int endLine = NbDocument.findLineNumber(doc, endOffset);
-            if (startLine != endLine || (startOffset > endOffset + 5)) {
-                fold.setLines(startLine, endLine);
-                switch (fold.getType()) {
-                    case INITIAL_COMMENT_FOLD:
-                        if (initialCommentFoldRecord == null) {
-                            initialCommentFoldRecord = fold;
-                        }
-                        break;
-                    case INCLUDES_FOLD:
-                        includesFoldRecords.add(fold);
-                        break;
+        switch (fold.getType()) {
+            case INITIAL_COMMENT_FOLD:
+                if (initialCommentFoldRecord == null) {
+                    initialCommentFoldRecord = fold;
+                }
+                break;
+            case INCLUDES_FOLD:
+                includesFoldRecords.add(fold);
+                break;
 
-                    case CLASS_FOLD:
-                    case NAMESPACE_FOLD:
+            case CLASS_FOLD:
+            case NAMESPACE_FOLD:
 //                    classFoldRecords.add(fold);
 //                    break;
-                    case IFDEF_FOLD:
-                    case COMMENTS_FOLD:
-                    case BLOCK_COMMENT_FOLD:
-                    case CONSTRUCTOR_FOLD:
-                    case DESTRUCTOR_FOLD:
-                    case FUNCTION_FOLD:
-                        blockFoldRecords.add(fold);
-                        break;
-                }
-            } else {
-                if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "CppFile.addNewFold: Skipping fold record on line " + startLine);
-                }
-            }
-        } catch (IndexOutOfBoundsException ex) {
-            log.log(Level.FINE, "CppFile.addNewFold: fold was created for old size of document - ignored");
-        // fold was created for old size of document => skip the problem
+            case IFDEF_FOLD:
+            case COMMENTS_FOLD:
+            case BLOCK_COMMENT_FOLD:
+            case CONSTRUCTOR_FOLD:
+            case DESTRUCTOR_FOLD:
+            case FUNCTION_FOLD:
+                blockFoldRecords.add(fold);
+                break;
         }
     }
 }
