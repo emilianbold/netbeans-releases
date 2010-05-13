@@ -430,7 +430,7 @@ public class CsmUtilities {
                             Object platformProject = csmProject.getPlatformProject();
                             if (platformProject.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
                                 if (i == 0 && files.size() > 1) {
-                                    CndUtils.assertTrue(false, "!!! STANDALONE FILE " + csmFile + "\nTOOK PRIORITY OTHER OTHER FILES " + files); // NOI18N
+                                    CndUtils.assertTrue(false, "!!! STANDALONE FILE " + csmFile + "\nTOOK PRIORITY OVER OTHER FILES " + files); // NOI18N
                                 } else {
 //                                    System.err.printf("STANDALONE FILE TO BE USED %s\n", csmFile); // NOI18N
                                 }
