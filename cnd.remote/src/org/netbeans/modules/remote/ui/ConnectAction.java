@@ -93,6 +93,11 @@ public class ConnectAction extends SingleHostAction {
         }
     }
 
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
     private void conectionFailed(ExecutionEnvironment env, Exception e) {
         StatusDisplayer.getDefault().setStatusText(
                 NbBundle.getMessage(HostNode.class, "UnableToConnectMessage", RemoteUtil.getDisplayName(env), e.getMessage()));
