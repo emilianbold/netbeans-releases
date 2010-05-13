@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -67,6 +68,14 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     private Charset encoding;
     
     protected AbstractFileBuffer(CharSequence absPath) {
+        if (CndUtils.isDebugMode()) {
+            File file = new File(absPath.toString());
+            File normFile = FileUtil.normalizeFile(file);
+            if (!file.equals(normFile)) {
+                CndUtils.assertTrueInConsole(false,
+                        "Parameter file was not normalized. Was " + file + " instead of " + normFile); //NOI18N
+            }
+        }
         this.absPath = FilePathCache.getManager().getString(absPath);
     }
 
