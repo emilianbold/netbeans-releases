@@ -82,8 +82,8 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
     public void testVarsLocal() throws Exception {
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
 
-        _testVars(execEnv, true, true, null);
-        _testVars(execEnv, true, false, null);
+//        _testVars(execEnv, true, true, null);
+//        _testVars(execEnv, true, false, null);
         _testVars(execEnv, false, true, null);
         _testVars(execEnv, false, false, null);
 
@@ -103,8 +103,8 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         ConnectionManager.getInstance().connectTo(execEnv);
 
-        _testVars(execEnv, true, true, null);
-        _testVars(execEnv, true, false, null);
+//        _testVars(execEnv, true, true, null);
+//        _testVars(execEnv, true, false, null);
         _testVars(execEnv, false, true, null);
         _testVars(execEnv, false, false, null);
     }
