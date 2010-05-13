@@ -642,10 +642,17 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             
             // titlePanel ///////////////////////////////////////////////////////////
             titlePanel = new NbiPanel();
-            titlePanel.setBackground(Color.WHITE);
+            
             titlePanel.setLayout(new GridBagLayout());
             titlePanel.setOpaque(true);
-            
+
+            final String backgroundImageUri = System.getProperty(WIZARD_FRAME_HEAD_BACKGROUND_IMAGE_URI_PROPERTY);
+            if(backgroundImageUri != null) {
+                titlePanel.setBackgroundImage(backgroundImageUri, NbiPanel.ANCHOR_FULL);
+            } else {
+                titlePanel.setBackground(Color.WHITE);
+            }
+
             final String leftImageUri = System.getProperty(WIZARD_FRAME_HEAD_LEFT_IMAGE_URI_PROPERTY);
             int titlePanelDx = 0;
             if(leftImageUri!=null) {
@@ -899,7 +906,9 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      */
     public static final String WIZARD_FRAME_HEAD_LEFT_IMAGE_URI_PROPERTY =
             "nbi.wizard.ui.swing.frame.head.left.image"; // NOI18N
-    
+
+    public static final String WIZARD_FRAME_HEAD_BACKGROUND_IMAGE_URI_PROPERTY =
+            "nbi.wizard.ui.swing.frame.head.background.image"; // NOI18N
     
     /**
      * Name of the system property which is expected to contain the desired value

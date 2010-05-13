@@ -359,6 +359,8 @@ public class TokenFormatter {
 	    @Override
 	    public void run() {
 		TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, 0);
+                if (ts == null)  // if PHP is not top language
+                    return;
 		if (LOGGER.isLoggable(Level.FINE)) {
 		    LOGGER.fine("Tokens in TS: " + ts.tokenCount());
 		    LOGGER.fine("Format tokens: " + formatTokens.size());

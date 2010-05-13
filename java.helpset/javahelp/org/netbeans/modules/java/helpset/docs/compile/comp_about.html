@@ -1,109 +1,113 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!--       
+<!--
 *     Copyright (c) 2009 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
-<head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>About Building Java Applications</title>
-	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-<body>
-<h2>About Building Java Applications</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>The IDE uses an Ant build script to build your Java applications. If you are 
-  using a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-    <param name="content" value="../project/csh/glossary_standard.html">
-    <param name="viewerActivator" value="javax.help.LinkLabel">
-    <param name="viewerStyle" value="javax.help.Popup">
-    <param name="viewerSize" value="400,220">
-    <param name="text" value="standard Java project">
-    <param name="textFontSize" value="medium">
-    <param name="textFontFamily" value="SansSerif">
-    <param name="textFontStyle" value="italic">
-    <param name="textFontWeight" value="bold">
-    <param name="textColor" value="blue">
-  </object>, the IDE generates the build script based on 
-  the options you enter in the project's Project Properties dialog box. If you 
-  are using a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-    <param name="content" value="../project/csh/glossary_freeform.html">
-    <param name="viewerActivator" value="javax.help.LinkLabel">
-    <param name="viewerStyle" value="javax.help.Popup">
-    <param name="viewerSize" value="400,160">
-    <param name="text" value="free-form Java project">
-    <param name="textFontSize" value="medium">
-    <param name="textFontFamily" value="SansSerif">
-    <param name="textFontStyle" value="italic">
-    <param name="textFontWeight" value="bold">
-    <param name="textColor" value="blue">
-  </object>, the IDE uses your existing Ant build script.</p>
-  <h3>Building Standard Projects</h3>
-<p>With standard Java projects, you can customize the build process by doing any 
-  of the following:</p>
-<ul>
-  <li>Enter basic options, such as classpath settings and JAR filters, in the
-  	Project Properties dialog box.</li>
-  <li>Override IDE-generated Ant targets or create new targets in <tt>build.xml</tt>. 
-  </li>
-  <li>Edit properties in <tt>project.properties</tt> to change the name and location 
-    of build output directories and files.</li>
-</ul>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>About Building Java Applications</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>About Building Java Applications</h2>
+        <p><small><a href="#seealso">See Also</a></small>
 
-<p><b>Notes:</b></p>
-        <ul class="note">
-          <li>By default, the IDE compiles the classes in a standard project
-          when you save them.
-          This compile-on-save feature enables you to run or debug your applications
-          in the IDE without having to wait for the projects to be built.
-          However, the compile-on-save feature does not build your
-          application JAR file. Before delivering your application to users, use the
-        Clean and Build command to generate fresh versions of the project's
-        distributable files.</li>
-        <li>For <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-        <param name="content" value="../project/csh/glossary_standard.html">
-        <param name="viewerActivator" value="javax.help.LinkLabel">
-        <param name="viewerStyle" value="javax.help.Popup">
-        <param name="viewerSize" value="400,220">
-        <param name="text" value="standard projects">
-        <param name="textFontSize" value="medium">
-        <param name="textFontFamily" value="SansSerif">
-        <param name="textFontStyle" value="italic">
-        <param name="textFontWeight" value="bold">
-        <param name="textColor" value="blue">
-        </object> that have a main class is specified, the IDE automatically copies any JAR
-        files on the project's classpath to the <tt>dist/lib</tt> folder when you build
-        the application.
-        The IDE also adds each of the JAR files
-        to the Class-Path element in the application JAR's <tt>manifest.mf</tt>
-        file. This simplifies running the application outside the IDE. For more
-        information, see <a href="../compile/comp_jar_deploy.html">Preparing
-        a JAR for Deployment Outside the IDE</a></li>
+        <p>The IDE uses an Ant build script to build your Java applications. If you are
+            using a
+
+            <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+                <param name="content" value="../project/csh/glossary_standard.html">
+                <param name="viewerActivator" value="javax.help.LinkLabel">
+                <param name="viewerStyle" value="javax.help.Popup">
+                <param name="viewerSize" value="400,220">
+                <param name="text" value="standard Java project">
+                <param name="textFontSize" value="medium">
+                <param name="textFontFamily" value="SansSerif">
+                <param name="textFontStyle" value="italic">
+                <param name="textFontWeight" value="bold">
+                <param name="textColor" value="blue">
+            </object>,
+
+            the IDE generates the build script based on the options you enter in the project's
+            Project Properties dialog box. If you are using a
+
+            <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+                <param name="content" value="../project/csh/glossary_freeform.html">
+                <param name="viewerActivator" value="javax.help.LinkLabel">
+                <param name="viewerStyle" value="javax.help.Popup">
+                <param name="viewerSize" value="400,160">
+                <param name="text" value="free-form Java project">
+                <param name="textFontSize" value="medium">
+                <param name="textFontFamily" value="SansSerif">
+                <param name="textFontStyle" value="italic">
+                <param name="textFontWeight" value="bold">
+                <param name="textColor" value="blue">
+            </object>,
+
+            the IDE uses your existing Ant build script.</p>
+
+        <h3>Building Standard Projects</h3>
+
+        <p>With standard Java projects, you can customize the build process by doing any
+            of the following:</p>
+        <ul>
+            <li>Enter basic options, such as classpath settings and JAR filters, in the
+                Project Properties dialog box.</li>
+            <li>Override IDE-generated Ant targets or create new targets in <tt>build.xml</tt>.</li>
         </ul>
 
-        
-  <!--<h3>Building Free-Form Projects</h3>-->
-  <!--todo : add FF info-->
+        <p><b>Notes:</b></p>
 
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="comp_quickref.html">Building Tasks: Quick Reference</a></dd>
-    <dd><a href="comp_process.html">Working with Builds</a> </dd>
-    <dd><a href="comp_project.html">Building a Project</a></dd>
-    <dd><a href="comp_file.html">Compiling a Single File</a></dd>
-    <dd><a href="comp_jar.html">Building a JAR File</a></dd>
-    <dd><a href="comp_classpath.html">Managing the Classpath</a></dd>
-    <dd><a href="../project/proj_stand_customize.html">Customizing the Ant Build 
-    Script</a></dd>
-</dl>
+        <ul class="note">
+            <li>By default, the IDE compiles the classes in a standard project when you save
+                them. This compile-on-save feature enables you to run or debug your applications
+                in the IDE without having to wait for the projects to be built. However, the
+                compile-on-save feature does not build your application JAR file. Before
+                delivering your application to users, use the Clean and Build command to
+                generate fresh versions of the project's distributable files.</li>
 
+            <li>For <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+                    <param name="content" value="../project/csh/glossary_standard.html">
+                    <param name="viewerActivator" value="javax.help.LinkLabel">
+                    <param name="viewerStyle" value="javax.help.Popup">
+                    <param name="viewerSize" value="400,220">
+                    <param name="text" value="standard projects">
+                    <param name="textFontSize" value="medium">
+                    <param name="textFontFamily" value="SansSerif">
+                    <param name="textFontStyle" value="italic">
+                    <param name="textFontWeight" value="bold">
+                    <param name="textColor" value="blue">
+                </object>
 
-<hr>
-<small><a href="../credits.html">Legal Notices</a></small> 
+                &nbsp;that have a main class is specified, the IDE automatically copies any JAR
+                files on the project's classpath to the <tt>dist/lib</tt> folder when you build
+                the application. The IDE also adds each of the JAR files to the Class-Path element
+                in the application JAR's <tt>manifest.mf</tt> file. This simplifies running the
+                application outside the IDE. For more information, see <a href="../compile/comp_jar_deploy.html">Preparing
+                a JAR for Deployment Outside the IDE</a></li>
+        </ul>
 
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table></body>
+        <!--<h3>Building Free-Form Projects</h3>-->
+        <!--todo : add FF info-->
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="comp_quickref.html">Building Tasks: Quick Reference</a></dd>
+            <dd><a href="comp_process.html">Working with Builds</a> </dd>
+            <dd><a href="comp_project.html">Building a Project</a></dd>
+            <dd><a href="comp_file.html">Compiling a Single File</a></dd>
+            <dd><a href="comp_jar.html">Building a JAR File</a></dd>
+            <dd><a href="comp_classpath.html">Managing the Classpath</a></dd>
+            <dd><a href="../project/proj_stand_customize.html">Customizing the Ant Build Script</a></dd>
+        </dl>
+
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table></body>
 </html>

@@ -40,6 +40,7 @@
  */
 package org.netbeans.api.print;
 
+import java.io.InputStream;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.openide.cookies.EditorCookie;
@@ -126,12 +127,13 @@ import org.netbeans.spi.print.PrintProvider;
  * the manager for preview and printing the component.<p>
  *
  * If there are no printable components, printable data are retrieved from the 
- * {@linkplain TopComponent#getActivatedNodes selected nodes} of the active top
- * component. The Print manager gets {@link EditorCookie} from the {@link DataObject}
- * of the {@link Node}s. The {@link javax.swing.text.StyledDocument}s, returned by the
- * editor cookies, contain printing information (text, font, color). This information
- * is shown in the print preview. So, any textual documents (Java/C++/Php/... sources,
- * html, xml, plain text, etc.) are printable by default.
+ * {@linkplain TopComponent#getActivatedNodes selected nodes} of the active top component.
+ * The Print manager gets {@link EditorCookie} or {@link InputStream} from the selected
+ * {@linkplain org.openide.nodes.Node nodes}. The {@link javax.swing.text.StyledDocument},
+ * returned by the editor cookie, or string, returned by the stream, contain printing
+ * information (text, font, color). This information is shown in the print preview.
+ * So, any textual documents (Java/C++/Php/... sources, html, xml, plain text, etc.)
+ * are printable by default.
  *
  * @see org.netbeans.spi.print.PrintProvider
  *
