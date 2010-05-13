@@ -250,6 +250,17 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
     }
 
+    @Override
+    public boolean isStandalone(CsmFile file) {
+        if (file instanceof FileImpl) {
+            NativeFileItem nfi = ((FileImpl) file).getNativeFileItem();
+            if (nfi instanceof CsmStandaloneFileProviderImpl.NativeFileItemImpl) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void scheduleProjectRemoval(final CsmProject project) {
         final String root = ((NativeProject)project.getPlatformProject()).getProjectRoot();
         if (TRACE) {trace("schedulling removal %s", project.toString());} //NOI18N
