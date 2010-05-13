@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,36 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.zend.ui.actions;
 
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.zend.ZendPhpFrameworkProvider;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
+import org.netbeans.modules.php.spi.actions.GoToViewAction;
+import org.netbeans.modules.php.zend.util.ZendUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
-/**
- * @author Tomas Mysik
- */
-public final class RunCommandAction extends BaseAction {
-    private static final long serialVersionUID = -2278946423132142L;
-    private static final RunCommandAction INSTANCE = new RunCommandAction();
+public final class ZendGoToViewAction extends GoToViewAction {
+    private static final long serialVersionUID = 89745632134654L;
 
-    private RunCommandAction() {
-    }
+    private final FileObject fo;
+    private final int offset;
 
-    public static RunCommandAction getInstance() {
-        return INSTANCE;
-    }
-
-    @Override
-    public void actionPerformed(PhpModule phpModule) {
-        ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
+    public ZendGoToViewAction(FileObject fo, int offset) {
+        assert ZendUtils.isAction(fo);
+        this.fo = fo;
+        this.offset = offset;
     }
 
     @Override
-    protected String getPureName() {
-        return NbBundle.getMessage(RunCommandAction.class, "LBL_RunCommand");
+    public void actionPerformedInternal() {
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        PhpBaseElement phpElement = editorSupport.getElement(fo, offset);
+        if (phpElement == null) {
+            return;
+        }
+        FileObject view = ZendUtils.getView(fo, phpElement);
+        if (view != null) {
+            UiUtils.open(view, DEFAULT_OFFSET);
+        }
     }
 }

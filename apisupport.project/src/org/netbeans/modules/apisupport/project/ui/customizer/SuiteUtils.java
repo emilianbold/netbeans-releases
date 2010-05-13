@@ -97,6 +97,7 @@ public final class SuiteUtils {
     private final SuiteProperties suiteProps;
     
     private SuiteUtils(final SuiteProperties suiteProps) {
+        assert suiteProps != null;
         this.suiteProps = suiteProps;
     }
     
@@ -255,7 +256,6 @@ public final class SuiteUtils {
                         // detach module from its current suite
                         SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
                                 suite.getEvaluator(), getSubProjects(suite));
-                        SuiteUtils utils = new SuiteUtils(suiteProps);
                         removeModule(suiteComponent, suiteProps);
                         suiteProps.storeProperties();
                         ProjectManager.getDefault().saveProject(suite);

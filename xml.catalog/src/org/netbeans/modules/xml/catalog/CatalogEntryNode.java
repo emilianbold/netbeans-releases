@@ -38,14 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.xml.catalog;
 
 import java.beans.IntrospectionException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import javax.swing.Action;
 import org.netbeans.modules.xml.catalog.lib.URLEnvironment;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
@@ -62,39 +65,38 @@ import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.BeanNode;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Env;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 
 /**
  * Node representing single catalog entry. It can be viewed.
- *
- * @author  Petr Kuzel
- * @version 1.0
  */
 final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie {
 
-    // cached ViewCookie instance
-    private transient ViewCookie view;
+    private transient ViewCookie myView;
     private boolean isCatalogWriter;
     private CatalogReader catalogReader;
     
-    /** Creates new CatalogNode */
     public CatalogEntryNode(CatalogEntry entry) throws IntrospectionException {        
         super(entry);
         getCookieSet().add(this);
         catalogReader = entry.getCatalog();
+
         if (catalogReader instanceof CatalogWriter) {
             isCatalogWriter = true;
         }
     }
-    
+
     public boolean isCatalogWriter() {
         return isCatalogWriter;
     }
@@ -109,7 +111,7 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
     public void edit() {
         UserXMLCatalog catalog = (UserXMLCatalog)getCatalogReader();
         try {
-            java.net.URI uri = new java.net.URI(getSystemID());
+            URI uri = new URI(getSystemID());
             File file = new File(uri);
             FileObject fo = FileUtil.toFileObject(file);
             boolean editPossible=false;
@@ -150,49 +152,101 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
                 SystemAction.get(PropertiesAction.class)
             };
     }
-    
-    /**
-     * Provide <code>ViewCookie</code>. Always provide same instance for
-     * entry until its system ID changes.
-     */
-    public Node.Cookie getCookie(Class clazz) {        
-        if (ViewCookie.class.equals(clazz)) {            
+
+    public Node.Cookie getCookie(Class clazz) {
+        if (ViewCookie.class.equals(clazz)) {
+            return getViewCookie();
+        }
+        if (SaveAsCapable.class.equals(clazz)) {
+            return new MySaveAsCookie();
+        }
+        if (InputStream.class.equals(clazz)) {
+            return new MyInputStreamCookie();
+        }
+        return super.getCookie(clazz);
+    }
+
+    private ViewCookie getViewCookie() {
+        String sys = getSystemID();
+
+        if (sys == null) {
+            return null;
+        }
+        if (myView == null) {                    
+            ViewEnv env = new ViewEnv(getPublicID(), sys);
+            myView = new ViewCookieImpl(env);
+        }
+        return myView;
+    }
+
+    private class MySaveAsCookie implements Node.Cookie, SaveAsCapable {
+        public void saveAs(FileObject folder, String fileName) throws IOException {
+            FileObject newFile = folder.getFileObject(fileName);
+
+            if (newFile == null) {
+                newFile = FileUtil.createData(folder, fileName);
+            }
+            OutputStream output = newFile.getOutputStream();
+            InputStream input = new URL(getSystemID()).openStream();
+            
             try {
-                String sys = getSystemID();
-                if (sys == null) return null;
-                                
-                if (view == null) {                    
-                    URL url = new URL(sys);                  
-                    ViewEnv env = new ViewEnv(getPublicID(), sys);
-                    view = new ViewCookieImpl(env);
+                byte[] buffer = new byte[4096];
+
+                while (input.available() > 0) {
+                    output.write(buffer, 0, input.read(buffer));
                 }
-                return view;
-            } catch (MalformedURLException ex) {
-                ErrorManager emgr = ErrorManager.getDefault();
-                emgr.notify(ErrorManager.INFORMATIONAL, ex);
-                return null;
-            } catch (IOException ex) {
-                ErrorManager emgr = ErrorManager.getDefault();
-                emgr.notify(ErrorManager.INFORMATIONAL, ex);                
-                return null;
-            }            
-        } else {
-            return super.getCookie(clazz);
+            }
+            finally {
+                input.close();
+                output.close();
+            }
         }
     }
 
-    
+    private class MyInputStreamCookie extends InputStream implements Node.Cookie {
+        
+        private MyInputStreamCookie() {
+            try {
+                myInputStream = new URL(getSystemID()).openStream();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public int available() throws IOException {
+            return myInputStream.available();
+        }
+
+        @Override
+        public int read(byte[] b) throws IOException {
+            return myInputStream.read(b);
+        }
+
+        @Override
+        public int read() throws IOException {
+            return myInputStream.read();
+        }
+
+        @Override
+        public synchronized void reset() throws IOException {
+            myInputStream.reset();
+        }
+
+        private InputStream myInputStream;
+    }
+
     public HelpCtx getHelpCtx() {
-        //return new HelpCtx(CatalogEntryNode.class);
         return HelpCtx.DEFAULT_HELP;
     }
 
     private String getPublicID() {
-        return ((CatalogEntry)getBean()).getPublicID();
+        return ((CatalogEntry) getBean()).getPublicID();
     }
     
     private String getSystemID() {
-        return ((CatalogEntry)getBean()).getSystemID();
+        return ((CatalogEntry) getBean()).getSystemID();
     }
     
     public String getShortDescription() {
@@ -210,11 +264,6 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
         }
     }
 
-    
-    /**
-     * OpenSupport that is able to open an input stream.
-     * Encoding, coloring, ..., let editor kit takes care
-     */
     private class ViewCookieImpl extends CloneableEditorSupport implements ViewCookie {
 
         ViewCookieImpl(Env env) {
@@ -230,8 +279,6 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
         }
         
         protected java.lang.String messageToolTip() {
-            //return NbBundle.getMessage(CatalogEntryNode.class, "MSG_ENTITY_TOOLTIP", getSystemID()); // NOI18N
-            //return "hello there";
             String publicID = getPublicID();
             if(publicID.startsWith("SCHEMA:")) //NOI18N
                 publicID = publicID.substring("SCHEMA:".length()); //NOI18N
@@ -246,7 +293,6 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
             return NbBundle.getMessage(CatalogEntryNode.class, "MSG_ENTITY_OPENED", getPublicID()); // NOI18N
         }
 
-        //#20646 associate the entry node with editor top component
         protected CloneableEditor createCloneableEditor() {
             CloneableEditor editor = new CloneableEditor(this) {
                 public @Override int getPersistenceType() {
@@ -258,16 +304,9 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
         }
 
     }    
-    
-    
-    // ~~~~~~~~~~~~~~~~~ environment ~~~~~~~~~~~~~~~~~~~
 
-    /**
-     * text/xml stream environment.
-     */
     private class ViewEnv extends URLEnvironment {
 
-        /** Serial Version UID */
         private static final long serialVersionUID =-5031004511063404433L;
         
         ViewEnv (String publicId, String systemId) {
@@ -278,5 +317,4 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
             return (ViewCookieImpl) CatalogEntryNode.this.getCookie(ViewCookieImpl.class);
         }
     }
-    
 }

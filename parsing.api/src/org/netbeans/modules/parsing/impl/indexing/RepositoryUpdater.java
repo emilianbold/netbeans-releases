@@ -3952,7 +3952,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     sourceRoots.clear();
                     for(Map.Entry<URL, Pair<File, Boolean>> entry : binaryRoots.entrySet()) {
                         if (entry.getValue().second) {
-                            FileUtil.removeFileChangeListener(this.binariesListener, entry.getValue().first);
+                            safeRemoveFileChangeListener(this.binariesListener, entry.getValue().first);
                         } else {
                             safeRemoveRecursiveListener(this.binariesListener, entry.getValue().first);
                         }
@@ -3991,7 +3991,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         if (f != null) {
                             if (archiveUrl != null) {
                                 // listening on an archive file
-                                FileUtil.addFileChangeListener(binariesListener, f);
+                                safeAddFileChangeListener(binariesListener, f);
                             } else {
                                 // listening on a folder
                                 safeAddRecursiveListener(binariesListener, f);
@@ -4018,7 +4018,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         Pair<File, Boolean> pair = binaryRoots.remove(root);
                         if (pair != null) {
                             if (pair.second) {
-                                FileUtil.removeFileChangeListener(binariesListener, pair.first);
+                                safeRemoveFileChangeListener(binariesListener, pair.first);
                             } else {
                                 safeRemoveRecursiveListener(binariesListener, pair.first);
                             }
@@ -4056,6 +4056,25 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             }
         }
+
+        private void safeAddFileChangeListener(FileChangeListener listener, File path) {
+            try {
+                FileUtil.addFileChangeListener(listener, path);
+            } catch (Exception e) {
+                // ignore
+                LOGGER.log(Level.FINE, null, e);
+            }
+        }
+
+        private void safeRemoveFileChangeListener(FileChangeListener listener, File path) {
+            try {
+                FileUtil.removeFileChangeListener(listener, path);
+            } catch (Exception e) {
+                // ignore
+                LOGGER.log(Level.FINE, null, e);
+            }
+        }
+
     } // End of RootsListeners class
 
     private final class FCL extends FileChangeAdapter {

@@ -380,30 +380,32 @@ public class JsfHtmlExtension extends HtmlExtension {
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
         List<CompletionItem> items = new ArrayList<CompletionItem>();
         String ns = context.getCurrentNode().getNamespace();
-        String attrName = context.getAttributeName();
-        String tagName = context.getCurrentNode().getNameWithoutPrefix();
-        LibraryMetadata lib = FaceletsLibraryMetadata.get(ns);
+        if(ns != null) {
+            String attrName = context.getAttributeName();
+            String tagName = context.getCurrentNode().getNameWithoutPrefix();
+            LibraryMetadata lib = FaceletsLibraryMetadata.get(ns);
 
-        if (lib != null){
-            TagMetadata tag = lib.getTag(tagName);
+            if (lib != null){
+                TagMetadata tag = lib.getTag(tagName);
 
-            if (tag != null){
-                TagAttrMetadata attr = tag.getAttribute(attrName);
+                if (tag != null){
+                    TagAttrMetadata attr = tag.getAttribute(attrName);
 
-                if (attr != null){
-                    Collection<AttrValueType> valueTypes = attr.getValueTypes();
+                    if (attr != null){
+                        Collection<AttrValueType> valueTypes = attr.getValueTypes();
 
-                    if (valueTypes != null){
-                        for (AttrValueType valueType : valueTypes){
-                            String[] possibleVals = valueType.getPossibleValues();
+                        if (valueTypes != null){
+                            for (AttrValueType valueType : valueTypes){
+                                String[] possibleVals = valueType.getPossibleValues();
 
-                            if (possibleVals != null){
-                                for (String val : possibleVals){
-                                    if (val.startsWith(context.getPrefix())){
-                                        CompletionItem itm = HtmlCompletionItem.createAttributeValue(val,
-                                                context.getCCItemStartOffset());
-                                        
-                                        items.add(itm);
+                                if (possibleVals != null){
+                                    for (String val : possibleVals){
+                                        if (val.startsWith(context.getPrefix())){
+                                            CompletionItem itm = HtmlCompletionItem.createAttributeValue(val,
+                                                    context.getCCItemStartOffset());
+
+                                            items.add(itm);
+                                        }
                                     }
                                 }
                             }

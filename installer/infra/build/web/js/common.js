@@ -61,12 +61,12 @@ PLATFORM_IDS         [5] = "macosx-ppc";
 */
 
 BUNDLE_IDS [0] = "javase";
-//BUNDLE_IDS [1] = "javafx";
-BUNDLE_IDS [1] = "java";
-BUNDLE_IDS [2] = "ruby";
-BUNDLE_IDS [3] = "cpp";
-BUNDLE_IDS [4] = "php";
-BUNDLE_IDS [5] = "all";
+BUNDLE_IDS [1] = "javafx";
+BUNDLE_IDS [2] = "java";
+BUNDLE_IDS [3] = "ruby";
+BUNDLE_IDS [4] = "cpp";
+BUNDLE_IDS [5] = "php";
+BUNDLE_IDS [6] = "all";
 
 var DEFAULT_LANGUAGE = "DEFAULT";
 var PAGELANG_SEP = "pagelang=";
@@ -232,6 +232,14 @@ function other_webpage_langs_available() {
     return false;
 }
 
+function page_languages_sort_function(a, b){
+    if (a.webpagename && b.webpagename) { 
+       return a.webpagename > b.webpagename ? 1 : (a.webpagename ==  b.webpagename ? 0 : -1);
+    } else {
+       return a.suffix > b.suffix ? 1 : (a.suffix ==  b.suffix ? 0 : -1);
+    }
+}
+
 function write_page_languages() {    
     var locale_suffix = get_language_suffix();
 
@@ -254,9 +262,11 @@ function write_page_languages() {
         var regexp =  new RegExp(PAGELANG_SEP + "[a-zA-Z]+(_[a-zA-Z]+){0,2}","g");
 	get_request = get_request.replace(regexp, PAGELANG_SEP);
     }
-    for(var i=0;i<LANGUAGES.length;i++) {
-	if(LANGUAGES[i].webpagename && locale_suffix!=LANGUAGES[i].suffix) {
-            document.write('<li><a href="' + page + get_request.replace(PAGELANG_SEP, PAGELANG_SEP + LANGUAGES[i].suffix) + '">' + LANGUAGES[i].webpagename + '</a></li>');
+    var languages_sorted = LANGUAGES.slice().sort(page_languages_sort_function);
+
+    for(var i=0;i<languages_sorted.length;i++) {
+	if(languages_sorted[i].webpagename && locale_suffix!=languages_sorted[i].suffix) {
+            document.write('<li><a href="' + page + get_request.replace(PAGELANG_SEP, PAGELANG_SEP + languages_sorted[i].suffix) + '">' + languages_sorted[i].webpagename + '</a></li>');
         }
     }
 }

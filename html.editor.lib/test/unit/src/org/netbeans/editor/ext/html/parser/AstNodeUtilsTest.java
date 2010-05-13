@@ -68,7 +68,7 @@ public class AstNodeUtilsTest extends TestBase {
 
     public static Test xsuite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new AstNodeUtilsTest("testIssue185837"));
+        suite.addTest(new AstNodeUtilsTest("testIssue169206"));
         return suite;
     }
 
@@ -172,7 +172,7 @@ public class AstNodeUtilsTest extends TestBase {
         assertPossibleElements(root, 1, arr(), Match.EMPTY);
 
         //just after html tag
-        assertPossibleElements(root, 6, arr("head"), Match.EXACT);
+        assertPossibleElements(root, 6, arr("head"), Match.CONTAINS);
 
         //at the beginning of head tag
         assertPossibleElements(root, 12, arr("title", "meta"), Match.CONTAINS);
@@ -199,7 +199,7 @@ public class AstNodeUtilsTest extends TestBase {
         AstNode root = parse(code, null);
         assertNotNull(root);
 
-//        assertPossibleElements(root, 47, arr("thead","tbody","tr"), Match.CONTAINS);
+        assertPossibleElements(root, 47, arr("thead","tbody","tr"), Match.CONTAINS);
 
 
     }

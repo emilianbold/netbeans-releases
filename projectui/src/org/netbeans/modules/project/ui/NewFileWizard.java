@@ -55,6 +55,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public final class NewFileWizard extends TemplateWizard {
 
@@ -81,7 +82,7 @@ public final class NewFileWizard extends TemplateWizard {
                 // check ProjectChooserFactory.WIZARD_KEY_PROJECT property
                 if (ProjectChooserFactory.WIZARD_KEY_PROJECT.equals(evt.getPropertyName())) {
                     Project newProject = (Project) evt.getNewValue();
-                    if (!getCurrentProject().equals(newProject)) {
+                    if (!Utilities.compareObjects(getCurrentProject(), newProject)) {
                         // set the new project and force reload panels in wizard
                         setCurrentProject(newProject);
                         try {
