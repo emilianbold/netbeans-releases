@@ -11,6 +11,9 @@ var/cache/lastModified/all-checksum.txt
 var/cache/all-manifest.dat
 var/cache/all-layers.dat
 var/cache/localeVariants
+var/cache/all-ergonomics.dat
+var/cache/all-local-layers.dat
+var/cache/all-modules.dat
 
 var/cache/bugtracking
 
