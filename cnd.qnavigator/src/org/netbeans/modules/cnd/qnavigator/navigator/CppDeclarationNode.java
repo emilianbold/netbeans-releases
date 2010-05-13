@@ -73,7 +73,6 @@ import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory;
-import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
@@ -99,19 +98,15 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     }
 
     private CppDeclarationNode(CsmOffsetableDeclaration element, CsmFileModel model, CsmCompoundClassifier classifier, List<IndexOffsetNode> lineNumberIndex) {
-        super(new NavigatorChildren(element, model, classifier, lineNumberIndex), Lookups.fixed(element, getFileObject(element)));
+        super(new NavigatorChildren(element, model, classifier, lineNumberIndex), Lookups.fixed(element, model.getFileObject()));
         object = element;
         file = element.getContainingFile();
         this.model = model;
         this.weight = getObjectWeight();
     }
 
-    private static FileObject getFileObject(CsmOffsetable element){
-        return CsmUtilities.getFileObject(element.getContainingFile());
-    }
-
     private CppDeclarationNode(Children children, CsmOffsetable element, CsmFileModel model) {
-        super(children, Lookups.fixed(element, getFileObject(element)));
+        super(children, Lookups.fixed(element, model.getFileObject()));
         object = element;
         file = element.getContainingFile();
         this.model = model;
