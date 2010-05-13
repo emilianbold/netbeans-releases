@@ -137,6 +137,12 @@ public final class PasswordManager {
         }
     }
 
+    /** Should be called on disconnect. */
+    /*package*/ void onExplicitDisconnect(ExecutionEnvironment execEnv) {
+        String key = ExecutionEnvironmentFactory.toUniqueID(execEnv);
+        cache.remove(key);
+    }
+
     /**
      * Remove password from memory and Keyring
      *
