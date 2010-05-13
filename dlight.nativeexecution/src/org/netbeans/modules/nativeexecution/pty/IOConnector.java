@@ -145,11 +145,8 @@ public final class IOConnector {
                     String cmd = pxlsAware
                             ? String.format("cols %d rows %d xpixels %d ypixels %d", c.width, c.height, p.width, p.height) // NOI18N
                             : String.format("cols %d rows %d", c.width, c.height); // NOI18N
-                    try {
-                        SttySupport.getFor(env).apply(tty, cmd);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    
+                    SttySupport.apply(env, tty, cmd);
                 }
             }, true);
         }
