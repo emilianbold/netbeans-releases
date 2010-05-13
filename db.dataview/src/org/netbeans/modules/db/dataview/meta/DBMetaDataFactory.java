@@ -54,8 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
@@ -76,7 +74,6 @@ public final class DBMetaDataFactory {
     public static final int DERBY = 6;
     public static final int SYBASE = 7;
     public static final int AXION = 8;
-    public static final int POINTBASE = 9;
     private Connection dbconn;
     private int dbType = -1;
     private DatabaseMetaData dbmeta;
@@ -131,8 +128,6 @@ public final class DBMetaDataFactory {
             dbtype = PostgreSQL;
         } else if (url.indexOf("mysql") > -1) { // NOI18N
             dbtype = MYSQL;
-        } else if (url.contains("pointbase")) { // NOI18N
-            dbtype = POINTBASE;
         } else {
             dbtype = JDBC;
         }
@@ -179,20 +174,7 @@ public final class DBMetaDataFactory {
                 tableName = noTableName;
             }
             String schemaName = rsMeta.getSchemaName(i);
-            // although Javadoc admit of returning null, SQLite returns null
-            if (schemaName == null) {
-                schemaName = "";
-            }
             String catalogName = rsMeta.getCatalogName(i);
-            // although Javadoc admit of returning null, SQLite returns null
-            if (catalogName == null) {
-                catalogName = "";
-            }
-            if (schemaName.trim().length() == 0 && catalogName.equals(tableName)) {
-                // a workaround for SQLite
-                // suppose the catalog shouldn't be same if schema is not supported
-                catalogName = ""; // NOI18N
-            }
             String key = catalogName + schemaName + tableName;
             if (key.equals("")) {
                 key = noTableName;
@@ -222,17 +204,7 @@ public final class DBMetaDataFactory {
             String colName = rsMeta.getColumnName(i);
             int position = i;
             int scale = rsMeta.getScale(i);
-            int precision;
-            try {
-                precision = rsMeta.getPrecision(i);
-            } catch (NumberFormatException nfe) {
-                // Oracle classes12.jar driver throws NumberFormatException while getting precision
-                // let's ignore it and set Integer.MAX_VALUE as fallback and log it
-                precision = Integer.MAX_VALUE;
-                Logger.getLogger(DBMetaDataFactory.class.getName()).log(Level.FINE,
-                        "Oracle classes12.jar driver throws NumberFormatException while getting precision, use Integer.MAX_VALUE as fallback.", // NOI18N
-                        nfe);
-            }
+            int precision = rsMeta.getPrecision(i);
 
             boolean isNullable = (rsMeta.isNullable(i) == rsMeta.columnNullable);
             String displayName = rsMeta.getColumnLabel(i);
@@ -291,9 +263,7 @@ public final class DBMetaDataFactory {
             checkPrimaryKeys(tbl);
             checkForeignKeys(tbl);
             dbModel.addTable(tbl);
-            if (getDBType() != POINTBASE) {  //#173798 - dbmeta.getColumns invalidates rs ResultsSet
-                populateDefaults(tbl);
-            }
+            populateDefaults(tbl);
         }
 
         return tables.values();
@@ -367,10 +337,10 @@ public final class DBMetaDataFactory {
             newTable.setPrimaryKey(keys);
 
             // now loop through all the columns flagging the primary keys
-            List<DBColumn> columns = newTable.getColumnList();
+            List columns = newTable.getColumnList();
             if (columns != null) {
                 for (int i = 0; i < columns.size(); i++) {
-                    DBColumn col = columns.get(i);
+                    DBColumn col = (DBColumn) columns.get(i);
                     if (keys.contains(col.getName())) {
                         col.setPrimaryKey(true);
                     }
@@ -382,7 +352,7 @@ public final class DBMetaDataFactory {
     private void checkForeignKeys(DBTable newTable) {
         // get the foreing keys
         Map<String, DBForeignKey> foreignKeys = getForeignKeys(newTable);
-        if (foreignKeys != null && !foreignKeys.isEmpty()) {
+        if (foreignKeys != null && foreignKeys.size() != 0) {
             newTable.setForeignKeyMap(foreignKeys);
 
             // create a hash set of the keys
@@ -396,10 +366,10 @@ public final class DBMetaDataFactory {
             }
 
             // now loop through all the columns flagging the foreign keys
-            List<DBColumn> columns = newTable.getColumnList();
+            List columns = newTable.getColumnList();
             if (columns != null) {
                 for (int i = 0; i < columns.size(); i++) {
-                    DBColumn col = columns.get(i);
+                    DBColumn col = (DBColumn) columns.get(i);
                     if (foreignKeysSet.contains(col.getName())) {
                         col.setForeignKey(true);
                     }

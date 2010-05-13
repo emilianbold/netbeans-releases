@@ -81,6 +81,10 @@ public class ChildrenSupportTest extends NbTestCase {
         return suite;
     }
 
+    public static void assertNoLock() {
+        assertFalse("No read and write access", ChildrenSupport.isLock());
+    }
+
     @Override
     protected void setUp() throws java.lang.Exception {
         super.setUp();

@@ -736,10 +736,32 @@ public class TokenFormatter {
                                         }
                                         break;
                                     case WHITESPACE_WITHIN_METHOD_DECL_PARENS:
-                                        countSpaces = docOptions.spaceWithinMethodDeclParens ? 1 : 0;
+                                        int helpIndex = index - 1;
+                                        while (helpIndex > 0
+                                                && formatTokens.get(helpIndex).getId() != FormatToken.Kind.WHITESPACE_WITHIN_METHOD_DECL_PARENS
+                                                && (formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE
+                                                /*|| formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_INDENT*/)) {
+                                            helpIndex --;
+                                        }
+                                        if (helpIndex > 0 && formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_WITHIN_METHOD_DECL_PARENS) {
+                                            countSpaces = 0;
+                                        } else {
+                                            countSpaces = docOptions.spaceWithinMethodDeclParens ? 1 : 0;
+                                        }
                                         break;
                                     case WHITESPACE_WITHIN_METHOD_CALL_PARENS:
-                                        countSpaces = docOptions.spaceWithinMethodCallParens ? 1 : 0;
+                                        helpIndex = index - 1;
+                                        while (helpIndex > 0
+                                                && formatTokens.get(helpIndex).getId() != FormatToken.Kind.WHITESPACE_WITHIN_METHOD_CALL_PARENS
+                                                && (formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE
+                                                || formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_INDENT)) {
+                                            helpIndex --;
+                                        }
+                                        if (index > 0 && formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_WITHIN_METHOD_CALL_PARENS) {
+                                            countSpaces = 0;
+                                        } else {
+                                            countSpaces = docOptions.spaceWithinMethodCallParens ? 1 : 0;
+                                        }
                                         break;
                                     case WHITESPACE_WITHIN_IF_PARENS:
                                         countSpaces = docOptions.spaceWithinIfParens ? 1 : 0;
@@ -1092,12 +1114,12 @@ public class TokenFormatter {
                                     int caretPosition = caretOffset + delta;
                                     if (realOffset <= caretPosition && caretPosition <= realOffset + oldText.length() + 1) {
                                         int positionOldText = caretPosition - realOffset - 1;
-                                        if (positionOldText > -1  && positionOldText < oldText.length()
-                                                && oldText.charAt(positionOldText) ==  ' ') {
+                                        if (positionOldText > -1 && positionOldText < oldText.length()
+                                                && oldText.charAt(positionOldText) == ' ') {
                                             newText = ' ' + newText;   // templates like public, return ...
                                         }
                                         caretInTemplateSolved = true;
-                                    }
+                                    } 
                                 }
                             }
                             index--;
@@ -1468,11 +1490,11 @@ public class TokenFormatter {
 		return value;
 	    }
 
-//	    private int countOfChanges = 0;
-
             private int startOffset = -1;
             private int endOffset = -1;
             private int previousLineIndent = 0;
+            private String previousOldIndentText = "";
+            private String previousNewIndentText = "";
 
 	    private int replaceString(BaseDocument document, int offset, int indexInFormatTokens, String oldText, String newText, int delta, boolean templateEdit) {
 		if (oldText == null) {
@@ -1483,65 +1505,30 @@ public class TokenFormatter {
                     startOffset = formatContext.startOffset();
                     endOffset = formatContext.endOffset();
                 }
-//                if(startOffset == -1) {
-//                    startOffset = formatContext.startOffset() == 0
-//                            ? formatContext.startOffset()
-//                            : formatContext.startOffset() -1;
-//                    System.out.println("char: " + document.getText().charAt(startOffset));
-//                    while (startOffset > 0 && Character.isWhitespace(document.getText().charAt(startOffset))) {
-//                        startOffset --;
-//                    }
-//                    if (startOffset > 0) {
-//                        startOffset ++;
-//                    }
-//                    endOffset = formatContext.endOffset();
-//                    while (endOffset < document.getLength() && Character.isWhitespace(document.getText().charAt(endOffset))) {
-//                        endOffset ++;
-//                    }
-//                    if (endOffset < document.getLength()) {
-//                        endOffset --;
-//                    }
-//
-//                }
+                if (startOffset > 0 && (startOffset - oldText.length()) > offset
+                        && newText != null && newText.indexOf('\n') > -1) {
+                    previousNewIndentText = newText;
+                    previousOldIndentText = oldText;
+                }
                 if (newText != null && (!oldText.equals(newText)
                         || (startOffset > 0 && (startOffset - oldText.length()) == offset))) {
                     int realOffset = offset + delta;
-                    if (startOffset > 0 && (startOffset - oldText.length()) > offset) {
-                        int indexOldTextLine = oldText.lastIndexOf('\n');
-                        int indexNewTextLine = newText.lastIndexOf('\n');
+                    if (startOffset > 0 && (startOffset - oldText.length()) == offset) {
+                        int indexOldTextLine = previousOldIndentText.lastIndexOf('\n');
+                        int indexNewTextLine = previousNewIndentText.lastIndexOf('\n');
                         if (indexOldTextLine > -1 && indexNewTextLine > -1) {
-                            int oldTextLenght = oldText.length();
                             int addToLength = 0;
                             int indexOldText = indexOldTextLine;
-                            while (indexOldText < oldText.length()
-                                    && (indexOldText =oldText.indexOf('\t', indexOldText)) != -1) {
+                            while (indexOldText < previousOldIndentText.length()
+                                    && (indexOldText =previousOldIndentText.indexOf('\t', indexOldText)) != -1) {
                                 addToLength += docOptions.tabSize - 1;
                                 indexOldText++;
                             }
-                            previousLineIndent = newText.length() - indexNewTextLine - oldText.length() - addToLength + indexOldTextLine;
+                            previousLineIndent = previousNewIndentText.length() - indexNewTextLine - previousOldIndentText.length() - addToLength + indexOldTextLine;
                         }
-                    }
-                    if (startOffset > 0 && (startOffset - oldText.length()) == offset) {
-                        int indexOldTextLine = oldText.lastIndexOf('\n');
-                        int indexNewTextLine = newText.lastIndexOf('\n');
 
-//                        while (indexInFormatTokens > 0 && formatTokens.get(indexInFormatTokens).isWhitespace()) {
-//                            indexInFormatTokens--;
-//                        }
-//                        if (formatTokens.get(indexInFormatTokens).getId() == FormatToken.Kind.OPEN_TAG) {
-//                            if (indexOldTextLine > -1 && indexNewTextLine > -1) {
-//                                int oldTextLenght = oldText.length();
-//                                int addToLength = 0;
-//                                int indexOldText = indexOldTextLine;
-//                                while (indexOldText < oldText.length()
-//                                        && (indexOldText =oldText.indexOf('\t', indexOldText)) != -1) {
-//                                    addToLength += docOptions.tabSize - 1;
-//                                    indexOldText++;
-//                                }
-//                                previousLineIndent = newText.length() - indexNewTextLine - oldText.length() - addToLength + indexOldTextLine;
-//                            }
-//                        }
-
+                        indexOldTextLine = oldText.lastIndexOf('\n');
+                        indexNewTextLine = newText.lastIndexOf('\n');
                         String replaceNew = indexNewTextLine == -1 ? newText : newText.substring(indexNewTextLine + 1);
                         if (previousLineIndent != 0 && indexNewTextLine > -1 && (replaceNew.length()) >= 0) {
                             int newSpaces = replaceNew.length() - previousLineIndent;
@@ -1589,7 +1576,7 @@ public class TokenFormatter {
                                         replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
                                     }
                                     if (!replaceOld.equals(replaceNew)
-                                            && ((indexOldText + replaceOld.length()) < oldText.length()
+                                            && ((indexOldText + replaceOld.length()) <= oldText.length()
                                             || indexNewText == indexNewTextLine)) {
                                         delta = replaceSimpleString(document, realOffset + indexOldText,
                                                 replaceOld, replaceNew, delta);
@@ -1631,11 +1618,6 @@ public class TokenFormatter {
                                     }
 
                                 }
-                                if (indexOldText < oldText.length()
-                                        && indexNewText >= newText.length()) {
-
-                                }
-
                             }
 
                         }

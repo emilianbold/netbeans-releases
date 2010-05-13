@@ -37,33 +37,51 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.zend.ui.actions;
+package org.netbeans.modules.php.project.ui.actions;
 
+import java.awt.event.ActionEvent;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.zend.ZendPhpFrameworkProvider;
+import org.netbeans.modules.php.project.PhpModuleImpl;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.spi.actions.RunCommandAction;
+import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public final class RunCommandAction extends BaseAction {
-    private static final long serialVersionUID = -2278946423132142L;
-    private static final RunCommandAction INSTANCE = new RunCommandAction();
+public final class RunFrameworkCommandAction extends RunCommandAction {
+    private static final long serialVersionUID = -22735302227232842L;
+    private static final RunFrameworkCommandAction INSTANCE = new RunFrameworkCommandAction();
 
-    private RunCommandAction() {
+    private RunFrameworkCommandAction() {
     }
 
-    public static RunCommandAction getInstance() {
+    public static RunFrameworkCommandAction getInstance() {
         return INSTANCE;
     }
 
     @Override
-    public void actionPerformed(PhpModule phpModule) {
-        ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
+    public void actionPerformed(final PhpModule phpModule) {
+        if (phpModule instanceof PhpModuleImpl) {
+            PhpProject project = ((PhpModuleImpl) phpModule).getPhpProject();
+            // XXX more precise would be to collect all Run Command actions and if > 1 then show a dialog which framework should be run
+            for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
+                PhpModuleActionsExtender actionsExtender = frameworkProvider.getActionsExtender(phpModule);
+                if (actionsExtender != null) {
+                    RunCommandAction runCommandAction = actionsExtender.getRunCommandAction();
+                    if (runCommandAction != null) {
+                        runCommandAction.actionPerformed(phpModule);
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     @Override
-    protected String getPureName() {
-        return NbBundle.getMessage(RunCommandAction.class, "LBL_RunCommand");
+    protected String getFullName() {
+        return NbBundle.getMessage(RunFrameworkCommandAction.class, "LBL_RunFrameworkCommand");
     }
 }

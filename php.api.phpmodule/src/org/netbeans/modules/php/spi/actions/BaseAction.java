@@ -37,22 +37,61 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.dataview.api;
+package org.netbeans.modules.php.spi.actions;
 
-/** A helper which can return current page size for given data view.
- *
- * @author Jiri Rechtacek
- * @since 1.4
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.openide.util.HelpCtx;
+
+/**
+ * Base action class which operates with a PHP module, suitable for framework classes.
+ * It takes care about names (name in menu, name in shortcuts).
+ * @author Tomas Mysik
+ * @since 1.30
  */
-public final class DataViewPageContext {
-    private DataViewPageContext() {}
+public abstract class BaseAction extends AbstractAction implements HelpCtx.Provider {
 
-    /** Returns current page size for given view
-     *
-     * @param data view
-     * @return a page size or -1 if unknown
+    protected BaseAction() {
+        putValue("noIconInMenu", true); // NOI18N
+        putValue(NAME, getFullName());
+        putValue("menuText", getPureName()); // NOI18N
+    }
+
+    /**
+     * Get the name for shortcuts table (Tools > Options > Keymap).
+     * @return the name for shortcuts table (Tools > Options > Keymap)
      */
-    public static int getPageSize(DataView view) {
-        return view.delegate.getPageSize();
+    protected abstract String getFullName();
+
+    /**
+     * Get the name for menu (and context menu).
+     * @return the name for menu (and context menu)
+     */
+    protected abstract String getPureName();
+
+    /**
+     * Framework implementations should likely check whether they
+     * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#isInPhpModule(PhpModule) extend} the given PHP module.
+     * @param phpModule PHP module the action is invoked on, never {@code null}
+     */
+    protected abstract void actionPerformed(PhpModule phpModule);
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    /**
+     * If a PHP module {@link PhpModule#inferPhpModule() is found} then
+     * {@link #actionPerformed(PhpModule) actionPerformed(PhpModule)} is called.
+     */
+    @Override
+    public final void actionPerformed(ActionEvent e) {
+        PhpModule phpModule = PhpModule.inferPhpModule();
+        if (phpModule == null) {
+            return;
+        }
+        actionPerformed(phpModule);
     }
 }

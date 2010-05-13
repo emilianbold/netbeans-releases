@@ -266,18 +266,7 @@ public final class FileUtilities {
         assert cpProvider != null : "Project has to provide ProjectSourcesClassPathProvider ability"; //NOI18N
 
         SortedSet<String> result = new TreeSet<String>();
-
-        SourceGroup[] scs = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        for (int i = 0; i < scs.length; i++) {
-            final FileObject root = scs[i].getRootFolder();
-            processFolder(root, new NameObtainer() {
-                @Override
-                public String getPackageName(FileObject file) {
-                    String pkgName = relativizeFile(FileUtil.toFile(root), FileUtil.toFile(file));
-                    return pkgName.replace('/', '.');
-                }
-            }, result);
-        }
+        getSourcePackageNames(prj, result, false);
 
         final ClassPath runtimeCP = cpProvider.getProjectSourcesClassPath(ClassPath.EXECUTE);
         FileObject[] cpRoots = runtimeCP.getRoots();
@@ -289,30 +278,60 @@ public final class FileUtilities {
                     public String getPackageName(FileObject file) {
                         return runtimeCP.getResourceName(file, '.', true);
                     }
-                }, result);
+                }, result, false);
             }
         }
 
         return result;
     }
 
-    private static void processFolder(FileObject file, NameObtainer nameObtainer, SortedSet<String> result) {
+    /**
+     * @return Set of names of root packages containing some *.class or *.java.
+     * Result doesn't contain subfolders of such folders
+     */
+    public static SortedSet<String> getBasePackageNames (Project prj) {
+        SortedSet<String> result = new TreeSet<String>();
+        getSourcePackageNames(prj, result, true);
+        return result;
+    }
+
+    private static void getSourcePackageNames (Project prj, SortedSet<String> result, boolean onlyRoots) {
+        SourceGroup[] scs = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (int i = 0; i < scs.length; i++) {
+            final FileObject curRoot = scs[i].getRootFolder();
+            processFolder(curRoot, new NameObtainer() {
+                @Override
+                public String getPackageName(FileObject file) {
+                    String pkgName = relativizeFile(FileUtil.toFile(curRoot), FileUtil.toFile(file));
+                    return pkgName.replace('/', '.');
+                }
+            }, result, onlyRoots);
+        }
+    }
+
+    private static void processFolder(FileObject file, NameObtainer nameObtainer, SortedSet<String> result, boolean onlyRoots) {
         Enumeration<? extends FileObject> dataFiles = file.getData(false);
         Enumeration<? extends FileObject> folders = file.getFolders(false);
 
-        if (dataFiles.hasMoreElements() || !folders.hasMoreElements()) {
+        if (dataFiles.hasMoreElements()) {
             while (dataFiles.hasMoreElements()) {
                 FileObject kid = dataFiles.nextElement();
                 if ((kid.hasExt("java") || kid.hasExt("class")) && Utilities.isJavaIdentifier(kid.getName())) {
                     // at least one java or class inside directory -> valid package
                     result.add(nameObtainer.getPackageName(file));
-                    break;
+                    if (onlyRoots) {
+                        // don't recurse into subfolders
+                        return;
+                    } else {
+                        // recurse inot subfolders
+                        break;
+                    }
                 }
             }
         }
 
         while (folders.hasMoreElements()) {
-            processFolder(folders.nextElement(), nameObtainer, result);
+            processFolder(folders.nextElement(), nameObtainer, result, onlyRoots);
         }
     }
 

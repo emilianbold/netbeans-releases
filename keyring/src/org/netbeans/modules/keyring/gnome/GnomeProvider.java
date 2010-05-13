@@ -162,7 +162,11 @@ public class GnomeProvider implements KeyringProvider {
             LIBRARY.gnome_keyring_found_list_free(found[0]);
         }
         if (id > 0) {
-            error(GnomeKeyringLibrary.LIBRARY.gnome_keyring_item_delete_sync(null, id));
+            if ("SunOS".equals(System.getProperty("os.name")) && "5.10".equals(System.getProperty("os.version"))) { // #185698
+                save(key, new char[0], null); // gnome_keyring_item_delete(null, id, null, null, null) does not seem to do anything
+            } else {
+                error(GnomeKeyringLibrary.LIBRARY.gnome_keyring_item_delete_sync(null, id));
+            }
         }
     }
 

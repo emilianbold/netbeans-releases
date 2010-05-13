@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,52 +34,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.zend.ui.actions;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.zend.ZendPhpFrameworkProvider;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
+import org.netbeans.modules.php.spi.actions.GoToViewAction;
+import org.netbeans.modules.php.zend.util.ZendUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
-/**
- * @author Tomas Mysik
- */
-public abstract class BaseAction extends AbstractAction implements HelpCtx.Provider {
+public final class ZendGoToViewAction extends GoToViewAction {
+    private static final long serialVersionUID = 89745632134654L;
 
-    protected BaseAction() {
-        putValue("noIconInMenu", true); // NOI18N
-        putValue(NAME, getFullName());
-        putValue("menuText", getPureName()); // NOI18N
+    private final FileObject fo;
+    private final int offset;
+
+    public ZendGoToViewAction(FileObject fo, int offset) {
+        assert ZendUtils.isAction(fo);
+        this.fo = fo;
+        this.offset = offset;
     }
 
     @Override
-    public final void actionPerformed(ActionEvent e) {
-        PhpModule phpModule = PhpModule.inferPhpModule();
-
-        if (phpModule == null) {
+    public void actionPerformedInternal() {
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        PhpBaseElement phpElement = editorSupport.getElement(fo, offset);
+        if (phpElement == null) {
             return;
         }
-        if (!ZendPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
-            return;
+        FileObject view = ZendUtils.getView(fo, phpElement);
+        if (view != null) {
+            UiUtils.open(view, DEFAULT_OFFSET);
         }
-
-        actionPerformed(phpModule);
     }
-
-    protected String getFullName() {
-        return NbBundle.getMessage(BaseAction.class, "LBL_ZendAction", getPureName());
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    protected abstract String getPureName();
-    protected abstract void actionPerformed(PhpModule phpModule);
 }

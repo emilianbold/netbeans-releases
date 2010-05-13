@@ -45,6 +45,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
@@ -62,6 +63,7 @@ import org.osgi.framework.launch.Framework;
  */
 public class IntegrationTest extends NbTestCase {
     private File j1;
+    private Logger LOG;
 
     public IntegrationTest(String name) {
         super(name);
@@ -79,7 +81,13 @@ public class IntegrationTest extends NbTestCase {
     }
 
     @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
+    @Override
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test." + getName());
         File jars = new File(getWorkDir(), "jars");
         jars.mkdirs();
 
@@ -96,17 +104,22 @@ public class IntegrationTest extends NbTestCase {
             "Bundle-ManifestVersion: 2\n" +
             "Export-Package: org.foo";
 
+        LOG.info("about to enable module org.foo");
         File jj1 = NetigsoHid.changeManifest(getWorkDir(), j1, mf);
         m1 = mgr.create(jj1, null, false, false, false);
         mgr.enable(m1);
+        LOG.info("Enabling is over");
 
         assertTrue("OSGi module is now enabled", m1.isEnabled());
         mgr.mutexPrivileged().exitWriteAccess();
 
         Object obj = Lookup.getDefault().lookup(NetigsoFramework.class);
+        LOG.log(Level.INFO, "NetigsoFramework: {0}", obj);
         final Method m = obj.getClass().getDeclaredMethod("getFramework");
         m.setAccessible(true);
+        LOG.log(Level.INFO, "Method to use: {0}", m);
         Framework w = (Framework) m.invoke(obj);
+        LOG.log(Level.INFO, "Framework is here: {0}", w);
         assertNotNull("Framework found", w);
         if (!w.getClass().getName().contains("felix")) {
             fail("By default the OSGi framework is felix: " + w.getClass());

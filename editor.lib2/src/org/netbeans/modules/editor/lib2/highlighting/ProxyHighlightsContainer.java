@@ -125,12 +125,14 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
                 }
                 
                 try {
-                    seq.add(new CheckedHighlightsSequence(
+                    CheckedHighlightsSequence checked = new CheckedHighlightsSequence(
                         layers[i].getHighlights(startOffset, endOffset),
                         startOffset,
-                        endOffset,
-                        "PHC.Layer[" + i + "]=" + layers[i] //NOI18N
-                    ));
+                        endOffset);
+                    if (LOG.isLoggable(Level.FINE)) {
+                        checked.setContainerDebugId("PHC.Layer[" + i + "]=" + layers[i]); //NOI18N
+                    }
+                    seq.add(checked);
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t) {

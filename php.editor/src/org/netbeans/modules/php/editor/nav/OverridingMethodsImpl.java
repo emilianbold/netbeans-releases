@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author Radek Matous
@@ -175,9 +176,12 @@ public class OverridingMethodsImpl implements OverridingMethods {
             MethodElement method = (MethodElement) getElement();
             final TypeElement type = method.getType();
             sb.append(type.getFullyQualifiedName().toNotFullyQualified().toString());
-            sb.append(" ("); // NOI18N
-            sb.append(type.getFileObject().getNameExt());
-            sb.append(")"); // NOI18N
+            final FileObject fileObject = type.getFileObject();
+            if (fileObject != null) {
+                sb.append(" ("); // NOI18N
+                sb.append(fileObject.getNameExt());
+                sb.append(")"); // NOI18N
+            }
             return sb.toString();
         }
     }

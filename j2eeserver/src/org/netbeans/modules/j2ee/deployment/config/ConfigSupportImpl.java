@@ -716,7 +716,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
 
             @Override
             public ModuleConfiguration run() {
-                synchronized (this) {
+                synchronized (ConfigSupportImpl.this) {
                     if (moduleConfiguration == null) {
                         try {
                             if (server == null) {

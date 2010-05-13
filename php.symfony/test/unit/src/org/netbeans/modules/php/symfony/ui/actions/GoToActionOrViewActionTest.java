@@ -40,7 +40,6 @@
 package org.netbeans.modules.php.symfony.ui.actions;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.symfony.ui.actions.GoToActionOrViewAction.GoToActionAction;
 
 public class GoToActionOrViewActionTest extends NbTestCase {
 
@@ -49,15 +48,15 @@ public class GoToActionOrViewActionTest extends NbTestCase {
     }
 
     public void testGetActionMethodName() {
-        assertEquals("executeIndex", GoToActionAction.getActionMethodName("indexSuccess"));
-        assertEquals("executeNew", GoToActionAction.getActionMethodName("newSuccess"));
-        assertEquals("executeNew", GoToActionAction.getActionMethodName("newError"));
-        assertEquals("executeIndexDemo", GoToActionAction.getActionMethodName("indexDemoSuccess"));
-        assertEquals("executeIndexDemoUglyBug", GoToActionAction.getActionMethodName("indexDemoUglyBugSuccess"));
-        assertEquals("executeIndex2Demo3", GoToActionAction.getActionMethodName("index2Demo3Success"));
-        assertEquals("executeIndex_Demo", GoToActionAction.getActionMethodName("index_DemoSuccess"));
+        assertEquals("executeIndex", SymfonyGoToActionAction.getActionMethodName("indexSuccess"));
+        assertEquals("executeNew", SymfonyGoToActionAction.getActionMethodName("newSuccess"));
+        assertEquals("executeNew", SymfonyGoToActionAction.getActionMethodName("newError"));
+        assertEquals("executeIndexDemo", SymfonyGoToActionAction.getActionMethodName("indexDemoSuccess"));
+        assertEquals("executeIndexDemoUglyBug", SymfonyGoToActionAction.getActionMethodName("indexDemoUglyBugSuccess"));
+        assertEquals("executeIndex2Demo3", SymfonyGoToActionAction.getActionMethodName("index2Demo3Success"));
+        assertEquals("executeIndex_Demo", SymfonyGoToActionAction.getActionMethodName("index_DemoSuccess"));
 
-        assertEquals("execute_admin", GoToActionAction.getActionMethodName("_adminInc"));
-        assertNull(GoToActionAction.getActionMethodName("_admin"));
+        assertEquals("execute_admin", SymfonyGoToActionAction.getActionMethodName("_adminInc"));
+        assertNull(SymfonyGoToActionAction.getActionMethodName("_admin"));
     }
 }
