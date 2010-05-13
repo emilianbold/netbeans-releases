@@ -208,7 +208,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
         try {
             login_shell_channels = JschSupport.startLoginShellSession(execEnv);
-            login_shell_channels.in.write(("/bin/env\n").getBytes()); // NOI18N
+            login_shell_channels.in.write(("/usr/bin/env 2>/dev/null || /bin/env 2>/dev/null\n").getBytes()); // NOI18N
             login_shell_channels.in.flush();
             login_shell_channels.in.close();
 
