@@ -637,15 +637,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             return this;
         }
 
-        //@Deprecated
-        private synchronized APTPreprocHandler.State getState() {
-            final Iterator<PreprocessorStatePair> iterator = getStatePairs().iterator();
-            if (iterator.hasNext()) {
-                return iterator.next().state;
-            }
-            return null;
-        }
-
         private synchronized void debugClearState() {
             data = null;
         }
