@@ -69,12 +69,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     
     protected AbstractFileBuffer(CharSequence absPath) {
         if (CndUtils.isDebugMode()) {
-            File file = new File(absPath.toString());
-            File normFile = FileUtil.normalizeFile(file);
-            if (!file.equals(normFile)) {
-                CndUtils.assertTrueInConsole(false,
-                        "Parameter file was not normalized. Was " + file + " instead of " + normFile); //NOI18N
-            }
+            CndUtils.assertNormalized(new File(absPath.toString()));
         }
         this.absPath = FilePathCache.getManager().getString(absPath);
     }
