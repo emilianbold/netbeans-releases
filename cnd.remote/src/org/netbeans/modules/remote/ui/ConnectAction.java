@@ -59,6 +59,7 @@ public class ConnectAction extends SingleHostAction {
         return NbBundle.getMessage(HostListRootNode.class, "ConnectMenuItem");
     }
 
+    @Override
     protected boolean enable(ExecutionEnvironment env) {
         return !ConnectionManager.getInstance().isConnectedTo(env);
     }
