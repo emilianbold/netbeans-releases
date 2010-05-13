@@ -48,6 +48,7 @@ import java.sql.Clob;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -56,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,7 +65,7 @@ import org.netbeans.modules.db.dataview.meta.DBException;
  */
 public class DBReadWriteHelper {
 
-    private static Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
+    private static final Logger mLogger = Logger.getLogger(DBReadWriteHelper.class.getName());
 
     @SuppressWarnings(value = "fallthrough") // NOI18N
     public static Object readResultSet(ResultSet rs, DBColumn col, int index) throws SQLException {
@@ -79,7 +81,7 @@ public class DBReadWriteHelper {
                 if (rs.wasNull()) {
                     return null;
                 } else {
-                    return new Boolean(bdata);
+                    return bdata;
                 }
             }
             case Types.TIME: {
@@ -199,19 +201,34 @@ public class DBReadWriteHelper {
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY: {
-                byte[] bdata = rs.getBytes(index);
-                if (rs.wasNull()) {
-                    return null;
-                } else {
-                    Byte[] internal = new Byte[bdata.length];
-                    for (int i = 0; i < bdata.length; i++) {
-                        internal[i] = new Byte(bdata[i]);
+                try {
+                    byte[] bdata = rs.getBytes(index);
+                    if (rs.wasNull()) {
+                        return null;
+                    } else {
+                        Byte[] internal = new Byte[bdata.length];
+                        for (int i = 0; i < bdata.length; i++) {
+                            internal[i] = new Byte(bdata[i]);
+                        }
+                        String bStr = BinaryToStringConverter.convertToString(internal, BinaryToStringConverter.BINARY, true);
+                        if (colType == Types.BIT && col.getPrecision() != 0 && col.getPrecision() < bStr.length()) {
+                            return bStr.substring(bStr.length() - col.getPrecision());
+                        }
+                        return bStr;
                     }
-                    String bStr = BinaryToStringConverter.convertToString(internal, BinaryToStringConverter.BINARY, true);
-                    if (colType == Types.BIT && col.getPrecision() != 0 && col.getPrecision() < bStr.length()) {
-                        return bStr.substring(bStr.length() - col.getPrecision());
+                } catch (SQLDataException x) {
+                    // wrong mapping JavaDB JDBC Type -4
+                    try {
+                        String sdata = rs.getString(index);
+                        if (rs.wasNull()) {
+                            return null;
+                        } else {
+                            return sdata;
+                        }
+                    } catch (SQLException ex) {
+                        // throw the original SQLDataException intead of this one
+                        throw x;
                     }
-                    return bStr;
                 }
             }
             case Types.BLOB: {
@@ -353,8 +370,8 @@ public class DBReadWriteHelper {
                     ps.setObject(index, valueObj, jdbcType);
             }
         } catch (Exception e) {
-            mLogger.log(Level.SEVERE, "Invalid Data for" + jdbcType + "type --", e);
-            throw new DBException("Invalid Data for " + jdbcType + " type ", e);
+            mLogger.log(Level.SEVERE, "Invalid Data for" + jdbcType + "type -- ", e); // NOI18N
+            throw new DBException(NbBundle.getMessage(DBReadWriteHelper.class, "DBReadWriteHelper_Validate_InvalidType", jdbcType, e)); // NOI18N
         }
     }
 
@@ -381,8 +398,7 @@ public class DBReadWriteHelper {
                         } else if ((str.equalsIgnoreCase("false")) || (str.equalsIgnoreCase("0"))) { // NOI18N
                             return Boolean.FALSE;
                         } else {
-                            String errMsg = "Values must be true/false or numeric 0 or 1";
-                            throw new DBException(errMsg);
+                            throw new DBException(NbBundle.getMessage(DBReadWriteHelper.class, "DBReadWriteHelper_Validate_Boolean")); // NOI18N
                         }
                     }
                 }
@@ -425,23 +441,20 @@ public class DBReadWriteHelper {
                 case -9:  //NVARCHAR
                 case -8:  //ROWID
                 case -15: //NCHAR
-                    if (valueObj.toString().length() > col.getPrecision()) {
+                    if (col.getPrecision() > 0 && valueObj.toString().length() > col.getPrecision()) {
                         String colName = col.getQualifiedName(false);
-                        String errMsg = "Too large data \'" + valueObj + "\' for column " + colName;
-                        throw new DBException(errMsg);
+                        throw new DBException(NbBundle.getMessage(DBReadWriteHelper.class, "DBReadWriteHelper_Validate_TooLarge", valueObj, colName)); // NOI18N
                     }
                     return valueObj;
 
                 case Types.BIT:
                     if (valueObj.toString().length() > col.getPrecision()) {
                         String colName = col.getQualifiedName(false);
-                        String errMsg = "Too large data \'" + valueObj + "\' for column " + colName;
-                        throw new DBException(errMsg);
+                        throw new DBException(NbBundle.getMessage(DBReadWriteHelper.class, "DBReadWriteHelper_Validate_TooLarge", valueObj, colName)); // NOI18N
                     }
                     if (valueObj.toString().trim().length() == 0) {
                         String colName = col.getQualifiedName(false);
-                        String errMsg = "Invalid data for column " + colName;
-                        throw new DBException(errMsg);
+                        throw new DBException(NbBundle.getMessage(DBReadWriteHelper.class, "DBReadWriteHelper_Validate_Invalid", valueObj, colName)); // NOI18N
                     }
                     BinaryToStringConverter.convertBitStringToBytes(valueObj.toString());
                     return valueObj;
@@ -466,9 +479,7 @@ public class DBReadWriteHelper {
             String type = col.getTypeName();
             String colName = col.getQualifiedName(false);
             int precision = col.getPrecision();
-            String errMsg = "Please enter valid data for " + colName + " of datatype " + type + "(" + precision + ")";
-            errMsg += "\nCause: " + e.getMessage();
-            throw new DBException(errMsg);
+            throw new DBException(NbBundle.getMessage(DBReadWriteHelper.class, "DBReadWriteHelper_ErrLog", new Object[] {colName, type, precision, e.getLocalizedMessage()}));
         }
     }
 

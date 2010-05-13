@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,58 +31,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.modules.db.dataview.output;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import javax.swing.table.TableModel;
-
-/**
- * Holds the updated row data
  *
- * @author Ahimanikya Satapathy
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-class UpdatedRowContext {
 
-    private Map<Integer, Map<Integer, Object>> changedData = new LinkedHashMap<Integer, Map<Integer, Object>>();
+package org.netbeans.modules.db.dataview.api;
 
-    public UpdatedRowContext() {
-    }
+/** A helper which can return current page size for given data view.
+ *
+ * @author Jiri Rechtacek
+ * @since 1.4
+ */
+public final class DataViewPageContext {
+    private DataViewPageContext() {}
 
-    public void addUpdates(int row, int col, Object value, TableModel tblModel)  {
-        Map<Integer, Object> rowMap = changedData.get(row);
-        if(rowMap == null){
-            rowMap = new LinkedHashMap<Integer, Object>();
-            changedData.put(new Integer(row), rowMap);
-        }
-        rowMap.put(new Integer(col), value);
-    }
-
-    public void removeAllUpdates() {
-        changedData = new LinkedHashMap<Integer, Map<Integer, Object>>();
-    }
-
-    public void removeUpdateForSelectedRow(int row) {
-        if(changedData.containsKey(new Integer(row))){
-            changedData.remove(new Integer(row));
-        }
-    }
-
-    public Set<Integer> getUpdateKeys() {
-        return changedData.keySet();
-    }
-
-    public Map<Integer, Object> getChangedData(int row) {
-        return changedData.get(new Integer(row));
-    }
-
-    boolean hasUpdates(int row, int col) {
-        Map<Integer, Object> rowMap = changedData.get(new Integer(row));
-        if(rowMap != null && rowMap.containsKey(new Integer(col))){
-           return true;
-        }
-        return false;
+    /** Returns current page size for given view
+     *
+     * @param data view
+     * @return a page size or -1 if unknown
+     */
+    public static int getPageSize(DataView view) {
+        return view.delegate.getPageSize();
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 - 2009 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,12 +34,13 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 - 2009 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.db.dataview.output;
 
 import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
 import java.sql.Types;
+import java.util.Arrays;
 import javax.swing.table.DefaultTableModel;
 import org.jdesktop.swingx.JXTable;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
@@ -82,14 +83,11 @@ class InsertRecordTableUI extends ResultSetJXTable {
             getCellEditor().cancelCellEditing();
         }
         int[] rows = getSelectedRows();
+        if (rows.length == 0) return ;
+        Arrays.sort(rows);
         DefaultTableModel model = (DefaultTableModel) getModel();
-        for (int ii = 0; ii < rows.length; ii++) {
-            if ((rows[ii] >= 0) && (getRowCount() >= 1)) {
-                model.removeRow(rows[ii]);
-            }
-            for (int j = 0; j < rows.length; j++) {
-                rows[j]--;
-            }
+        for (int i = (rows.length - 1); i >= 0; i--) {
+            model.removeRow(rows[i]);
         }
         if (getRowCount() == 0) {
             model.addRow(createNewRow());

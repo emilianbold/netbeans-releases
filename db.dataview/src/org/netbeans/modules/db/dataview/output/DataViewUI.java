@@ -42,10 +42,7 @@ package org.netbeans.modules.db.dataview.output;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -60,14 +57,13 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.PlainDocument;
+import javax.swing.SwingUtilities;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
@@ -94,7 +90,7 @@ class DataViewUI extends JXPanel {
     private JXButton first;
     private JXButton deleteRow;
     private JXButton insert;
-    private FixedSizeTextField refreshField;
+    private JTextField refreshField;
     private JTextField matchBoxField;
     private JXLabel totalRowsLabel;
     private JXLabel limitRow;
@@ -104,6 +100,9 @@ class DataViewUI extends JXPanel {
     private JXButton cancel;
     private DataViewActionHandler actionHandler;
     private String imgPrefix = "/org/netbeans/modules/db/dataview/images/"; // NOI18N
+
+    private static final int MAX_TAB_LENGTH = 25;
+
     /** Shared mouse listener used for setting the border painting property
      * of the toolbar buttons and for invoking the popup menu.
      */
@@ -132,11 +131,14 @@ class DataViewUI extends JXPanel {
             }
         }
 
+        @Override
         protected void showPopup(MouseEvent evt) {
         }
     };
 
     DataViewUI(DataView dataView, boolean nbOutputComponent) {
+        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
+
         this.dataView = dataView;
 
         //do not show tab view if there is only one tab
@@ -147,7 +149,12 @@ class DataViewUI extends JXPanel {
         this.setLayout(new BorderLayout());
         this.setBorder(BorderFactory.createEmptyBorder());
         String sql = dataView.getSQLString();
-        this.setName(sql.substring(0, Math.min(sql.length(), 25)));
+        if (sql.length() > MAX_TAB_LENGTH) {
+            String trimmed = NbBundle.getMessage(DataViewUI.class, "DataViewUI_TrimmedTabName", sql.substring(0, Math.min(sql.length(), MAX_TAB_LENGTH)));
+            this.setName(trimmed);
+        } else {
+            this.setName(sql);
+        }
         this.setToolTipText(sql);
 
         // Main pannel with toolbars
@@ -176,6 +183,7 @@ class DataViewUI extends JXPanel {
     }
 
     void setTotalCount(int count) {
+        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
         if (count < 0) {
             int pageSize = dataView.getDataViewPageContext().getPageSize();
             int totalRows = dataView.getDataViewPageContext().getCurrentRows().size();
@@ -226,6 +234,8 @@ class DataViewUI extends JXPanel {
     }
 
     void disableButtons() {
+        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
+
         truncateButton.setEnabled(false);
         refreshButton.setEnabled(false);
         refreshField.setEnabled(false);
@@ -260,6 +270,8 @@ class DataViewUI extends JXPanel {
     }
 
     void resetToolbar(boolean wasError) {
+        assert SwingUtilities.isEventDispatchThread() : "Must be called from AWT thread";  //NOI18N
+
         refreshButton.setEnabled(true);
         refreshField.setEnabled(true);
         matchBoxField.setEditable(true);
@@ -325,6 +337,7 @@ class DataViewUI extends JXPanel {
 
         ActionListener outputListener = new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Object src = e.getSource();
                 if (src.equals(refreshButton)) {
@@ -421,11 +434,24 @@ class DataViewUI extends JXPanel {
         toolbar.add(limitRow);
 
         //add refresh text field
-        refreshField = new FixedSizeTextField(4);
-        refreshField.setText("" + dataView.getDataViewPageContext().getPageSize()); // NOI18N
-        refreshField.setMinimumSize(new Dimension(45, refreshField.getHeight()));
-        refreshField.setSize(45, refreshField.getHeight());
-
+        refreshField = new JTextField(2);
+        refreshField.setMinimumSize(new Dimension(30, 25));
+        refreshField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                refreshField.selectAll();
+            }
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (refreshField.getText().length() > 2) {
+                    refreshField.setMinimumSize(new Dimension(10 * refreshField.getText().length(), 25));
+                    refreshField.setColumns(refreshField.getText().length());
+                } else {
+                    refreshField.setMinimumSize(new Dimension(30, 25));
+                    refreshField.setColumns(2);
+                }
+            }
+        });
         refreshField.addActionListener(outputListener);
         toolbar.add(refreshField);
         toolbar.addSeparator(new Dimension(10, 10));
@@ -455,14 +481,17 @@ class DataViewUI extends JXPanel {
 
         matchBoxField.addKeyListener(new KeyListener() {
 
+            @Override
             public void keyTyped(KeyEvent e) {
                 processKeyEvents();
             }
 
+            @Override
             public void keyPressed(KeyEvent e) {
                 processKeyEvents();
             }
 
+            @Override
             public void keyReleased(KeyEvent e) {
                 processKeyEvents();
             }
@@ -533,9 +562,6 @@ class DataViewUI extends JXPanel {
 
         JXPanel panel = new JXPanel();
         panel.setBorder(BorderFactory.createEtchedBorder());
-        GridBagLayout gl = new GridBagLayout();
-        GridBagConstraints c = new GridBagConstraints();
-        panel.setLayout(gl);
 
         ActionListener outputListener = createOutputListener();
         initVerticalToolbar(outputListener);
@@ -553,13 +579,18 @@ class DataViewUI extends JXPanel {
         }
         initToolbar(toolbar, outputListener);
 
-        c.weightx = 1.0;
-        c.weighty = 1.0;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridwidth = GridBagConstraints.RELATIVE;
-        c.anchor = GridBagConstraints.FIRST_LINE_START;
-        panel.add(toolbar, c);
-        this.validate();
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(toolbar, GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(toolbar, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE))
+        );
         return panel;
     }
 
@@ -567,37 +598,4 @@ class DataViewUI extends JXPanel {
         deleteRow.setEnabled(value);
     }
 
-    private class FixedSizeTextField extends JTextField {
-
-        private int limit;
-
-        FixedSizeTextField(int limit) {
-            super();
-            this.limit = limit;
-            customize();
-        }
-
-        private void customize() {
-            this.setDocument(new PlainDocument() {
-
-                @Override
-                public void insertString(int offset, String str, AttributeSet a) throws BadLocationException {
-                    if (getLength() + str.length() > limit) {
-                        Toolkit.getDefaultToolkit().beep();
-                    } else {
-                        super.insertString(offset, str, a);
-
-                    }
-                }
-            });
-
-            this.addFocusListener(new FocusAdapter() {
-
-                @Override
-                public void focusGained(FocusEvent e) {
-                    FixedSizeTextField.this.selectAll();
-                }
-            });
-        }
-    }
 }
