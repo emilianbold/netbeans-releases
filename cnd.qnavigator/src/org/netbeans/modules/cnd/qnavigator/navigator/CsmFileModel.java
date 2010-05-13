@@ -40,6 +40,8 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
 /**
@@ -52,6 +54,7 @@ public class CsmFileModel {
     private List<CppDeclarationNode> list = Collections.synchronizedList(new ArrayList<CppDeclarationNode>());
     private CsmFileFilter filter;
     private Action[] actions;
+    private FileObject fileObject;
 
     public CsmFileModel(CsmFileFilter filter, Action[] actions){
         this.filter = filter;
@@ -75,11 +78,16 @@ public class CsmFileModel {
         return filter;
     }
 
+    public FileObject getFileObject(){
+        return fileObject;
+    }
+
     public void addOffset(Node node, CsmOffsetable element, List<IndexOffsetNode> lineNumberIndex) {
         lineNumberIndex.add(new IndexOffsetNode(node,element.getStartOffset(), element.getEndOffset()));
     }
     
     private boolean buildModel(CsmFile csmFile, boolean force) {
+        fileObject = CsmUtilities.getFileObject(csmFile);
         boolean res = true;
         List<CppDeclarationNode> newList = new ArrayList<CppDeclarationNode>();
         List<IndexOffsetNode> newLineNumberIndex = new ArrayList<IndexOffsetNode>();
