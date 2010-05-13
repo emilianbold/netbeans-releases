@@ -48,8 +48,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -67,7 +65,6 @@ import org.netbeans.modules.nativeexecution.api.ProcessInfo;
 import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
-import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.util.Exceptions;
@@ -150,7 +147,20 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
                 @Override
                 public Integer call() throws Exception {
-                    return waitResult();
+                    int result = -1;
+
+                    try {
+                        result = waitResult();
+                        setState(State.FINISHED);
+                    } catch (InterruptedException ex) {
+                        setState(State.CANCELLED);
+                        throw ex;
+                    } catch (Throwable th) {
+                        setState(State.ERROR);
+                        Exceptions.printStackTrace(th);
+                    }
+
+                    return result;
                 }
             }, "Waiting for " + id); // NOI18N
         } catch (Throwable ex) {
@@ -248,9 +258,11 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             if (cancelled) {
                 return;
             }
+
+            setState(State.CANCELLED);
+
             cancelled = true;
         }
-
 
         cancel();
 
@@ -262,8 +274,6 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             } catch (ExecutionException ex) {
             }
         }
-
-        setState(State.CANCELLED);
     }
 
     /**
@@ -291,17 +301,12 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
         try {
             exitStatus = result.get();
-            setState(State.FINISHED);
-        } catch (InterruptedException ex) {
-            setState(State.CANCELLED);
-            throw ex;
         } catch (ExecutionException ex) {
             if (ex.getCause() instanceof InterruptedException) {
-                setState(State.CANCELLED);
                 throw (InterruptedException) ex.getCause();
+            } else {
+                Exceptions.printStackTrace(ex);
             }
-            setState(State.ERROR);
-            Exceptions.printStackTrace(ex);
         }
 
         return exitStatus;
