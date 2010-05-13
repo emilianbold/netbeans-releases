@@ -149,7 +149,9 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
             if (firstLineComment != lastLineComment) {
                 assert (firstLineComment != null);
                 assert (lastLineComment != null);
-                lineCommentFolds.add(createFoldRecord(COMMENTS_FOLD, firstLineComment, lastLineComment));
+                if (firstLineComment.getLine() != lastLineComment.getEndLine()) {
+                    lineCommentFolds.add(createFoldRecord(COMMENTS_FOLD, firstLineComment, lastLineComment));
+                }
             }
             firstLineComment = null;
             lastLineComment = null;        
@@ -159,13 +161,15 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     
     private void createBlockCommentsFold(APTToken token) {
         createLineCommentsFoldIfNeeded();
-        if (state == BEFORE_FIRST_TOKEN_STATE) {
-            // this is the copyright 
-            assert (initialCommentFold == null) : "how there could be two copyrights?";
-            initialCommentFold = createFoldRecord(INITIAL_COMMENT_FOLD, token, token);
-        } else {
-            blockCommentFolds.add(createFoldRecord(BLOCK_COMMENT_FOLD, token, token));
-        }        
+        if (token.getLine() != token.getEndLine()) {
+            if (state == BEFORE_FIRST_TOKEN_STATE) {
+                // this is the copyright
+                assert (initialCommentFold == null) : "how there could be two copyrights?";
+                initialCommentFold = createFoldRecord(INITIAL_COMMENT_FOLD, token, token);
+            } else {
+                blockCommentFolds.add(createFoldRecord(BLOCK_COMMENT_FOLD, token, token));
+            }
+        }
         state = INIT_STATE;
     }
     
@@ -174,7 +178,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     
     private CppFoldRecord createFoldRecord(int folderKind, APTToken begin, APTToken end) {
         if (APTFoldingUtils.isStandalone()) {
-            return new CppFoldRecord(folderKind, begin.getLine(), begin.getColumn(), end.getEndLine(), end.getEndColumn());
+            return new CppFoldRecord(folderKind, begin.getLine(), begin.getOffset(), end.getEndLine(), end.getEndOffset());
         } else {
             return new CppFoldRecord(folderKind, begin.getOffset(), end.getEndOffset());            
         }        

@@ -106,16 +106,16 @@ public final class Configurations {
 //            pcs.firePropertyChange(PROP_DEFAULT, null, null);
 //        }
         for (NamedRunnable task : toRun) {
-            runOnCodeModelReadiness(task, false);
+            runOnProjectReadiness(task, false);
         }
         return this;
     }
 
-    public void runOnCodeModelReadiness(NamedRunnable task) {
-        runOnCodeModelReadiness(task, true);
+    public void runOnProjectReadiness(NamedRunnable task) {
+        runOnProjectReadiness(task, true);
     }
 
-    private void runOnCodeModelReadiness(NamedRunnable task, boolean postpone) {
+    private void runOnProjectReadiness(NamedRunnable task, boolean postpone) {
         MakeConfiguration active = null;
         configurationsLock.writeLock().lock();
         try {
@@ -130,7 +130,7 @@ public final class Configurations {
         }
         if (active != null) {
             DevelopmentHostConfiguration host = active.getDevelopmentHost();
-            CompilerSetManagerEvents.get(host.getExecutionEnvironment()).runOnCodeModelReadiness(task);
+            CompilerSetManagerEvents.get(host.getExecutionEnvironment()).runProjectReadiness(task);
         }
     }
 

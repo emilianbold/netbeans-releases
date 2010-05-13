@@ -201,7 +201,8 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     }
     
     public void testDecodePassword() throws Exception {
-        assertNull(DatabaseConnectionConvertor.decodePassword(new byte[0]));
+        assertNotNull(DatabaseConnectionConvertor.decodePassword(new byte[0]));
+        assertTrue(DatabaseConnectionConvertor.decodePassword(new byte[0]).isEmpty());
         assertEquals("password", DatabaseConnectionConvertor.decodePassword("password".getBytes("UTF-8")));
         try {
             DatabaseConnectionConvertor.decodePassword(new byte[] { (byte)0xff, (byte)0xff, (byte)0xff });

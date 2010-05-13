@@ -76,6 +76,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class FormUtils
 {
     public static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.form"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("GUI Builder", 10, false); // NOI18N
 
     // constants for CopyProperties method
     public static final int CHANGED_ONLY = 1;
@@ -1791,4 +1792,9 @@ public class FormUtils
             return Introspector.getBeanInfo(clazz, Introspector.IGNORE_ALL_BEANINFO);
         }
     }
+
+    public static RequestProcessor getRequestProcessor() {
+        return RP;
+    }
+
 }

@@ -1809,7 +1809,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             // out form's superclass, then continue form loading in EDT again.
             if (preLoadTask == null) {
                 preLoadTask = new PreLoadTask(formEditor.getFormDataObject());
-                RequestProcessor.getDefault().post(preLoadTask);
+                FormUtils.getRequestProcessor().post(preLoadTask);
 
                 EventQueue.invokeLater(new Runnable() {
                     @Override
