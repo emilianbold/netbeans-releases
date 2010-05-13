@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -75,7 +76,7 @@ public final class PasswordManager {
      * @return password from memory or from Keyring if user selected "remember password" in previous IDE invocation
      */
     public char[] getPassword(ExecutionEnvironment execEnv) {
-        String key = execEnv.toString();
+        String key = ExecutionEnvironmentFactory.toUniqueID(execEnv);
         if (keepPasswordsInMemory) {
             String cachedPassword = cache.get(key);
             if (cachedPassword != null) {
@@ -117,7 +118,7 @@ public final class PasswordManager {
      * @param password
      */
     private void put(ExecutionEnvironment execEnv, char[] password) {
-        String key = execEnv.toString();
+        String key = ExecutionEnvironmentFactory.toUniqueID(execEnv);
         if (keepPasswordsInMemory) {
             if (password != null) {
                 cache.put(key, String.valueOf(password));
@@ -142,7 +143,7 @@ public final class PasswordManager {
      * @param execEnv
      */
     public void clearPassword(ExecutionEnvironment execEnv) {
-        String key = execEnv.toString();
+        String key = ExecutionEnvironmentFactory.toUniqueID(execEnv);
         if (keepPasswordsInMemory) {
             cache.remove(key);
         }
@@ -159,7 +160,7 @@ public final class PasswordManager {
      * @param execEnv
      */
     public void forceClearPassword(ExecutionEnvironment execEnv) {
-        String key = execEnv.toString();
+        String key = ExecutionEnvironmentFactory.toUniqueID(execEnv);
         if (keepPasswordsInMemory) {
             cache.remove(key);
         }
@@ -176,7 +177,7 @@ public final class PasswordManager {
     public void setServerList(List<ExecutionEnvironment> envs) {
         Set<String> keys = new HashSet<String>();
         for (ExecutionEnvironment env : envs) {
-            String key = env.toString();
+            String key = ExecutionEnvironmentFactory.toUniqueID(env);
             keys.add(KEY_PREFIX + key);
             keys.add(STORE_PREFIX + key);
         }
@@ -207,7 +208,7 @@ public final class PasswordManager {
      * @return true if user checked "remember password" option.
      */
     public boolean isRememberPassword(ExecutionEnvironment execEnv) {
-        String key = execEnv.toString();
+        String key = ExecutionEnvironmentFactory.toUniqueID(execEnv);
         boolean stored = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
         return stored;
     }
@@ -218,7 +219,7 @@ public final class PasswordManager {
      * @param rememberPassword
      */
     public void setRememberPassword(ExecutionEnvironment execEnv, boolean rememberPassword) {
-        String key = execEnv.toString();
+        String key = ExecutionEnvironmentFactory.toUniqueID(execEnv);
         if (!rememberPassword) {
             if (keyringIsActivated) {
                 Keyring.delete(KEY_PREFIX + key);
