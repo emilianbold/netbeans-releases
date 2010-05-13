@@ -122,6 +122,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
     private static HintsUI INSTANCE;
     private static final Set<String> fixableAnnotations;
     private static final String POPUP_NAME = "hintsPopup"; // NOI18N
+    private static final String SUB_POPUP_NAME = "subHintsPopup"; // NOI18N
     private static final int POPUP_VERTICAL_OFFSET = 5;
 
     static {
@@ -263,6 +264,10 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         JTextComponent comp = getComponent();
 
         if (comp == null) return;
+
+        if (subhintListComponent != null) {
+            closeSubList();
+        }
         
         List<Fix> ff = new LinkedList<Fix>();
 
@@ -281,7 +286,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
 
         subhintListComponent.getView().addMouseListener (this);
         subhintListComponent.getView().addMouseMotionListener(this);
-        subhintListComponent.setName("sub" + POPUP_NAME);
+        subhintListComponent.setName(SUB_POPUP_NAME);
 
         assert sublistPopup == null;
         sublistPopup = getPopupFactory().getPopup(
@@ -482,9 +487,18 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
 //    }
 
     public void mouseClicked(java.awt.event.MouseEvent e) {
-        if (e.getSource() == hintListComponent || e.getSource() instanceof ListCompletionView) {
+        System.err.println("e.getSource()==" + e.getSource());
+        if (   e.getSource() == hintListComponent.getView()
+            && hintListComponent.getView().getSize().width - ListCompletionView.arrowSpan() <= e.getPoint().x) {
+            if (hintListComponent.getView().right()) {
+                e.consume();
+                return;
+            }
+        }
+
+        if (e.getSource() instanceof ListCompletionView) {
             Fix f = null;
-            Object selected = hintListComponent.getView().getSelectedValue();
+            Object selected = ((ListCompletionView) e.getSource()).getSelectedValue();
             
             if (selected instanceof Fix) {
                 f = (Fix) selected;
@@ -521,8 +535,17 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
     }
 
     public void mouseMoved(MouseEvent e) {
-        ListCompletionView view = hintListComponent.getView();
-        view.setSelectedIndex(view.locationToIndex(e.getPoint()));
+        Thread.dumpStack();
+        if (e.getSource() instanceof ListCompletionView) {
+            ListCompletionView view = (ListCompletionView) e.getSource();
+            int wasSelected = view.getSelectedIndex();
+
+            view.setSelectedIndex(view.locationToIndex(e.getPoint()));
+
+            if (wasSelected != view.getSelectedIndex() && view == hintListComponent.getView()) {
+                closeSubList();
+            }
+        }
     }
 
     public boolean isActive() {
@@ -825,10 +848,11 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
                 }
                 
                 Component comp = (Component)aWTEvent.getSource();
-                Container par = SwingUtilities.getAncestorNamed(POPUP_NAME, comp); //NOI18N
+                Container par1 = SwingUtilities.getAncestorNamed(POPUP_NAME, comp); //NOI18N
+                Container par2 = SwingUtilities.getAncestorNamed(SUB_POPUP_NAME, comp); //NOI18N
                 // Container barpar = SwingUtilities.getAncestorOfClass(PopupUtil.class, comp);
                 // if (par == null && barpar == null) {
-                if ( par == null ) {
+                if ( par1 == null && par2 == null ) {
                     removePopup();
                 }
             }

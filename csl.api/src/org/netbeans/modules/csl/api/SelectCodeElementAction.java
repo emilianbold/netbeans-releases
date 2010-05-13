@@ -155,8 +155,10 @@ public final class SelectCodeElementAction extends BaseAction {
                     ErrorManager.getDefault().notify(ex);
                 }
             }
-            
-            run();
+
+            if (selectionInfos != null) {
+                run();
+            }
         }
 
         public synchronized void selectPrevious() {
