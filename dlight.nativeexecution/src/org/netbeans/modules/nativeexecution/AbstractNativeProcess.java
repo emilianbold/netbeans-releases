@@ -53,6 +53,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -91,6 +92,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private boolean cancelled = false;
     private Future<ProcessInfoProvider> infoProviderSearchTask;
     private Future<Integer> result = null;
+    private AtomicInteger internalResult = null;
     private InputStream inputStream;
     private InputStream errorStream;
     private OutputStream outputStream;
@@ -151,11 +153,14 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
                     try {
                         result = waitResult();
+                        internalResult = new AtomicInteger(result);
                         setState(State.FINISHED);
                     } catch (InterruptedException ex) {
+                        internalResult = new AtomicInteger(result);
                         setState(State.CANCELLED);
                         throw ex;
                     } catch (Throwable th) {
+                        internalResult = new AtomicInteger(result);
                         setState(State.ERROR);
                         Exceptions.printStackTrace(th);
                     }
@@ -326,6 +331,9 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     public final int exitValue() {
         synchronized (stateLock) {
             if (result == null || !result.isDone()) {
+                if (internalResult != null){
+                    return internalResult.get();
+                }
                 // Process not started yet...
                 throw new IllegalThreadStateException();
             }
