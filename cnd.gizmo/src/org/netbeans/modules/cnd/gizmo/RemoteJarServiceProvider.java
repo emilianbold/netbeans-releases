@@ -59,11 +59,12 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.SetupProvider.class)
 public class RemoteJarServiceProvider implements SetupProvider {
     private static final Class<?> service = Offset2LineService.class;
+    private static final String prefix = "/modules/"; // NOI18N
     private static final String relativePath;
     static {
         String path = service.getProtectionDomain().getCodeSource().getLocation().getPath();
         path = path.replace('\\', '/'); // NOI18N
-        path = path.substring(path.lastIndexOf("cnd/")+4); // NOI18N
+        path = path.substring(path.lastIndexOf(prefix)+1); // NOI18N
         if (path.indexOf('!') > 0) {
             path = path.substring(0, path.indexOf('!')); // NOI18N
         }
