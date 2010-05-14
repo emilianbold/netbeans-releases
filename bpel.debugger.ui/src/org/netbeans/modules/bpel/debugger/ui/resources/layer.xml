@@ -27,29 +27,30 @@
                         <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                         <attr name="delegate" newvalue="org.netbeans.modules.bpel.debugger.ui.action.Process"/>
                         <attr name="iconBase" stringvalue="org/netbeans/modules/bpel/debugger/ui/resources/image/process.gif"/>
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.bpel.debugger.ui.action.Bundle#LBL_ProcessView"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.debugger.ui.action.Bundle"/>
                     </file>
                     <file name="org-netbeans-modules-bpel-debugger-ui-action-Console.instance">
                         <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                         <attr name="delegate" newvalue="org.netbeans.modules.bpel.debugger.ui.action.Console"/>
                         <attr name="iconBase" stringvalue="org/netbeans/modules/bpel/debugger/ui/resources/image/console.gif"/>
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.bpel.debugger.ui.action.Bundle#LBL_ConsoleView"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.debugger.ui.action.Bundle"/>
                     </file>
                     <file name="org-netbeans-modules-bpel-debugger-ui-action-ProcessExecution.instance">
                         <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                         <attr name="delegate" newvalue="org.netbeans.modules.bpel.debugger.ui.action.ProcessExecution"/>
                         <attr name="iconBase" stringvalue="org/netbeans/modules/bpel/debugger/ui/resources/image/process_execution.png"/>
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.bpel.debugger.ui.action.Bundle#LBL_ProcessExecutionView"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.debugger.ui.action.Bundle"/>
                     </file>
                     <file name="org-netbeans-modules-bpel-debugger-ui-action-PLinks.instance">
                         <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                         <attr name="delegate" newvalue="org.netbeans.modules.bpel.debugger.ui.action.PLinks"/>
                         <attr name="iconBase" stringvalue="org/netbeans/modules/bpel/debugger/ui/resources/image/plinks/PARTNER_LINK.gif"/>
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.bpel.debugger.ui.action.Bundle#LBL_PLinksView"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.debugger.ui.action.Bundle"/>
                     </file>
                 </folder>
             </folder>
         </folder>
+
         <folder name="Debug">
             <file name="org-netbeans-modules-bpel-debugger-ui-action-BreakpointEnableAction.instance"/>
         </folder>

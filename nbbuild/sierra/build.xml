@@ -180,7 +180,6 @@
     </target>
 
     <target name="build">
-        <antcall target="build-00"/>
         <antcall target="build-01"/>
         <antcall target="build-02"/>
         <antcall target="build-03"/>
@@ -189,25 +188,20 @@
     </target>
 
     <target name="nbm">
-        <antcall target="nbm-01"/>
         <antcall target="nbm-02"/>
         <antcall target="nbm-03"/>
     </target>
 
-    <target name="clean-00" depends="clean-platform, clean-ide"/>
-    <target name="build-00" depends="build-platform, build-ide"/>
+    <target name="clean-01" depends="clean-platform, clean-ide"/>
+    <target name="build-01" depends="build-platform, build-ide"/>
 
-    <target name="clean-01" depends="clean-xml, clean-libs, clean-soa, clean-compapp, clean-bpel, clean-xslt"/>
-    <target name="build-01" depends="build-xml, build-libs, build-soa, build-compapp, build-bpel, build-xslt"/>
-    <target name=  "nbm-01" depends="  nbm-xml,   nbm-libs,   nbm-soa,   nbm-compapp,   nbm-bpel,   nbm-xslt"/>
+    <target name="clean-02" depends="clean-xml, clean-libs, clean-soa, clean-compapp, clean-bpel, clean-xslt, clean-wlm"/>
+    <target name="build-02" depends="build-xml, build-libs, build-soa, build-compapp, build-bpel, build-xslt, build-wlm"/>
+    <target name=  "nbm-02" depends="  nbm-xml,   nbm-libs,   nbm-soa,   nbm-compapp,   nbm-bpel,   nbm-xslt,   nbm-wlm"/>
 
-    <target name="clean-02" depends="clean-wlm, clean-iep, clean-sql, clean-dm, clean-edm, clean-etl"/>
-    <target name="build-02" depends="build-wlm, build-iep, build-sql, build-dm, build-edm, build-etl"/>
-    <target name=  "nbm-02" depends="  nbm-wlm,   nbm-iep,   nbm-sql,   nbm-dm,   nbm-edm,   nbm-etl"/>
-
-    <target name="clean-03" depends="clean-c.s.encoder, clean-encoder, clean-wsdlextensions"/>
-    <target name="build-03" depends="build-c.s.encoder, build-encoder, build-wsdlextensions"/>
-    <target name=  "nbm-03" depends="  nbm-c.s.encoder,   nbm-encoder,   nbm-wsdlextensions"/>
+    <target name="clean-03" depends="clean-iep, clean-sql, clean-dm, clean-edm, clean-etl, clean-wsdlextensions"/>
+    <target name="build-03" depends="build-iep, build-sql, build-dm, build-edm, build-etl, build-wsdlextensions"/>
+    <target name=  "nbm-03" depends="  nbm-iep,   nbm-sql,   nbm-dm,   nbm-edm,   nbm-etl,   nbm-wsdlextensions"/>
 
     <!-- platform -->
     <target name="build-platform"><antcall target="do-platform"><param name="action" value="netbeans"/></antcall></target>
@@ -413,29 +407,6 @@
     <target name=   "do-etl">
         <antcall target="do-module"><param name="module" value="etl.editor"/></antcall>
         <antcall target="do-module"><param name="module" value="etl.project"/></antcall>
-    </target>
-
-    <!-- c.s.encoder -->
-    <target name="build-c.s.encoder"><antcall target="do-c.s.encoder"><param name="action" value="netbeans"/></antcall></target>
-    <target name="clean-c.s.encoder"><antcall target="do-c.s.encoder"><param name="action" value="clean"/></antcall></target>
-    <target name=  "nbm-c.s.encoder"><antcall target="do-c.s.encoder"><param name="action" value="nbm"/></antcall></target>
-    <target name=   "do-c.s.encoder">
-        <antcall target="do-module"><param name="module" value="c.s.encoder"/></antcall>
-        <antcall target="do-module"><param name="module" value="c.s.encoder.coco"/></antcall>
-        <antcall target="do-module"><param name="module" value="c.s.encoder.custom"/></antcall>
-        <antcall target="do-module"><param name="module" value="c.s.encoder.hl7"/></antcall>
-    </target>
-
-    <!-- encoder -->
-    <target name="build-encoder"><antcall target="do-encoder"><param name="action" value="netbeans"/></antcall></target>
-    <target name="clean-encoder"><antcall target="do-encoder"><param name="action" value="clean"/></antcall></target>
-    <target name=  "nbm-encoder"><antcall target="do-encoder"><param name="action" value="nbm"/></antcall></target>
-    <target name=   "do-encoder">
-        <antcall target="do-module"><param name="module" value="encoder.ui.basic"/></antcall>
-        <antcall target="do-module"><param name="module" value="encoder.coco.ui"/></antcall>
-        <antcall target="do-module"><param name="module" value="encoder.custom.aip"/></antcall>
-        <antcall target="do-module"><param name="module" value="encoder.hl7.aip"/></antcall>
-        <antcall target="do-module"><param name="module" value="encoder.ui.tester"/></antcall>
     </target>
 
     <!-- wsdlextensions -->

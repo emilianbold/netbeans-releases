@@ -166,13 +166,13 @@ public class EDMDataOutputPanel extends JPanel implements EDMOutputPanel {
             String sql = sqlPart.getSQL();
             sql = parseSQLForRuntimeInput(sqlDef, sql);
             dv = DataView.create(dbconn, sql.trim(), pageSize, true);
-            List<Component> compList = dv.createComponents(true);
+            List<Component> compList = dv.createComponents();
             dv.setEditable(false);
             if(compList.isEmpty()){
                 throw new Exception("Unable to create ResultSet...");
             }
             
-            Component comp = dv.createComponents(true).get(0);
+            Component comp = dv.createComponents().get(0);
             btns = dv.getEditButtons();
             if (!topComp.isOpened()) {
                 topComp.open();
