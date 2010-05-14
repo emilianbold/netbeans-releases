@@ -1295,7 +1295,7 @@ public class AstRenderer {
 
         boolean typeof = false;
         if (tokType.getType() == CPPTokenTypes.LITERAL_typeof ||
-                tokType.getType() == CPPTokenTypes.LITERAL___typeof__ ||
+                tokType.getType() == CPPTokenTypes.LITERAL___typeof ||
                 tokType.getType() == CPPTokenTypes.LITERAL___typeof__
                 ) {
             typeof = true;
