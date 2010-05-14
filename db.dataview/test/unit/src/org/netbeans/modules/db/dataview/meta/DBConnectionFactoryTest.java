@@ -34,15 +34,13 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.dataview.meta;
 
 import java.sql.Connection;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.db.dataview.spi.DBConnectionProviderImpl;
 import org.netbeans.modules.db.dataview.util.DbUtil;
 import org.openide.util.Exceptions;
 
@@ -64,7 +62,6 @@ public class DBConnectionFactoryTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockServices.setServices(new DBConnectionProviderImpl().getClass());
     }
 
     @Override
