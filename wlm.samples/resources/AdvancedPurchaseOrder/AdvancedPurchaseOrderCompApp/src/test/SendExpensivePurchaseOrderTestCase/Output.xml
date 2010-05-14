@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Body>
+    <ns1:orderReply xmlns:msgns="ApprovePurchase_BPEL" xmlns:ns1="http://wlmse.sample/po">
+      <po:orderId xmlns:po="http://wlmse.sample/po">12344</po:orderId>
+      <po:approveResult xmlns:po="http://wlmse.sample/po">Approved</po:approveResult>
+      <po:replyDate xmlns:po="http://wlmse.sample/po">2009-02-13T15:12:33.11-05:00</po:replyDate>
+      <po:description xmlns:po="http://wlmse.sample/po">rwerwqerqw</po:description>
+    </ns1:orderReply>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
