@@ -362,9 +362,9 @@ public class FindSupport {
                 }
             } else {
                 bar.setVisible(true);
-                bar.requestFocusInWindow();
                 updatePattern();
             }
+            bar.requestFocusInWindow();
         }
 
     }
