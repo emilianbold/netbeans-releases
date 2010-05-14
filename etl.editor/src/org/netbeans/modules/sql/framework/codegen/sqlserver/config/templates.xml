@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<!-- 
+  * Contents of this template will override any existing attributes in base/config/templates.xml
+  -->
+<templates>
+    <attr attributeName="tableExists" attributeType="java.lang.String" attributeValue="sqlserver/config/tableExists.vm" /> 
+    <attr attributeName="select" attributeType="java.lang.String" attributeValue="sqlserver/config/select.vm" />    
+    <attr attributeName="update" attributeType="java.lang.String" attributeValue="sqlserver/config/update.vm" /> 
+    <attr attributeName="merge" attributeType="java.lang.String" attributeValue="sqlserver/config/merge.vm" />
+    <attr attributeName="insert" attributeType="java.lang.String" attributeValue="sqlserver/config/insert.vm" />    
+    <attr attributeName="insertStmt" attributeType="java.lang.String" attributeValue="sqlserver/config/insertStmt.vm" />    
+    <attr attributeName="insertSelect" attributeType="java.lang.String" attributeValue="sqlserver/config/insertSelect.vm" />    
+    <attr attributeName="disableConstraints" attributeType="java.lang.String" attributeValue="sqlserver/config/disableConstraints.vm" />
+    <attr attributeName="enableConstraints" attributeType="java.lang.String" attributeValue="sqlserver/config/enableConstraints.vm" />
+</templates>

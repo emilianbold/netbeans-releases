@@ -221,6 +221,9 @@ public class MEKeyTool {
             }
         }
         File deviceWorkingDir = new File(System.getProperty("user.home") + File.separatorChar + systemProps.getProperty("toolkits.dir") + File.separatorChar + systemProps.getProperty("release.dir") + File.separatorChar + systemProps.getProperty("work.dir")); //NOI18N
+        if (!deviceWorkingDir.exists()) { //fallback for MAC
+            deviceWorkingDir = new File(System.getProperty("user.home") + File.separatorChar + "Library" + File.separatorChar + "Application Support" + File.separatorChar + systemProps.getProperty("toolkits.dir") + File.separatorChar + systemProps.getProperty("release.dir") + File.separatorChar + systemProps.getProperty("work.dir")); //NOI18N
+        }
         if (!deviceWorkingDir.exists()) {
             FileObject manager = platform.findTool("emulator"); //NOI18N
             if (manager == null) return null;
@@ -236,7 +239,7 @@ public class MEKeyTool {
         for (FileObject device : deviceFolderFO.getChildren()) {
             FileObject xmlProps = device.getFileObject("properties", "xml"); //NOI18N
             if (xmlProps == null) {
-                return null;
+                continue; //there may be some false folder
             }
 
             final boolean[] inName = {false};

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<casa xmlns="http://java.sun.com/xml/ns/casa" xmlns:ns1="http://jbi.com.sun/wfse/wsdl/TaskCommon" xmlns:xlink="http://www.w3.org/2000/xlink">
+    <endpoints>
+        <endpoint endpoint-name="TaskCommonPort" interface-name="ns1:TaskCommonPortType" name="endpoint1" service-name="ns1:TaskCommonService"/>
+    </endpoints>
+    <service-units>
+        <binding-component-service-unit artifacts-zip="sun-http-binding.jar" component-name="sun-http-binding" description="Represents this Service Unit" name="WLMConsoleCompApp-sun-http-binding" unit-name="sun-http-binding">
+            <ports>
+                <port x="47" y="39">
+                    <link xlink:href="../jbiServiceUnits/WLMConsoleWeb/WEB-INF/wsdl/TaskCommon.wsdl#xpointer(/definitions/service[@name='TaskCommonService']/port[@name='TaskCommonPort'])" xlink:type="simple"/>
+                    <consumes endpoint="endpoint1">
+                        <codegen xmlns="http://www.sun.com/jbi/descriptor/config-endpoint" disableInBC="true"/>
+                    </consumes>
+                    <provides endpoint="endpoint1">
+                        <codegen xmlns="http://www.sun.com/jbi/descriptor/config-endpoint" disableInBC="true"/>
+                        <application-config xmlns="http://www.sun.com/jbi/descriptor/configuration" name=""/>
+                    </provides>
+                </port>
+            </ports>
+        </binding-component-service-unit>        
+        <service-engine-service-unit artifacts-zip="Unknown1.jar" component-name="" defined="true" description="Represents this Service Unit" internal="false" name="Unknown1" unit-name="WLMSE-TaskCommon" unknown="true" x="50" y="99">
+            <provides endpoint="endpoint1"/>
+        </service-engine-service-unit>
+    </service-units>
+    <connections/>
+    <porttypes/>
+    <bindings/>
+    <services/>
+    <regions>
+        <region name="WSDL Endpoints" width="130"/>
+        <region name="JBI Modules" width="500"/>
+        <region name="External Modules" width="200"/>
+    </regions>
+</casa>

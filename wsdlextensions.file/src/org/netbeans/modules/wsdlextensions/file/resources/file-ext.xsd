@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+           xmlns:file="http://schemas.sun.com/jbi/wsdl-extensions/file/" 
+           targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/file/">
+	<xs:import namespace="http://schemas.xmlsoap.org/wsdl/" schemaLocation="wsdl.xsd"/>
+	<xs:element name="binding" type="file:tBinding">
+		<xs:annotation>
+			<xs:documentation>DESC_Element_binding</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tBinding">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement"/>
+			<!-- could add more attributes to the binding -->
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="operation" type="file:tOperation"/>
+	<xs:complexType name="tOperation">
+		<xs:annotation>
+			<xs:documentation>DESC_ComplexType_tOperation</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+                            <xs:attribute name="verb" type="file:verb" use="optional"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+        <xs:simpleType name="verb">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="poll"/>
+			<xs:enumeration value="read"/>
+                        <xs:enumeration value="write"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="message" type="file:tFileMessage">
+		<xs:annotation>
+			<xs:documentation>DESC_Element_message</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tFileMessage">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:attribute name="use" type="file:useTypes" use="optional" default="literal">
+				    <xs:annotation>
+						    <xs:documentation>DESC_Attribute_use</xs:documentation>
+					    </xs:annotation>
+			  </xs:attribute>
+				<xs:attribute name="encodingStyle" type="xs:anyURI" use="optional">
+				       <xs:annotation>
+						    <xs:documentation>DESC_Attribute_encodingStyle_file_ext</xs:documentation>
+					    </xs:annotation>
+			  </xs:attribute>
+			  <xs:attribute name="charset" type="xs:anyURI" use="optional">
+				      <xs:annotation>
+						        <xs:documentation>DESC_Attribute_charset</xs:documentation>
+					    </xs:annotation>
+			  </xs:attribute>
+				<xs:attribute name="fileType" type="file:fileType" use="optional">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_fileType</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+                                <xs:attribute name="forwardAsAttachment" type="xs:boolean" use="optional" default="false">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_ForwardAsAttachment</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+                                <xs:attribute name="deleteFileOnRead" type="xs:boolean" use="optional" default="false">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_DeleteFileOnRead</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="fileName" type="xs:string" use="required">
+  				    <xs:annotation>
+  			                <xs:documentation>DESC_Attribute_fileName</xs:documentation>
+  				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="fileNameIsPattern" type="xs:boolean" use="optional" default="false">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_fileNameIsPattern</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="fileNameIsRegex" type="xs:boolean" use="optional" default="false">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_fileNameIsRegex</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="pollingInterval" type="file:numericApplicationVariableType" use="optional">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_pollingInterval</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="part" type="xs:string" use="optional">
+				    <xs:annotation>
+				        <xs:documentation>DESC_Attribute_part</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="removeEOL" type="xs:boolean" use="optional" default="false">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_removeEOL</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="addEOL" type="xs:boolean" use="optional" default="false">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_addEOL</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="multipleRecordsPerFile" type="xs:boolean" use="optional" default="false">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_multipleRecordsPerFile</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="maxBytesPerRecord" type="file:numericApplicationVariableType" use="optional">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_maxBytesPerRecord</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="recordDelimiter" type="xs:string" use="optional">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_recordDelimiter</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+                                <xs:attribute name="archive" type="xs:boolean" use="optional">
+                                    <xs:annotation>
+                                        <xs:documentation>DESC_Attribute_archive</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+				<xs:attribute name="archiveDirectory" type="xs:string" use="optional">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_archiveDirectory</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+                                <xs:attribute name="archiveDirIsRelative" type="xs:boolean" use="optional">
+                                    <xs:annotation>
+                                        <xs:documentation>DESC_Attribute_archiveDirIsRelative</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="protect" type="xs:boolean" use="optional">
+                                    <xs:annotation>
+                                        <xs:documentation>DESC_Attribute_protect</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+				<xs:attribute name="protectDirectory" type="xs:string" use="optional">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_protectDirectory</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+                                <xs:attribute name="protectDirIsRelative" type="xs:boolean" use="optional">
+                                    <xs:annotation>
+                                        <xs:documentation>DESC_Attribute_protectDirIsRelative</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="stage" type="xs:boolean" use="optional">
+                                    <xs:annotation>
+                                        <xs:documentation>DESC_Attribute_stage</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+				<xs:attribute name="stageDirectory" type="xs:string" use="optional">
+				    <xs:annotation>
+					<xs:documentation>DESC_Attribute_stageDirectory</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+                                <xs:attribute name="stageDirIsRelative" type="xs:boolean" use="optional">
+                                    <xs:annotation>
+                                        <xs:documentation>DESC_Attribute_stageDirIsRelative</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="fileType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="text">
+				<xs:annotation>
+					<xs:documentation>Signifies a character based file type</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="binary">
+				<xs:annotation>
+					<xs:documentation>Signifies a binary data based file type</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="useTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="literal"/>
+			<xs:enumeration value="encoded"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="address" type="file:tAddress">
+		<xs:annotation>
+			<xs:documentation>DESC_Element_address</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tAddress">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:attribute name="fileDirectory" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_fileDirectory</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="relativePath" type="xs:boolean" use="optional" default="false">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_relativePath</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="pathRelativeTo" type="file:systemProperties" use="optional">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_pathRelativeTo</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="recursive" type="xs:boolean" use="optional" default="false">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_pollInputDirRecursively</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="recursiveExclude" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_pollRecursivelyExclude</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="persistenceBaseLoc" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_PersistenceBaseLoc</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="lockName" type="xs:string" use="optional" default="filebc.lck">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_lockName</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="workArea" type="xs:string" use="optional" default="filebc-in-processing">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_workArea</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="seqName" type="xs:string" use="optional" default="filebc.seq">
+					<xs:annotation>
+						<xs:documentation>DESC_Attribute_seqName</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="systemProperties">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="User Home"/>
+			<xs:enumeration value="Current Working Dir"/>
+			<xs:enumeration value="Default System Temp Dir"/>
+		</xs:restriction>
+	</xs:simpleType>
+       <xs:simpleType name="numericApplicationVariableType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="([0-9]{1,5})|($\{([a-zA-Z0-9]+[\.-_]?)+\})"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

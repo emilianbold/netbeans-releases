@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<task name="ApprovePurchaseTask"
+        targetNamespace="http://jbi.com.sun/wfse/samples/purchase-order/wf"
+        portType="powsdl:ApprovePurchasePT"
+        operation="ApprovePurchase"
+        xmlns="http://jbi.com.sun/wfse"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:cur="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/XPathFunctions"
+        xmlns:powsdl="http://jbi.com.sun/wfse/samples/purchase-order/wsdl"
+        xmlns:po="http://jbi.com.sun/wfse/samples/purchase-order/xsd">
+    <import location="ManualApprovePurchase.wsdl" 
+            namespace="http://jbi.com.sun/wfse/samples/purchase-order/wsdl"/>
+
+    <title>concat($TaskInput.order/po:purchaserName, concat(' Purchase Order for ', $TaskInput.order/po:productId))</title>
+    <priority>$TaskInput.order/po:priority</priority>
+    <assignment>
+        <group>$TaskInput.order/po:users</group>
+    </assignment>
+    <action type="Completed" name="Complete">
+        <changeVariables>
+            <copy>
+                <from>cur:current-dateTime()</from>
+                <to>$TaskOutput.reply/po:replyDate</to>
+            </copy>
+            <copy>
+                <from>$TaskInput.order/po:orderId</from>
+                <to>$TaskOutput.reply/po:orderId</to>
+            </copy>
+        </changeVariables>
+    </action>
+    <keywords>
+        <keyword>$TaskInput.order/po:orderId</keyword>
+        <keyword>$TaskInput.order/po:purchaserName</keyword>
+        <keyword>$TaskInput.order/po:productId</keyword>
+    </keywords>
+</task>
+

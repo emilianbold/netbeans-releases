@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+  * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
+    may be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<definitions targetNamespace="http://manufacturing.org/wsdl/inventory/bp2"
+             name="InventoryService"
+             xmlns:vprop="http://docs.oasis-open.org/wsbpel/2.0/varprop"
+             xmlns:tns="http://manufacturing.org/wsdl/inventory/bp2"
+             xmlns:inv="http://manufacturing.org/xsd/inventory"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:po="http://manufacturing.org/xsd/purchase"
+             xmlns:wsdl="http://schemas.xmlsoap.org/wsdl"
+             xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/varprop">
+
+    <types>
+        <xsd:schema targetNamespace="http://manufacturing.org/wsdl/inventory/bp2">
+            <xsd:import schemaLocation="inventory.xsd" namespace="http://manufacturing.org/xsd/inventory"/>
+            <xsd:import schemaLocation="purchaseOrder.xsd" namespace="http://manufacturing.org/xsd/purchase"/>
+        </xsd:schema>
+    </types>
+
+    <message name="InventoryMessage">
+        <part name="inventoryPart" element="inv:inventory"></part>
+    </message>
+    
+    <message name="POMessage">
+        <part name="purchaseOrder" element="po:purchaseOrder"></part>
+    </message>
+    
+    <portType name="inventoryPortType">
+        <operation name="inventoryService">
+            <input name="purchaseOrder" message="tns:POMessage"></input>
+        </operation>
+    </portType>
+    
+    <portType name="inventoryServiceCallbackPortType">
+        <operation name="inventoryServiceResponse">
+            <input name="inventoryResponse" message="tns:InventoryMessage"></input>
+        </operation>
+    </portType>
+    
+    <binding name="inventoryBinding" type="tns:inventoryPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="inventoryService">
+            <input name="purchaseOrder">
+                <soap:body parts="purchaseOrder" use="literal"/>
+            </input>
+        </operation>
+    </binding>
+
+    <binding name="inventoryCallbackBinding" type="tns:inventoryServiceCallbackPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="inventoryServiceResponse">
+            <input name="inventoryResponse">
+                <soap:body parts="inventoryPart" use="literal"/>
+            </input>
+        </operation>
+    </binding>
+    
+    <service name="inventoryCallbackService">
+        <port name="inventoryCallbackServicePort" binding="tns:inventoryCallbackBinding">
+            <soap:address location="http://localhost:18181/wsdl/inventory/inventoryCallbackServiceLocation/bp2"/>
+        </port>
+    </service>
+    
+    <service name="inventoryService">
+        <port name="inventoryServicePort" binding="tns:inventoryBinding">
+            <soap:address location="http://localhost:18181/wsdl/inventory/ServiceLocation/bp2"/>
+        </port>
+    </service>
+    
+    <vprop:property name="orderID" type="xsd:int"/>
+    
+    <vprop:propertyAlias propertyName="tns:orderID" messageType="tns:POMessage" part="purchaseOrder">
+        <vprop:query>/po:purchaseOrder/po:orderId</vprop:query>
+    </vprop:propertyAlias>
+    
+    <vprop:propertyAlias propertyName="tns:orderID" messageType="tns:InventoryMessage" part="inventoryPart">
+        <vprop:query>/inv:inventory/inv:orderId</vprop:query>
+    </vprop:propertyAlias>
+    
+    <plink:partnerLinkType name="inventoryRequestingLT">
+        <plink:role portType="tns:inventoryPortType" name="inventoryService"></plink:role>
+        <plink:role portType="tns:inventoryServiceCallbackPortType" name="inventoryServiceRequester"></plink:role>
+    </plink:partnerLinkType>
+</definitions>

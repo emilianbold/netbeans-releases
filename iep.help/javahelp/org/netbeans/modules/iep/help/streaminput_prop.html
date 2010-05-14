@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Stream Input Operator</title>
+</head>
+<body>
+
+<h2>Using the Stream Input Operator</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Stream Input operator enables you to convert incoming messages to a format that can be used in the event process.</p>
+
+<p>In the property editor, you define a <i>schema</i> that consists of one or more attributes. 
+For example, the schema could consist of two attributes: stock symbol and stock price. 
+Each attribute has a data type, such as INTEGER or VARCHAR.</p>
+
+<p>At runtime, the event process reads the incoming messages from the Normalized Message Router and creates a stream based on the schema that you defined.</p>
+
+<p>You can connect the Stream Input operator to any operator that accepts stream input (for example, the Time Based Window operator).</p>
+
+<p><strong>To use the Stream Input operator:</strong></p>
+
+<ol>
+
+  <li>Drag a Stream Input operator from the Palette to the Design view.</li>
+  <li>Double-click the Stream Input operator. The property editor opens.</li>
+
+  <li>If you want to change the default name, then change the value in the Name field.</li>
+
+  <li>If you want to define the schema by adding attributes, then do the following:</li>
+  <ol type="a">
+    <li>For each attribute in the schema, click Add Attribute and specify the name, <a href="aboutdatatypes.html">data type</a>, size (if applicable), and scale (if applicable). 
+You can optionally enter a comment.</li>
+    <li>To remove an attribute from the schema, select the attribute and click Delete.</li>
+    <li>To move an attribute up or down in the schema, select the attribute and click Move Up or Move Down.</li>
+  </ol>
+
+  <li>If you want to define the schema by selecting an XML schema definition, then do the following:</li>
+  <ol type="a">
+    <li>Click Select Schema.</li>
+    <li>Select the element or type.</li>
+    <li>Click OK.</li>
+  </ol>
+
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK.</li>
+
+</ol>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="streamout_propedit.html">Using the Stream Output Operator</a></dd>
+<dd><a href="timebased_window_propedit.html">Using the Time Based Window Operator</a></dd>
+<dd>&nbsp;</dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

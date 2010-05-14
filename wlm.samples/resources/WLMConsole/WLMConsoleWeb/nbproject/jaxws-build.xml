@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xalan="http://xml.apache.org/xslt" 
+        xmlns:webproject2="http://www.netbeans.org/ns/web-project/2"
+        xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1">
+
+    <!--
+        ===================
+        JAX-WS WSIMPORT SECTION
+        ===================
+    -->
+    <target name="wsimport-init" depends="init">
+        <mkdir dir="${build.generated.sources.dir}/jax-ws"/>
+        <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+            <classpath path="${java.home}/../lib/tools.jar:${j2ee.platform.wsimport.classpath}:${javac.classpath}"/>
+        </taskdef>
+        <condition property="conf-dir" value="${conf.dir}/" else="">
+            <isset property="conf.dir"/>
+        </condition>
+    </target>
+
+    <target name="wsimport-client-TaskCommon" depends="wsimport-init">
+        <mkdir dir="${build.generated.dir}/jax-wsCache/TaskCommon"/>
+        <wsimport sourcedestdir="${build.generated.dir}/jax-wsCache/TaskCommon"
+                destdir="${build.generated.dir}/jax-wsCache/TaskCommon"
+                wsdl="${basedir}/${conf-dir}xml-resources/web-service-references/TaskCommon/wsdl/TaskCommon.wsdl"
+                catalog="catalog.xml"
+                wsdlLocation="/META-INF/TaskCommon.wsdl"/>
+
+	<replace file="${build.generated.dir}/jax-wsCache/TaskCommon/sun/com/jbi/wfse/wsdl/taskcommon/TaskCommonService.java">
+            <replacetoken><![CDATA[URL url = null;
+        try {
+            URL baseUrl;
+            baseUrl = sun.com.jbi.wfse.wsdl.taskcommon.TaskCommonService.class.getResource(".");
+            url = new URL(baseUrl, "/META-INF/TaskCommon.wsdl");
+        } catch (MalformedURLException e) {
+            logger.warning("Failed to create URL for the wsdl Location: '/META-INF/TaskCommon.wsdl', retrying as a local file");
+            logger.warning(e.getMessage());
+        }
+        TASKCOMMONSERVICE_WSDL_LOCATION = url;]]></replacetoken>
+            <replacevalue><![CDATA[TASKCOMMONSERVICE_WSDL_LOCATION = TaskCommonService.class.getResource("/META-INF/TaskCommon.wsdl");]]></replacevalue>
+        </replace>
+
+        <copy todir="${build.generated.sources.dir}/jax-ws">
+            <fileset dir="${build.generated.dir}/jax-wsCache/TaskCommon">
+                <include name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="wsimport-client-clean-TaskCommon" depends="-init-project">
+        <delete dir="${build.generated.sources.dir}/jax-ws/sun/com/jbi/wfse/wsdl/taskcommon"/>
+        <delete dir="${build.generated.dir}/jax-wsCache/TaskCommon"/>
+    </target>
+
+    <target name="wsimport-client-generate" depends="wsimport-client-TaskCommon"/>
+
+</project>

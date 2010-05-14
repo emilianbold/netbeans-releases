@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+                     "http://java.sun.com/products/javahelp/map_1_0.dtd">
+
+<map version="1.0">
+
+    <mapID target="iep_credits" url="credits.html"/>
+
+    <mapID target="iep_aboutprojects" url="aboutprojects.html"/>
+
+    <mapID target="iep_understandprojects" url="understandprojects.html"/>
+    <mapID target="iep_dragdrop" url="dragdrop.html"/>
+    <mapID target="iep_editprojects" url="editprojects.html"/>
+    <mapID target="iep_usingprop" url="usingprop.html"/>
+    <mapID target="iep_saveiepprocess" url="saveiepprocess.html"/>
+    <mapID target="iep_wsdlcreate" url="wsdlcreate.html"/>
+    <mapID target="iep_deployiep" url="deployiep.html"/>
+    <mapID target="iep_receivesend" url="receivesend.html"/>
+    <mapID target="iep_deleteprocess" url="deleteprocess.html"/>
+
+    <mapID target="iep_about_openv" url="about_openv.html"/>
+    <mapID target="iep_about_ops" url="about_ops.html"/>
+    <mapID target="iep_work_iepops" url="work_iepops.html"/>
+    <mapID target="iep_aboutpalettecan" url="aboutpalettecan.html"/>
+    <mapID target="iep_aboutdatatypes" url="aboutdatatypes.html"/>
+
+    <mapID target="iep_attbased_propedit" url="attbased_propedit.html"/>
+    <mapID target="iep_distinct_propedit" url="distinct_propedit.html"/>
+    <mapID target="iep_intersect_propedit" url="intersect_propedit.html"/>
+    <mapID target="iep_minus_propedit" url="minus_propedit.html"/>
+    <mapID target="iep_partitionwindow_propedit" url="partitionwindow_propedit.html"/>
+    <mapID target="iep_relagg_propedit" url="relagg_propedit.html"/>
+    <mapID target="iep_relationout_propedit" url="relationout_propedit.html"/>
+    <mapID target="iep_relmap_prop" url="relmap_prop.html"/>
+    <mapID target="iep_relstream_propedit" url="relstream_propedit.html"/>
+    <mapID target="iep_streamdel_propedit" url="streamdel_propedit.html"/>
+    <mapID target="iep_streaminput_prop" url="streaminput_prop.html"/>
+    <mapID target="iep_streaminsrt_propedit" url="streaminsrt_propedit.html"/>
+    <mapID target="iep_streamout_propedit" url="streamout_propedit.html"/>
+    <mapID target="iep_strprj_prop" url="strprj_prop.html"/>
+    <mapID target="iep_table_propedit" url="table_propedit.html"/>
+    <mapID target="iep_tableinput_propedit" url="tableinput_propedit.html"/>
+    <mapID target="iep_tableout_propedit" url="tableout_propedit.html"/>
+    <mapID target="iep_timebased_propedit" url="timebased_propedit.html"/>
+    <mapID target="iep_timebased_window_propedit" url="timebased_window_propedit.html"/>
+    <mapID target="iep_tuplebased_propedit" url="tuplebased_propedit.html"/>
+    <mapID target="iep_tuplebasedagg_propedit" url="tuplebasedagg_propedit.html"/>
+    <mapID target="iep_tupleser_propedit" url="tupleser_propedit.html"/>
+    <mapID target="iep_union_propedit" url="union_propedit.html"/>
+    <mapID target="iep_unionall_propedit" url="unionall_propedit.html"/>
+
+    <mapID target="iep_exttablepollstr_propedit" url="exttablepollstr_propedit.html"/>
+    <mapID target="iep_invokestr_propedit" url="invokestr_propedit.html"/>
+    <mapID target="iep_replaystr_propedit" url="replaystr_propedit.html"/>
+    <mapID target="iep_savestr_propedit" url="savestr_propedit.html"/>
+    <mapID target="iep_batchedstrout_propedit" url="batchedstrout_propedit.html"/>
+    <mapID target="iep_notifstr_propedit" url="notifstr_propedit.html"/>
+    <mapID target="iep_contigorder_propedit" url="contigorder_propedit.html"/>
+    <mapID target="iep_gapwindow_propedit" url="gapwindow_propedit.html"/>
+
+    <mapID target="iep_iepprocess" url="iepprocess.html"/>
+
+</map>

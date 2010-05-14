@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Deploying a Composite Application that Contains an IEP Module Project</title>
+</head>
+<body>
+
+<h2>Deploying a Composite Application that Contains an IEP Module Project</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>You deploy an IEP Module project as part of a Composite Application project.</p>
+
+<p>The Composite Application Service Assembly (CASA) Editor provides a visual interface for editing the deployment configuration of a Composite Application project. 
+You can perform such tasks as adding JBI module projects, adding and removing connections between endpoints, and adding concrete WSDL elements.</p>
+
+
+
+<p><strong>To create a Composite Application project:</strong></p>
+
+<ol>
+  <li>From the IDE's main menu, choose File > New Project.<br>
+      The New Project wizard opens.</li>
+  <li>In the Categories list, select the SOA node</li>
+  <li>In the Projects list, select the Composite Application node.</li>
+  <li>Click Next.</li>
+  <li>(Optional) In the Project Name field, change the default project name.</li>
+  <li>Click Finish.<br>
+      The new Composite Application project appears in the Projects window. In addition, the CASA Editor appears.</li>
+</ol>
+
+
+
+<p><strong>To add the IEP Module project to the Composite Application project:</strong></p>
+
+<ol>
+  <li>In the Projects window, right-click the Composite Application project and choose Add JBI Module.<br>
+      The Select Project dialog box opens.</li>
+  <li>Select the IEP Module project.</li>
+  <li>Click Add Project JAR Files.</li>
+  <li>The IEP Module project is added to the JBI Modules area of the CASA Editor.</li>
+</ol>
+
+
+
+<p><strong>To deploy the Composite Application project:</strong></p>
+
+<ol>
+  <li>In the Projects window, right-click the Composite Application project and choose Build.</li>
+  <li>In the Projects window, right-click the Composite Application project and choose Deploy.</li>
+  <li>Wait until the <tt>BUILD SUCCESSFUL</tt> message appears in the Output window.<br>
+      You can now create test cases to ensure that the IEP Module project works as expected.<br>
+      If you make additional changes to the IEP Module project, then you must rebuild and redeploy the Composite Application project.</li>
+</ol>
+
+
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="understandprojects.html">Creating Intelligent Event Processing Module Projects</a></dd>
+<dd>&nbsp;</dd>
+</dl>
+
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>
