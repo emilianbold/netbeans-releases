@@ -710,7 +710,7 @@ public class FormUtils
                     count = 0;
                     setWriteObjCounter_Method.invoke(null, comp, count);
                     // reinstall ComponentUI
-                    LOGGER.log(Level.INFO, "Reinstalling ComponentUI after interrupted serialization of component: "+comp); // NOI18N
+                    LOGGER.log(Level.INFO, "Reinstalling ComponentUI after interrupted serialization of component: {0}", comp); // NOI18N
                     ComponentUI ui = (ComponentUI) ui_Field.get(comp);
                     ui.installUI(comp);
                 }
@@ -938,7 +938,7 @@ public class FormUtils
             LOGGER.log(Level.INFO, dnfex.getMessage(), dnfex);
         }
         if (!(dob instanceof FormDataObject)) {
-            LOGGER.log(Level.INFO, "Unable to find FormDataObject for " + srcFile); // NOI18N
+            LOGGER.log(Level.INFO, "Unable to find FormDataObject for {0}", srcFile); // NOI18N
             return;
         }
         FormDataObject formDob = (FormDataObject)dob;
