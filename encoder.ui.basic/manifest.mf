@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.encoder.ui.basic
+OpenIDE-Module-Layer: org/netbeans/modules/encoder/ui/basic/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/encoder/ui/basic/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

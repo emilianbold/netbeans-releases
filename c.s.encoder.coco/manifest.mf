@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: com.sun.encoder.coco
+OpenIDE-Module-Layer: com/sun/encoder/coco/layer.xml
+OpenIDE-Module-Localizing-Bundle: com/sun/encoder/coco/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-schema+xml">
+                <folder name="Actions">
+                    <folder name="encoding">
+                        <file name="apply-hl7.instance">
+                            <attr name="instanceClass" stringvalue="org.netbeans.modules.encoder.hl7.aip.action.ApplyHL7EncodingAction"/>
+                        </file> 
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
+
