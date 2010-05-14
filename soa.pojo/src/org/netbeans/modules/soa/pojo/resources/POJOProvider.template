@@ -1,0 +1,48 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+<#if package?? && package != "">
+package ${package};
+</#if>
+
+import org.glassfish.openesb.pojose.api.annotation.Provider;
+import org.glassfish.openesb.pojose.api.annotation.Resource;
+import org.glassfish.openesb.pojose.api.annotation.Operation;
+import org.glassfish.openesb.pojose.api.res.Context;
+import java.util.logging.Logger;
+
+/**
+ *
+ * @author ${user}
+ */
+@Provider ${POJOANNOTATIONS}
+public class ${name} {
+    
+    /**
+     * Constructor
+     */
+    public ${name}() {
+    }
+    
+    /**
+     * POJO Operation
+     *
+     * @param input input of type ${pojoinputtype}
+     <#if pojoreturntype != "void">
+     * @return ${pojoreturntype}
+     </#if>
+     */
+    @Operation ${OPERATIONANNOTATIONS}
+    public ${pojoreturntype} ${pojomethodname}(${pojoinputtype}) {
+        <#if pojoreturntype?? && pojoreturntype != "void">
+        return ${pojoreturn};        
+        </#if>
+    }
+
+    // Logger
+    private static final Logger logger = Logger.getLogger(${name}.class.getName());
+    // POJO Context
+    @Resource
+    private Context jbiCtx;
+}

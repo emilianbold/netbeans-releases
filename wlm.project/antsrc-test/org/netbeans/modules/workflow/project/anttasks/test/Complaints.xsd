@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http:/sample.wlmse/schema/Complaints"
+            xmlns:tns="http:/sample.wlmse/schema/Complaints"
+            elementFormDefault="qualified">
+    <xsd:complexType name="Complaint">
+        <xsd:sequence>
+            <xsd:element name="plaintiff" type="xsd:string"></xsd:element>
+            <xsd:element name="incidentDate" type="xsd:date"></xsd:element>
+            <xsd:element name="incidentShortDesc" type="xsd:string"></xsd:element>
+            <xsd:element name="incidentDetails" type="xsd:string"></xsd:element>
+            <xsd:element name="severity" type="tns:Severity"></xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="Resolution">
+        <xsd:sequence>
+            <xsd:element name="resolvedBy" type="xsd:string"></xsd:element>
+            <xsd:element name="resolvedDate" type="xsd:date"></xsd:element>
+            <xsd:element name="resolutionDetails" type="xsd:string"></xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>    
+    
+    <xsd:simpleType name="Severity">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="Life_threatening"/>
+            <xsd:enumeration value="Severe"/>
+            <xsd:enumeration value="Moderate"/>
+            <xsd:enumeration value="Mild"/>
+        </xsd:restriction>
+    </xsd:simpleType>    
+    
+    <xsd:element name="complaint" type="tns:Complaint"/>
+    <xsd:element name="resolution" type="tns:Resolution"/>
+    
+</xsd:schema>

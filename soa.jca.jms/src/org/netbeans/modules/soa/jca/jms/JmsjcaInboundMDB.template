@@ -1,0 +1,47 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ejb.MessageDriven;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+
+/**
+ * To edit/delete this Message-Driven Bean, right-click on the node under
+ * "EJB Module -> Java Collaborations", and select desired actions.
+ *
+ * @author ${user}
+ */
+<#if package?? && package != "">
+@MessageDriven(name="${package}.${name}")
+<#else>
+@MessageDriven(name="${name}")
+</#if>
+@TransactionManagement(value=TransactionManagementType.${transaction})
+public class ${name} implements MessageListener {
+    
+    private static final Logger logger = Logger.getLogger(${name}.class.getName());
+
+    public ${name}() {
+    }
+    
+    /**
+     * Passes a message to the listener.
+     *
+     * @param message the message passed to the listener
+     */
+    public void onMessage(Message message) {
+        // implement listener interface here
+        
+    }
+}

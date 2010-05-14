@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="OutboundRequestResponseMessaging" targetNamespace="http://j2ee.netbeans.org/wsdl/BpelModule2/OutboundRequestResponseMessaging"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://j2ee.netbeans.org/wsdl/BpelModule2/OutboundRequestResponseMessaging" xmlns:ftp="http://schemas.sun.com/jbi/wsdl-extensions/ftp/">
+    <types/>
+    <message name="OutboundRequestResponseMessagingOperationRequest">
+        <part name="part1" type="xsd:string"/>
+    </message>
+    <message name="OutboundRequestResponseMessagingOperationResponse">
+        <part name="part1" type="xsd:string"/>
+    </message>
+    <portType name="OutboundRequestResponseMessagingPortType">
+        <operation name="OutboundRequestResponseMessagingOperation">
+            <input name="input1" message="tns:OutboundRequestResponseMessagingOperationRequest"/>
+            <output name="output1" message="tns:OutboundRequestResponseMessagingOperationResponse"/>
+        </operation>
+    </portType>
+    <binding name="OutboundRequestResponseMessagingBinding" type="tns:OutboundRequestResponseMessagingPortType">
+        <ftp:binding/>
+        <operation name="OutboundRequestResponseMessagingOperation">
+            <ftp:operation/>
+            <input name="input1">
+                <ftp:message messageRepository="" messageName="" messageNamePrefixOB="" archive="true" protect="true" stage="true" use="literal" encodingStyle="" messageCorrelate="true"/>
+            </input>
+            <output name="output1">
+                <ftp:message messageRepository="" messageName="" messageNamePrefixIB="" pollIntervalMillis="5000" archive="true" protect="true" stage="true" use="literal" encodingStyle="" messageCorrelate="true"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="OutboundRequestResponseMessagingService">
+        <port name="#SERVICE_NAME_OutboundRequestResponseMessagingPort" binding="tns:OutboundRequestResponseMessagingBinding">
+            <ftp:address url="ftp://anonymous:user\@yahoo.com@localhost:21" user="" password="" dirListStyle="UNIX" useUserDefinedHeuristics="false" userDefDirListStyle="" userDefDirListHeuristics="" mode="BINARY" securedFTP="None" enableCCC="false" keyStore="" keyStorePassword="" keyAlias="" keyPassword="" trustStore="" trustStorePassword="" cmdChannelTimeout="45000" dataChannelTimeout="45000"/>
+        </port>
+    </service>
+</definitions>

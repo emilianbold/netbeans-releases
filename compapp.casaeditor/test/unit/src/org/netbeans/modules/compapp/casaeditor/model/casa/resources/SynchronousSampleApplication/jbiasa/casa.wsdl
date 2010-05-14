@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             targetNamespace="http://whatever"
+             xmlns:myns="http://whatever"
+             name="casawsdl" xmlns:file="http://schemas.sun.com/jbi/wsdl-extensions/file/">
+    <portType name="dummyCasaPortType"/>
+    <binding name="casaBinding1" type="myns:dummyCasaPortType">
+        <file:binding/>
+    </binding>
+    <service name="casaService1">
+        <port name="casaPort1" binding="myns:casaBinding1">
+            <file:address fileDirectory="C:\Temp"/>
+        </port>
+    </service>
+</definitions>

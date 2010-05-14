@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved. 
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Working with Predicates</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Working with Predicates </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The BPEL Mapper enables you to create a predicate that consists of XPath functions.</p>
+<p>A predicate applies a condition to a node that can have multiple values. The result is the subset of nodes that satisfy the condition.</p>
+<p>For example, assume that a node represents the amount of a product. If you want to select all products whose amount is greater than 50, then you can use the <tt><b>greater than</b></tt> and <tt><b>numeric literal</b></tt> functions to define the condition.</p>
+<p>Only certain types of nodes allow you to create predicates. The pop-up menu of these nodes contains the New Predicate option.</p>
+<p>Once you create a predicate, you can use the predicate in an assignment. For example, you can copy data from a predicate in the source tree pane to a node in the destination tree pane.</p>
+<p>You can edit or delete an existing predicate.</p>
+<p><b>To create a predicate:</b></p>
+<ol>
+  <li>In the source tree pane, right-click a node and choose New Predicate.<br>
+    The Predicate Editor appears.</li>
+  <li>Use XPath functions to create the condition for the predicate. Map the result to the predicate node in the destination tree pane.</li>
+  <li>Click OK.<br>
+    The editor adds the predicate node immediately below the original node. The condition appears in brackets.</li>
+</ol>
+<p><b>To edit a predicate:</b></p>
+<ol>
+  <li>In the source tree pane, right-click the predicate node and choose Edit Predicate.</li>
+  <li>Modify the condition.</li>
+  <li>Click OK.</li>
+</ol>
+<p><b>To delete a predicate:</b></p>
+<ol>
+  <li>In the source tree pane, right-click the predicate node and choose Delete Predicate.</li>
+  <li>Click Yes.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="mapper_mappings.html" title="Creating BPEL Mappings">Creating BPEL Mappings</a></dd>
+<dd><a href="about_mapper.html" title="About the BPEL Mapper">About the BPEL Mapper</a></dd>
+<dd><a href="mapper_functions.html" title="XPath Function Reference">XPath Function Reference</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

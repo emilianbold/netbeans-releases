@@ -1,0 +1,252 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+ */
+package org.netbeans.modules.etl.ui;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
+import org.netbeans.modules.etl.model.ETLDefinition;
+import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
+import org.netbeans.spi.xml.cookies.CheckXMLSupport;
+import org.netbeans.spi.xml.cookies.DataObjectAdapters;
+import org.openide.ErrorManager;
+import org.openide.WizardDescriptor;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.xml.sax.InputSource;
+
+import com.sun.org.apache.xerces.internal.util.XMLChar;
+import org.openide.filesystems.FileUtil;
+
+/**
+ * Represents a ETL file.
+ *
+ * @author  radval
+ */
+public class ETLDataObject extends MultiDataObject {
+
+    private FileObject fileObj;
+
+    public ETLDataObject(FileObject fObj, MultiFileLoader loader)
+            throws DataObjectExistsException {
+        super(fObj, loader);
+        CookieSet set = getCookieSet();
+        fileObj = fObj;
+        editorSupport = new ETLEditorSupport(this);
+        // editor support defines MIME type understood by EditorKits registry
+        set.add(editorSupport);
+        // Add check and validate cookies
+        InputSource is = DataObjectAdapters.inputSource(this);
+        set.add(new CheckXMLSupport(is));
+        try {
+            mModel = new ETLCollaborationModel(this);
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    // add validate action here
+    }
+
+    @Override
+    protected Node createNodeDelegate() {
+        if (this.mNode == null) {
+            this.mNode = new ETLNode(this);
+        }
+        return this.mNode;
+    }
+
+    /**
+     * subclasses should look updateServices() and additionalInitialLookup()
+     */
+    @Override
+    public final Lookup getLookup() {
+        if (myLookup.get() == null) {
+
+            Lookup lookup;
+            List<Lookup> list = new LinkedList<Lookup>();
+
+            list.add(Lookups.fixed(new Object[]{this}));
+            lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
+            myLookup.compareAndSet(null, lookup);
+            isLookupInit.compareAndSet(false, true);
+        }
+        return myLookup.get();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    // If you add context help, change to:
+    // return new HelpCtx (MyDataObject.class);
+    }
+
+    @Override
+    protected FileObject handleRename(String name) throws IOException {
+        ETLEditorSupport weSupport = getETLEditorSupport();
+        String oldName = this.getName();
+        weSupport.updateTitles();
+        //Do we need to change the name attribute of the ETL def?
+
+        //logic to keep the status of the save badge (*) intact.
+        boolean modified = weSupport.getEnv().isModified();
+        if (modified) {
+            weSupport.getEnv().unmarkModified();
+        }
+        FileObject fo = super.handleRename(name);
+        if (modified) {
+            weSupport.getEnv().markModified();
+        }
+        firePropertyChange(DataObject.PROP_NAME, oldName, name);
+        return fo;
+    }
+
+    @Override
+    protected void handleDelete() throws IOException {
+        //this is work around when file is modified in editor and
+        //editor has lock
+        getETLEditorSupport().getEnv().unmarkModified();
+
+        super.handleDelete();
+    }
+
+    @Override
+    protected DataObject handleCreateFromTemplate(DataFolder df, String name) throws IOException {
+        ETLDataObject dataObject = (ETLDataObject) super.handleCreateFromTemplate(df, name);
+        String doName = dataObject.getName();
+        //make sure the name is a valid NMTOKEN.
+        if (!XMLChar.isValidNmtoken(doName)) {
+            return dataObject;
+        }
+
+        SaveCookie sCookie = (SaveCookie) dataObject.getCookie(SaveCookie.class);
+        if (sCookie != null) {
+            sCookie.save();
+        }
+        return dataObject;
+    }
+
+    public void initialize(WizardDescriptor descriptor) {
+        try {
+            DataObjectHelper dHelper = new DataObjectHelper(this);
+            dHelper.initializeETLDataObject(descriptor, this, getETLEditorSupport());
+            // the first time data object is created, it cannot be got through lookup.
+            // find a better way to do this.
+            DataObjectProvider.activeDataObject = this;
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    }
+
+    @Override
+    public void setModified(boolean modified) {
+        super.setModified(modified);
+        if (modified) {
+            getCookieSet().add(getSaveCookie());
+        } else {
+            getCookieSet().remove(getSaveCookie());
+        }
+    }
+
+    private SaveCookie getSaveCookie() {
+        return new SaveCookie() {
+
+            public void save() throws IOException {
+                getETLEditorSupport().synchDocument();
+                getETLEditorSupport().saveDocument();
+            }
+
+            @Override
+            public int hashCode() {
+                return getClass().hashCode();
+            }
+
+            @Override
+            public boolean equals(Object other) {
+                return getClass().equals(other.getClass());
+            }
+        };
+    }
+
+    public ETLEditorSupport getETLEditorSupport() {
+        return editorSupport;
+    }
+
+    public ETLDefinition getETLDefinition() throws Exception {
+        return this.mModel.getETLDefinition();
+    }
+
+    public ETLCollaborationModel getModel() {
+        return this.mModel;
+    }
+
+    public ETLCollaborationTopPanel getETLEditorTopPanel() throws Exception {
+        if (this.topPanel == null) {
+            this.topPanel = new ETLCollaborationTopPanel(this);
+        }
+        return this.topPanel;
+    }
+
+    public String getPath() {
+        String path = null;
+        try {            
+            path = FileUtil.toFile(fileObj).getParentFile().getParentFile().getAbsolutePath();
+        } catch (Exception ex) {
+        }
+        return path;
+    }
+    private static final long serialVersionUID = 6338889116068357651L;
+    private transient ETLEditorSupport editorSupport;
+    private transient ETLCollaborationTopPanel topPanel;
+    private transient ETLCollaborationModel mModel;
+    private transient AtomicReference<Lookup> myLookup = new AtomicReference<Lookup>();
+    private transient AtomicBoolean isLookupInit = new AtomicBoolean(false);
+    private Node mNode = null;
+    public static final String ETL_ICON = "org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png";
+}
+

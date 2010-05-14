@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.dataview.output;
@@ -44,9 +44,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
 import org.netbeans.modules.db.dataview.meta.DBTable;
+import org.netbeans.modules.db.dataview.spi.DBConnectionProviderImpl;
 import org.netbeans.modules.db.dataview.util.DbUtil;
 import org.netbeans.modules.db.dataview.util.TestCaseContext;
 import org.openide.util.Exceptions;
@@ -71,8 +73,14 @@ public class DataViewTest extends NbTestCase {
     }
 
     @Override
+    public boolean runInEQ () {
+        return true;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockServices.setServices(new DBConnectionProviderImpl().getClass());
         context = DbUtil.getContext();
         dbconn = DbUtil.getDBConnection();
         conn = DbUtil.getjdbcConnection();
@@ -213,6 +221,6 @@ public class DataViewTest extends NbTestCase {
         DataView instance = DataView.create(dbconn, sqlStr, pageSize);
         SQLStatementGenerator expResult = new SQLStatementGenerator(instance);
         SQLStatementGenerator result = instance.getSQLStatementGenerator();
-        assertEquals(expResult.getCountSQLQuery(sqlStr), result.getCountSQLQuery(sqlStr));
+        assertEquals(SQLStatementGenerator.getCountSQLQuery(sqlStr), SQLStatementGenerator.getCountSQLQuery(sqlStr));
     }
 }

@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,6 +71,7 @@ import org.netbeans.modules.viewmodel.AsynchronousModel;
 import org.netbeans.modules.viewmodel.DefaultTreeExpansionManager;
 import org.netbeans.modules.viewmodel.HyperCompoundModel;
 import org.netbeans.modules.viewmodel.OutlineTable;
+import org.netbeans.modules.viewmodel.TreeModelNode.DisableableAction;
 import org.netbeans.modules.viewmodel.TreeModelRoot;
 
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
@@ -559,11 +561,12 @@ public final class Models {
     /**
      * @author   Jan Jancura
      */
-    private static class ActionSupport extends AbstractAction {
+    private static class ActionSupport extends AbstractAction implements DisableableAction {
 
         private ActionPerformer     performer;
         private int                 multiselectionType;
         private String              displayName;
+        private PrivilegedAction    enabledTest;
 
  
         ActionSupport (
@@ -579,6 +582,11 @@ public final class Models {
         
         @Override
         public boolean isEnabled () {
+            if (enabledTest != null) {
+                if (Boolean.FALSE.equals(enabledTest.run())) {
+                    return false;
+                }
+            }
             boolean any = multiselectionType == MULTISELECTION_TYPE_ANY;
             Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
             if (multiselectionType == MULTISELECTION_TYPE_EXACTLY_ONE) {
@@ -650,6 +658,19 @@ public final class Models {
         public boolean equals (Object o) {
             return (o instanceof ActionSupport) && 
                 displayName.equals (((ActionSupport) o).displayName);
+        }
+
+        @Override
+        public Action createDisableable(PrivilegedAction enabledTest) {
+            ActionSupport a = new ActionSupport(displayName, performer, multiselectionType);
+            a.enabledTest = enabledTest;
+            Object[] keys = getKeys();
+            if (keys != null) {
+                for (Object k : keys) {
+                    a.putValue((String) k, getValue((String) k));
+                }
+            }
+            return a;
         }
     }
 

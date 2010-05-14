@@ -1,0 +1,12 @@
+<soapenv:Envelope xsi:schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:po="http://wlmse.sample/po">
+  <soapenv:Body>
+    <po:purchaseOrder>
+      <po:orderId>54321</po:orderId>
+      <po:purchaserName>Joe</po:purchaserName>
+      <po:productId>AMC Movie tickets</po:productId>
+      <po:amount>100.00</po:amount>
+      <po:priority>LOW</po:priority>
+      <po:users>None</po:users>
+    </po:purchaseOrder>
+  </soapenv:Body>
+</soapenv:Envelope>

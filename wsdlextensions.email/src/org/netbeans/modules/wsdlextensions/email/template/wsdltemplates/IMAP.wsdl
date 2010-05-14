@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="#SERVICE_NAME" targetNamespace="#TARGET_NAMESPACE"
+    xmlns:tns="#TARGET_NAMESPACE"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:email="http://schemas.sun.com/jbi/wsdl-extensions/email/"
+    xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+    <types/>
+    <message name="#SERVICE_NAMEInputMessage">
+        <part name="from" type="xsd:string"/>
+        <part name="to" type="xsd:string"/>
+        <part name="subject" type="xsd:string"/>
+        <part name="message" type="xsd:string"/>
+    </message>
+    <portType name="#SERVICE_NAMEPortType">
+        <operation name="ReceiveEmails">
+            <input name="input1" message="tns:#SERVICE_NAMEInputMessage"/>
+        </operation>
+    </portType>
+    <binding name="#SERVICE_NAMEBinding" type="tns:#SERVICE_NAMEPortType">
+        <email:IMAPbinding/>
+        <operation name="ReceiveEmails">
+            <email:IMAPoperation/>
+            <input name="input1">
+                <email:IMAPinput message="message" subject="subject" from="from" to="to"/>
+            </input>
+        </operation>
+    </binding>
+    <service name="#SERVICE_NAMEService">
+        <port name="#SERVICE_NAMEPort" binding="tns:#SERVICE_NAMEBinding">
+            <email:IMAPaddress emailServer="" useSSL="true" port="" userName="" password=""/>
+        </port>
+    </service>
+    <plnk:partnerLinkType name="#SERVICE_NAME">
+        <!-- A partner link type is automatically generated when a new port type is added. Partner link types are used by BPEL processes.
+In a BPEL process, a partner link represents the interaction between the BPEL process and a partner service. Each partner link is associated with a partner link type.
+A partner link type characterizes the conversational relationship between two services. The partner link type can have one or two roles.-->
+        <plnk:role name="#SERVICE_NAMEPortTypeRole" portType="tns:#SERVICE_NAMEPortType"/>
+    </plnk:partnerLinkType>
+</definitions>
