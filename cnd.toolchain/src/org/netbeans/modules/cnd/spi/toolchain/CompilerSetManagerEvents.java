@@ -82,7 +82,7 @@ public final class CompilerSetManagerEvents {
         return instance;
     }
 
-    public void runOnCodeModelReadiness(NamedRunnable task) {
+    public void runProjectReadiness(NamedRunnable task) {
         if (executionEnvironment.isLocal() || isCodeModelInfoReady) {
             task.run();
         } else {

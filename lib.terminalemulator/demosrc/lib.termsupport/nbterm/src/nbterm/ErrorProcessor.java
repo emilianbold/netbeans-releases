@@ -40,9 +40,10 @@
  */
 package nbterm;
 
-import org.netbeans.lib.termsupport.LineFilter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.netbeans.lib.terminalemulator.support.LineFilter;
 
 class ErrorProcessor extends LineFilter {
 

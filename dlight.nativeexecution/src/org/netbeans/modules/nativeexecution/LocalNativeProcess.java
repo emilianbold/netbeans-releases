@@ -146,7 +146,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         final ProcessBuilder pb = new ProcessBuilder(); // NOI18N
 
         final MacroMap jointEnv = MacroMap.forExecEnv(ExecutionEnvironmentFactory.getLocal());
-        jointEnv.putAll(pb.environment());
         jointEnv.putAll(info.getEnvironment());
 
         if (isInterrupted()) {

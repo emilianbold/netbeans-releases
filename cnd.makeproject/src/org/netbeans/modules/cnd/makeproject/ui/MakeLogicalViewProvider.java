@@ -506,7 +506,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     /** Filter node containin additional features for the Make physical
      */
-    private final static class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListener, LookupListener {
+    private final static class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListener, LookupListener, PropertyChangeListener {
 
         private boolean brokenLinks;
         private boolean brokenIncludes;
@@ -533,6 +533,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             // Handle annotations
             setForceAnnotation(true);
             updateAnnotationFiles();
+            ProjectUtils.getInformation(provider.getProject()).addPropertyChangeListener(this);
         }
 
         public Folder getFolder() {
@@ -599,6 +600,17 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         @Override
         public String getShortDescription() {
             return MakeLogicalViewProvider.getShortDescription(provider.getProject());
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            setName(ProjectUtils.getInformation(provider.getProject()).getDisplayName());
+            String prop = evt.getPropertyName();
+            if (ProjectInformation.PROP_DISPLAY_NAME.equals(prop)) {
+                fireDisplayNameChange(null, null);
+            } else if (ProjectInformation.PROP_NAME.equals(prop)) {
+                fireNameChange(null, null);
+            }
         }
 
         private final class VisualUpdater implements Runnable {

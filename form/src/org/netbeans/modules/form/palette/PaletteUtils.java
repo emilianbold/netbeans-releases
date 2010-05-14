@@ -63,6 +63,7 @@ import org.openide.util.lookup.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.form.FormUtils;
 
 import org.netbeans.modules.form.project.ClassSource;
 
@@ -222,7 +223,7 @@ public final class PaletteUtils {
             palettes.put(project, pInfo);
             if (EventQueue.isDispatchThread()) {
                 // Init real palette
-                RequestProcessor.getDefault().post(new Runnable() {
+                FormUtils.getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
                         PaletteController palette = createPalette(filter);
