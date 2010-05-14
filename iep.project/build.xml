@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="iep.project" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+
+    <target name="ant-extra" depends="init">
+        <mkdir dir="build/antclasses"/>
+        <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true">
+            <classpath>
+                <path refid="cp"/>
+                <pathelement location="${netbeans.dest.dir}/java/ant/lib/ant.jar"/>
+                <pathelement location="${cluster}/${module.jar}"/>
+            </classpath>
+        </javac>
+       <copy todir="build/antclasses">
+         <fileset dir="antsrc">
+           <include name="**/*.xml"/>
+         </fileset>
+       </copy>
+   
+       <mkdir dir="${cluster}/ant/nblib/"/>
+
+       <jar jarfile="${cluster}/ant/nblib/org-netbeans-modules-iep-project.jar" compress="false">
+         <fileset dir="build/antclasses"/>
+       </jar>
+    </target>
+
+    <target name="netbeans-extra" depends="ant-extra"/>
+</project>

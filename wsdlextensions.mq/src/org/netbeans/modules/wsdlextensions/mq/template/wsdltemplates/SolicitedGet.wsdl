@@ -1,0 +1,37 @@
+<definitions name="SolicitedGet" targetNamespace="http://j2ee.netbeans.org/wsdl/SolicitedGet"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="http://j2ee.netbeans.org/wsdl/SolicitedGet"
+    xmlns:mq="http://schemas.sun.com/jbi/wsdl-extensions/mq/">
+    <types/>
+    <message name="getRequest">
+        <part name="not-used" type="xsd:string"/>
+    </message>
+    <message name="getResponse">
+        <part name="content" type="xsd:string"/>
+    </message>
+    <portType name="SolicitedGetPortType">
+        <operation name="get">
+            <input name="input" message="tns:getRequest"/>
+            <output name="output" message="tns:getResponse"/>
+        </operation>
+    </portType>
+    <binding name="SolicitedGetBinding" type="tns:SolicitedGetPortType">
+        <mq:binding/>
+        <operation name="Get">
+            <mq:operation transaction="NoTransaction" queueName="default" queueOpenOptions="READ_AS_DEFAULT"/>
+            <input name="input">
+                <mq:body use="literal" messageType="TextMessage" syncpoint="true"/>
+            </input>
+            <output name="output">
+                <mq:body use="literal" messageType="TextMessage" messageBody="content"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="SolicitedGetService">
+        <port name="SolicitedGetPort" binding="tns:SolicitedGetBinding">
+            <mq:address queueManagerName="QM_localhost"/>
+        </port>
+    </service>
+</definitions>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="Samples">
+                <folder name="SOA">
+                    <!-- Purchase Order -->
+                    <file name="PurchaseOrder" url="resources/zip/PurchaseOrderWLM.zip">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/workflow/project/ui/resources/workflowproProjectIcon.gif"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wlm.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.wlm.samples.WLMSampleIterator.createPurchaseOrder"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/wlm/samples/resources/PurchaseOrder.html"/>
+                        <attr name="position" intvalue="2000"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+
+                    <!-- Advanced Purchase Order -->
+                    <file name="AdvancedPurchaseOrder" url="resources/zip/AdvancedPurchaseOrderWLM.zip">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/workflow/project/ui/resources/workflowproProjectIcon.gif"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wlm.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.wlm.samples.WLMSampleIterator.createAdvancedPurchaseOrder"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/wlm/samples/resources/AdvancedPurchaseOrder.html"/>
+                        <attr name="position" intvalue="2100"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+
+                    <!-- WLM Console -->
+                    <file name="WLMConsole" url="resources/zip/WLMConsoleWeb.zip">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/workflow/project/ui/resources/workflowproProjectIcon.gif"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wlm.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.wlm.samples.WLMConsoleIterator.createWLMConsole"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/wlm/samples/resources/WLMConsole.html"/>
+                        <attr name="position" intvalue="2200"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="org-netbeans-modules-wlm-samples-resources-zip">
+        <file name="PurchaseOrderCompApp.zip" url="resources/zip/PurchaseOrderCompApp.zip"/>
+        <file name="PurchaseOrderWLM.zip" url="resources/zip/PurchaseOrderWLM.zip"/>
+        <file name="PurchaseOrderBPEL.zip" url="resources/zip/PurchaseOrderBPEL.zip"/>
+
+        <file name="AdvancedPurchaseOrderCompApp.zip" url="resources/zip/AdvancedPurchaseOrderCompApp.zip"/>
+        <file name="AdvancedPurchaseOrderWLM.zip" url="resources/zip/AdvancedPurchaseOrderWLM.zip"/>
+        <file name="AdvancedPurchaseOrderBPEL.zip" url="resources/zip/AdvancedPurchaseOrderBPEL.zip"/>
+
+        <file name="WLMConsoleCompApp.zip" url="resources/zip/WLMConsoleCompApp.zip"/>
+        <file name="WLMConsoleWeb.zip" url="resources/zip/WLMConsoleWeb.zip"/>
+    </folder>
+</filesystem>

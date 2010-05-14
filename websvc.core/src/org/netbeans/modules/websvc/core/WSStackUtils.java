@@ -141,7 +141,7 @@ public class WSStackUtils {
         if (serverId != null) {
             if (serverId.startsWith("Tomcat")) return ServerType.TOMCAT; //NOI18N
             else if (serverId.equals("J2EE")) return ServerType.GLASSFISH; //NOI18N
-            else if (serverId.equals("gfv3")) return ServerType.GLASSFISH_V3; //NOI18N
+            else if (serverId.startsWith("gfv3")) return ServerType.GLASSFISH_V3; //NOI18N
             else if (serverId.equals("GlassFish")) return ServerType.GLASSFISH; //NOI18N
             else if (serverId.equals("APPSERVER")) return ServerType.GLASSFISH; //NOI18N
             else if (serverId.equals("JavaEE")) return ServerType.GLASSFISH; //NOI18N

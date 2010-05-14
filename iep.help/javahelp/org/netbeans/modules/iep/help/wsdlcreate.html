@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Understanding WSDL Creation</title>
+</head>
+<body>
+
+<h2>Understanding WSDL Creation</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+
+
+<p>When you save an event processor in an IEP Module project, a WSDL document is automatically generated.</p>
+
+<p>The name of the WSDL document is derived from the name of the event processor. 
+For example, if the event processor is called <tt>insiderTrade.iep</tt>, then the WSDL document is called <tt>insiderTrade.wsdl</tt>.</p>
+
+<p><b>Note:</b> If you subsequently rename the event processor, IEP does not refactor the name of the WSDL document.</p>
+
+<!--
+<p>The target namespace is the name of the event processor concatenated with the string <tt>_iep</tt>.</p>
+-->
+
+<p>The WSDL document contains two types of message objects:</p>
+
+<ul>
+  <li>Regular message object</li>
+  <li>Batch message object</li>
+</ul>
+
+<p>If the event processor has a Stream Input operator, then the WSDL document contains a SOAP-based binding and service.</p>
+
+<p>If the event processor has a Stream Output operator, a Batched Stream Output operator, or a Relation Output operator, 
+then the WSDL document contains a file-based binding and service.</p>
+
+<p>You may need to manually update the default settings for any binding and service. 
+For example, the default file directory is a Windows path, which would not make sense on a UNIX system.</p>
+
+<p>For detailed information about the binding and service configuration, see the documentation for the HTTP Binding Component and the File Binding Component.</li>
+
+<p><b>Note:</b> If you manually update the WSDL document and then save the event processor again, the changes that you made to the WSDL document are overwritten. 
+For a recommended workaround, go to the IEP release notes and read the section on iterative development.</p>
+
+
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd> 
+<dd><a href="streaminput_prop.html">Using the Stream Input Operator</a></dd>
+<dd><a href="streamout_propedit.html">Using the Stream Output Operator</a></dd>
+<dd>&nbsp;</dd>
+</dl>
+
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

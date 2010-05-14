@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<operator-script>
+  <operators>
+    <operator name="varconcat" dbspecificname="||" guiname="||" script="[$str]||" type="string" >
+      <attr name="showparenthesis" type="java.lang.Boolean" value="true" />
+      <arg name="str" type="varchar" />
+      <output type="varchar"/>
+    </operator>
+
+    <operator name="userFx" dbspecificname="userFx" guiname="userFx" script="userFx([$arg])" type="string" >
+      <attr name="showparenthesis" type="java.lang.Boolean" value="true" />
+      <arg name="arg" type="anytype" />
+      <output type="anytype"/>
+    </operator>
+
+    <operator name="castas" dbspecificname="CASTAS" script="CAST($column AS $type)" type="string" >
+      <arg name="column" type="anytype" />
+      <arg name="type" type="varchar:unquoted" useTypeGenerator="true" />
+      <output type="anytype" />
+    </operator>
+
+    <operator name="datediff" dbspecificname="DATEDIFF" script="DATEDIFF($type, $timestamp2, $timestamp1)" type="numeric" >
+      <arg name="type" type="varchar:unquoted" />
+      <arg name="timestamp1" type="timestamp"  />
+      <arg name="timestamp2" type="timestamp"  />
+      <output type="numeric"/>
+    </operator>
+
+    <operator name="dateadd" dbspecificname="DATEADD" script="DATEADD($type, $interval, $timestamp1)" type="timestamp" >
+      <arg name="type" type="varchar:unquoted" />
+      <arg name="interval" type="numeric"  />
+      <arg name="timestamp1" type="timestamp"  />
+      <output type="timestamp"/>
+    </operator>
+
+    <operator name="datetochar" dbspecificname="DATETOCHAR" script="DATETOCHAR($timestamp1, $format)" type="varchar" >
+      <arg name="timestamp1" type="timestamp"  />
+      <arg name="format" type="varchar"  />
+      <output type="varchar"/>
+    </operator>
+
+    <operator name="chartodate" dbspecificname="CHARTODATE" script="CHARTODATE($char1, $format)" type="timestamp" >
+      <arg name="char1" type="varchar"  />
+      <arg name="format" type="varchar"  />
+      <output type="timestamp"/>
+    </operator>
+
+    <operator name="datepart" dbspecificname="DATEPART" script="DATEPART($datePart, $timestamp1)" type="timestamp" >
+      <arg name="datePart" type="varchar" />
+      <arg name="timestamp1" type="timestamp" />
+      <output type="varchar"/>
+    </operator>
+
+    <operator name="touppercase" dbspecificname="UPPER" script="UPPER($str)" type="string" >
+      <arg name="str" type="varchar" />
+      <output type="varchar"/>
+    </operator>
+
+    <operator name="tolowercase" dbspecificname="LOWER" script="LOWER($str)" type="string" >
+      <arg name="str" type="varchar" />
+      <output type="varchar"/>
+    </operator>
+
+    <operator name="length" dbspecificname="LENGTH" script="LENGTH($str)" type="string" >
+      <arg name="str" type="varchar" />
+      <output type="numeric"/>
+    </operator>
+
+    <operator name="substring" dbspecificname="SUBSTR" script="SUBSTR($str, $pos1, $pos2)" type="string" arg2Use="str" >
+      <arg name="str" type="varchar" />
+      <arg name="pos1" type="numeric" range="unsigned" />
+      <arg name="pos2" type="numeric" range="unsigned" />
+      <output type="varchar"/>
+    </operator>
+
+    <operator name="lefttrim" dbspecificname="LTRIM" script="LTRIM($str)" type="string" >
+      <arg name="str" type="varchar" />
+      <output type="varchar"/>
+    </operator>
+
+    <operator name="righttrim" dbspecificname="RTRIM" script="RTRIM($str)" type="string" >
+      <arg name="str" type="varchar" />
+      <output type="varchar"/>
+    </operator>
+
+    <operator name="lpad" dbspecificname="LPAD" script="lpad($str1,$padlen,$padstring)" type="string" arg2Use="str1">
+      <arg name="str1" type="varchar" />
+      <arg name="padlen" type="numeric"/>
+      <arg name="padstring" type="varchar"/>
+      <output type="varchar"/>
+    </operator>
+    
+    <operator name="rpad" dbspecificname="RPAD" script="rpad($str1,$padlen,$padstring)" type="string" arg2Use="str1">
+      <arg name="str1" type="varchar" />
+      <arg name="padlen" type="numeric"/>
+      <arg name="padstring" type="varchar"/>
+      <output type="varchar"/>
+    </operator>
+    
+    <operator name="trim" dbspecificname="TRIM" script="trim(BOTH ' ' FROM $str1)" type="string" arg2Use="str1">
+      <arg name="str1" type="varchar" />
+      <output type="varchar"/>
+    </operator>
+
+
+    <operator name="replace" dbspecificname="REPLACE" script="REPLACE($str1, $str2, $str3)" type="string" arg2Use="str1">
+      <arg name="str1" type="varchar" />
+      <arg name="str2" type="varchar" />
+      <arg name="str3" type="varchar" />
+      <output type="varchar"/>
+    </operator>
+
+    <operator name="absolutevalue" dbspecificname="ABS" script="ABS($value)" type="string">
+      <arg name="value" type="numeric" />
+      <output type="numeric"/>
+    </operator>
+
+    <operator name="varadd" dbspecificname="+" guiname="+" script="[$num]+" type="numeric" >
+      <attr name="showparenthesis" type="java.lang.Boolean" value="true" />
+      <arg name="num" type="numeric" />
+      <output type="integer"/>
+    </operator>
+
+    <operator name="subtract" dbspecificname="-" guiname="-" script="$subtractend - $subtractor" type="numeric">
+      <attr name="showparenthesis" type="java.lang.Boolean" value="true" />
+      <arg name="subtractend" type="numeric" />
+      <arg name="subtractor" type="numeric" />
+      <output type="numeric"/>
+    </operator>
+
+    <operator name="multiply" dbspecificname="*" guiname="*" script="$a * $b" type="numeric" >
+      <attr name="showparenthesis" type="java.lang.Boolean" value="true" />
+      <arg name="a" type="numeric" />
+      <arg name="b" type="numeric" />
+      <output type="numeric"/>
+    </operator>
+
+    <operator name="divide" dbspecificname="/" guiname="/" script="$dividend / $divisor" type="numeric" >
+      <attr name="showparenthesis" type="java.lang.Boolean" value="true" />
+      <arg name="dividend" type="numeric" />
+      <arg name="divisor" type="numeric" />
+      <output type="numeric"/>
+    </operator>
+
+    <operator name="mod" dbspecificname="MOD" script="MOD($dividend, $divisor)" type="numeric" >
+      <arg name="dividend" type="numeric" />
+      <arg name="divisor" type="numeric" />
+      <output type="numeric"/>
+    </operator>
+
+    <operator name="sign" dbspecificname="SIGN" script="SIGN($arg1)" type="numeric" >
+      <arg name="arg1" type="numeric" />
+      <output type="numeric"/>
+    </operator>
+
+    <operator name="sum" dbspecificname="SUM" script="SUM($column)" type="numeric" >
+      <attr name="aggregate_function" type="java.lang.Boolean" value="true" />
+      <arg name="column" type="numeric" />
+      <output type="numeric"/>
+    </operator>
+
+    <operator name="count" dbspecificname="COUNT" script="COUNT($column)" type="numeric" >
+      <attr name="aggregate_function" type="java.lang.Boolean" value="true" />
+      <arg name="column" type="anytype" />
+      <output type="numeric"/>
+    </operator>
+
+    <operator name="average" dbspecificname="AVG" script="AVG($column)" type="numeric" >
+      <attr name="aggregate_function" type="java.lang.Boolean" value="true" />
+      <arg name="column" type="numeric" />
+      <output type="numeric"/>
+    </operator>
+
+    <operator name="maximum" dbspecificname="MAX" script="MAX($column)" type="numeric" >
+      <attr name="aggregate_function" type="java.lang.Boolean" value="true" />
+      <arg name="column" type="varchar" />
+      <output type="numeric"/>
+    </operator>
+
+    <operator name="minimum" dbspecificname="MIN" script="MIN($column)" type="numeric" >
+      <attr name="aggregate_function" type="java.lang.Boolean" value="true" />
+      <arg name="column" type="varchar" />
+      <output type="numeric"/>
+    </operator>
+
+    <operator name="now" dbspecificname="CURRENT_TIMESTAMP" script="CURRENT_TIMESTAMP" type="timestamp">
+      <output type="timestamp" />
+    </operator>
+
+    <operator name="null" dbspecificname="NULL" script="NULL" type="anytype">
+      <output type="anytype" />
+    </operator>
+
+    <operator name="nullIf" dbspecificname="NULLIF" script="NULLIF($arg1, $arg2)" type="anytype">
+      <arg name="arg1" type="anytype" />    
+      <arg name="arg2" type="anytype" />          
+      <output type="anytype" />
+    </operator>
+
+    <operator name="coalesce" dbspecificname="COALESCE" script="COALESCE($arg1, $arg2)" type="varchar">
+      <arg name="arg1" type="anytype" />    
+      <arg name="arg2" type="anytype" />          
+      <output type="anytype" />
+    </operator>
+
+    <operator name="sp_date_compare" dbspecificname="sp_date_compare" guiname="-" script="$date1 - $date2" type="numeric">
+      <attr name="showparenthesis" type="java.lang.Boolean" value="true" />
+      <arg name="date1" type="date" />
+      <arg name="date2" type="date" />
+      <output type="numeric"/>
+    </operator>
+
+    <!-- add predicates also as operators so that it will used for gui purpose for now. only used for gui for now-->
+    <operator name="=" dbspecificname="=" guiname="=" script="$left = $right" type="boolean">
+      <arg name="left" type="anytype" />
+      <arg name="right" type="anytype" />
+      <output type="boolean"/>
+    </operator>
+
+    <operator name="!=" dbspecificname="!=" guiname="!=" script="$left &lt;&gt; $right" type="boolean">
+      <arg name="left" type="anytype" />
+      <arg name="right" type="anytype" />
+      <output type="boolean"/>
+    </operator>
+
+    <operator name="&lt;" dbspecificname="&lt;" guiname="&lt;" script="$left &lt; $right" type="boolean">
+      <arg name="left" type="anytype" />
+      <arg name="right" type="anytype" />
+      <output type="boolean"/>
+    </operator>
+
+    <operator name="&lt;=" dbspecificname="&lt;=" guiname="&lt;=" script="$left &lt;= $right" type="boolean">
+      <arg name="left" type="anytype" />
+      <arg name="right" type="anytype" />
+      <output type="boolean"/>
+    </operator>
+
+    <operator name="&gt;" dbspecificname="&gt;" guiname="&gt;" script="$left &gt; $right" type="boolean">
+      <arg name="left" type="anytype" />
+      <arg name="right" type="anytype" />
+      <output type="boolean"/>
+    </operator>
+
+    <operator name="&gt;=" dbspecificname="&gt;=" guiname="&gt;=" script="$left &gt;= $right" type="boolean">
+      <arg name="left" type="anytype" />
+      <arg name="right" type="anytype" />
+      <output type="boolean"/>
+    </operator>
+
+    <operator name="like" dbspecificname="like" guiname="like" script="$left like $right" type="boolean">
+      <arg name="left" type="varchar" />
+      <arg name="right" type="varchar" />
+      <output type="boolean"/>
+    </operator>
+
+    <operator name="and" dbspecificname="and" guiname="and" script="$left AND $right" type="boolean">
+      <arg name="left" type="anytype" />
+      <arg name="right" type="anytype" />
+      <output type="boolean"/>
+    </operator>
+
+    <operator name="or" dbspecificname="or" guiname="or" script="$left OR $right" type="boolean">
+      <arg name="left" type="anytype" />
+      <arg name="right" type="anytype" />
+      <output type="boolean"/>
+    </operator>
+
+    <operator name="IS" dbspecificname="IS NULL" guiname="IS NULL" script="$left IS NULL" type="boolean">
+      <arg name="left" type="anytype" />
+      <output type="boolean"/>
+    </operator>
+
+    <operator name="IS NOT" dbspecificname="IS NOT NULL" guiname="IS NOT NULL" script="$left IS NOT NULL" type="boolean">
+      <arg name="left" type="anytype" />
+      <output type="boolean"/>
+    </operator>
+
+    <operator name="not" dbspecificname="NOT" guiname="NOT" script="NOT($right)" type="boolean">
+      <arg name="right" type="boolean" />
+      <output type="boolean"/>
+    </operator>
+
+    <operator name="literal" dbspecificname="''" script="' '" type="string">
+      <output type="anytype" />
+    </operator>
+
+    <!-- This operator is not a standard SQL function and must be invoked solely in the Axion database -->
+    <operator name="matches" dbspecificname="MATCHES" script="MATCHES($left, $right)">
+        <arg name="left" type="varchar" />
+        <arg name="right" type="varchar" />
+        <output type="boolean" />
+    </operator>
+
+    <!-- This operator is not a standard SQL function and must be invoked solely in the Axion database -->
+    <operator name="isvaliddatetime" dbspecificname="ISVALIDDATETIME" script="ISVALIDDATETIME($left, $right)">
+        <arg name="left" type="varchar" />
+        <arg name="right" type="varchar" />
+        <output type="boolean" />
+    </operator>
+
+    <!-- This operator is not a standard SQL function and must be invoked solely in the Axion database -->
+    <operator name="normalizeName" dbspecificname="NORMALIZE" script="NORMALIZE('PersonName', $part, $str, $locale)" type="string">
+         <arg name="part" type="varchar" />
+         <arg name="str" type="varchar" />
+         <arg name="locale" type="varchar" />
+         <output type="varchar" />
+    </operator>
+
+    <!-- This operator is not a standard SQL function and must be invoked solely in the Axion database -->
+    <operator name="parseAddress" dbspecificname="STANDARDIZE_ADDRESS" script="STANDARDIZE('Address', $part, $str, $locale)" type="string">
+        <arg name="part" type="varchar" />
+        <arg name="str" type="varchar" />
+        <arg name="locale" type="varchar" />
+        <output type="varchar" />
+    </operator>
+
+    <!-- This operator is not a standard SQL function and must be invoked solely in the Axion database -->
+    <operator name="parseBusinessName" dbspecificname="STANDARDIZE_BUSINESSNAME" script="STANDARDIZE('BusinessName', $part, $str, $locale)" type="string">
+        <arg name="part" type="varchar" />
+        <arg name="str" type="varchar" />
+        <arg name="locale" type="varchar" />
+        <output type="varchar" />
+    </operator>
+
+    <!-- This operator is only available in DB2 and Axion -->
+    <operator name="numberToHex" dbspecificname="HEX" script="HEX($val)" type="string">
+        <arg name="val" type="integer" />
+        <output type="varchar" />
+    </operator>
+
+    <!-- This operator is only available in DB2 and Axion -->
+    <operator name="stringToHex" dbspecificname="HEX" script="HEX($str)" type="string">
+        <arg name="str" type="varchar" />
+        <output type="varchar" />
+    </operator>
+  </operators>
+  
+  <casting-rules>
+    <rule-map source-type="numeric">
+      <rule name="equivalent" target-types="tinyint,smallint,integer,bigint,decimal,double,float,real,varchar,longvarchar,char,anytype" />
+      <rule name="downcast" target-types="time,date,timestamp" />      
+    </rule-map>
+
+    <rule-map source-type="tinyint">
+      <rule name="equivalent" target-types="numeric,char,longvarchar,varchar,anytype" />
+      <rule name="upcast" target-types="smallint,integer,bigint,decimal,double,float,real" />
+    </rule-map>
+
+    <rule-map source-type="smallint">
+      <rule name="equivalent" target-types="numeric,char,longvarchar,varchar,anytype" />
+      <rule name="upcast" target-types="integer,bigint,decimal,double,float,real" />
+      <rule name="downcast" target-types="tinyint" />
+    </rule-map>
+
+    <rule-map source-type="integer">
+      <rule name="equivalent" target-types="numeric,char,longvarchar,varchar,anytype" />
+      <rule name="upcast" target-types="bigint,decimal,double,float,real" />
+      <rule name="downcast" target-types="tinyint,smallint" />
+    </rule-map>
+
+    <rule-map source-type="bigint">
+      <rule name="equivalent" target-types="numeric,char,longvarchar,varchar,anytype" />
+      <rule name="upcast" target-types="decimal,double,float,real" />
+      <rule name="downcast" target-types="tinyint,smallint,integer" />
+    </rule-map>
+
+    <rule-map source-type="decimal">
+      <rule name="equivalent" target-types="numeric,float,real,char,longvarchar,varchar,anytype" />
+      <rule name="upcast" target-types="double" />
+      <rule name="downcast" target-types="tinyint,smallint,integer,bigint" />
+    </rule-map>
+
+    <rule-map source-type="float">
+      <rule name="equivalent" target-types="numeric,decimal,real,char,longvarchar,varchar,anytype" />
+      <rule name="upcast" target-types="double" />
+      <rule name="downcast" target-types="decimal,tinyint,smallint,integer,bigint" />
+    </rule-map>
+
+    <rule-map source-type="real">
+      <rule name="equivalent" target-types="numeric,decimal,float,char,longvarchar,varchar,anytype" />
+      <rule name="upcast" target-types="double" />
+      <rule name="downcast" target-types="decimal,tinyint,smallint,integer,bigint" />
+    </rule-map>
+
+    <rule-map source-type="double">
+      <rule name="equivalent" target-types="numeric,char,longvarchar,varchar,anytype" />
+      <rule name="downcast" target-types="decimal,float,real,tinyint,smallint,integer,bigint" />
+    </rule-map>
+
+    <rule-map source-type="char">
+      <rule name="equivalent" target-types="varchar,longvarchar,anytype" />
+      <rule name="downcast" target-types="numeric,tinyint,smallint,integer,bigint,decimal,double,float,real,time,date,timestamp" />
+    </rule-map>
+
+    <rule-map source-type="varchar">
+      <rule name="equivalent" target-types="char,longvarchar,anytype" />
+      <rule name="downcast" target-types="numeric,tinyint,smallint,integer,bigint,decimal,double,float,real,time,date,timestamp" />
+    </rule-map>
+    
+    <rule-map source-type="clob">
+        <rule name="equivalent" target-types="longvarchar,anytype" />
+    </rule-map>
+
+    <rule-map source-type="longvarchar">
+      <rule name="equivalent" target-types="char,varchar,clob,anytype" />
+      <rule name="downcast" target-types="numeric,tinyint,smallint,integer,bigint,decimal,double,float,real,time,date,timestamp" />
+    </rule-map>
+
+    <rule-map source-type="timestamp">
+      <rule name="equivalent" target-types="anytype" />
+      <rule name="downcast" target-types="longvarchar,varchar,char,date,time" />
+    </rule-map>
+
+    <rule-map source-type="date">
+      <rule name="equivalent" target-types="anytype" />
+      <rule name="downcast" target-types="longvarchar,varchar,char" />
+      <rule name="upcast" target-types="timestamp" />
+    </rule-map>
+
+    <rule-map source-type="time">
+      <rule name="equivalent" target-types="anytype" />
+      <rule name="downcast" target-types="longvarchar,varchar,char" />
+      <rule name="upcast" target-types="timestamp" />
+    </rule-map>
+
+    <rule-map source-type="bit">
+      <rule name="equivalent" target-types="anytype" />
+      <rule name="upcast" target-types="numeric,tinyint,smallint,integer,bigint,decimal,double,float,real,varchar,longvarchar,char" />
+    </rule-map>
+
+    <rule-map source-type="anytype">
+      <rule name="equivalent" target-types="bigint,bit,char,date,decimal,double,float,integer,numeric,real,smallint,time,timestamp,tinyint,longvarchar,varchar,binary,longvarbinary,varbinary,java_object,boolean,other,clob,blob,array,struct,ref,distinct,datalink" />
+    </rule-map>
+    
+    <rule-map source-type="binary">
+      <rule name="equivalent" target-types="varbinary,longvarbinary,anytype" />
+      <rule name="downcast" target-types="bit" />
+    </rule-map>
+    
+    <rule-map source-type="varbinary">
+      <rule name="equivalent" target-types="binary,longvarbinary,anytype" />
+      <rule name="downcast" target-types="bit" />
+    </rule-map>
+    
+    <rule-map source-type="longvarbinary">
+      <rule name="equivalent" target-types="blob,varbinary,binary,anytype" />
+      <rule name="downcast" target-types="bit" />
+    </rule-map>
+
+    <rule-map source-type="blob">
+        <rule name="equivalent" target-types="longvarbinary,anytype" />
+    </rule-map>
+
+    <rule-map source-type="java_object">
+        <rule name="equivalent" target-types="anytype" />    
+    </rule-map>
+
+    <rule-map source-type="array">
+        <rule name="equivalent" target-types="anytype" />    
+    </rule-map>
+    
+    <rule-map source-type="struct">
+        <rule name="equivalent" target-types="anytype" />    
+    </rule-map>
+    
+    <rule-map source-type="distinct">
+        <rule name="equivalent" target-types="anytype" />
+    </rule-map>
+    
+    <rule-map source-type="ref">
+        <rule name="equivalent" target-types="anytype" />    
+    </rule-map>
+    
+    <rule-map source-type="datalink">
+        <rule name="equivalent" target-types="anytype" />    
+    </rule-map>
+    
+    <rule-map source-type="other">
+        <rule name="equivalent" target-types="anytype" />
+    </rule-map>
+
+  </casting-rules>
+</operator-script>

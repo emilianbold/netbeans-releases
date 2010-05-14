@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="GetMessaging" targetNamespace="dummy"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="dummy" xmlns:ftp="http://schemas.sun.com/jbi/wsdl-extensions/ftp/">
+    <types/>
+    <message name="GetMessagingOperationRequest">
+    </message>
+    <message name="GetMessagingOperationResponse">
+        <part name="part1" type="xsd:string"/>
+    </message>
+    <portType name="GetMessagingPortType">
+        <operation name="GetMessagingOperation">
+            <input name="input1" message="tns:GetMessagingOperationRequest"/>
+            <output name="output1" message="tns:GetMessagingOperationResponse"/>
+        </operation>
+    </portType>
+    <binding name="GetMessagingPortTypeBinding" type="tns:GetMessagingPortType">
+        <ftp:binding/>
+        <operation name="GetMessagingOperation">
+            <ftp:operation/>
+            <input name="input1">
+            </input>
+            <output name="output1">
+                <ftp:message messageRepository="change_to_message_repository_dir"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="GetMessagingService">
+        <port name="#SERVICE_NAME_GetMessagingPort" binding="tns:GetMessagingPortTypeBinding">
+            <ftp:address url="ftp://anonymous:user\@yahoo.com@localhost:21" user="" password="" dirListStyle="UNIX" useUserDefinedHeuristics="false" userDefDirListStyle="" userDefDirListHeuristics="" mode="BINARY" securedFTP="None" enableCCC="false" keyStore="" keyStorePassword="" keyAlias="" keyPassword="" trustStore="" trustStorePassword="" cmdChannelTimeout="45000" dataChannelTimeout="45000"/>
+        </port>
+    </service>
+</definitions>

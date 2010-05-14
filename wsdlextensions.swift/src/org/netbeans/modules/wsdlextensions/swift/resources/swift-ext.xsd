@@ -1,0 +1,1471 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:swift="http://schemas.sun.com/jbi/wsdl-extensions/swift/" targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/swift/">
+    <xs:import namespace="http://schemas.xmlsoap.org/wsdl/" schemaLocation="wsdl.xsd"/>
+
+    <!-- Extensibility Element for the WSDL Binding -->
+    <xs:element name="binding" type="swift:tBinding">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_binding</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tBinding">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement"/>
+		<!-- could add more attributes to the binding -->
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- Extensibility Element for the WSDL Operation -->
+    <xs:element name="operation" type="swift:tOperation">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_operation</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tOperation">
+        <xs:complexContent>
+	  <xs:annotation>
+               <xs:documentation>
+	      	"operation" defines the swift protocol based operation binding details..
+               </xs:documentation>
+            </xs:annotation>	
+            <xs:extension base="wsdl:tExtensibilityElement">
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- Extensibility Element for the WSDL Operation Input -->
+    <xs:element name="message" type="swift:tMessage">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_message</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tMessage">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+	    <xs:attribute name="part" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation>DESC_Attribute_part</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="use" type="swift:useTypes" use="optional" default="encoded">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_use</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="encodingStyle" type="xs:string" use="optional" default="swiftencoder-1.0">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_encodingStyle</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+	   </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+	<xs:simpleType name="useTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="encoded"/>
+			<xs:enumeration value="literal"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+    <!-- Extensibility Element for the WSDL Port -->
+    <xs:element name="address" type="swift:tAddress">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_address</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tAddress">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+		<xs:attribute name="location" type="xs:string" default="swift://localhost:4040" use="optional">
+		    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_location</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="transportProtocolName" type="xs:string" use="optional">
+		    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_transportProtocolName</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- Extensibility Element for the WSDL Port -->
+    <xs:element name="protocolproperties" type="swift:tProtocolProperties">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_protocolproperties</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    
+   
+    
+    
+    
+<xs:complexType name="tconnector" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="resourceadapter" type="swift:tresourceadapter">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_resourceadapter</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+      <xs:attribute name="description" type="xs:string" use="optional" default="SAG Connector (No Tx)">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_description</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="vendor-name" type="xs:string" use="optional" default="Sun SeeBeyond">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_vendor-name</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="eis-type" type="xs:string" use="optional" default="SAG">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_eis-type</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="resourceadapter-version" type="xs:string" use="optional" default="5.1.3">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_resourceadapter-version</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tresourceadapter" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="config-property" type="swift:tconfig-property">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_config-property</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="outbound-resourceadapter" type="swift:toutbound-resourceadapter">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_outbound-resourceadapter</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="inbound-resourceadapter" type="swift:tinbound-resourceadapter">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_inbound-resourceadapter</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+      <xs:attribute name="resourceadapter-class" type="xs:string" use="optional" default="com.stc.connector.framework.jca.system.STCResourceAdapter">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_resourceadapter-class</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tconfig-property" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="EwayResourceAdapterClass" type="xs:string" use="optional" default="com.stc.connector.framework.eway.EwayResourceAdapterImpl">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EwayResourceAdapterClass</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ConfigurationTemplate" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_ConfigurationTemplate</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ConfigurationInstance" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_ConfigurationInstance</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="EwayResourceAdapterMBeanClass" type="xs:string" use="optional" default="com.stc.connector.management.jca.system.mbeans.STCRAMonitor">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EwayResourceAdapterMBeanClass</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="EwayResourceAdapterMBeanName" type="xs:string" use="optional" default="SunSeeBeyond:name=Project1_Dep1_Service1_SAG1">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EwayResourceAdapterMBeanName</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="EwayName" type="xs:string" use="optional" default="SAG eWay">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EwayName</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="EwayDescription" type="xs:string" use="optional" default="SAG eway">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EwayDescription</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="EwayVersion" type="xs:string" use="optional" default="5.1.3">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EwayVersion</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SupportedModes" type="xs:string" use="optional" default="Outbound">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SupportedModes</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="toutbound-resourceadapter" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="connection-definition" type="swift:tconnection-definition">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_connection-definition</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="authentication-mechanism" type="swift:tauthentication-mechanism">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_authentication-mechanism</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+      <xs:attribute name="transaction-support" type="xs:string" use="optional" default="NoTransaction">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_transaction-support</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="reauthentication-support" type="xs:string" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_reauthentication-support</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tconnection-definition" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="com.stc.connector.framework.jca.system.STCManagedConnectionFactory" type="swift:tcom.stc.connector.framework.jca.system.STCManagedConnectionFactory">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_com.stc.connector.framework.jca.system.STCManagedConnectionFactory</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tcom.stc.connector.framework.jca.system.STCManagedConnectionFactory" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="config-property" type="swift:tconfig-property">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_config-property</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+      <xs:attribute name="managedconnectionfactory-class" type="xs:string" use="optional" default="com.stc.connector.framework.jca.system.STCManagedConnectionFactory">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_managedconnectionfactory-class</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="connectionfactory-interface" type="xs:string" use="optional" default="com.stc.connector.appconn.common.ApplicationConnectionFactory">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_connectionfactory-interface</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="connectionfactory-impl-class" type="xs:string" use="optional" default="com.stc.connector.framework.client.appconn.STCApplicationConnectionFactory">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_connectionfactory-impl-class</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="connection-interface" type="xs:string" use="optional" default="com.stc.connector.appconn.common.ApplicationConnection">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_connection-interface</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="connection-impl-class" type="xs:string" use="optional" default="com.stc.connector.sagadapter.appconn.SAGApplicationConnection">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_connection-impl-class</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tconfig-property0" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="EwayConnectionClass" type="xs:string" use="optional" default="com.stc.connector.sagadapter.eway.SAGEwayConnection">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EwayConnectionClass</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ApplicationConnectionFactoryClass" type="xs:string" use="optional" default="com.stc.connector.framework.client.appconn.STCApplicationConnectionFactory">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_ApplicationConnectionFactoryClass</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ConfigurationTemplate" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_ConfigurationTemplate</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ConfigurationInstance" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_ConfigurationInstance</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="EwayMCFMBeanClass" type="xs:string" use="optional" default="com.stc.connector.management.jca.system.mbeans.STCMCFMonitor">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EwayMCFMBeanClass</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="EwayMCFMBeanName" type="xs:string" use="optional" default="SunSeeBeyond:name=Project1_Dep1_Service1_SAG1,type=Outbound">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EwayMCFMBeanName</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="EwayManagedConnectionMBeanClass" type="xs:string" use="optional" default="com.stc.connector.management.jca.system.mbeans.STCManagedConnectionMonitor">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EwayManagedConnectionMBeanClass</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tauthentication-mechanism" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="authentication-mechanism-type" type="xs:string" use="optional" default="BasicPassword">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_authentication-mechanism-type</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="credential-interface" type="xs:string" use="optional" default="javax.resource.spi.security.PasswordCredential">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_credential-interface</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tinbound-resourceadapter" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="messageadapter" type="swift:tmessageadapter">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_messageadapter</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tmessageadapter" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="messagelistener" type="swift:tmessagelistener">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_messagelistener</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tmessagelistener" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="com.stc.connector.sagadapter.listener.SAGEwayListener" type="swift:tcom.stc.connector.sagadapter.listener.SAGEwayListener">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_com.stc.connector.sagadapter.listener.SAGEwayListener</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tcom.stc.connector.sagadapter.listener.SAGEwayListener" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="activationspec" type="swift:tactivationspec">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_activationspec</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+      <xs:attribute name="messagelistener-type" type="xs:string" use="optional" default="com.stc.connector.sagadapter.listener.SAGEwayListener">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_messagelistener-type</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tactivationspec" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="required-config-property" type="swift:trequired-config-property">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_required-config-property</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+      <xs:attribute name="activationspec-class" type="xs:string" use="optional" default="com.stc.connector.framework.jca.system.STCActivationSpec">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_activationspec-class</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="trequired-config-property" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="EwayEndpointClass" type="xs:string" use="optional" default="com.stc.connector.sagadapter.eway.SAGEndpoint">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EwayEndpointClass</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ConfigurationTemplate" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_ConfigurationTemplate</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ConfigurationInstance" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_ConfigurationInstance</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="EwayActivationSpecMBeanClass" type="xs:string" use="optional" default="com.stc.connector.management.jca.system.mbeans.STCActivationSpecMonitor">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EwayActivationSpecMBeanClass</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="EwayActivationSpecMBeanName" type="xs:string" use="optional" default="SeeBeyond:name=Project1_Dep1_Service1_File1,type=Inbound">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EwayActivationSpecMBeanName</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tresource-adapter-configuration" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="toutbound-configuration" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="com.stc.connector.framework.jca.system.STCManagedConnectionFactory" type="swift:tcom.stc.connector.framework.jca.system.STCManagedConnectionFactory">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_com.stc.connector.framework.jca.system.STCManagedConnectionFactory</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tcom.stc.connector.framework.jca.system.STCManagedConnectionFactory1" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="configuration" type="swift:tconfiguration">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_configuration</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="environment-configuration" type="swift:tenvironment-configuration">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_environment-configuration</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tconfiguration" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="Envelope" type="swift:tEnvelope">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_Envelope</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="PrimitiveControl" type="swift:tPrimitiveControl">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_PrimitiveControl</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="RemoteApiBase" type="swift:tRemoteApiBase">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_RemoteApiBase</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="SwInt_ExchangeRequest" type="swift:tSwInt_ExchangeRequest">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_SwInt_ExchangeRequest</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="Sw_ExchangeFileRequest" type="swift:tSw_ExchangeFileRequest">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_Sw_ExchangeFileRequest</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="Sw_ExchangeSnFRequest" type="swift:tSw_ExchangeSnFRequest">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_Sw_ExchangeSnFRequest</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="ConnectionEstablishment" type="swift:tConnectionEstablishment">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_ConnectionEstablishment</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tEnvelope" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="ApplicationId" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_ApplicationId</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+    <xs:attribute name="ContextId" type="swift:tContextId" use="optional" default="Advanced"/>
+    <xs:attribute name="MsgFormat" type="swift:tMsgFormat" use="optional" default="Sag:RelaxedSNL"/>
+      <xs:attribute name="Sender" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sender</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SenderAuth" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SenderAuth</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tPrimitiveControl" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="IncludeXMLAttributes" type="xs:boolean" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_IncludeXMLAttributes</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tRemoteApiBase" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="ClientHandleTimeout" type="xs:long" use="optional" default="300000">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_ClientHandleTimeout</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ReadBlockingTimeout" type="xs:long" use="optional" default="60000">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_ReadBlockingTimeout</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tSwInt_ExchangeRequest" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="Sw_AcquireSnFRequest" type="swift:tSw_AcquireSnFRequest">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_Sw_AcquireSnFRequest</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+      <xs:attribute name="SwSec_UserDN" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwSec_UserDN</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SwInt_Requestor" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_Requestor</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SwInt_Responder" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_Responder</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SwInt_Service" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_Service</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SwInt_RequestType" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_RequestType</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SwInt_RequestRef" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_RequestRef</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+    <xs:attribute name="SwInt_RequestCrypto" type="swift:tSwInt_RequestCrypto" use="optional" default="FALSE"/>
+    <xs:attribute name="SwInt_Priority" type="swift:tSwInt_Priority" use="optional" default="Normal"/>
+    <xs:attribute name="Sw_PDIndicationConfig" type="swift:tSw_PDIndicationConfig" use="optional" default="FALSE"/>
+    <xs:attribute name="SwInt_NRIndicator" type="swift:tSwInt_NRIndicator" use="optional" default="FALSE"/>
+    <xs:attribute name="ReceiveModeConfig" type="swift:tReceiveModeConfig" use="optional" default="Real Time"/>
+      <xs:attribute name="SwInt_NotifQueue" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_NotifQueue</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+    <xs:attribute name="Sw_DeliveryNotif" type="swift:tSw_DeliveryNotif" use="optional" default="FALSE"/>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tSw_AcquireSnFRequest" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="SwInt_Queue" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_Queue</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+    <xs:attribute name="Sw_ForceAcquire" type="swift:tSw_ForceAcquire" use="optional" default="TRUE"/>
+    <xs:attribute name="Sw_SessionMode" type="swift:tSw_SessionMode" use="optional" default="Pull"/>
+    <xs:attribute name="Sw_OrderBy" type="swift:tSw_OrderBy" use="optional" default="InterAct"/>
+    <xs:attribute name="Sw_RecoveryMode" type="swift:tSw_RecoveryMode" use="optional" default="FALSE"/>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tSw_ExchangeFileRequest" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="Sw_AcquireSnFRequest" type="swift:tSw_AcquireSnFRequest">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_Sw_AcquireSnFRequest</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="Sw_GetFileRequest" type="swift:tSw_GetFileRequest">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_Sw_GetFileRequest</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="Sw_PutFileRequest" type="swift:tSw_PutFileRequest">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_Sw_PutFileRequest</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="Sw_AckFileRequest" type="swift:tSw_AckFileRequest">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_Sw_AckFileRequest</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="Sw_FetchFileRequest" type="swift:tSw_FetchFileRequest">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_Sw_FetchFileRequest</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+      <xs:attribute name="SwSec_UserDN" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwSec_UserDN</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SwInt_Requestor" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_Requestor</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SwInt_Responder" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_Responder</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SwInt_Service" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_Service</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SwInt_RequestType" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_RequestType</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SwInt_RequestRef" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_RequestRef</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+    <xs:attribute name="SwInt_RequestCrypto" type="swift:tSwInt_RequestCrypto" use="optional" default="FALSE"/>
+    <xs:attribute name="SwInt_Priority" type="swift:tSwInt_Priority" use="optional" default="Normal"/>
+    <xs:attribute name="Sw_PDIndicationConfig" type="swift:tSw_PDIndicationConfig" use="optional" default="FALSE"/>
+    <xs:attribute name="SwInt_NRIndicator" type="swift:tSwInt_NRIndicator" use="optional" default="FALSE"/>
+    <xs:attribute name="ReceiveModeConfig" type="swift:tReceiveModeConfig" use="optional" default="Real Time"/>
+      <xs:attribute name="SwInt_NotifQueue" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_NotifQueue</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+    <xs:attribute name="Sw_DeliveryNotif" type="swift:tSw_DeliveryNotif" use="optional" default="FALSE"/>
+      <xs:attribute name="Sw_TransferKey" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_TransferKey</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Sw_TransferEP" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_TransferEP</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+    <xs:attribute name="BlockFileTransfer" type="swift:tBlockFileTransfer" use="optional" default="TRUE"/>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tSw_AcquireSnFRequest2" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="SwInt_Queue" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_Queue</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+    <xs:attribute name="Sw_ForceAcquire" type="swift:tSw_ForceAcquire" use="optional" default="TRUE"/>
+    <xs:attribute name="Sw_SessionMode" type="swift:tSw_SessionMode" use="optional" default="Pull"/>
+    <xs:attribute name="Sw_OrderBy" type="swift:tSw_OrderBy" use="optional" default="FileAct"/>
+    <xs:attribute name="Sw_RecoveryMode" type="swift:tSw_RecoveryMode" use="optional" default="FALSE"/>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tSw_GetFileRequest" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="Sw_TransferDescription" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_TransferDescription</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Sw_TransferInfo" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_TransferInfo</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Sw_LogicalName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_LogicalName</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Sw_PhysicalName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_PhysicalName</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Sw_MaxSize" type="xs:string" use="optional" default="4000000">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_MaxSize</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tSw_PutFileRequest" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="Sw_TransferDescription" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_TransferDescription</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Sw_TransferInfo" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_TransferInfo</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Sw_LogicalName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_LogicalName</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Sw_PhysicalName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_PhysicalName</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Sw_FileDescription" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_FileDescription</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Sw_FileInfo" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_FileInfo</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tSw_AckFileRequest" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="Sw_AckDescription" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_AckDescription</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Sw_AckInfo" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_AckInfo</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tSw_FetchFileRequest" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="Sw_PhysicalName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Sw_PhysicalName</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tSw_ExchangeSnFRequest" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="SwSec_UserDN" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwSec_UserDN</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SwInt_Queue" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SwInt_Queue</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+    <xs:attribute name="Sw_ForceAcquire" type="swift:tSw_ForceAcquire" use="optional" default="TRUE"/>
+    <xs:attribute name="Sw_SessionMode" type="swift:tSw_SessionMode" use="optional" default="Pull"/>
+    <xs:attribute name="Sw_OrderBy" type="swift:tSw_OrderBy" use="optional" default=" "/>
+    <xs:attribute name="Sw_RecoveryMode" type="swift:tSw_RecoveryMode" use="optional" default="FALSE"/>
+    <xs:attribute name="SwInt_NRIndicator" type="swift:tSwInt_NRIndicator" use="optional" default="FALSE"/>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tConnectionEstablishment" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+    <xs:attribute name="ConnectionMode" type="swift:tConnectionMode" use="optional" default="Automatic"/>
+      <xs:attribute name="TimeToWaitBeforeAttemptingConnection" type="xs:long" use="optional" default="0">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_TimeToWaitBeforeAttemptingConnection</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="MaxConnectionRetries" type="xs:long" use="optional" default="3">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_MaxConnectionRetries</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="RetryConnectionInterval" type="xs:long" use="optional" default="30000">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_RetryConnectionInterval</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="AlwaysCreateNewConnection" type="xs:boolean" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_AlwaysCreateNewConnection</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="AutoReconnectUponMatchingFailure" type="xs:boolean" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_AutoReconnectUponMatchingFailure</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="AutoDisconnectConnection" type="xs:boolean" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_AutoDisconnectConnection</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="EarlyConnectUponDeployment" type="xs:boolean" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_EarlyConnectUponDeployment</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tenvironment-configuration" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    <xs:element name="Transport" type="swift:tTransport">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_Transport</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    <xs:element name="ConnectionPoolSettings" type="swift:tConnectionPoolSettings">
+      <xs:annotation>
+        <xs:documentation>DESC_Element_ConnectionPoolSettings</xs:documentation>
+      </xs:annotation>
+    </xs:element>
+    </xs:sequence>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tTransport" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="ReadFromRaCfgFile" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_ReadFromRaCfgFile</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="HostName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_HostName</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="PortNumber" type="xs:long" use="optional" default="48002">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_PortNumber</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="FtlaPortNumber" type="xs:long" use="optional" default="48003">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_FtlaPortNumber</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="ServerDN" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_ServerDN</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="CACertificate" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_CACertificate</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="SSLMode" type="xs:boolean" use="optional" default="true">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SSLMode</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Reconnect" type="xs:boolean" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_Reconnect</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="HBInterval" type="xs:long" use="optional" default="60">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_HBInterval</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="HBLimit" type="xs:long" use="optional" default="30">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_HBLimit</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="DisplayName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_DisplayName</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:complexType name="tConnectionPoolSettings" >
+  <xs:complexContent>
+    <xs:extension base="wsdl:tExtensibleDocumented" >
+    <xs:sequence>
+    </xs:sequence>
+      <xs:attribute name="SteadyPoolSize" type="xs:long" use="optional" default="1">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_SteadyPoolSize</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="MaxPoolSize" type="xs:long" use="optional" default="32">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_MaxPoolSize</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="MaxWaitTimeInMillis" type="xs:long" use="optional" default="60000">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_MaxWaitTimeInMillis</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="PoolIdleTimeoutInSeconds" type="xs:long" use="optional" default="300">
+      <xs:annotation>
+        <xs:documentation>DESC_Attribute_PoolIdleTimeoutInSeconds</xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+  </xs:extension>
+</xs:complexContent>
+</xs:complexType>
+
+
+
+<xs:simpleType name="tContextId">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Advanced"/>
+    <xs:enumeration value=" "/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tMsgFormat">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Sag:RelaxedSNL"/>
+    <xs:enumeration value="Sag:SNL"/>
+    <xs:enumeration value="Sag:Primitive"/>
+    <xs:enumeration value="Sag:BasicInterAct"/>
+    <xs:enumeration value=" "/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSwInt_RequestCrypto">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="FALSE"/>
+    <xs:enumeration value="TRUE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSwInt_Priority">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Normal"/>
+    <xs:enumeration value="Urgent"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_PDIndicationConfig">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="FALSE"/>
+    <xs:enumeration value="TRUE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSwInt_NRIndicator">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="FALSE"/>
+    <xs:enumeration value="TRUE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tReceiveModeConfig">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Real Time"/>
+    <xs:enumeration value="Store and Forward"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_DeliveryNotif">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="FALSE"/>
+    <xs:enumeration value="TRUE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_ForceAcquire">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="TRUE"/>
+    <xs:enumeration value="FALSE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_SessionMode">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Pull"/>
+    <xs:enumeration value="Push"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_OrderBy">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="InterAct"/>
+    <xs:enumeration value=" "/>
+    <xs:enumeration value="FileAct"/>
+    <xs:enumeration value="Urgent"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_RecoveryMode">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="FALSE"/>
+    <xs:enumeration value="TRUE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSwInt_RequestCrypto3">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="FALSE"/>
+    <xs:enumeration value="TRUE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSwInt_Priority4">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Normal"/>
+    <xs:enumeration value="Urgent"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_PDIndicationConfig5">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="FALSE"/>
+    <xs:enumeration value="TRUE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSwInt_NRIndicator6">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="FALSE"/>
+    <xs:enumeration value="TRUE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tReceiveModeConfig7">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Real Time"/>
+    <xs:enumeration value="Store and Forward"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_DeliveryNotif8">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="FALSE"/>
+    <xs:enumeration value="TRUE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tBlockFileTransfer">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="TRUE"/>
+    <xs:enumeration value="FALSE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_ForceAcquire9">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="TRUE"/>
+    <xs:enumeration value="FALSE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_SessionMode10">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Pull"/>
+    <xs:enumeration value="Push"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_OrderBy11">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="FileAct"/>
+    <xs:enumeration value=" "/>
+    <xs:enumeration value="InterAct"/>
+    <xs:enumeration value="Urgent"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_RecoveryMode12">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="FALSE"/>
+    <xs:enumeration value="TRUE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_ForceAcquire13">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="TRUE"/>
+    <xs:enumeration value="FALSE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_SessionMode14">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Pull"/>
+    <xs:enumeration value="Push"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_OrderBy15">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value=" "/>
+    <xs:enumeration value="InterAct"/>
+    <xs:enumeration value="FileAct"/>
+    <xs:enumeration value="Urgent"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSw_RecoveryMode16">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="FALSE"/>
+    <xs:enumeration value="TRUE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tSwInt_NRIndicator17">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="FALSE"/>
+    <xs:enumeration value="TRUE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+<xs:simpleType name="tConnectionMode">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="Automatic"/>
+    <xs:enumeration value="Manual"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+
+<xs:complexType name="tProtocolProperties">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+
+
+
+
+
+
+<xs:sequence>
+<xs:element name="connector" type="swift:tconnector"/>
+<xs:element name="resourceadapter" type="swift:tresourceadapter"/>
+<xs:element name="config-property" type="swift:tconfig-property"/>
+<xs:element name="outbound-resourceadapter" type="swift:toutbound-resourceadapter"/>
+<xs:element name="connection-definition" type="swift:tconnection-definition"/>
+<xs:element name="com.stc.connector.framework.jca.system.STCManagedConnectionFactory" type="swift:tcom.stc.connector.framework.jca.system.STCManagedConnectionFactory"/>
+<xs:element name="config-property0" type="swift:tconfig-property0"/>
+<xs:element name="authentication-mechanism" type="swift:tauthentication-mechanism"/>
+<xs:element name="inbound-resourceadapter" type="swift:tinbound-resourceadapter"/>
+<xs:element name="messageadapter" type="swift:tmessageadapter"/>
+<xs:element name="messagelistener" type="swift:tmessagelistener"/>
+<xs:element name="com.stc.connector.sagadapter.listener.SAGEwayListener" type="swift:tcom.stc.connector.sagadapter.listener.SAGEwayListener"/>
+<xs:element name="activationspec" type="swift:tactivationspec"/>
+<xs:element name="required-config-property" type="swift:trequired-config-property"/>
+<xs:element name="resource-adapter-configuration" type="swift:tresource-adapter-configuration"/>
+<xs:element name="outbound-configuration" type="swift:toutbound-configuration"/>
+<xs:element name="com.stc.connector.framework.jca.system.STCManagedConnectionFactory1" type="swift:tcom.stc.connector.framework.jca.system.STCManagedConnectionFactory1"/>
+<xs:element name="configuration" type="swift:tconfiguration"/>
+<xs:element name="Envelope" type="swift:tEnvelope"/>
+<xs:element name="PrimitiveControl" type="swift:tPrimitiveControl"/>
+<xs:element name="RemoteApiBase" type="swift:tRemoteApiBase"/>
+<xs:element name="SwInt_ExchangeRequest" type="swift:tSwInt_ExchangeRequest"/>
+<xs:element name="Sw_AcquireSnFRequest" type="swift:tSw_AcquireSnFRequest"/>
+<xs:element name="Sw_ExchangeFileRequest" type="swift:tSw_ExchangeFileRequest"/>
+<xs:element name="Sw_AcquireSnFRequest2" type="swift:tSw_AcquireSnFRequest2"/>
+<xs:element name="Sw_GetFileRequest" type="swift:tSw_GetFileRequest"/>
+<xs:element name="Sw_PutFileRequest" type="swift:tSw_PutFileRequest"/>
+<xs:element name="Sw_AckFileRequest" type="swift:tSw_AckFileRequest"/>
+<xs:element name="Sw_FetchFileRequest" type="swift:tSw_FetchFileRequest"/>
+<xs:element name="Sw_ExchangeSnFRequest" type="swift:tSw_ExchangeSnFRequest"/>
+<xs:element name="ConnectionEstablishment" type="swift:tConnectionEstablishment"/>
+<xs:element name="environment-configuration" type="swift:tenvironment-configuration"/>
+<xs:element name="Transport" type="swift:tTransport"/>
+<xs:element name="ConnectionPoolSettings" type="swift:tConnectionPoolSettings"/>
+</xs:sequence>
+
+                
+                
+           </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+</xs:schema>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"
+    xmlns:tns="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"
+    elementFormDefault="qualified">
+    <xsd:complexType name="pojoExceptionType">
+        <xsd:sequence>
+            <xsd:element name="class" type="xsd:string"/>
+            <xsd:element name="operation" type="xsd:string"/>
+            <xsd:element name="exception" type="xsd:string"/>
+            <xsd:element name="message" type="xsd:string"/>
+            <xsd:element name="stackTrace" type="xsd:string"/>
+            <xsd:element name="cause" type="xsd:anyType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="pojoException" type="tns:pojoExceptionType"/>
+
+    <xsd:complexType name="ErrorInfoType">
+        <xsd:choice>
+            <xsd:element ref="tns:pojoException"/>
+        </xsd:choice>
+    </xsd:complexType>
+
+</xsd:schema>

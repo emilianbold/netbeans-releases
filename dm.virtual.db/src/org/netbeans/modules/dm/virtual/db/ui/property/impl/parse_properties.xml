@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<TemplateGroup>
+    <Template name="Delimited">
+        <PropertyGroup name="Default">
+            <OptionProperty name="WIZARDDEFAULTSQLTYPE" 
+                            valueType="java.lang.String"
+                            position="1"
+                            required="true"
+                            default="true"
+                            defaultOption="3"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="numeric" value="numeric" />
+                <Option name="time" value="time" />
+                <Option name="timestamp" value="timestamp" />
+                <Option name="varchar" value="varchar" />
+            </OptionProperty>
+            <Property name="WIZARDDEFAULTPRECISION" valueType="java.lang.Integer" 
+                      required="true" position="2" default="60" />
+            <OptionProperty name="RECORDDELIMITER"
+                            valueType="java.lang.String"
+                            position="3"
+                            required="true"
+                            default="true"
+                            defaultOption="3"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="newline" value="\n" />
+                <Option name="cr" value="\r" />
+                <Option name="crlf" value="\r\n" />
+                <Option name="crlforlf" value="\r\n \n" />
+                <Option name="semicolon" value=";" />
+                <Option name="comma" value="," />
+                <Option name="tab" value="\t" />
+                <Option name="pipe" value="|" />
+            </OptionProperty>
+            <OptionProperty name="FIELDDELIMITER"
+                            valueType="java.lang.String"
+                            position="4"
+                            required="true"
+                            default="true"
+                            defaultOption="0"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="comma" value="," />
+                <Option name="tab" value="\t" />
+                <Option name="semicolon" value=";" />
+                <Option name="pipe" value="|" />
+                <Option name="userdefined" value="UserDefined" />
+            </OptionProperty>
+            <Property name="WIZARDCUSTOMFIELDDELIMITER" valueType="java.lang.String"
+                      required="false" position="5" default="" />
+            <OptionProperty name="QUALIFIER"
+                            valueType="java.lang.String"
+                            position="6"
+                            required="true"
+                            default="true"
+                            defaultOption="1"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="none" value="" />
+                <Option name="doublequote" value="&quot;" />
+                <Option name="singlequote" value="&apos;&apos;" />
+            </OptionProperty>
+            <Property name="ISFIRSTLINEHEADER" valueType="java.lang.Boolean"
+                      required="true" position="7" default="false" />
+            <Property name="CREATE_IF_NOT_EXIST" valueType="java.lang.Boolean"
+                      required="true" position="8" default="true" />
+            <Property name="ROWSTOSKIP" valueType="java.lang.Integer"
+                      required="true" position="9" default="0" />
+            <Property name="MAXFAULTS" valueType="java.lang.Integer"
+                      required="true" position="10" default="0" />                       
+            <OptionProperty name="TRIMWHITESPACE" 
+                            valueType="java.lang.Boolean"
+                            position="10"
+                            required="false"
+                            default="true"
+                            defaultOption="0"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="true" value="true" />
+                <Option name="false" value="false" />
+            </OptionProperty>
+        </PropertyGroup>
+    </Template>
+    <Template name="FixedWidth">
+        <PropertyGroup name="Default">
+            <OptionProperty name="WIZARDDEFAULTSQLTYPE"
+                            valueType="java.lang.String"
+                            position="1"
+                            required="true"
+                            default="true"
+                            defaultOption="3"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="numeric" value="numeric" />
+                <Option name="time" value="time" />
+                <Option name="timestamp" value="timestamp" />
+                <Option name="varchar" value="varchar" />
+            </OptionProperty>
+            <Property name="WIZARDRECORDLENGTH" valueType="java.lang.Integer"
+                      required="true" position="2" default="0" />
+            <Property name="WIZARDFIELDCOUNT" valueType="java.lang.Integer"
+                      required="true" position="3" default="0" />
+            <OptionProperty name="RECORDDELIMITER"
+                            valueType="java.lang.String"
+                            position="4"
+                            required="true"
+                            default="true"
+                            defaultOption="3"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="none" value="" />
+                <Option name="newline" value="\n" />
+                <Option name="cr" value="\r" />
+                <Option name="crlf" value="\r\n" />
+            </OptionProperty>
+            <Property name="ISFIRSTLINEHEADER" valueType="java.lang.Boolean"
+                      required="false" position="5" default="false" />
+            <Property name="CREATE_IF_NOT_EXIST" valueType="java.lang.Boolean"
+                      required="true" position="6" default="true" />
+            <Property name="HEADERBYTESOFFSET" valueType="java.lang.Integer"
+                      required="false" position="7" default="0" />
+            <Property name="ROWSTOSKIP" valueType="java.lang.Integer"
+                      required="true" position="8" default="0" /> 
+            <Property name="MAXFAULTS" valueType="java.lang.Integer"
+                      required="true" position="9" default="0" />               
+            <OptionProperty name="TRIMWHITESPACE" 
+                            valueType="java.lang.Boolean"
+                            position="10"
+                            required="false"
+                            default="true"
+                            defaultOption="0"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="true" value="true" />
+                <Option name="false" value="false" />
+            </OptionProperty>
+        </PropertyGroup>
+    </Template>
+    <Template name="Tagged">
+        <PropertyGroup name="Default">
+            <OptionProperty name="WIZARDDEFAULTSQLTYPE"
+                            valueType="java.lang.String"
+                            position="1"
+                            required="true"
+                            default="true"
+                            defaultOption="3"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="numeric" value="numeric" />
+                <Option name="time" value="time" />
+                <Option name="timestamp" value="timestamp" />
+                <Option name="varchar" value="varchar" />
+            </OptionProperty>
+            <Property name="WIZARDRECORDLENGTH" valueType="java.lang.Integer"
+                      required="true" position="2" default="0" />
+            <Property name="OFFSET" valueType="java.lang.Integer"
+                      required="true" position="3" default="0" />
+            <Property name="TRAILINGBYTESIGNORED" valueType="java.lang.Integer"
+                      required="true" position="4" default="0" />
+            <Property name="ISBIGENDIAN" valueType="java.lang.Boolean"
+                      required="true" position="5" default="false" />
+            <Property name="COLUMNHEADERBYTECOUNT" valueType="java.lang.Integer"
+                      required="true" position="6" default="0" />
+            <Property name="TAGRANGEMIN" valueType="java.lang.Integer"
+                      required="true" position="8" default="0" />
+            <Property name="TAGRANGEMAX" valueType="java.lang.Integer"
+                      required="true" position="7" default="0" />
+            <Property name="MAXFAULTS" valueType="java.lang.Integer"
+                      required="true" position="9" default="0" />                       
+        </PropertyGroup>
+    </Template>
+    <Template name="WEB">
+        <PropertyGroup name="Default">
+            <OptionProperty name="WIZARDDEFAULTSQLTYPE" 
+                            valueType="java.lang.String"
+                            position="1"
+                            required="true"
+                            default="true"
+                            defaultOption="3"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="numeric" value="numeric" />
+                <Option name="time" value="time" />
+                <Option name="timestamp" value="timestamp" />
+                <Option name="varchar" value="varchar" />
+            </OptionProperty>
+            <Property name="WIZARDDEFAULTPRECISION" valueType="java.lang.Integer" 
+                      required="true" position="2" default="60" />
+            <OptionProperty name="RECORDDELIMITER"
+                            valueType="java.lang.String"
+                            position="3"
+                            required="true"
+                            default="true"
+                            defaultOption="3"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="newline" value="\n" />
+                <Option name="cr" value="\r" />
+                <Option name="crlf" value="\r\n" />
+                <Option name="crlforlf" value="\r\n \n" />
+                <Option name="semicolon" value=";" />
+                <Option name="comma" value="," />
+                <Option name="tab" value="\t" />
+                <Option name="pipe" value="|" />
+            </OptionProperty>
+            <OptionProperty name="FIELDDELIMITER"
+                            valueType="java.lang.String"
+                            position="4"
+                            required="true"
+                            default="true"
+                            defaultOption="0"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="comma" value="," />
+                <Option name="tab" value="\t" />
+                <Option name="semicolon" value=";" />
+                <Option name="pipe" value="|" />
+                <Option name="userdefined" value="UserDefined" />
+            </OptionProperty>
+            <Property name="WIZARDCUSTOMFIELDDELIMITER" valueType="java.lang.String"
+                      required="false" position="5" default="" />
+            <OptionProperty name="QUALIFIER"
+                            valueType="java.lang.String"
+                            position="6"
+                            required="true"
+                            default="true"
+                            defaultOption="1"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="none" value="" />
+                <Option name="doublequote" value="&quot;" />
+                <Option name="singlequote" value="&apos;&apos;" />
+            </OptionProperty>
+            <Property name="ISFIRSTLINEHEADER" valueType="java.lang.Boolean"
+                      required="true" position="7" default="false" />
+            <Property name="ROWSTOSKIP" valueType="java.lang.Integer"
+                      required="true" position="8" default="0" />
+            <Property name="MAXFAULTS" valueType="java.lang.Integer"
+                      required="true" position="9" default="0" />                       
+            <OptionProperty name="TRIMWHITESPACE" 
+                            valueType="java.lang.Boolean"
+                            position="10"
+                            required="false"
+                            default="true"
+                            defaultOption="0"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="True" value="true" />
+                <Option name="False" value="false" />
+            </OptionProperty>
+            <OptionProperty name="REFRESH" 
+                            valueType="java.lang.Boolean"
+                            position="11"
+                            required="false"
+                            default="true"
+                            defaultOption="0"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="True" value="true" />
+                <Option name="False" value="false" />
+            </OptionProperty>            
+        </PropertyGroup>
+    </Template>    
+    <Template name="XML">
+        <PropertyGroup name="Default">
+            <OptionProperty name="WIZARDDEFAULTSQLTYPE" 
+                            valueType="java.lang.String"
+                            position="1"
+                            required="true"
+                            default="true"
+                            defaultOption="3"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="numeric" value="numeric" />
+                <Option name="time" value="time" />
+                <Option name="timestamp" value="timestamp" />
+                <Option name="varchar" value="varchar" />
+            </OptionProperty>
+            <Property name="WIZARDDEFAULTPRECISION" valueType="java.lang.Integer" 
+                      required="true" position="2" default="60" />            
+            <OptionProperty name="TYPE" 
+                            valueType="java.lang.String"
+                            position="3"
+                            required="true"
+                            default="true"
+                            defaultOption="2"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="READONLY" value="READONLY" />
+                <Option name="READWRITE" value="READWRITE" />
+            </OptionProperty>
+            <Property name="ROWNAME" valueType="java.lang.String"
+                      required="true" position="4" default="row" />
+            <Property name="ROWSTOSKIP" valueType="java.lang.Integer"
+                      required="true" position="5" default="0" />
+            <Property name="MAXFAULTS" valueType="java.lang.Integer"
+                      required="true" position="6" default="0" />    
+        </PropertyGroup>
+    </Template>     
+    <Template name="WEBROWSET">
+        <PropertyGroup name="Default">
+            <OptionProperty name="WIZARDDEFAULTSQLTYPE" 
+                            valueType="java.lang.String"
+                            position="1"
+                            required="true"
+                            default="true"
+                            defaultOption="3"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="numeric" value="numeric" />
+                <Option name="time" value="time" />
+                <Option name="timestamp" value="timestamp" />
+                <Option name="varchar" value="varchar" />
+            </OptionProperty>
+            <Property name="WIZARDDEFAULTPRECISION" valueType="java.lang.Integer" 
+                      required="true" position="2" default="60" />                                    
+        </PropertyGroup>
+    </Template>    
+    <Template name="RSS">
+        <PropertyGroup name="Default">
+            <OptionProperty name="WIZARDDEFAULTSQLTYPE" 
+                            valueType="java.lang.String"
+                            position="1"
+                            required="true"
+                            default="true"
+                            defaultOption="3"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="numeric" value="numeric" />
+                <Option name="time" value="time" />
+                <Option name="timestamp" value="timestamp" />
+                <Option name="varchar" value="varchar" />
+            </OptionProperty>
+            <Property name="WIZARDDEFAULTPRECISION" valueType="java.lang.Integer" 
+                      required="true" position="2" default="200" />                                    
+        </PropertyGroup>
+    </Template>       
+    <Template name="SPREADSHEET">
+        <PropertyGroup name="Default">
+            <OptionProperty name="WIZARDDEFAULTSQLTYPE" 
+                            valueType="java.lang.String"
+                            position="1"
+                            required="true"
+                            default="true"
+                            defaultOption="3"
+                            editorClass="org.netbeans.modules.dm.virtual.db.ui.property.impl.OptionListEditor">
+                <Option name="numeric" value="numeric" />
+                <Option name="time" value="time" />
+                <Option name="timestamp" value="timestamp" />
+                <Option name="varchar" value="varchar" />
+            </OptionProperty>
+            <Property name="WIZARDDEFAULTPRECISION" valueType="java.lang.Integer" 
+                      required="true" position="2" default="60" />
+            <Property name="ISFIRSTLINEHEADER" valueType="java.lang.Boolean"
+                      required="true" position="3" default="false" />
+            <Property name="CREATE_IF_NOT_EXIST" valueType="java.lang.Boolean"
+                      required="true" position="4" default="true" />
+            <Property name="ROWSTOSKIP" valueType="java.lang.Integer"
+                      required="true" position="5" default="0" />
+            <Property name="MAXFAULTS" valueType="java.lang.Integer"
+                      required="true" position="6" default="0" />    
+        </PropertyGroup>
+    </Template>        
+</TemplateGroup>

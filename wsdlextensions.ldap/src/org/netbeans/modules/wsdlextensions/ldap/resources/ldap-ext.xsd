@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+           xmlns:ldap="http://schemas.sun.com/jbi/wsdl-extensions/ldap/" 
+           targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/ldap/">
+    <xs:import namespace="http://schemas.xmlsoap.org/wsdl/" schemaLocation="wsdl.xsd"/>
+    <xs:element name="binding" type="ldap:tBinding">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_binding</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tBinding">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement"/>
+            <!-- could add more attributes to the binding -->
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:element name="operation" type="ldap:tOperation"/>
+    <xs:complexType name="tOperation">
+        <xs:annotation>
+            <xs:documentation>DESC_ComplexType_tOperation</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">				
+                <xs:attribute name="type" type="ldap:operationTypes" use="required">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_type</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:simpleType name="operationTypes">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="searchRequest"/>
+            <xs:enumeration value="updateRequest"/>
+            <xs:enumeration value="compareRequest"/>
+            <xs:enumeration value="insertRequest"/>
+            <xs:enumeration value="deleteRequest"/>
+            <xs:enumeration value="addConnectionRequest"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:element name="input" type="ldap:tInput">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_input</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tInput">
+        
+    </xs:complexType>	
+    <xs:element name="output" type="ldap:tOutput">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_output</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tOutput">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+                <xs:attribute name="returnPartName" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_returnPartName</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="attributes" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_attributes</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:element name="address" type="ldap:tAddress">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_address</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tAddress">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+                <xs:attribute name="location" type="xs:string" use="required"/>
+                <xs:attribute name="principal" type="xs:string" use="optional"/>
+                <xs:attribute name="credential" type="xs:string" use="optional"/>
+                <xs:attribute name="ssltype" type="xs:string" use="optional"/>
+                <xs:attribute name="authentication" type="xs:string" use="optional"/>
+                <xs:attribute name="protocol" type="xs:string" use="optional"/>
+                <xs:attribute name="truststore" type="xs:string" use="optional"/>
+                <xs:attribute name="truststorepassword" type="xs:string" use="optional"/>
+                <xs:attribute name="truststoretype" type="xs:string" use="optional"/>
+                <xs:attribute name="keystore" type="xs:string" use="optional"/>
+                <xs:attribute name="keystorepassword" type="xs:string" use="optional"/>
+                <xs:attribute name="keystoreusername" type="xs:string" use="optional"/>
+                <xs:attribute name="keystoretype" type="xs:string" use="optional"/>
+                <xs:attribute name="tlssecurity" type="xs:string" use="optional"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+</xs:schema>

@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+>
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+        <title>About the Destination Tree Pane</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>
+             About the Destination Tree Pane
+        </h2>
+        <p>
+            <small><a href="#seealso">See Also</a></small>
+        </p>
+        <p>
+             The Destination tree pane is located on the right side of the Design view.
+        </p>
+        <p>
+            The Destination tree pane contains three types of nodes:
+        </p>
+        <ul>
+            <li>
+                <b>Placeholder nodes:</b> nodes corresponding to elements (<img src="../../../images/element.png">) and attributes (<img src="../../../images/attribute.png">) of the outgoing message schema. Nodes of this type are shown in blue and comprise the possible structure of the outgoing message as defined by the schema.
+            </li>
+            <li>
+                <b>Stylesheet nodes:</b> nodes corresponding to elements (<img src="../../../images/element.png">) and attributes (<img src="../../../images/attribute.png">) of the outgoing message schema that are already accounted for in the stylesheet. A stylesheet with no template would not have any nodes of this type. When you create a data mapping to a blue placeholder node, the node becomes black, meaning that a certain transformation instruction involving this particluar node has been added to the stylesheet. The black nodes constitute the output message.
+                <ul class="note">
+                    <li>
+                        If you modify the source of the stylesheet to include an element or an attribute not allowed by the schema, the node will be shown in red.
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <b>XSLT rules:</b> nodes corresponding to XSLT rules. Currently, the supported rules are If and For Each. For more information see <a href="rules.html" title="Adding XSLT Rules">Adding XSLT Rules</a>.
+            </li>
+        </ul>
+        <ul class="note">
+            <li>
+                 A data flow link connected to a stylesheet node signifies that an <tt>xsl:value-of</tt> nested element has been added to the stylesheet. If, however, the stylesheet node contains <i>XSLT rule</i> or stylesheet subnodes, then the <tt>xsl:value-of</tt> element is shown explicitly in the tree (<img src="../../../images/rule.png">).
+            </li>
+        </ul>
+        <p>
+            The following pop-up menu actions are available for the placeholder nodes:
+        </p>
+        <ul>
+            <li>
+                <b>Add</b>
+                <ul>
+                    <li>
+                        <b>This Component</b>. Adds information about the node to the stylesheet without creating any transformation instructions.
+                    </li>
+                    <li>
+                        <i><b>XSLT rule</b></i>. Adds the <i>XSLT rule</i> to the stylesheet.
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <p>
+            The following pop-up menu actions are available for the stylesheet nodes:
+        </p>
+        <ul>
+            <li>
+                <b>Add</b>
+                <ul>
+                    <li>
+                        <i><b>Child node</b></i>. Adds information about the <i>child node</i> to the stylesheet without creating any transformation instruction. Available only for elements that can have nested elements.
+                    </li>
+                    <li>
+                        <i><b>XSLT rule</b></i>. Adds the <i>XSLT rule</i> to the stylesheet.
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <b>Delete</b>. Deletes the node.
+            </li>
+        </ul>
+        <dl>
+            <dt>
+                <a name="seealso">See Also</a>
+            </dt>
+            <dd>
+                <a href="../about.html" title="About the Design View of the XSL Transformation Editor">About the Design View of the XSL Transformation Editor</a>
+            </dd>
+            <dd>
+                <a href="../sourcetree.html" title="About the Source Tree Pane">About the Source Tree Pane</a>
+            </dd>
+            <dd>
+                <a href="../panel/about.html" title="About the Transformations Pane">About the Transformations Pane</a>
+            </dd>
+            <dd>
+                <a href="rules.html" title="Adding XSLT Rules">Adding XSLT Rules</a>
+            </dd>
+        </dl>
+        <hr>
+        <small>
+            <a href="../../../credits.html">Legal Notices</a>
+        </small>
+        <table border="0" cellpadding="150">
+            <tr>
+                <td>
+                     &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                     &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                     &nbsp;
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

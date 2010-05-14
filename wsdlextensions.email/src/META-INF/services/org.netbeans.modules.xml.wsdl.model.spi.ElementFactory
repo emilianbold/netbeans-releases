@@ -1,0 +1,13 @@
+org.netbeans.modules.wsdlextensions.email.impl.EMAILElementFactoryProvider$IMAPAddressFactory
+org.netbeans.modules.wsdlextensions.email.impl.EMAILElementFactoryProvider$IMAPBindingFactory
+org.netbeans.modules.wsdlextensions.email.impl.EMAILElementFactoryProvider$IMAPOperationFactory
+org.netbeans.modules.wsdlextensions.email.impl.EMAILElementFactoryProvider$IMAPInputFactory
+org.netbeans.modules.wsdlextensions.email.impl.EMAILElementFactoryProvider$POP3AddressFactory
+org.netbeans.modules.wsdlextensions.email.impl.EMAILElementFactoryProvider$POP3BindingFactory
+org.netbeans.modules.wsdlextensions.email.impl.EMAILElementFactoryProvider$POP3OperationFactory
+org.netbeans.modules.wsdlextensions.email.impl.EMAILElementFactoryProvider$POP3InputFactory
+org.netbeans.modules.wsdlextensions.email.impl.EMAILElementFactoryProvider$SMTPAddressFactory
+org.netbeans.modules.wsdlextensions.email.impl.EMAILElementFactoryProvider$SMTPBindingFactory
+org.netbeans.modules.wsdlextensions.email.impl.EMAILElementFactoryProvider$SMTPOperationFactory
+org.netbeans.modules.wsdlextensions.email.impl.EMAILElementFactoryProvider$SMTPInputFactory
+org.netbeans.modules.wsdlextensions.email.impl.EMAILElementFactoryProvider$SMTPAttachmentFactory

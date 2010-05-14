@@ -1,0 +1,2 @@
+#set( $indent = "    " )
+DELETE FROM $tableName WHERE "endDate" IS NULL

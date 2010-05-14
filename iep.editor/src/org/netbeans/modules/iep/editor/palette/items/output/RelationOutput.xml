@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE editor_palette_item PUBLIC "-//NetBeans//Editor Palette Item 1.0//EN" "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
+
+<editor_palette_item version="1.0">
+    <class name="org.netbeans.modules.iep.editor.palette.items.output.RelationOutput"/>
+    
+    <icon16 urlvalue="images/icons16x16/relationOutputx16.png" />
+    <icon32 urlvalue="images/icons32x32/relationOutputx32.png" />
+    <description localizing-bundle="org.netbeans.modules.iep.editor.palette.items.output.Bundle"
+               display-name-key="NAME_html-RelationOutput"
+               tooltip-key="HINT_html-RelationOutput" />
+</editor_palette_item>

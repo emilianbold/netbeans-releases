@@ -1,0 +1,5 @@
+#set( $indent = "    " )
+WHERE 
+#if($condition != "")${nestedIndent}${indent}$condition #end
+#if($notInSql != "")${nestedIndent}${indent}#if($condition != "")AND #end$notInSql #end
+#if($integritySql != "")${nestedIndent}${indent}#if($condition != "" || $notInSql != "")AND #end$integritySql #end

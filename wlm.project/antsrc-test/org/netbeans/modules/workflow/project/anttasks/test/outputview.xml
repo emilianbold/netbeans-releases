@@ -1,0 +1,52 @@
+<outputXForm>
+	<!-- see the table and tr/td here. same as input we generate two <td> s one for display and another for control. The <label> is used for select1 and its item -->
+	<xforms:group xmlns:xforms="http://www.w3.org/2002/xforms" xmlns="http://www.w3.org/1999/xhtml">
+		<p>
+			<b>
+				<i>This is purchase Order Output.</i>
+			</b>
+		</p>
+		<p>
+			<table border="1">
+				<tr>
+					<td>                        Approve:                    </td>
+					<td>
+						<xforms:select1 xmlns:po="http://wlmse.sample/po" incremental="true" model="outputModel" ref="po:approveResult">
+							<xforms:label/>
+							<xforms:item>
+								<xforms:label>Approved</xforms:label>
+								<xforms:value>Approved</xforms:value>
+							</xforms:item>
+							<xforms:item>
+								<xforms:label>Rejected</xforms:label>
+								<xforms:value>Rejected</xforms:value>
+							</xforms:item>
+						</xforms:select1>
+					</td>
+				</tr>
+				<tr>
+					<td>                        Description:                    </td>
+					<td>
+						<xforms:textarea xmlns:po="http://wlmse.sample/po" model="outputModel" ref="po:description">
+							<xforms:label/>
+						</xforms:textarea>
+					</td>
+				</tr>
+				<tr>
+					<td>                                   </td>
+				</tr>
+				<tr>
+					<td>
+						<xforms:submit submission="default-submission">
+							<xforms:label>Submit</xforms:label>
+							<xforms:action ev:event="DOMActivate">
+								<xforms:setvalue xmlns:po="http://wlmse.sample/po" model="outputModel" ref="instance('output')/po:orderId" value="instance('input')/po:orderId"/>
+								<xforms:message level="modal">hell0</xforms:message>
+							</xforms:action>
+						</xforms:submit>
+					</td>
+				</tr>
+			</table>
+		</p>
+	</xforms:group>
+</outputXForm>

@@ -1,0 +1,8 @@
+org.netbeans.modules.bpel.debugger.ui.action.Breakpoint
+org.netbeans.modules.bpel.debugger.ui.action.KillActionProvider
+org.netbeans.modules.bpel.debugger.ui.action.PauseActionProvider
+org.netbeans.modules.bpel.debugger.ui.action.ContinueActionProvider
+org.netbeans.modules.bpel.debugger.ui.action.StepIntoActionProvider
+org.netbeans.modules.bpel.debugger.ui.action.StepOverActionProvider
+org.netbeans.modules.bpel.debugger.ui.action.StepOutActionProvider
+org.netbeans.modules.bpel.debugger.ui.action.RunToCursorActionProvider

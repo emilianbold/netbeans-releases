@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--this is the sqlse wsdl template file -->
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:slnk="http://schemas.xmlsoap.org/ws/2002/07/service-link/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:tns="http://com.sun.jbi/sqlse/sqlseengine"
+	xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="sqlse"
+	targetNamespace="http://com.sun.jbi/sqlse/sqlseengine">
+	<types>
+		<xsd:schema elementFormDefault="qualified" 
+			targetNamespace="http://com.sun.jbi/sqlse/sqlseengine" 
+			xmlns="http://com.sun.jbi/sqlse/sqlseengine">
+		</xsd:schema>
+	</types>
+
+	<plink:partnerLinkType name="sqlsePartnerLinkType">
+        <plink:role name="myrole" portType="tns:sqlsePortType"/>
+    </plink:partnerLinkType>
+	
+</definitions>
