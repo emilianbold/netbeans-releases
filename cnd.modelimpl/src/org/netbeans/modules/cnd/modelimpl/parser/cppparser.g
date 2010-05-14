@@ -1640,8 +1640,9 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 	;
 
 protected
-typeof_param : 
-            (type_name) => type_name
+typeof_param :
+            // fast check of simple typeof (type) but skip typeof (type1() + type2()) which would be considered as expression
+            (type_name {LA(1) != PLUS}?) => type_name
         |
             expression
         ;
