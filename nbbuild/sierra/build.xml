@@ -173,7 +173,6 @@
         <delete dir="${home}/nbbuild/netbeans/extra"/>
         <delete dir="${home}/nbbuild/netbeans/soa"/>
         <delete dir="${home}/nbbuild/netbeans/xml"/>
-        <antcall target="clean-00"/>
         <antcall target="clean-01"/>
         <antcall target="clean-02"/>
         <antcall target="clean-03"/>
