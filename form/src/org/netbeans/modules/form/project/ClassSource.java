@@ -159,7 +159,9 @@ public final class ClassSource {
             }
             return lib != null ? new LibraryEntry(lib) : null;
         } else if (type.equals(TYPE_PROJECT)) {
-            AntArtifact aa = AntArtifactQuery.findArtifactFromFile(new File(name));
+            File file = new File(name);
+            file = FileUtil.normalizeFile(file);
+            AntArtifact aa = AntArtifactQuery.findArtifactFromFile(file);
             return aa != null ? new ProjectEntry(aa) : null;
         } else {
             return null;
