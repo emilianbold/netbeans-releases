@@ -89,6 +89,64 @@ public class LocalFilterPanel extends javax.swing.JPanel {
         myUninit = new javax.swing.JCheckBox();
         mySuperglobal = new javax.swing.JCheckBox();
 
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return myArray;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return myArray;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return mySuperglobal;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  myArray){
+                    return myObject;
+                }
+                if(aComponent ==  myObject){
+                    return myResource;
+                }
+                if(aComponent ==  myScalars){
+                    return myArray;
+                }
+                if(aComponent ==  myUninit){
+                    return mySuperglobal;
+                }
+                if(aComponent ==  myResource){
+                    return myNull;
+                }
+                if(aComponent ==  myNull){
+                    return myUninit;
+                }
+                return myArray;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  myObject){
+                    return myArray;
+                }
+                if(aComponent ==  myResource){
+                    return myObject;
+                }
+                if(aComponent ==  myArray){
+                    return myScalars;
+                }
+                if(aComponent ==  mySuperglobal){
+                    return myUninit;
+                }
+                if(aComponent ==  myNull){
+                    return myResource;
+                }
+                if(aComponent ==  myUninit){
+                    return myNull;
+                }
+                return mySuperglobal;//end getComponentBefore
+
+            }}
+        );
+
         org.openide.awt.Mnemonics.setLocalizedText(mySelectLbl, org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LBL_Select")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(myScalars, org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LBL_Scalars")); // NOI18N
@@ -124,7 +182,7 @@ public class LocalFilterPanel extends javax.swing.JPanel {
                             .add(myNull)
                             .add(myUninit)
                             .add(mySuperglobal))))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(37, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -148,13 +206,25 @@ public class LocalFilterPanel extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        mySelectLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LocalFilterPanel.mySelectLbl.AccessibleContext.accessibleName")); // NOI18N
+        mySelectLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LocalFilterPanel.mySelectLbl.AccessibleContext.accessibleDescription")); // NOI18N
         myScalars.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "A11_Scalars")); // NOI18N
+        myScalars.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LocalFilterPanel.myScalars.AccessibleContext.accessibleDescription")); // NOI18N
         myArray.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "A11_Array")); // NOI18N
+        myArray.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LocalFilterPanel.myArray.AccessibleContext.accessibleDescription")); // NOI18N
         myObject.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "A11_Object")); // NOI18N
+        myObject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LocalFilterPanel.myObject.AccessibleContext.accessibleDescription")); // NOI18N
         myResource.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "A11_Resource")); // NOI18N
+        myResource.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LocalFilterPanel.myResource.AccessibleContext.accessibleDescription")); // NOI18N
         myNull.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "A11_Null")); // NOI18N
+        myNull.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LocalFilterPanel.myNull.AccessibleContext.accessibleDescription")); // NOI18N
         myUninit.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "A11_Uninit")); // NOI18N
+        myUninit.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LocalFilterPanel.myUninit.AccessibleContext.accessibleDescription")); // NOI18N
         mySuperglobal.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "A11_Superglobal")); // NOI18N
+        mySuperglobal.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LocalFilterPanel.mySuperglobal.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LocalFilterPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LocalFilterPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
