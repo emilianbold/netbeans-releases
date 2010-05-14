@@ -634,17 +634,16 @@ class ShLexer implements Lexer<ShTokenId> {
                         i == '~'
                     );
                     input.backup (1);
-                    String id = input.readText ().toString ();
-                    String lcid = id.toLowerCase ();
+                    String idstr = input.readText().toString();
                     if (afterSeparator) {
                         afterSeparator = false;
-                        if (keywords.contains(lcid)) {
+                        if (keywords.contains(idstr)) {
                             return info.tokenFactory().createToken(ShTokenId.KEYWORD);
-                        } else if (commands.contains(lcid)) {
+                        } else if (commands.contains(idstr)) {
                             return info.tokenFactory().createToken(ShTokenId.COMMAND);
                         }
                     }
-                    return info.tokenFactory ().createToken (ShTokenId.IDENTIFIER);
+                    return info.tokenFactory().createToken(ShTokenId.IDENTIFIER);
                 }
                 return info.tokenFactory ().createToken (ShTokenId.ERROR);
         }

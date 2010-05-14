@@ -68,14 +68,12 @@ public class ShLexerTest extends NbTestCase {
 
     @Test
     public void testSimple() {
-        String text = "#!/bin/sh\n\n" +
+        TokenSequence<ShTokenId> ts = getShellTokenSequence(
+                "#!/bin/sh\n\n" +
                 "for f in foo.tar foo.bar; do\n" +
                 "\techo if for do $f \\\"asd\\\" \"fasdf\" >/dev/null 2>&1\n" +
                 "done\n\n" +
-                "tar xf foo.tar\n";
-
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, new ShLanguageHierarchy().language());
-        TokenSequence<?> ts = hi.tokenSequence();
+                "tar xf foo.tar\n");
 
         assertNextTokenEquals(ts, COMMENT, "#!/bin/sh\n");
         assertNextTokenEquals(ts, WHITESPACE, "\n");
@@ -140,10 +138,7 @@ public class ShLexerTest extends NbTestCase {
 
     @Test
     public void testEscapedLine() {
-        String text = "\\\necho foo";
-
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, new ShLanguageHierarchy().language());
-        TokenSequence<?> ts = hi.tokenSequence();
+        TokenSequence<ShTokenId> ts = getShellTokenSequence("\\\necho foo");
 
         assertNextTokenEquals(ts, OPERATOR, "\\\n");
         assertNextTokenEquals(ts, COMMAND, "echo");
@@ -151,5 +146,30 @@ public class ShLexerTest extends NbTestCase {
         assertNextTokenEquals(ts, IDENTIFIER, "foo");
 
         assertFalse("No more tokens", ts.moveNext());
+    }
+
+    @Test
+    public void testCaseSensitivity() {
+        TokenSequence<ShTokenId> ts = getShellTokenSequence("ECHO foo\necho foo\nEcho foo\n");
+
+        assertNextTokenEquals(ts, IDENTIFIER, "ECHO");
+        assertNextTokenEquals(ts, WHITESPACE, " ");
+        assertNextTokenEquals(ts, IDENTIFIER, "foo");
+        assertNextTokenEquals(ts, WHITESPACE, "\n");
+        assertNextTokenEquals(ts, COMMAND, "echo");
+        assertNextTokenEquals(ts, WHITESPACE, " ");
+        assertNextTokenEquals(ts, IDENTIFIER, "foo");
+        assertNextTokenEquals(ts, WHITESPACE, "\n");
+        assertNextTokenEquals(ts, IDENTIFIER, "Echo");
+        assertNextTokenEquals(ts, WHITESPACE, " ");
+        assertNextTokenEquals(ts, IDENTIFIER, "foo");
+        assertNextTokenEquals(ts, WHITESPACE, "\n");
+
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
+    private static TokenSequence<ShTokenId> getShellTokenSequence(String text) {
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, ShTokenId.language());
+        return hi.tokenSequence(ShTokenId.language());
     }
 }
