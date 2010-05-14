@@ -205,56 +205,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         hintLabel = new javax.swing.JTextArea();
         advancedButton = new javax.swing.JButton();
 
-        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
-            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
-                return indexFileTextField;
-            }//end getDefaultComponent
-
-            public java.awt.Component getFirstComponent(java.at.Container focusCycleRoot){
-                return indexFileTextField;
-            }//end getFirstComponent
-
-            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
-                return advancedButton;
-            }//end getLastComponent
-
-            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  indexFileTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  urlTextField){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  argsTextField){
-                    return advancedButton;
-                }
-                if(aComponent ==  indexFileBrowseButton){
-                    return argsTextField;
-                }
-                if(aComponent ==  runAsCombo){
-                    return urlTextField;
-                }
-                return indexFileTextField;//end getComponentAfter
-            }
-            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component a                if(aCompoexFileBrowseButton){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  indexFileTextField){
-                    return urlTextField;
-                }
-                if(aComponent ==  advancedButton){
-                    return argsTextField;
-                }
-                if(aComponent ==  argsTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  urlTextField){
-                    return runAsCombo;
-                }
-                return advancedButton;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         runAsLabel.setLabelFor(runAsCombo);
         org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
@@ -262,18 +213,18 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         urlLabel.setLabelFor(urlTextField);
         org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
 
-        indexFileLabel.indexFileTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMescalWeb.class, "LBL_IndexFile")); // NOI18N
+        indexFileLabel.setLabelFor(indexFileTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(indexFileBrowseButton, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Browse")); // NOI18N
- FileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+        indexFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 indexFileBrowseButtonActionPerformed(evt);
             }
         });
 
         argsLabel.setLabelFor(argsTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getsLocalWeb.class, "LBL_Arguments")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Arguments")); // NOI18N
 
         hintLabel.setEditable(false);
         hintLabel.setLineWrap(true);
@@ -282,29 +233,31 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         hintLabel.setBorder(null);
         hintLabel.setOpaque(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(advancedButton, org.openide.util.NbBundle.unAsLocalWeb.class, "RunAsLocedButton.text")); // NOI1dvancedButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(advancedButton, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.advancedButton.text")); // NOI18N
+        advancedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 advancedButtonActionPerformed(evt);
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.syout(this);
-        this.sett);
-        layout.setHori
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAIL             .addGroup(layouentialGroup()
-            .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
                         .addComponent(advancedButton))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(argsLabel)
-                .addComponent(urlLabel)
-                .addComponeLabel)
+                            .addComponent(urlLabel)
+                            .addComponent(indexFileLabel)
                             .addComponent(runAsLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.Compnt.RELATED)
-                Group(layout.createParalle.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(hintLabel, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULt.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(hintLabel, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(argsTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addComponent(indexFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
