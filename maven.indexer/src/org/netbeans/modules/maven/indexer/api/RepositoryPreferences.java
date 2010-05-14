@@ -46,6 +46,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -149,6 +150,22 @@ public final class RepositoryPreferences {
             }
         }
         return toRet;
+    }
+
+    public Set<String> getKnownRepositoryUrls() {
+        Set<String> urls = new HashSet<String>();
+        for (RepositoryInfo ri : getRepositoryInfos()) {
+            if (ri.getRepositoryUrl() != null) {
+                urls.add(ri.getRepositoryUrl());
+            }
+        }
+        // these urls are essential (together with central) for correct
+        // resolution of maven pom urls in libraries
+        urls.add("http://repo1.maven.org/maven2"); //NOI18N
+        urls.add("http://download.java.net/maven/2");//NOI18N
+        urls.add("http://download.java.net/maven/1");//NOI18N
+        urls.add("http://download.java.net/maven/glassfish");//NOI18N
+        return urls;
     }
 
     /**

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,53 +31,27 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
- */
-package org.netbeans.modules.web.core.syntax.gsf;
-
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.netbeans.modules.web.core.syntax.parser.JspSyntaxParser;
-
-/**
- * A very simple JSP parser.
  *
- * @author marek
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-public class JspGSFParser extends Parser {
 
-    private Result result;
+package org.netbeans.modules.maven.api.output;
 
-    @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        result = new JspParserResult(snapshot, JspSyntaxParser.parse(snapshot));
-    }
+import org.netbeans.api.project.Project;
 
-    @Override
-    public Result getResult(Task task) throws ParseException {
-        return result;
-    }
+/** Allows to plug in the capability to observe output tests (surefire).
+ *
+ * @author petrjiricka
+ */
+public interface TestOutputObserver {
 
-    @Override
-    public void cancel() {
-        //do nothing
-    }
+   /** Observes one line of the surefire output.
+    * @param line text of the current line
+    * @param p project if known, null otherwise
+    * 
+    */
+   void processLine(String line, Project p);
 
-    @Override
-    public void addChangeListener(ChangeListener changeListener) {
-        //do nothing
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
-        //do nothing
-    }
-    
 }
