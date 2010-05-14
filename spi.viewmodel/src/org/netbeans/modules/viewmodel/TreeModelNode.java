@@ -1549,15 +1549,12 @@ public class TreeModelNode extends AbstractNode {
 
     private class MyProperty extends PropertySupport implements Runnable { //LazyEvaluator.Evaluable {
         
-        private String      id;
-        private String      propertyId;
-        private ColumnModel columnModel;
-        private boolean nodeColumn;
+        private final String      id;
+        private final String      propertyId;
+        private final ColumnModel columnModel;
+        private final boolean nodeColumn;
         private TreeModelRoot treeModelRoot;
-        private final int[] evaluated = { 0 }; // 0 - not yet, 1 - evaluated, -1 - timeouted
-        
-        private RequestProcessor.Task   task;
-        private RequestProcessor        lastRp;
+        private final int[] evaluated = { 1 }; // 0 - not yet, 1 - evaluated, -1 - timeouted
         
         
         MyProperty (
@@ -1581,6 +1578,7 @@ public class TreeModelNode extends AbstractNode {
                 id = propertyId = columnModel.getID ();
                 this.columnModel = columnModel;
             }
+            //System.err.println("new MyProperty("+TreeModelNode.this+", "+id+") = "+this);
         }
         
 
@@ -1606,6 +1604,7 @@ public class TreeModelNode extends AbstractNode {
             String htmlValue = null;
             String nonHtmlValue = null;
             try {
+                //System.err.println("getValueAt("+object+", "+id+") of node "+TreeModelNode.this);
                 value = model.getValueAt (object, id);
                 //System.err.println("  Value of ("+object+") executed in "+Thread.currentThread()+" is "+value);
                 //System.out.println("  evaluateLazily("+TreeModelNode.this.getDisplayName()+", "+id+"): have value = "+value);
@@ -1636,6 +1635,7 @@ public class TreeModelNode extends AbstractNode {
                     synchronized (evaluated) {
                         fire = evaluated[0] == -1;
                         evaluated[0] = 1;
+                        //System.err.println("  value of ("+TreeModelNode.this.getDisplayName()+", "+id+") was evaluated to "+value+", evaluated = "+evaluated[0]);
                         evaluated.notifyAll();
                     }
                 }
@@ -1648,14 +1648,27 @@ public class TreeModelNode extends AbstractNode {
         }
         
         public synchronized Object getValue () { // Sync the calls
+            //System.err.println("TreeModelNode("+object+").getValue("+id+")...");
             if (nodeColumn) {
                 return TreeModelNode.this.getDisplayName();
             }
             // 1) return value from cache
             synchronized (properties) {
-                //System.out.println("getValue("+TreeModelNode.this.getDisplayName()+", "+id+"): contains = "+properties.containsKey (id)+", value = "+properties.get (id));
-                if (properties.containsKey (id))
+                //System.err.println("getValue("+TreeModelNode.this.getDisplayName()+", "+id+"): contains = "+properties.containsKey (id)+", value = "+properties.get (id)+" property object = "+this);
+                if (properties.containsKey (id)) {
                     return properties.get (id);
+                }
+                synchronized (evaluated) {
+                    //System.err.println("  value of ("+TreeModelNode.this.getDisplayName()+", "+id+") is being evaluated = "+(evaluated[0] != 1)+", evaluated = "+evaluated[0]);
+                    if (evaluated[0] != 1) { // is being evaluated...
+                        //System.err.println("  value is being evaluated...");
+                        if (getValueType() != null && getValueType() != String.class) {
+                            return null;
+                        } else {
+                            return EVALUATING_STR;
+                        }
+                    }
+                }
             }
             
             Executor exec = asynchronous(model, CALL.VALUE, object);
@@ -1666,6 +1679,7 @@ public class TreeModelNode extends AbstractNode {
 
             synchronized (evaluated) {
                 evaluated[0] = 0;
+                //System.err.println("Evaluated of ("+TreeModelNode.this.getDisplayName()+", "+id+"): evaluated = "+evaluated[0]);
             }
             /*if (exec instanceof RequestProcessor) {
                 RequestProcessor rp = (RequestProcessor) exec;
@@ -1675,7 +1689,7 @@ public class TreeModelNode extends AbstractNode {
                 }
                 task.schedule(0);
             } else {*/
-            //System.err.println("getTheValue of ("+object+") executed in "+exec);
+            //System.err.println("getTheValue of ("+object+", "+id+") executed in "+exec);
                 exec.execute(this);
             //}
             //treeModelRoot.getValuesEvaluator().evaluate(this);
@@ -1689,6 +1703,7 @@ public class TreeModelNode extends AbstractNode {
                     } catch (InterruptedException iex) {}
                     if (evaluated[0] != 1) {
                         evaluated[0] = -1; // timeout
+                        //System.err.println("Timeout of ("+TreeModelNode.this.getDisplayName()+", "+id+"): evaluated = "+evaluated[0]);
                         ret = EVALUATING_STR;
                     }
                 }
