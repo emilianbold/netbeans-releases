@@ -1705,6 +1705,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return res;
     }
 
+    /*package*/final int getFileContainerSize() {
+        return getFileContainer().getSize();
+    }
+    
     private CsmFile findFileByPath(CharSequence absolutePath) {
         File file = new File(absolutePath.toString());
         APTPreprocHandler preprocHandler = null;
