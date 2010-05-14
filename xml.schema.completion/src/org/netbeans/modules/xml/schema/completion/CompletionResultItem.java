@@ -177,14 +177,18 @@ public abstract class CompletionResultItem implements CompletionItem {
             @Override
             public void run() {
                 try {
+                    int caretPos = component.getCaretPosition();
                     if ((context != null) && (context.canReplace(text))) {
                         if (len > 0) doc.remove(offset, len);
 
                         String insertingText = getInsertingText(component, text);
                         doc.insertString(offset, insertingText, null);
+                        // fix for issue #186007
+                        caretPos = component.getCaretPosition(); // get the caret position
+                    } else {
+                        caretPos = offset + getCaretPosition(); // change the caret position
                     }
-                    // change the caret position
-                    int caretPos = offset + getCaretPosition(), docLength = doc.getLength();
+                    int docLength = doc.getLength();
                     if (docLength == 0) {
                         caretPos = 0;
                     } else if (caretPos > doc.getLength()) {

@@ -120,6 +120,7 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
                     validatedModels.add(model);
                     return new ValidationResult(resultItems, validatedModels);
                 }
+                return EMPTY_RESULT;
             }
         }
         return null;
