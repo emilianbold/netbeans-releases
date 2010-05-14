@@ -530,7 +530,7 @@ class ShLexer implements Lexer<ShTokenId> {
                 return info.tokenFactory().createToken(ShTokenId.OPERATOR);
             case '\\':
                 i = input.read();
-                afterSeparator = false;
+                afterSeparator = i == '\n';
                 return info.tokenFactory().createToken(ShTokenId.OPERATOR);
             case ' ':
             case '\n':
@@ -620,7 +620,9 @@ class ShLexer implements Lexer<ShTokenId> {
             default:
                 if (
                     (i >= 'a' && i <= 'z') ||
-                    (i >= 'A' && i <= 'Z')
+                    (i >= 'A' && i <= 'Z') ||
+                    i == '_' ||
+                    i == '~'
                 ) {
                     do {
                         i = input.read ();
@@ -629,7 +631,6 @@ class ShLexer implements Lexer<ShTokenId> {
                         (i >= 'A' && i <= 'Z') ||
                         (i >= '0' && i <= '9') ||
                         i == '_' ||
-                        i == '-' ||
                         i == '~'
                     );
                     input.backup (1);

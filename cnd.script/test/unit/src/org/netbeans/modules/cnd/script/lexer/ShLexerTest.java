@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.script.lexer;
 
-import org.netbeans.modules.cnd.script.lexer.ShLanguageHierarchy;
+import org.junit.Test;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
@@ -66,6 +66,7 @@ public class ShLexerTest extends NbTestCase {
         return 500000;
     }
 
+    @Test
     public void testSimple() {
         String text = "#!/bin/sh\n\n" +
                 "for f in foo.tar foo.bar; do\n" +
@@ -133,6 +134,21 @@ public class ShLexerTest extends NbTestCase {
         assertNextTokenEquals(ts, OPERATOR, ".");
         assertNextTokenEquals(ts, IDENTIFIER, "tar");
         assertNextTokenEquals(ts, WHITESPACE, "\n");
+
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
+    @Test
+    public void testEscapedLine() {
+        String text = "\\\necho foo";
+
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, new ShLanguageHierarchy().language());
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        assertNextTokenEquals(ts, OPERATOR, "\\\n");
+        assertNextTokenEquals(ts, COMMAND, "echo");
+        assertNextTokenEquals(ts, WHITESPACE, " ");
+        assertNextTokenEquals(ts, IDENTIFIER, "foo");
 
         assertFalse("No more tokens", ts.moveNext());
     }
