@@ -75,7 +75,7 @@ public final class MPowerPlayerPlatformConfigurator implements CustomCLDCPlatfor
     
     private Properties apiSettings;
     private List<CLDCPlatformDescriptor.Device> devices;
-
+    //FIXME SOUT shoud be replaced with LOGS
     private List<CLDCPlatformDescriptor.Profile> createAPISettings() {
         String allProperties = apiSettings.getProperty(CONFIGURATIONS) + "," + apiSettings.getProperty(PROFILES) + "," + apiSettings.getProperty(OPTIONAL); //NOI18N
         StringTokenizer propertiesTokenizer = new StringTokenizer(allProperties, ","); //NOI18N 
