@@ -79,7 +79,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
     private String command;
     private ProjectActionPerformer performer;
     private String name;
-    static final RequestProcessor RP = new RequestProcessor(MainProjectAction.class);
+    private static final RequestProcessor RP = new RequestProcessor(MainProjectAction.class);
 
     public MainProjectAction(ProjectActionPerformer performer, String name, Icon icon) {
         this( null, performer, name, icon );
@@ -89,16 +89,17 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
         this( command, null, name, icon );
     }
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public MainProjectAction(String command, ProjectActionPerformer performer, String name, Icon icon) {
 
-        super(icon, null, new Class[] { Project.class, DataObject.class });
+        super(icon, null, new Class<?>[] {Project.class, DataObject.class});
         this.command = command;
         this.performer = performer;
         this.name = name;
 
         String presenterName = "";
         if (name != null) {
-            presenterName = MessageFormat.format(name, new Object[] { -1 });
+            presenterName = MessageFormat.format(name, -1);
         }
         setDisplayName(presenterName);
         if ( icon != null ) {
@@ -121,8 +122,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
 
 
 
-    public void actionPerformed(Lookup context) {
-
+    public @Override void actionPerformed(Lookup context) {
         // first try to find main project
         Project p = OpenProjectList.getDefault().getMainProject();
 
@@ -175,9 +175,9 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
 
     // Implementation of PropertyChangeListener --------------------------------
 
-    public void propertyChange( PropertyChangeEvent evt ) {
-        if ( evt.getPropertyName() == OpenProjectList.PROPERTY_MAIN_PROJECT ||
-             evt.getPropertyName() == OpenProjectList.PROPERTY_OPEN_PROJECTS ) {
+    public @Override void propertyChange( PropertyChangeEvent evt ) {
+        if (OpenProjectList.PROPERTY_MAIN_PROJECT.equals(evt.getPropertyName()) ||
+            OpenProjectList.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
             refreshView(null);
         }
     }
@@ -229,7 +229,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
         }
 
         Mutex.EVENT.writeAccess(new Runnable() {
-            public void run() {
+            public @Override void run() {
         putValue("menuText", presenterName);
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
         setEnabled(enabled);
@@ -271,7 +271,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
         };
 
         panel.addChangeListener (new ChangeListener () {
-           public void stateChanged (ChangeEvent e) {
+           public @Override void stateChanged (ChangeEvent e) {
                if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
                    // click button and the finish dialog with selected class
                    if (panel.getSelectedProject () != null) {
