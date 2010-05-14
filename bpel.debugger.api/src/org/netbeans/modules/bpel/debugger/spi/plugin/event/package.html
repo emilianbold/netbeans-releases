@@ -1,0 +1,37 @@
+<!DOCTYPE doctype PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <meta name="GENERATOR"
+ content="Mozilla/4.76 [en] (Windows NT 5.0; U) [Netscape]">
+  <title>package</title>
+<!--
+  -- Copyright 2005 Sun Microsystems, Inc. All rights reserved.
+  -- SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+  -->
+</head>
+<body>
+Defines BPEL Debugger Plugin events and event processing.<br>
+BPEL Debugger Plugin notifies the BPEL Debugger Core about changes in its
+state by putting
+{@link org.netbeans.modules.bpel.debugger.spi.plugin.event.EventSet} objects
+in the {@link org.netbeans.modules.bpel.debugger.spi.plugin.event.EventQueue},
+assosiated with a target
+{@link org.netbeans.modules.bpel.debugger.spi.plugin.BpelEngine}.
+Each {@link org.netbeans.modules.bpel.debugger.spi.plugin.event.EventSet}
+object may hold one or many
+{@link org.netbeans.modules.bpel.debugger.spi.plugin.event.Event} objects.
+Examples of events include
+{@link org.netbeans.modules.bpel.debugger.spi.plugin.event.BreakpointReachedEvent},
+{@link org.netbeans.modules.bpel.debugger.spi.plugin.event.ProcessInstanceCreatedEvent} and
+{@link org.netbeans.modules.bpel.debugger.spi.plugin.event.BpelEngineDisconnectedEvent}.
+<br><br>
+With the exception of
+{@link org.netbeans.modules.bpel.debugger.spi.plugin.event.BpelEngineDisconnectedEvent},
+all events received must be requested with an
+{@link org.netbeans.modules.bpel.debugger.spi.plugin.request.EventRequest}.
+The {@link org.netbeans.modules.bpel.debugger.spi.plugin.request} package
+defines event requests and event request management.
+</body>
+</html>

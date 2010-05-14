@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>For Each</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<style type="text/css">
+<!--
+.style2 {color: #000000}
+-->
+</style>
+</head>
+<body>
+<h2>For Each</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<!-- add to the Property Editor section -->
+<p>The For Each element repeatedly executes the activities contained inside a Scope
+activity N+1 times, where N equals the Final Counter Value minus
+the&nbsp;Start Counter Value. The activities are executed sequentially, in the order they appear on the diagram. </p>
+<p><span lang="EN">When the For Each activity starts, the expressions in the Start Counter Value and the Final Counter Values are evaluated for the first and only time. </span> O<span lang="EN">nce the two values are returned, they remain constant for the lifespan of the  activity. If the Start Counter Value is less than or equal to the  Final Counter Value, no activity is performed.</span></p>
+<p><b>To use the For Each element:</b></p>
+<ol>
+  <li>In the Design view, drag the For Each element from the Palette to the diagram.</li>
+  <li>Drag one or more activities that will be repeatedly executed within For Each and configure their properties. <br>
+  Note that a <a href="scope.html">Scope</a> element is implicitly added to the diagram when you add activities inside the For Each element.</li>
+  <li>Select the For Each element on the diagram. <br>
+    The 
+  Properties window shows the For Each properties (Ctrl-Shift-7).</li>
+  <li>(Optional) In the Properties window, enter the name for the For Each element. </li>
+  <li>In the Properties window, configure the following For Each properties:</li>
+  <ul>
+    <li><b>Counter Variable Name</b>. Click the ellipsis button (...) and enter an arbitrary counter
+      variable name. </li>
+    <li><b>Start Counter Value</b>. Use the <a href="../mapper/mapper_functions.html">BPEL Mapper</a> to generate an integer value
+      expression.</li>
+    <li><b>Final Counter Value</b>. Use the <a href="../mapper/mapper_functions.html">BPEL Mapper</a> to generate an integer value
+      expression.<br>
+    </li>
+    <li><b>Completion Condition</b> (Optional). Set an integer value
+      expression to define a condition under which the  For Each activity might be terminated without completing all the specified branches, or iterations. Without the specified Completion Condition, the For Each activity waits until all enclosed activities complete for the specified number of times.</li>
+    <li><b>Count Completed Branches Only</b> (Optional). If set to <tt>yes</tt>, it
+      tells the runtime to only count the branches that have completed
+      successfully. If set to <tt>no</tt>, all branches, completed successfully or
+      unsuccessfuly, will be counted. The default value is <tt>no</tt>.</li>
+  </ul>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../mapper/about_mapper.html" title="About the BPEL Mapper">About the BPEL Mapper</a></dd>
+<dd><a href="scope.html" title="Scope">Scope</a></dd>
+<dd><a href="palette_struct_acts.html" title="BPEL Designer Palette: Structured Activities">BPEL Designer Palette: Structured Activities</a></dd>
+<dd><a href="../windows_editors/design_view.html" title="About the Design View of the BPEL Designer">About the Design View of the BPEL Designer</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

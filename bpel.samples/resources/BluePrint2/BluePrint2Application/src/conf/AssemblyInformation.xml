@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jbi xmlns="http://java.sun.com/xml/ns/jbi" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0" xsi:schemaLocation="http://java.sun.com/xml/ns/jbi ./jbi.xsd">
+    <service-assembly>
+        <identification>
+            <name>BluePrint2Application</name>
+            <description>Represents the Service Assembly of BluePrint2Application</description>
+        </identification>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-http-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-http-binding.jar</artifacts-zip>
+                <component-name>sun-http-binding</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-file-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-file-binding.jar</artifacts-zip>
+                <component-name>sun-file-binding</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-hl7-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-hl7-binding.jar</artifacts-zip>
+                <component-name>sun-hl7-binding</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-scheduler-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-scheduler-binding.jar</artifacts-zip>
+                <component-name>sun-scheduler-binding</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-jms-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-jms-binding.jar</artifacts-zip>
+                <component-name>sun-jms-binding</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-snmp-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-snmp-binding.jar</artifacts-zip>
+                <component-name>sun-snmp-binding</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-email-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-email-binding.jar</artifacts-zip>
+                <component-name>sun-email-binding</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-database-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-database-binding.jar</artifacts-zip>
+                <component-name>sun-database-binding</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-smtp-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-smtp-binding.jar</artifacts-zip>
+                <component-name>sun-smtp-binding</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-ims-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-ims-binding.jar</artifacts-zip>
+                <component-name>sun-ims-binding</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-ftp-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-ftp-binding.jar</artifacts-zip>
+                <component-name>sun-ftp-binding</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-webspheremq-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-webspheremq-binding.jar</artifacts-zip>
+                <component-name>sun-webspheremq-binding</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-jbi4cics</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>jbi4cics.jar</artifacts-zip>
+                <component-name>jbi4cics</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-jbi4ejb</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>jbi4ejb.jar</artifacts-zip>
+                <component-name>jbi4ejb</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-ldap-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-ldap-binding.jar</artifacts-zip>
+                <component-name>sun-ldap-binding</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-jbi4corba</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>jbi4corba.jar</artifacts-zip>
+                <component-name>jbi4corba</component-name>
+            </target>
+        </service-unit>
+        <service-unit>
+            <identification>
+                <name>BluePrint2Application-sun-rest-binding</name>
+                <description>Represents this Service Unit</description>
+            </identification>
+            <target>
+                <artifacts-zip>sun-rest-binding.jar</artifacts-zip>
+                <component-name>sun-rest-binding</component-name>
+            </target>
+        </service-unit>
+    </service-assembly>
+</jbi>
