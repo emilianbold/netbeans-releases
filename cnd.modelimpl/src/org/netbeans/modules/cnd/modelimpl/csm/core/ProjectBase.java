@@ -1187,7 +1187,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (isDisposing()) {
             return null;
         }
-        csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
+        csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, postIncludeState == null, null, null);
 
         if (postIncludeState != null) {
             // we have post include state => no need to spend time in include walkers
@@ -1772,6 +1772,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             impl = getFile(file, treatSymlinkAsSeparateFile);
             if (impl == null) {
                 preprocHandler = (preprocHandler == null) ? getPreprocHandler(file) : preprocHandler;
+//                initial = (initial == null) ? preprocHandler.getState() : initial;
                 impl = new FileImpl(ModelSupport.getFileBuffer(file), this, fileType, nativeFileItem);
                 if (nativeFileItem != null) {
                     putNativeFileItem(impl.getUID(), nativeFileItem);
