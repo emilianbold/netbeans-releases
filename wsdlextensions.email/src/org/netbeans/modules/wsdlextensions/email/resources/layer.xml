@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+	<!--
+		The contents of this file are subject to the terms of the Common
+		Development and Distribution License (the License). You may not use
+		this file except in compliance with the License. You can obtain a copy
+		of the License at http://www.netbeans.org/cddl.html or
+		http://www.netbeans.org/cddl.txt. When distributing Covered Code,
+		include this CDDL Header Notice in each file and include the License
+		file at http://www.netbeans.org/cddl.txt. If applicable, add the
+		following below the CDDL Header, with the fields enclosed by brackets
+		[] replaced by your own identifying information: "Portions Copyrighted
+		[year] [name of copyright owner]" The Original Software is NetBeans.
+		The Initial Developer of the Original Software is Sun Microsystems,
+		Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All Rights
+		Reserved.
+	-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="WSDLEditor">
+        <file name="email-ext.xsd" url="email-ext.xsd">
+            <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/email/" />
+            <attr name="prefix" stringvalue="email" />
+        </file>
+
+        <folder name="Binding">
+            <file name="EMAILIMAPBinding">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="IMAPbinding" />
+                <attr name="SystemFileSystem.localizingBundle"
+					stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+					urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/Start_16.png" />
+            </file>
+            <file name="EMAILPOP3Binding">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="POP3binding" />
+                <attr name="SystemFileSystem.localizingBundle"
+					stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+					urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/Start_16.png" />
+            </file>
+            <file name="EMAILSMTPBinding">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="SMTPbinding" />
+                <attr name="SystemFileSystem.localizingBundle"
+					stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+					urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/Start_16.png" />
+            </file>
+        </folder>
+        <folder name="BindingOperation">
+            <file name="EMAILIMAPOperation">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="IMAPoperation" />
+                <attr name="SystemFileSystem.localizingBundle"
+					stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+					urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/End_16.png" />
+            </file>
+            <file name="EMAILPOP3Operation">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="POP3operation" />
+                <attr name="SystemFileSystem.localizingBundle"
+					stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+					urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/End_16.png" />
+            </file>
+            <file name="EMAILSMTPOperation">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="SMTPoperation" />
+                <attr name="SystemFileSystem.localizingBundle"
+					stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+					urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/End_16.png" />
+            </file>
+
+        </folder>
+
+        <folder name="BindingOperationInput">
+            <file name="EMAILIMAPInput">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="IMAPinput" />
+                <attr name="SystemFileSystem.localizingBundle"
+					stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+					urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/PageFlow.png" />
+            </file>
+            <!--
+            <file name="EMAILIMAPAttachment">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="IMAPattachment" />
+                <attr name="SystemFileSystem.localizingBundle"
+                    stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+                    urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/PageFlow.png" />
+            </file>
+            -->
+
+            <file name="EMAILPOP3Input">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="POP3input" />
+                <attr name="SystemFileSystem.localizingBundle"
+					stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+					urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/PageFlow.png" />
+            </file>
+            <!--
+            <file name="EMAILPOP3Attachment">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="POP3attachment" />
+                <attr name="SystemFileSystem.localizingBundle"
+                    stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+                    urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/PageFlow.png" />
+            </file>
+            -->
+
+            <file name="EMAILSMTPInput">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="SMTPinput" />
+                <attr name="SystemFileSystem.localizingBundle"
+					stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+					urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/PageFlow.png" />
+            </file>
+            <!--
+            <file name="EMAILSMTPAttachment">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="SMTPattachment" />
+                <attr name="SystemFileSystem.localizingBundle"
+                    stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+                    urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/PageFlow.png" />
+            </file>
+            -->
+
+        </folder>
+
+        <folder name="ServicePort">
+            <file name="EMAILIMAPServicePort">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="IMAPaddress" />
+                <attr name="SystemFileSystem.localizingBundle"
+					stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+					urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/mapping16.png" />
+            </file>
+            <file name="EMAILPOP3ServicePort">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="POP3address" />
+                <attr name="SystemFileSystem.localizingBundle"
+					stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+					urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/mapping16.png" />
+            </file>
+            <file name="EMAILSMTPServicePort">
+                <attr name="xsdFileName" stringvalue="email-ext" />
+                <attr name="element" stringvalue="SMTPaddress" />
+                <attr name="SystemFileSystem.localizingBundle"
+					stringvalue="org.netbeans.modules.wsdlextensions.email.resources.Bundle" />
+                <attr name="SystemFileSystem.icon"
+					urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/email/resources/mapping16.png" />
+            </file>
+        </folder>
+    </folder>
+    <folder name="SeeBeyondJbiComponents">
+		<!-- JBI Component -->
+        <folder name="sun-email-binding">
+            <attr name="id" stringvalue="sun-email-binding" />
+            <attr name="description" stringvalue="Email Binding" />
+            <attr name="type" stringvalue="Binding" />
+            <file name="email.binding-1.0">
+                <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/email/" />
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="bpel-nmproperties">
+        <folder name="email-bc">
+            <attr name="display-name" stringvalue="Email BC"/>
+            <folder name="email-inbound">
+                <attr name="display-name" stringvalue="Inbound"/>
+					<file name="emailserver">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.inbound.emailserver"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Email Server"/>
+					</file>
+					<file name="port">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.inbound.port"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Port"/>
+					</file>
+					<file name="username">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.inbound.username"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="User Name"/>
+					</file>
+					<file name="password">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.inbound.password"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Password"/>
+					</file>
+					<file name="usessl">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.inbound.usessl"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Use SSL"/>
+					</file>
+					<file name="maxmessagecount">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.inbound.maxmessagecount"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Maximum Message Count"/>
+					</file>
+					<file name="ackmode">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.inbound.ackmode"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Message Ack Mode"/>
+					</file>
+					<file name="ackoperation">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.inbound.ackoperation"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Message Ack Mode"/>
+					</file>
+					<file name="pollinginterval">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.inbound.pollinginterval"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Polling Interval"/>
+					</file>
+					<file name="saveattachmentstodir">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.inbound.saveattachmentstodir"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Save Attachments to Dir"/>
+					</file>
+					<file name="mailfolder">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.inbound.mailfolder"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Mail Folder"/>
+					</file>
+					<file name="inbound-attachments">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.inbound.attachments"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Attachment File Paths"/>
+					</file>
+					<file name="inbound-attachments-count">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.inbound.attachments.count"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}int"/>
+						<attr name="display-name" stringvalue="Number of Attachments"/>
+					</file>
+            </folder>
+            <folder name="email-outbound">
+                <attr name="display-name" stringvalue="Outbound"/>
+					<file name="emailserver">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.outbound.emailserver"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Email Server"/>
+					</file>
+					<file name="port">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.outbound.port"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Port"/>
+					</file>
+					<file name="username">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.outbound.username"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="User Name"/>
+					</file>
+					<file name="password">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.outbound.password"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Password"/>
+					</file>
+					<file name="usessl">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.outbound.usessl"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Use SSL"/>
+					</file>
+					<file name="location">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.outbound.location"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Location"/>
+					</file>
+					<file name="sendoption">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.outbound.sendoption"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Send Option"/>
+					</file>
+					<file name="embedimagesinhtml">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.outbound.embedimagesinhtml"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Embed Images in HTML"/>
+					</file>
+					<file name="outbound-attachments">
+						<attr name="nmproperty" stringvalue="org.glassfish.openesb.email.outbound.attachmentFilePaths"/>
+						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+						<attr name="display-name" stringvalue="Attachment File Paths"/>
+					</file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
+

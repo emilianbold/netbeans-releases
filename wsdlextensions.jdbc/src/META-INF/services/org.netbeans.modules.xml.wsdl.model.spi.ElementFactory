@@ -1,0 +1,5 @@
+org.netbeans.modules.wsdlextensions.jdbc.impl.JDBCElementFactoryProvider$AddressFactory
+org.netbeans.modules.wsdlextensions.jdbc.impl.JDBCElementFactoryProvider$BindingFactory
+org.netbeans.modules.wsdlextensions.jdbc.impl.JDBCElementFactoryProvider$OperationFactory
+org.netbeans.modules.wsdlextensions.jdbc.impl.JDBCElementFactoryProvider$InputFactory
+org.netbeans.modules.wsdlextensions.jdbc.impl.JDBCElementFactoryProvider$OutputFactory

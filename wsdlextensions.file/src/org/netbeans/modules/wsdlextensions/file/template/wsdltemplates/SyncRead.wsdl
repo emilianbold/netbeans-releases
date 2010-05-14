@@ -1,0 +1,34 @@
+<definitions name="dummy" targetNamespace="dummy"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:tns="dummy" 
+    xmlns:file="http://schemas.sun.com/jbi/wsdl-extensions/file/">
+    <types/>
+    <message name="SolicitReadInputMessage">
+    </message>
+    <message name="SolicitReadOutputMessage">
+    </message>      
+    <portType name="FileSolicitedReadPortType">
+        <operation name="read">
+            <input name="input1" message="tns:SolicitReadInputMessage"/>
+            <output name="output1" message="tns:SolicitReadOutputMessage"/>
+        </operation>
+    </portType>
+    <binding name="FileSolicitedReadBinding" type="tns:FileSolicitedReadPortType">
+        <file:binding/>
+        <operation name="read">
+            <file:operation verb="read"/>
+            <input name="input1">
+            </input>
+            <output name="output1">              
+                <file:message fileName="read.xml"/>            
+            </output>
+        </operation>
+    </binding>
+    <service name="FileSolicitedReadService">
+        <port name="#SERVICE_NAME_SolicitedReadPort" binding="tns:FileSolicitedReadBinding">
+            <file:address fileDirectory="Default System Temp Dir"/>
+        </port>
+    </service>
+</definitions>

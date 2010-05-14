@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+           xmlns:sap="http://schemas.sun.com/jbi/wsdl-extensions/sap/"
+           targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/sap/">
+
+    <xs:import namespace="http://schemas.xmlsoap.org/wsdl/" schemaLocation="wsdl.xsd"/>
+    
+    <xs:element name="binding">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation>
+                    "binding" indicates a sap protocol based binding.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                    <xs:attribute name="transactionalMode" use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_transactionalMode</xs:documentation>
+                        </xs:annotation>
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="Transactional">
+                                    <xs:annotation>
+                                        <xs:documentation>Use transactional delivery.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:enumeration>
+                                <xs:enumeration value="Non-Transactional">
+                                    <xs:annotation>
+                                        <xs:documentation>Message delivery does not require transactional delivery.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:enumeration>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                    <xs:attribute name="transactionIDVerificationDatabase" use="optional" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_transactionIDVerificationDatabase</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="maximumTIDDatabaseRows" type="xs:long" use="optional">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_maximumTIDDatabaseRows</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="operation">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_operation</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                    <xs:choice>
+                        <xs:element ref="sap:fmoperation"/>
+                        <xs:element ref="sap:idocoperation"/>
+                    </xs:choice>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="fmoperation">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation>
+                    "fmoperation" defines the sap protocol based operation binding details for function modules.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                    <xs:attribute name="functionName" type="xs:string"  use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_functionName</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="idocoperation">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation>
+                    "idocoperation" defines the sap protocol based operation binding details for IDocs.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="message">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_message</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="fault">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_fault</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="address">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_address</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                     <!--
+                           <xs:element ref="sap:addressparams"/>
+                    -->
+                    <xs:choice minOccurs="1" maxOccurs="2">
+                        <xs:element ref="sap:clientparams" maxOccurs="1"/>
+                        <xs:element ref="sap:serverparams" maxOccurs="1"/>
+                    </xs:choice>
+
+                     <xs:attribute name="applicationServerHostname" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_applicationServerHostname</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="clientNumber" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_clientNumber</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="systemNumber" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_systemNumber</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="systemID" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_systemID</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="user" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_user</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="password" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_password</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="language" default="EN" use="optional">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_language</xs:documentation>
+                        </xs:annotation>
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="EN" />
+                                <xs:enumeration value="DE" />
+                                <xs:enumeration value="JA" />
+                                <xs:enumeration value="KO" />
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                    <xs:attribute name="enableABAPDebugWindow" type="sap:noYes" use="optional" default="No">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_enableABAPDebugWindow</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="gatewayHostname" type="xs:string" use="optional">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_gatewayHostname</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="gatewayService" type="xs:string" use="optional">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_gatewayService</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="isSAPSystemUnicode" type="sap:noYes" default="Yes">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_isSAPSystemUnicode</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="routerString" type="xs:string" use="optional">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_routerString</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="addressparams">
+            <xs:annotation>
+                <xs:documentation>DESC_Element_addressparams</xs:documentation>
+            </xs:annotation>
+            <xs:complexType>
+                <xs:complexContent>
+                    <xs:extension base="wsdl:tExtensibilityElement">
+                        <xs:choice>
+                            <xs:element ref="sap:clientparams"/>
+                            <xs:element ref="sap:serverparams"/>
+                        </xs:choice>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+    </xs:element>
+    <xs:element name="clientparams" >
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation>
+                "clientparams" defines the sap protocol based attributes for clients.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                    <xs:attribute name="useLoadBalancing" type="sap:noYes" default="No">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_useLoadBalancing</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="applicationServerGroup" type="xs:string" use="optional">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_applicationServerGroup</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="messageServerHostname" type="xs:string" use="optional">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_messageServerHostname</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="serverparams">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation>
+                "serverparams" defines the sap protocol based attributes for server.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                    <xs:attribute name="programID" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_programID</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:simpleType name="noYes">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="No"/>
+            <xs:enumeration value="Yes"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="trueFalse">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="No"/>
+            <xs:enumeration value="Yes"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>
