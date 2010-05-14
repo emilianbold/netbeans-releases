@@ -119,6 +119,10 @@ public final class RunFileActionProvider implements ActionProvider {
         descriptor.setClosingOptions(new Object[]{DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION});
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
+        dialog.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(RunFileActionProvider.class,
+                debug ? "ACSD_DebugFile" : "ACSD_RunFile",
+                file.getName()));
         if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
             RunFileArgs runFileArgs = panel.getArgs();
             ARGS_FOR_FILE.put(file, runFileArgs);
