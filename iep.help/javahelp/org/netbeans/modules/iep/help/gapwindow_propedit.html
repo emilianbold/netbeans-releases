@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html>
+
+
+
+<head>
+
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Gap Window Operator</title>
+
+</head>
+
+
+
+<body>
+
+<h2>Using the Gap Window Operator</h2>
+
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Gap Window operator defines a relation that consists of events that are missing from the input stream, based on an attribute that has a sequential order.</p>
+
+
+
+<p>Assume that you have the following scenario:</p>
+
+<ul>
+  <li>A server receives a stream of messages from various hardware devices.</li>
+  <li>For each hardware device, the messages have unique IDs (1, 2, 3, 4, and so on).</li>
+  <li>Because of an unreliable network, messages may be lost or received in a different order.</li>
+  <li>For each hardware device, you want to determine which messages are missing.</li>
+</ul>
+
+<p>You could add a Stream Input operator with the following attributes:</p>
+
+<ul>
+  <li><tt>deviceID</tt> (VARCHAR)</li>
+  <li><tt>msgID</tt> (BIGINT)</li>
+  <li><tt>msg</tt> (VARCHAR)</li>
+</ul>
+
+<p>You could then connect the Stream Input operator to a Gap Window operator.</p>
+
+<p>In the property editor of the Gap Window operator, set the partition key to the <tt>deviceID</tt> attribute. 
+This setting divides the input stream into multiple substreams, one per device.</p>
+
+<p>In the property editor of the Gap Window operator, set the sort value to the <tt>msgID</tt> attribute and the start value to 1.
+For each substream, the Gap Window operator creates an output relation that indicates which message is missing at any point in time.</p>
+
+<p>For example, let's say that the messages from one device arrive in the following order: 3, 2, 5, 1, 7, 4, 4, 6.</p>
+
+<p>When message 3 is received, the Gap Window operator will output message 1. 
+When message 1 is received, the Gap Window operator will output message 4. 
+When message 4 is received, the Gap Window operator will output message 6.
+When message 6 is received, the Gap Window operator will output nothing because there is no gap.</p>
+
+<!--
+<p>Note that in the output relation, the output from the multiple relations is interspersed.</p>
+-->
+
+
+
+<p><strong>To use the Gap Window operator:</strong></p>
+
+<ol>
+  <li>Drag a Gap Window operator from the Palette to the Design view.</li>
+  <li>Connect the input of the new Gap Window component to an operator that has stream output.</li>
+  <li>Double-click the Gap Window component. The property editor opens. Notice that the component has inherited the schema of its input stream.</li>
+
+  <li>In the Attributes area, set the partition key to the attribute or attributes that you want to use to divide the input stream into substreams.</li>
+  <li>In the Sort By drop-down list, select the attribute that you want to sort by. The attribute must have values that can be sorted sequentially.</li>
+  <li>In the Start field, type the attribute value that you want to start with.</li>
+
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK.</li>
+</ol>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="contigorder_propedit.html">Using the Contiguous Order Operator</a></dd>
+</dl>
+
+<hr>
+
+<small><a href="credits.html">Legal Notices</a></small>
+
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</body>
+
+</html>

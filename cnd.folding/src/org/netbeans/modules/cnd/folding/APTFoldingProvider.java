@@ -59,8 +59,15 @@ public class APTFoldingProvider implements FoldingParser {
     public APTFoldingProvider() {
     }
 
+    @Override
     public List<CppFoldRecord> parse(String name, Reader source) {
         List<CppFoldRecord> res = APTFoldingParser.parse(name, source);
         return res;
-    }    
+    }
+
+    @Override
+    public List<CppFoldRecord> parse(String name, char[] buf) {
+        List<CppFoldRecord> res = APTFoldingParser.parse(name, buf);
+        return res;
+    }
 }

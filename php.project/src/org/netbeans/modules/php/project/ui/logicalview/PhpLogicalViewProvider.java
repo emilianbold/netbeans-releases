@@ -56,6 +56,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.spi.actions.RunCommandAction;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.spi.project.ActionProvider;
@@ -235,9 +236,18 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
                 PhpModuleActionsExtender actionsExtender = frameworkProvider.getActionsExtender(phpModule);
                 if (actionsExtender != null) {
+                    RunCommandAction runCommandAction = actionsExtender.getRunCommandAction();
                     List<? extends Action> frameworkActions = actionsExtender.getActions();
-                    if (!frameworkActions.isEmpty()) {
-                        actions.add(new FrameworkMenu(actionsExtender.getMenuName(), frameworkActions));
+                    if (runCommandAction != null || !frameworkActions.isEmpty()) {
+                        List<Action> allActions = new ArrayList<Action>(frameworkActions.size() + 2);
+                        if (runCommandAction != null) {
+                            allActions.add(runCommandAction);
+                            if (!frameworkActions.isEmpty()) {
+                                allActions.add(null);
+                            }
+                        }
+                        allActions.addAll(frameworkActions);
+                        actions.add(new FrameworkMenu(actionsExtender.getMenuName(), allActions));
                     }
                 }
             }

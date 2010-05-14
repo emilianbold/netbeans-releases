@@ -125,24 +125,35 @@ public class SelectModePanel extends javax.swing.JPanel {
     
     private void updateInstruction(){
         if (simpleMode.isSelected()){
+            String tool = "Makefile"; // NOI18N
             String toolsInfo = getString("SelectModeSimpleInstructionExtraText_Make"); // NOI18N
-            if (controller.getWizardStorage() != null && controller.getWizardStorage().getMake() == null) {
+            if (controller.getWizardStorage() != null) {
                 String configure = controller.getWizardStorage().getConfigure();
                 if (configure != null) {
                     toolsInfo = getString("SelectModeSimpleInstructionExtraText_Configure"); // NOI18N
+                    tool = configure;
                     File confFile = FileUtil.normalizeFile(new File(configure));
                     FileObject fo = FileUtil.toFileObject(confFile);
                     if (fo != null) {
                         String mimeType = fo.getMIMEType();
                         if (MIMENames.CMAKE_MIME_TYPE.equals(mimeType)) {
                             toolsInfo = getString("SelectModeSimpleInstructionExtraText_CMake"); // NOI18N
+                            tool = "cmake"; // NOI18N
                         } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mimeType)) {
                             toolsInfo = getString("SelectModeSimpleInstructionExtraText_QMake"); // NOI18N
+                            tool = "qmake"; // NOI18N
                         }
+                    }
+                } else {
+                    String makefile = controller.getWizardStorage().getMake();
+                    if (makefile != null) {
+                        tool = makefile;
                     }
                 }
             }
-            instructions.setText(getString("SelectModeSimpleInstructionText", toolsInfo)); // NOI18N
+            String modeInfo = getString("SimpleModeButtonText", tool); // NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(simpleMode, modeInfo);
+            instructions.setText(getString("SelectModeSimpleInstructionText", toolsInfo));
         } else {
             instructions.setText(getString("SelectModeAdvancedInstructionText")); // NOI18N
         }
@@ -420,10 +431,10 @@ public class SelectModePanel extends javax.swing.JPanel {
                     }
                 }
             }
-            if (ConfigureUtils.findMakefile(path) != null){
+            if (ConfigureUtils.findConfigureScript(path) != null){
                 return true;
             }
-            if (ConfigureUtils.findConfigureScript(path) != null){
+            if (ConfigureUtils.findMakefile(path) != null){
                 return true;
             }
             if (simpleMode.isSelected()) {

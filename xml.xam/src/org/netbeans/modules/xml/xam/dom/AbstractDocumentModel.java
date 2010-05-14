@@ -225,9 +225,10 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     }
 
     /**
+     * Performs preparation stage of synchronization XDM --> XAM.
      *
-     * @deprecated This implementation isn't called anymore.
-     * It was migrated to XDMListener.prepareChangeInfo().
+     * Be aware that the method isn't only called from XDM (XDMListener),
+     * but it also can be redifined. An example can be found in WSDL Model. 
      *
      */
     public ChangeInfo prepareChangeInfo(List<Node> pathToRoot) {

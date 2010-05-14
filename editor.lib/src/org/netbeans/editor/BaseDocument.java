@@ -90,6 +90,7 @@ import javax.swing.undo.CannotRedoException;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
@@ -103,6 +104,8 @@ import org.netbeans.modules.editor.lib.drawing.DrawEngine;
 import org.netbeans.modules.editor.lib.drawing.DrawGraphics;
 import org.netbeans.modules.editor.lib.impl.MarkVector;
 import org.netbeans.modules.editor.lib.impl.MultiMark;
+import org.netbeans.spi.lexer.MutableTextInput;
+import org.netbeans.spi.lexer.TokenHierarchyControl;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -218,6 +221,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     /** Write lock without write lock */
     private static final String WRITE_LOCK_MISSING = "extWriteUnlock() without extWriteLock()"; // NOI18N
+
+    /**
+     * How many modifications under atomic lock are necessary for disabling of lexer's token hierarchy.
+     */
+    private static final int DEACTIVATE_LEXER_THRESHOLD = 30;
 
     private static final Object annotationsLock = new Object();
     private static final Object getVisColFromPosLock = new Object();
@@ -2186,7 +2194,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         public @Override void undo() throws CannotUndoException {
             atomicLockImpl ();
             try {
-                super.undo();
+                TokenHierarchyControl<?> thcInactive = thcInactive();
+                try {
+                    super.undo();
+                } finally {
+                    if (thcInactive != null) {
+                        thcInactive.setActive(true);
+                    }
+                }
             } finally {
                 atomicUnlockImpl ();
             }
@@ -2204,10 +2219,31 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
             atomicLockImpl ();
             try {
-                super.redo();
+                TokenHierarchyControl<?> thcInactive = thcInactive();
+                try {
+                    super.redo();
+                } finally {
+                    if (thcInactive != null) {
+                        thcInactive.setActive(true);
+                    }
+                }
             } finally {
                 atomicUnlockImpl ();
             }
+        }
+
+        private TokenHierarchyControl<?> thcInactive() {
+            TokenHierarchyControl<?> thc = null;
+            if (edits.size() > DEACTIVATE_LEXER_THRESHOLD) {
+                MutableTextInput<?> input = (MutableTextInput<?>)
+                        BaseDocument.this.getProperty(MutableTextInput.class);
+                if (input != null && (thc = input.tokenHierarchyControl()) != null && thc.isActive()) {
+                    thc.setActive(false);
+                } else {
+                    thc = null;
+                }
+            }
+            return thc;
         }
 
         public @Override void die() {

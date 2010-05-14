@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Templates">
+        <!--<folder name="J2EE">
+            <file name="iEP">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/iep/editor/eventProcess.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.iep.editor.wizard.IEPWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/iep/editor/wizard/iEP.html"/>
+            </file>
+        </folder>-->
+        <folder name="SOA_IEP">
+            <attr name="position" intvalue="107"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.Bundle"/>
+            <file name="EventProcessor.iep" url="empty.iep">
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.compapp.projects.wizard.NewFileIterator.genericFileIterator"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.iep.editor.wizard.IEPWizardIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/iep/editor/eventProcess.png"/> 
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/iep/editor/template.html"/> 
+                <attr name="templateCategory" stringvalue="SOA_IEP"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Tools">
+            <folder name="PaletteManager">
+                <file name="org.netbeans.modules.iep.editor.palette.IepPaletteCustomizerAction.instance">
+                    <attr name="position" intvalue="450"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="IepPalette">
+        <folder name="aggregator">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.palette.Bundle"/>
+
+            <file name="RelationAggregator.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/aggregator/RelationAggregator.xml"/>
+            <file name="TupleBasedAggregator.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/aggregator/TupleBasedAggregator.xml"/>
+            <file name="TimeBasedAggregator.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/aggregator/TimeBasedAggregator.xml"/>
+        </folder>
+
+        <folder name="correlationAndFilter">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.palette.Bundle"/>
+
+            <file name="RelationMap.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/correlationAndFilter/RelationMap.xml"/>
+            <file name="StreamProjectionAndFilter.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/correlationAndFilter/StreamProjectionAndFilter.xml"/>
+            <file name="TupleSerialCorrelation.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/correlationAndFilter/TupleSerialCorrelation.xml"/>
+        </folder>
+
+        <folder name="input">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.palette.Bundle"/>
+
+            <file name="TableInput.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/input/TableInput.xml"/>
+            <file name="StreamInput.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/input/StreamInput.xml"/>
+            <file name="ExternalTablePollingStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/input/ExternalTablePollingStream.xml"/>
+            <file name="ReplayStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/input/ReplayStream.xml"/>
+            
+        </folder>
+
+        <folder name="output">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.palette.Bundle"/>
+
+            <file name="TableOutput.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/output/TableOutput.xml"/>
+            <file name="StreamOutput.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/output/StreamOutput.xml"/>
+            <file name="RelationOutput.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/output/RelationOutput.xml"/>
+            <file name="BatchedStreamOutput.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/output/BatchedStreamOutput.xml"/>
+            <file name="InvokeStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/output/InvokeStream.xml"/>
+            <file name="SaveStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/output/SaveStream.xml"/>
+        </folder>
+
+        <folder name="relationConverter">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.palette.Bundle"/>
+
+            <file name="InsertStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationConverter/InsertStream.xml"/>
+            <file name="DeleteStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationConverter/DeleteStream.xml"/>
+            <file name="RelationStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationConverter/RelationStream.xml"/>
+            <file name="NotificationStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationConverter/NotificationStream.xml"/>
+        </folder>
+
+        <folder name="relationOperator">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.palette.Bundle"/>
+
+            <file name="Intersect.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationOperator/Intersect.xml"/>
+            <file name="Union.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationOperator/Union.xml"/>
+            <file name="Minus.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationOperator/Minus.xml"/>
+            <file name="UnionAll.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationOperator/UnionAll.xml"/>
+            <file name="Distinct.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/relationOperator/Distinct.xml"/>
+        </folder>
+
+        <folder name="streamConverter">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.palette.Bundle"/>
+
+            <file name="AttributeBasedWindow.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/streamConverter/AttributeBasedWindow.xml"/>
+            <file name="TimeBasedWindow.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/streamConverter/TimeBasedWindow.xml"/>
+            <file name="PartitionedWindow.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/streamConverter/PartitionedWindow.xml"/>
+            <file name="TupleBasedWindow.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/streamConverter/TupleBasedWindow.xml"/>
+        </folder>
+
+        <folder name="streamOperator">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.palette.Bundle"/>
+            <file name="InvokeService.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/streamOperator/InvokeService.xml"/>
+            <file name="Merge.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/streamOperator/Merge.xml"/>
+        </folder>
+
+        <folder name="sequence">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.palette.Bundle"/>
+            <file name="GapWindow.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/sequence/GapWindow.xml"/>
+            <file name="ContiguousOrder.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/sequence/ContiguousOrder.xml"/>
+        </folder>
+
+    </folder>
+    
+    <folder name="Services">
+        <!-- Recognize text/x-iep+xml -->
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-iep-editor-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/iep/editor/eventProcess.png"/>
+                <attr name="position" intvalue="888"/>
+            </file>
+        </folder>
+    </folder>
+    <!-- 
+    <folder name="Loaders">
+        <folder name="content">
+            <folder name="unknown">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-iep-editor-PlanDataLoader.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+     -->
+    
+     <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-iep+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-iep-editor-PlanDataLoader.instance"/>
+                </folder>
+                <folder name="Actions">
+                    <file name="org-openide-actions-EditAction.instance_hidden"/>
+                    <file name="org-netbeans-modules-iep-editor-designer-actions-PlanDesignViewOpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>                 
+                    <file name="org-netbeans-modules-iep-editor-designer-actions-PlanSourceViewOpenAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="sep-0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-actions-CollectXMLAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="700"/>
+                    </file> 
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-PasteAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    
+                    <file name="RefactoringWhereUsed.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                    
+                    <file name="RefactoringAll.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>
+                    
+                    <file name="sep-5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1900"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                    <file name="sep-6.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="2100"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="2200"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="2300"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>   
+</filesystem>

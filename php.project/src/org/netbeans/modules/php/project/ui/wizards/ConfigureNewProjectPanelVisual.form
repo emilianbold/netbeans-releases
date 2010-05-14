@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
@@ -29,7 +29,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="separator" alignment="0" pref="431" max="32767" attributes="0"/>
+          <Component id="separator" alignment="0" pref="433" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="projectNameLabel" min="-2" max="-2" attributes="0"/>
@@ -47,7 +47,7 @@
                       <Component id="phpVersionComboBox" pref="297" max="32767" attributes="0"/>
                       <Component id="projectNameTextField" alignment="0" pref="297" max="32767" attributes="2"/>
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="localServerComboBox" pref="202" max="32767" attributes="0"/>
+                          <Component id="localServerComboBox" pref="221" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="localServerButton" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -59,7 +59,7 @@
                   </Group>
               </Group>
           </Group>
-          <Component id="projectFolderPanel" alignment="0" pref="431" max="32767" attributes="0"/>
+          <Component id="projectFolderPanel" alignment="0" pref="433" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -202,8 +202,24 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.phpVersionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.phpVersionLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.phpVersionLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JComboBox" name="phpVersionComboBox">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.phpVersionComboBox.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.phpVersionComboBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="phpVersionInfoLabel">
       <Properties>
@@ -211,6 +227,14 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.phpVersionInfoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.phpVersionInfoLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.phpVersionInfoLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="encodingLabel">
       <Properties>

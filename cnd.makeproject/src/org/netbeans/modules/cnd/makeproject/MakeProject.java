@@ -747,14 +747,19 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private final static String PROJECT_NAME_WITH_HIDDEN_PATHS = System.getProperty("cnd.project.name.hidden.paths"); //NOI18N
     private final static int PROJECT_NAME_NUM_SHOWN_FOLDERS = Integer.getInteger("cnd.project.name.folders.num", 1); //NOI18N
 
-    private final class Info implements ProjectInformation {
+    interface InfoInterface extends ProjectInformation {
+        public void firePropertyChange(String prop);
+    }
+    
+    private final class Info implements InfoInterface {
 
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
         Info() {
         }
 
-        void firePropertyChange(String prop) {
+        @Override
+        public void firePropertyChange(String prop) {
             pcs.firePropertyChange(prop, null, null);
         }
 

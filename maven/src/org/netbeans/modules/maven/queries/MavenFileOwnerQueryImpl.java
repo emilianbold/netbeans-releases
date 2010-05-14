@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -74,11 +74,15 @@ import org.openide.util.Mutex.Action;
 public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     
     private Set<NbMavenProjectImpl> set;
-    private final Object lock = new Object();
-    private final Object cacheLock = new Object();
-    private final List<ChangeListener> listeners;
+    private final Object setLock = new Object();
+
     private Set<NbMavenProjectImpl> cachedProjects;
+    private Set<NbMavenProjectImpl> projectsToAddToCache;
+    private final Object cacheLock = new Object();
+
     private PropertyChangeListener projectListener;
+    private final List<ChangeListener> listeners;
+
     private static final Logger LOG = Logger.getLogger(MavenFileOwnerQueryImpl.class.getName());
     
     /** Creates a new instance of MavenFileBuiltQueryImpl */
@@ -86,11 +90,20 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         set = new HashSet<NbMavenProjectImpl>();
         listeners = new ArrayList<ChangeListener>();
         cachedProjects = null;
+        projectsToAddToCache = null;
         projectListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
-                    synchronized (cacheLock) {
-                        cachedProjects = null;
+                    Object evtSource = evt.getSource();
+                    if (evtSource instanceof NbMavenProjectImpl) {
+                        // try adding the changed project and its subprojects again to cache
+                        // new subprojects might have been added/activated for the changed project
+                        synchronized (cacheLock) {
+                            if (null == projectsToAddToCache) {
+                                projectsToAddToCache = new HashSet<NbMavenProjectImpl>(1);
+                            }
+                            projectsToAddToCache.add((NbMavenProjectImpl) evtSource);
+                        }
                     }
                 }
             }
@@ -111,7 +124,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     }
     
     public void addMavenProject(NbMavenProjectImpl project) {
-        synchronized (lock) {
+        synchronized (setLock) {
             if (!set.contains(project)) {
                 LOG.fine("Adding Maven project:" + project.getArtifactRelativeRepositoryPath());
                 set.add(project);
@@ -119,13 +132,20 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             }
         }
         synchronized (cacheLock) {
-            cachedProjects = null;
+            // add the new project to cache incrementally if it has not been
+            // added to cache already from "set" where we added it just above
+            if (null != cachedProjects && !cachedProjects.contains(project)) {
+                if (null == projectsToAddToCache) {
+                    projectsToAddToCache = new HashSet<NbMavenProjectImpl>(1);
+                }
+                projectsToAddToCache.add(project);
+            }
         }
         
         fireChange();
     }
     public void removeMavenProject(NbMavenProjectImpl project) {
-        synchronized (lock) {
+        synchronized (setLock) {
             if (set.contains(project)) {
                 LOG.fine("Removing Maven project:" + project.getArtifactRelativeRepositoryPath());
                 set.remove(project);
@@ -165,14 +185,14 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
      * get the list of currently opened maven projects.. kind of hack, but well..
      */
     public Set<Project> getOpenedProjects() {
-        synchronized (lock) {
+        synchronized (setLock) {
             return new HashSet<Project>(set);
         }
     }
     
     public Set<FileObject> getOpenedProjectRoots() {
         Set<FileObject> toRet = new HashSet<FileObject>();
-        synchronized (lock) {
+        synchronized (setLock) {
             for (NbMavenProjectImpl prj : set) {
                 //TODO have generic and other source roots included to cater for projects with external source roots
                 toRet.add(prj.getProjectDirectory());
@@ -245,37 +265,67 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         return ProjectManager.mutex().readAccess(new Action<Set<NbMavenProjectImpl>>() {
             public Set<NbMavenProjectImpl> run() {
                 synchronized (cacheLock) {
-                    Set<NbMavenProjectImpl> currentProjects;
-                    List<NbMavenProjectImpl> iterating;
-                    if (cachedProjects != null) {
+                    // is cachedProjects up-to-date?
+                    if (cachedProjects != null && null == projectsToAddToCache) {
                         return new HashSet<NbMavenProjectImpl>(cachedProjects);
                     }
-                    synchronized (lock) {
-                        currentProjects = new HashSet<NbMavenProjectImpl>(set);
-                        iterating = new ArrayList<NbMavenProjectImpl>(set);
-                    }
-                    int index = 0;
-                    // iterate all opened projects and figure their subprojects.. consider these as well. do so recursively.
-                    //TODO performance.. this could be expensive, maybe cache somehow
-                    while (index < iterating.size()) {
-                        NbMavenProjectImpl prj = iterating.get(index);
-                        SubprojectProvider sub = prj.getLookup().lookup(SubprojectProvider.class);
-                        if (sub != null) {
-                            Set<? extends Project> subs = sub.getSubprojects();
-                            subs.removeAll(currentProjects);
-                            for (Project p : subs) {
-                                if (p instanceof NbMavenProjectImpl) {
-                                    currentProjects.add((NbMavenProjectImpl)p);
-                                    iterating.add((NbMavenProjectImpl)p);
-                                }
-                            }
+                    // cachedProjects empty?
+                    if (null == cachedProjects) {
+                        // full build of the cache
+                        Set<NbMavenProjectImpl> currentProjects;
+                        List<NbMavenProjectImpl> iterating;
+                        synchronized (setLock) {
+                            currentProjects = new HashSet<NbMavenProjectImpl>(set);
+                            iterating = new ArrayList<NbMavenProjectImpl>(set);
                         }
-                        index = index + 1;
+                        int index = 0;
+                        // iterate all opened projects and figure their subprojects..
+                        // consider these as well. do so recursively.
+                        while (index < iterating.size()) {
+                            NbMavenProjectImpl prj = iterating.get(index);
+                            addSubProjects(currentProjects, iterating, prj);
+                            index = index + 1;
+                        }
+                        cachedProjects = currentProjects;
+                        projectsToAddToCache = null;
                     }
-                    cachedProjects = currentProjects;
+                    // non-empty projectsToAddToCache?
+                    if (null != projectsToAddToCache) {
+                        // incrementally adding to the cache
+                        Set<NbMavenProjectImpl> currentProjects;
+                        List<NbMavenProjectImpl> iterating;
+                        currentProjects = new HashSet<NbMavenProjectImpl>(cachedProjects);
+                        currentProjects.addAll(projectsToAddToCache);
+                        iterating = new ArrayList<NbMavenProjectImpl>(projectsToAddToCache);
+                        int index = 0;
+                        // iterate all new or changed (after propChange) projects
+                        // and figure their subprojects..
+                        // consider these as well. do so recursively.
+                        while (index < iterating.size()) {
+                            NbMavenProjectImpl prj = iterating.get(index);
+                            addSubProjects(currentProjects, iterating, prj);
+                            index = index + 1;
+                        }
+                        cachedProjects = currentProjects;
+                        projectsToAddToCache = null;
+                    }
                     return new HashSet<NbMavenProjectImpl>(cachedProjects);
                 }
             }
         });
+    }
+
+    private void addSubProjects(Set<NbMavenProjectImpl> finalset, List<NbMavenProjectImpl> iteratinglist, NbMavenProjectImpl prj) {
+        SubprojectProvider sub = prj.getLookup().lookup(SubprojectProvider.class);
+        if (sub != null) {
+            Set<? extends Project> subs = sub.getSubprojects();
+            for (Project p : subs) {
+                if (p instanceof NbMavenProjectImpl) {
+                    finalset.add((NbMavenProjectImpl) p);
+                    if (!iteratinglist.contains((NbMavenProjectImpl)p))
+                        iteratinglist.add((NbMavenProjectImpl) p);
+                }
+            }
+        }
     }
 }

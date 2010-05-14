@@ -259,7 +259,8 @@ public class ConfigFilesUIs {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel component = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
             File file = (File)value;
-            component.setText(displayName.getDisplayName(file));
+            String displayNameText = (file != null) ? displayName.getDisplayName(file) : null;
+            component.setText(displayNameText);
             if (!(table.getModel() instanceof ConfigFileSelectionTableModel)) {
                 return component;
             }

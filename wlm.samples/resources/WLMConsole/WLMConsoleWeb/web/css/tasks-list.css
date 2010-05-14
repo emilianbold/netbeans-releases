@@ -1,0 +1,220 @@
+/*
+ * Copyright (c) 2009, Sun Microsystems, Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * * Redistributions of source code must retain the above copyright notice,
+ *   this list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software without
+ *   specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+.Pages A,
+.Pages SPAN {
+    display: block;
+    float: left;
+    border-top: 1px;
+    border-bottom: 1px;
+    padding: 1pt 0pt;
+    margin: 1pt 2pt;
+}
+
+.Pages A, 
+.Pages SPAN.Ellipsis,
+.Pages SPAN.CurrentPage,
+.Pages SPAN.DisabledAnchor {
+    padding: 1pt 4pt;
+}
+
+.Pages A {
+    background: #e5e9ed url('../img/button-bg.png') repeat-x bottom left scroll;
+    border: 1px solid #98a0a5;
+    color: #000000;
+    text-decoration: none;
+}
+
+.Pages A:hover {
+    background: #e5e9ed url('../img/button-bg-over.png') repeat-x bottom left scroll;
+}
+
+.Pages SPAN.CurrentPage {
+    font-weight: bold;
+    border: 1px solid #98a0a5;
+    background: #e5e9ed url('../img/button-bg-over.png') repeat-x bottom left scroll;
+}
+
+.Pages SPAN.Title {
+    border: 1px solid #ffffff;
+}
+
+.Pages SPAN.Ellipsis {
+    border: 1px solid #98a0a5;
+    background: #e5e9ed url('../img/button-bg-over.png') repeat-x bottom left scroll;
+    color: #98a0a5;
+}
+
+.Pages SPAN.DisabledAnchor {
+    border: 1px solid #98a0a5;
+    background: #e5e9ed url('../img/button-bg-over.png') repeat-x bottom left scroll;
+    color: #98a0a5;
+}
+
+.OddRow TD {
+    background: #ffffff;
+}
+
+.EvenRow TD {
+    background: #e5e9ed;
+}
+
+#noTasksWereFound {
+    border: 1px solid #98a0a5;
+    background: #e5e9ed;
+    margin-top: 12pt;
+    padding: 12pt;
+    text-align: center;
+}
+
+#tasksList {
+    width: 100%;
+    border: 1px solid #98a0a5;
+    margin-top: 12pt;
+    border-collapse: collapse;
+}
+
+#tasksList TD, #tasksList TH {
+    padding: 2pt 4pt;
+    border: 1px solid #98a0a5;
+}
+
+#tasksList TD {
+    padding: 4pt 4pt;
+}
+
+#tasksList TD.SubmittedOn {
+    white-space: nowrap;
+}
+
+#tasksList TD.ID {
+    text-align: right;
+}
+
+#tasksList TH {
+    background: #e5e9ed url('../img/column-bg.png') repeat-x bottom left scroll;
+    white-space: nowrap;
+}
+
+.Priority10, #tasksList TD.Priority10 {
+    background: #ff0000;
+}
+
+.Priority5, #tasksList TD.Priority5 {
+    background: #ffc726;
+}
+
+.Priority1, #tasksList TD.Priority1 {
+    background: #00a8cb;
+}
+
+#tasksList .Actions {
+    padding: 0 8pt;
+    font-size: 8pt;
+    margin-top: 2pt;
+}
+
+#tasksList .Actions A {
+    color: #98a0a5;
+    text-decoration: none;
+}
+
+#tasksList .Actions A:hover {
+    text-decoration: underline;
+}
+
+#tasksList .ID {
+
+}
+
+#tasksList .Title {
+    width: 100%;
+}
+
+#tasksList .Status {
+
+}
+
+#tasksList .SubmittedOn {
+
+}
+
+#tasksList .AssignedTo {
+
+}
+
+#tasksList .ClaimedBy {
+
+}
+
+#tasksList .Deadline {
+
+}
+
+#changePageCount {
+    margin:0;
+    padding:0;
+}
+
+#paginatorTop {
+    width: 100%;
+    margin-top: 12pt;
+}
+
+#paginatorTopPages {
+    width: 100%;
+}
+
+#sortByLabel {
+    padding-right: 5px;
+    white-space: nowrap;
+}
+
+#sortByField {
+
+}
+
+#paginatorBottom {
+    width: 100%;
+    margin-top: 12pt;
+}
+
+#paginatorBottomPages {
+    width: 100%;
+}
+
+#tasksPerPageLabel {
+    padding-right: 5px;
+    white-space: nowrap;
+}
+
+#tasksPerPageField {
+    /* No Styles. */
+}

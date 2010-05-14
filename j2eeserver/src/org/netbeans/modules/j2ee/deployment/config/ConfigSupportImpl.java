@@ -716,7 +716,12 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
 
             @Override
             public ModuleConfiguration run() {
-                synchronized (this) {
+                synchronized (ConfigSupportImpl.this) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Thread {0} acquired lock on object {1}",
+                                new Object[] {Thread.currentThread().getName(), ConfigSupportImpl.this});
+                        LOGGER.log(Level.FINE, "Stacktrace", new Exception());
+                    }
                     if (moduleConfiguration == null) {
                         try {
                             if (server == null) {

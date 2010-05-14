@@ -1,0 +1,7 @@
+#set ($indent = "    ")
+#if ($validationCondition != "" && $exceptionDML != "")
+${nestedIndent}EXCEPTION 
+${nestedIndent}${indent}WHEN NOT ${validationCondition}
+${nestedIndent}THEN
+${exceptionDML}
+#end

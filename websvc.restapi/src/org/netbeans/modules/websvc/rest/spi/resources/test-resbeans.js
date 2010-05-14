@@ -107,7 +107,7 @@ TestSupport.prototype = {
             }
             baseURL = this.concatPath(baseURL, resourceUri);
         } else if (patterns.length == 2) {
-            var applicationPath = patterns[1];
+            var applicationPath = patterns[1]+'/';
             baseURL = this.concatPath(baseURL, applicationPath);
         }
         this.wadlURL = this.concatPath(baseURL, "application.wadl");
@@ -1372,7 +1372,7 @@ WADLParser.prototype = {
        function createNode(/*Node*/ n, parentCat) {  
          var pathVal = ts.wdr.getNormailizedPath(n);
          var pathElem = '';
-         if(pathVal.substring(0,1) == '/')
+         if (pathVal.substring(0,1) == '/' && pathVal.length > 1)
              pathElem = pathVal.substring(1);
          else
              pathElem = pathVal;
@@ -1382,7 +1382,9 @@ WADLParser.prototype = {
              uri = parentCat.uri+pathElem;
          else
              uri = parentCat.uri+'/'+pathElem;
-         var cName = ts.wdr.trimSeperator(pathVal);
+         if (uri.substring(uri.length-2) == '//')
+             uri = uri.substring(0, uri.length-2)
+         var cName = (pathVal == '/' ? '/' : ts.wdr.trimSeperator(pathVal));
          if(ts.wdr.hasResource(n)) {
             return new category(n, ts.wdr.getUniqueCategoryId(pathVal), uri, cName);
          } else {

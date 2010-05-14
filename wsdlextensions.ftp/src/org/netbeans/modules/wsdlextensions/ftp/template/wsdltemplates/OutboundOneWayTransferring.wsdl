@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="OutboundOneWayTransferring" targetNamespace="http://j2ee.netbeans.org/wsdl/BpelModule2/OutboundOneWayTransferring"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://j2ee.netbeans.org/wsdl/BpelModule2/OutboundOneWayTransferring" xmlns:ftp="http://schemas.sun.com/jbi/wsdl-extensions/ftp/">
+    <types/>
+    <message name="OutboundOneWayTransferringOperationRequest">
+        <part name="part1" type="xsd:string"/>
+    </message>
+    <portType name="OutboundOneWayTransferringPortType">
+        <operation name="OutboundOneWayTransferringOperation">
+            <input name="input1" message="tns:OutboundOneWayTransferringOperationRequest"/>
+        </operation>
+    </portType>
+    <binding name="OutboundOneWayTransferringBinding" type="tns:OutboundOneWayTransferringPortType">
+        <ftp:binding/>
+        <operation name="OutboundOneWayTransferringOperation">
+            <ftp:operation/>
+            <input name="input1">
+                <ftp:transfer sendTo="" sendToHasPatterns="false" append="false" preSendCommand="NONE" preSendLocation="" preSendLocationHasPatterns="false" postSendCommand="NONE" postSendLocation="" postSendLocationHasPatterns="false" use="literal" encodingStyle=""/>
+            </input>
+        </operation>
+    </binding>
+    <service name="OutboundOneWayTransferringService">
+        <port name="#SERVICE_NAME_OutboundOneWayTransferringPort" binding="tns:OutboundOneWayTransferringBinding">
+            <ftp:address url="ftp://anonymous:user\@yahoo.com@localhost:21" user="" password="" dirListStyle="UNIX" useUserDefinedHeuristics="false" userDefDirListStyle="" userDefDirListHeuristics="" mode="BINARY" securedFTP="None" enableCCC="false" keyStore="" keyStorePassword="" keyAlias="" keyPassword="" trustStore="" trustStorePassword="" cmdChannelTimeout="45000" dataChannelTimeout="45000"/>
+        </port>
+    </service>
+</definitions>

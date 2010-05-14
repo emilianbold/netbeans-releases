@@ -70,7 +70,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     private final CharSequence name;
     private CharSequence[] nameParts;
 
-    private TemplateDescriptor templateDescriptor = null;
+    private final TemplateDescriptor templateDescriptor;
     
     public ClassForwardDeclarationImpl(AST ast, CsmFile file, boolean global) {
         super(file, getClassForwardStartOffset(ast), getClassForwardEndOffset(ast));

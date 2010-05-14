@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/ldap/"
+            xmlns:tns="http://schemas.sun.com/jbi/wsdl-extensions/ldap/"
+            elementFormDefault="qualified">
+    <!-- connection properties -->
+<!--    <xsd:complexType name="ConnectionType">
+        <xsd:sequence>
+            <xsd:element name="location" type="xsd:string"></xsd:element>
+            <xsd:element name="principal" type="xsd:string" minOccurs="0"></xsd:element>
+            <xsd:element name="credential" type="xsd:string" minOccurs="0"></xsd:element>
+            <xsd:element name="ssltype" type="xsd:string" minOccurs="0"></xsd:element>
+            <xsd:element name="authentication" type="xsd:string" minOccurs="0"></xsd:element>
+            <xsd:element name="protocol" type="xsd:string" minOccurs="0"></xsd:element>
+            <xsd:element name="truststore" type="xsd:string" minOccurs="0"></xsd:element>
+            <xsd:element name="truststorepassword" type="xsd:string" minOccurs="0"></xsd:element>
+            <xsd:element name="truststoretype" type="xsd:string" minOccurs="0"></xsd:element>
+            <xsd:element name="keystore" type="xsd:string" minOccurs="0"></xsd:element>
+            <xsd:element name="keystoreusername" type="xsd:string" minOccurs="0"></xsd:element>
+            <xsd:element name="keystorepassword" type="xsd:string" minOccurs="0"></xsd:element>
+            <xsd:element name="keystoretype" type="xsd:string" minOccurs="0"></xsd:element>
+            <xsd:element name="tlssecurity" type="xsd:string" minOccurs="0"></xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>  -->
+    
+    <!-- ldap operation response type -->
+    <xsd:complexType name="ResponsePropertyType" >
+        <xsd:sequence>
+            <xsd:element name="code" type="xsd:string"></xsd:element>
+            <xsd:element name="requestId" type="xsd:string"></xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <!-- ldap operation fault type-->
+    <xsd:complexType name="FaultType">
+        <xsd:sequence>
+            <xsd:element name="code" type = "xsd:string"></xsd:element>
+            <xsd:element name="description" type = "xsd:string"></xsd:element>
+            <xsd:element name="url" type = "xsd:string"></xsd:element>
+            <xsd:element name="resolvedName" type = "xsd:string"></xsd:element>
+            <xsd:element name="remainingName" type = "xsd:string"></xsd:element>
+            <xsd:element name="referralUrl" type="xsd:string"></xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

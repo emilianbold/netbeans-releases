@@ -63,14 +63,18 @@ public class ChildrenSupport {
     private Set<FileNaming> notExistingChildren;
     private Set<FileNaming> existingChildren;
     private int status = ChildrenSupport.NO_CHILDREN_CACHED;
-    private static Mutex.Privileged mutexPrivileged = new Mutex.Privileged();
-    private static Mutex mutex = new Mutex(mutexPrivileged);
+    private static final Mutex.Privileged mutexPrivileged = new Mutex.Privileged();
+    private static final Mutex mutex = new Mutex(mutexPrivileged);
 
     public ChildrenSupport() {
     }
 
     public final Mutex.Privileged getMutexPrivileged() {
         return mutexPrivileged;
+    }
+
+    public static boolean isLock() {
+        return mutex.isReadAccess() || mutex.isWriteAccess();
     }
 
     public Set<FileNaming> getCachedChildren() {

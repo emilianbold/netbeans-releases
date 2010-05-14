@@ -63,11 +63,15 @@ public abstract class KeyringProviderTestBase extends NbTestCase {
         doTestStorage(p, "klā′vē ər", "ॐ", "κρυπτός");
     }
     private void doTestStorage(KeyringProvider p, String key, String password, String description) throws Exception {
-        key = "KeyringProviderTestBase." + key; // avoid interfering with anything real
+        key = "KeyringProviderTestBase." + UUID.randomUUID() + key; // avoid interfering with anything real
         assertEquals(null, p.read(key));
         try {
             p.save(key, password.toCharArray(), description);
             char[] loaded = p.read(key);
+            assertEquals(password, loaded != null ? new String(loaded) : null);
+            password += " (edited)";
+            p.save(key, password.toCharArray(), description);
+            loaded = p.read(key);
             assertEquals(password, loaded != null ? new String(loaded) : null);
         } finally {
             p.delete(key);

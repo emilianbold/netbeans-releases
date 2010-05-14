@@ -1,0 +1,4 @@
+#parse("org/netbeans/modules/sql/framework/codegen/sqlserver/config/disableConstraints.vm")
+#parse("org/netbeans/modules/sql/framework/codegen/sqlserver/config/insertStmt.vm") 
+#parse("org/netbeans/modules/sql/framework/codegen/base/config/select.vm")
+#parse("org/netbeans/modules/sql/framework/codegen/sqlserver/config/enableConstraints.vm")
