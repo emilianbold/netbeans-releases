@@ -428,7 +428,9 @@ public class CsmUtilities {
                         CsmProject csmProject = csmFile.getProject();
                         if (csmProject != null) {
                             Object platformProject = csmProject.getPlatformProject();
-                            if (platformProject.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
+                            if (platformProject == null || !csmProject.isValid()) {
+                                CndUtils.assertTrueInConsole(false, "FILE " + csmFile + "from invalid PROJECT " + csmProject); // NOI18N
+                            } else if (platformProject.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
                                 if (i == 0 && files.size() > 1) {
                                     CndUtils.assertTrue(false, "!!! STANDALONE FILE " + csmFile + "\nTOOK PRIORITY OVER OTHER FILES " + files); // NOI18N
                                 } else {
