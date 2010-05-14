@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,53 +31,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.core.syntax.gsf;
 
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.netbeans.modules.web.core.syntax.parser.JspSyntaxParser;
+package org.netbeans.modules.web.core.syntax.parser;
+
+import java.util.List;
 
 /**
- * A very simple JSP parser.
  *
- * @author marek
+ * @author marekfukala
  */
-public class JspGSFParser extends Parser {
+public final class Result {
 
-    private Result result;
+    private List<JspSyntaxElement> elements;
+    private CharSequence source;
 
-    @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        result = new JspParserResult(snapshot, JspSyntaxParser.parse(snapshot));
+    public Result(CharSequence source, List<JspSyntaxElement> elements) {
+        this.source = source;
+        this.elements = elements;
     }
 
-    @Override
-    public Result getResult(Task task) throws ParseException {
-        return result;
-    }
-
-    @Override
-    public void cancel() {
-        //do nothing
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener changeListener) {
-        //do nothing
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
-        //do nothing
+    public CharSequence source() {
+        return source;
     }
     
+    public List<JspSyntaxElement> elements() {
+        return elements;
+    }
+
 }
