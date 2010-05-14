@@ -89,6 +89,7 @@ public class ReportNBIssueAction extends SystemAction {
     }
 
     static boolean checkLogin(final BugzillaRepository repo) {
+        BugzillaConfig.getInstance().setupCredentials(repo);
         if(repo.getUsername() != null && !repo.getUsername().equals("")) {
             return true;
         }
