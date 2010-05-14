@@ -32,7 +32,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.soa.wsdl.bindingsupport.ui.util</code-name-base>
+                    <code-name-base>org.netbeans.modules.soa.wsdl.bindingsupport</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
