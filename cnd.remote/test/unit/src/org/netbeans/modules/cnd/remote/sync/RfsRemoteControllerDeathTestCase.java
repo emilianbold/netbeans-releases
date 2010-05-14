@@ -52,9 +52,11 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -100,6 +102,9 @@ public class RfsRemoteControllerDeathTestCase extends RemoteTestBase {
         rcWriter.flush();
         sleep(500);
         ConnectionManager.getInstance().disconnect(env);
+        char[] passwd = NativeExecutionTestSupport.getTestPassword(env);
+        assertNotNull("Test password should not be null", passwd);
+        PasswordManager.getInstance().storePassword(env, passwd, false);
         ConnectionManager.getInstance().connectTo(env);
         waitDeath(env, rcPath, pid, 22000,
                 "The process " + pid + ' ' + rcPath + " at " + env + " did not die after disconnect");
