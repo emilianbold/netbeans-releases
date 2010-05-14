@@ -54,6 +54,7 @@
         </tstamp>
 
         <ant dir="${home}/nbbuild" target="bootstrap"/>
+        <ant dir="${home}/nbbuild" target="download-all-extbins"/>
     </target>
 
     <!-- netbeans -->

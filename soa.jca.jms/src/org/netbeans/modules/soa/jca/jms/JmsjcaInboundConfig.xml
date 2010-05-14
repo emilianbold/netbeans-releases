@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<inbound-config>
+    
+    <ejb-config steady-pool-size="0" resize-quantity="16" max-pool-size="64" 
+        pool-idle-timeout-in-seconds="600" max-wait-time-in-millis="10000"/>
+    
+    <activation-config>
+        <activation-config-property editable="true">
+            <activation-config-property-name>ConnectionURL</activation-config-property-name>
+            <activation-config-property-value>mq://localhost:7676</activation-config-property-value>
+        </activation-config-property>
+        <activation-config-property editable="true">
+            <activation-config-property-name>concurrencyMode</activation-config-property-name>
+            <activation-config-property-value>cc</activation-config-property-value>
+        </activation-config-property>
+        <activation-config-property editable="true">
+            <activation-config-property-name>Destination</activation-config-property-name>
+            <activation-config-property-value>Queue1</activation-config-property-value>
+        </activation-config-property>
+        <activation-config-property editable="true">
+            <activation-config-property-name>DestinationType</activation-config-property-name>
+            <activation-config-property-value>javax.jms.Queue</activation-config-property-value>
+        </activation-config-property>
+        <activation-config-property editable="true">
+            <activation-config-property-name>UserName</activation-config-property-name>
+            <activation-config-property-value>admin</activation-config-property-value>
+        </activation-config-property>
+        <activation-config-property editable="true">
+            <activation-config-property-name>Password</activation-config-property-name>
+            <activation-config-property-value>admin</activation-config-property-value>
+        </activation-config-property>
+        <activation-config-property editable="true">
+            <activation-config-property-name>SubscriptionDurability</activation-config-property-name>
+            <activation-config-property-value>Durable</activation-config-property-value>
+        </activation-config-property>
+        <activation-config-property editable="true">
+            <activation-config-property-name>SubscriptionName</activation-config-property-name>
+            <activation-config-property-value></activation-config-property-value>
+        </activation-config-property>
+        <activation-config-property editable="true">
+            <activation-config-property-name>ClientId</activation-config-property-name>
+            <activation-config-property-value></activation-config-property-value>
+        </activation-config-property>
+        <activation-config-property editable="true">
+            <activation-config-property-name>EndpointPoolMaxSize</activation-config-property-name>
+            <activation-config-property-value>5</activation-config-property-value>
+        </activation-config-property>
+        <activation-config-property editable="true">
+            <activation-config-property-name>ContextName</activation-config-property-name>
+            <activation-config-property-value>ProjectName/MDBName</activation-config-property-value>
+        </activation-config-property>
+        <activation-config-property editable="true">
+            <activation-config-property-name>MBeanName</activation-config-property-name>
+            <activation-config-property-value></activation-config-property-value>
+        </activation-config-property>
+        <activation-config-property editable="true">
+            <activation-config-property-name>messageSelector</activation-config-property-name>
+            <activation-config-property-value></activation-config-property-value>
+        </activation-config-property>
+    </activation-config>
+
+</inbound-config>
