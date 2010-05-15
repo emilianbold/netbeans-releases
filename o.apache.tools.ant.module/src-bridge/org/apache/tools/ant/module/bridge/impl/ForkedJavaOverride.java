@@ -168,6 +168,7 @@ public class ForkedJavaOverride extends Java {
 
             private Thread outTask;
             private Thread errTask;
+            private Thread inTask;
 
             NbOutputStreamHandler() {}
 
@@ -176,13 +177,20 @@ public class ForkedJavaOverride extends Java {
             public void stop() {
                 if (errTask != null) {
                     try {
-                        errTask.join();
+                        errTask.join(3000);
                     } catch (InterruptedException ex) {
                     }
                 }
                 if (outTask != null) {
                     try {
-                        outTask.join();
+                        outTask.join(3000);
+                    } catch (InterruptedException ex) {
+                    }
+                }
+                if (inTask != null) {
+                    inTask.interrupt();
+                    try {
+                        inTask.join(1000);
                     } catch (InterruptedException ex) {
                     }
                 }
@@ -219,7 +227,7 @@ public class ForkedJavaOverride extends Java {
                 if (is == null) {
                     is = AntBridge.delegateInputStream();
                 }
-                Thread inTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(is, outputStream, null, null),
+                inTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(is, outputStream, null, null),
                         "In Thread for " + getProject().getName()); // NOI18N
                 inTask.setDaemon(true);
                 inTask.start();
