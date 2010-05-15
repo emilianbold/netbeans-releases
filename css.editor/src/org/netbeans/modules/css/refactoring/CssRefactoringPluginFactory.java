@@ -43,6 +43,7 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -56,7 +57,13 @@ public class CssRefactoringPluginFactory implements RefactoringPluginFactory {
 	if (refactoring instanceof RenameRefactoring) {
 	    if (null != refactoring.getRefactoringSource().lookup(CssElementContext.class)) {
 		return new CssRenameRefactoringPlugin((RenameRefactoring)refactoring);
-	    }
+	    } else {
+                //folder refactoring
+                FileObject file = refactoring.getRefactoringSource().lookup(FileObject.class);
+                if(file.isFolder()) {
+                    return new CssRenameRefactoringPlugin((RenameRefactoring)refactoring);
+                }
+            }
 	} else if(refactoring instanceof WhereUsedQuery) {
             if (null != refactoring.getRefactoringSource().lookup(CssElementContext.class)) {
                 return new CssWhereUsedQueryPlugin((WhereUsedQuery)refactoring);

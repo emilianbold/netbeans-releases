@@ -94,9 +94,26 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
     private static final Logger LOGGER = Logger.getLogger(CssRenameRefactoringPlugin.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     private RenameRefactoring refactoring;
+    private Lookup lookup;
+    private CssElementContext context;
 
     public CssRenameRefactoringPlugin(RenameRefactoring refactoring) {
         this.refactoring = refactoring;
+        this.lookup = refactoring.getRefactoringSource();
+        this.context = lookup.lookup(CssElementContext.class);
+
+        if(context == null) {
+            //if a generic folder is rename this plugin is triggered but the lookup doesn't contain
+            //the CssElementContext since the RenameRefactoring was not created by the CssActionsImplementationProvider
+            //but some other, in this case the lookup contain the renamed FileObject
+            FileObject folder = lookup.lookup(FileObject.class);
+            assert folder != null;
+            assert folder.isFolder();
+
+            //create a context for the rename folder
+            context = new CssElementContext.Folder(folder);
+        }
+
     }
 
     @Override
@@ -111,8 +128,6 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             return new Problem(true, NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Error_ElementEmpty")); //NOI18N
         }
 
-        Lookup lookup = refactoring.getRefactoringSource();
-        CssElementContext context = lookup.lookup(CssElementContext.class);
         if(context instanceof CssElementContext.Editor) {
             CssElementContext.Editor editorContext = (CssElementContext.Editor)context;
             char firstChar = refactoring.getNewName().charAt(0);
@@ -153,8 +168,6 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
     @Override
     public Problem prepare(final RefactoringElementsBag refactoringElements) {
-        Lookup lookup = refactoring.getRefactoringSource();
-        CssElementContext context = lookup.lookup(CssElementContext.class);
         CssProjectSupport sup = CssProjectSupport.findFor(context.getFileObject());
         if (sup == null) {
             return null;
