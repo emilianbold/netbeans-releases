@@ -42,9 +42,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -298,6 +300,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             FileObject renamedFolder = context.getFileObject();
 
             Map<FileObject, CssFileModel> modelsCache = new WeakHashMap<FileObject, CssFileModel>();
+            Set<Entry> refactoredReferenceEntries = new HashSet<Entry>();
             //now I need to find out what links go through the given folder
             for (FileObject source : source2dest.keySet()) {
                 List<Difference> diffs = new ArrayList<Difference>();
@@ -323,7 +326,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                             //XXX the model should contain string representation 2 entry map
                             //linear search :-(
                             for (Entry entry : imports) {
-                                if (entry.isValidInSourceDocument() && entry.getName().equals(dest.linkPath())) {
+                                if (!refactoredReferenceEntries.contains(entry) && entry.isValidInSourceDocument() && entry.getName().equals(dest.linkPath())) {
                                     //a matching entry found, add the rename refactoring
                                     CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(source);
 
@@ -335,6 +338,11 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                                             entry.getName(),
                                             modification.getModifiedReferencePath(),
                                             NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Modify_Css_File_Import"))); //NOI18N
+
+                                    //remember we already renamed this entry, and ignore it next time.
+                                    //There might be several references to the same css file,
+                                    //so we iterate over the same css model entries several times
+                                    refactoredReferenceEntries.add(entry);
                                 }
                             }
                         }
