@@ -21,6 +21,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,42 +36,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.pty;
 
-import java.io.IOException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.support.ShellSession;
+package org.netbeans.lib.profiler.heap;
+
 
 /**
  *
- * @author ak119685
+ * @author Tomas Hurka
  */
-public final class SttySupport {
-
-    private SttySupport() {
+class ClassLoaderFieldValue extends HprofFieldObjectValue {
+    //~ Constructors -------------------------------------------------------------------------------------------------------------
+    
+    ClassLoaderFieldValue(ClassDump cls, long offset) {
+        super(cls, offset);
     }
-
-    /**
-     *
-     * @param env
-     * @param tty
-     * @param args
-     * @return may return null in case of failure
-     */
-    public static String[] apply(final ExecutionEnvironment env, final String tty, final String args) {
-        String[] result = null;
-
-        try {
-            result = ShellSession.execute(env, "/bin/stty " + args + " < " + tty + " 2>/dev/null"); // NOI18N
-        } catch (IOException ex) {
-            // bad luck.. still just ignore..
-        }
-
-        return result;
+    
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
+    
+    public String getName() {
+        return "$classLoader$";  // NOI18N
     }
+    
+    byte getValueType() {
+        return (byte)HprofHeap.OBJECT;
+    }
+    
+    public Instance getInstance() {
+        return classDump.getClassLoader();
+    }
+    
+    long getInstanceID() {
+        return classDump.getClassLoaderId();
+    }
+    
+    Object getTypeValue() {
+        return Long.valueOf(getInstanceID());
+    }
+    
+    
 }
