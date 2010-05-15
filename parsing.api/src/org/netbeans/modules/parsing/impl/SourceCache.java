@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -358,8 +359,24 @@ public final class SourceCache {
             //Issue #162990 workaround >>>
             Collection<? extends TaskFactory> resortedFactories = resortTaskFactories(factories);
             //<<< End of workaround
+            Snapshot fakeSnapshot = null;
             for (TaskFactory factory : resortedFactories) {
-                Collection<? extends SchedulerTask> newTasks = factory.create (getSnapshot());
+                // #185586 - this is here in order not to create snapshots (a copy of file/doc text)
+                // if there is no task that would really need it (eg. in C/C++ projects there is no parser
+                // registered and no tasks will ever run on these files, even though there may be tasks
+                // registered for all mime types
+                Collection<? extends SchedulerTask> newTasks = factory.create(getParser() != null ? 
+                    getSnapshot() :
+                    fakeSnapshot == null ?
+                        fakeSnapshot = SourceAccessor.getINSTANCE().createSnapshot(
+                            "", //NOI18N
+                            new int [] { 0 },
+                            source,
+                            MimePath.get (mimeType),
+                            new int[][] {new int[] {0, 0}},
+                            new int[][] {new int[] {0, 0}}) :
+                        fakeSnapshot
+                );
                 if (newTasks != null) {
                     tasks1.addAll (newTasks);
                     pendingTasks1.addAll (newTasks);
