@@ -171,7 +171,7 @@ public class NsPrefixCreationUndoTest extends NbTestCase {
         }
         //
         TestComponent3.Err newErr = a.getChild(TestComponent3.Err.class);
-        assertEquals(TestComponent3.NS_ERR_URI, newErr.getNamespaceURI());
+        assertEquals(TestComponent3.NS_URI, newErr.getNamespaceURI());
         //
         String xdmModelTextAfterAdd = Util.getXdmBasedModelText(model);
         String xamModelTextAfterAdd = Util.getXamBasedModelText(model);

@@ -1,0 +1,21 @@
+#set( $totalColumns = $sourceColumnIdentifiers.size())
+#set( $columnCounter = 1)
+#set( $totalMappings = $mappings.size())
+#set( $mappingCounter = 1)
+#set( $indent = "    " )
+##
+##
+#parse("org/netbeans/modules/sql/framework/codegen/sqlserver/config/disableConstraints.vm")
+UPDATE $targetTable 
+SET
+#foreach($mapping in $mappings)
+    $mapping.getTarget().getSql() = $mapping.getSource().getSql()#if($mappingCounter < $totalMappings), #end
+#set( $mappingCounter = $mappingCounter + 1)
+#end
+FROM
+        $fromContent
+#if($useUpdateWhere)
+    WHERE 
+        #if($condition != "")$condition#end
+#end
+#parse("org/netbeans/modules/sql/framework/codegen/sqlserver/config/enableConstraints.vm")        

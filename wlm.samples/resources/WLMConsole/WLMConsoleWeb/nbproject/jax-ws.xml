@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jax-ws xmlns="http://www.netbeans.org/ns/jax-ws/1">
+  <services/>
+  <clients>
+    <client name="TaskCommon">
+      <wsdl-url>file:TaskCommon.wsdl</wsdl-url>
+      <local-wsdl-file>TaskCommon.wsdl</local-wsdl-file>
+      <package-name>sun.com.jbi.wfse.wsdl.taskcommon</package-name>
+      <catalog-file>catalog.xml</catalog-file>
+      <wsimport-options>
+      </wsimport-options>
+    </client>
+  </clients>
+</jax-ws>

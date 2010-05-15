@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html>
+
+
+
+<head>
+
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Batched Stream Output Operator</title>
+
+</head>
+
+
+
+<body>
+
+<h2>Using the Batched Stream Output Operator</h2>
+
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Batched Stream Output operator enables you to output events in batches, rather than one event at a time.</p>
+
+<p>Depending on the downstream JBI component, this approach can improve performance. 
+For example, if you are using IEP with the File Binding Component, sending 10 events at a time might be faster than sending one event at a time.</p>
+
+
+
+<p><strong>To use the Batched Stream Output operator:</strong></p>
+
+<ol>
+
+  <li>Drag a Batched Stream Output operator from the Palette to the Design view.</li>
+  <li>Connect the input of the new Batched Stream Output component to an operator that has stream output.</li>
+  <li>Double-click the Batched Stream Output component. The property editor opens. Notice that the component has inherited the schema of its input stream.</li>
+
+  <li>If you want to include a timestamp on the output, then select the Include Timestamp check box.</li>
+
+  <li>In the Batch Size field, specify the number of events in a batch.</li>
+
+  <li>In the Maximum Delay field and drop-down list, specify the maximum amount of time that the operator will wait before sending a batch.<br>
+      For example, assume that the batch size is 10 and the maximum delay is 30 seconds. 
+      If 30 seconds have passed since the previous batch was sent, and only eight events have arrived, then the operator sends the eight events.</li>
+
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK.</li>
+
+</ol>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="streamout_propedit.html">Using the Stream Output Operator</a></dd>
+<dd>&nbsp;</dd>
+</dl>
+
+<hr>
+
+<small><a href="credits.html">Legal Notices</a></small>
+
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</body>
+
+</html>

@@ -1,0 +1,4 @@
+#if($isDisableConstraint)
+    SET FOREIGN_KEY_CHECKS=0
+    ${statementSeparator}
+#end

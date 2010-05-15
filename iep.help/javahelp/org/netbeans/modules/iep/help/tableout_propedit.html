@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Table Output Operator Property Editor</title>
+</head>
+<body>
+<h2>Using the Table Output Operator Property Editor </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Table Output operator provides static output in the form of relational tables. </p>
+<p><strong>To create a Table Output operator:</strong></p>
+<ol>
+  <li>Drag a Table Output operator from the Palette to the Design view.</li>
+  <li>As needed, connect the input of the new Table Output component to an operator that has Relation output.</li>
+  <li>Double-click the Table Output component. The property editor opens. Notice that the component has inherited the schema of its input relation.</li>
+  <li>As needed, configure the following properties: Name, Is Global, and Global ID.
+  <li>If you select the Is Global check box, then the table is created if it does not already exist. 
+No columns other than the ones specified by the schema are inserted into it. 
+This schema has all the columns in the schema of the relation produced by the upstream operator, plus the ems_seqid column. 
+Upon undeploy or a redeploy, the table is not deleted or recreated.</li>
+  <li>The usual practice is to set the global ID to the same string as the component's name.</li>
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="relationout_propedit.html">Using the Relation Output Property Editor </a> </dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

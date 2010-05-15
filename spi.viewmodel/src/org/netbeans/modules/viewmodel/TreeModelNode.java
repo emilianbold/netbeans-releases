@@ -49,6 +49,7 @@ import java.beans.PropertyEditor;
 import java.lang.ref.WeakReference;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -388,7 +389,17 @@ public class TreeModelNode extends AbstractNode {
             if (a == null) continue;
             boolean disabled = Boolean.TRUE.equals(a.getValue("DisabledWhenInSortedTable"));    // NOI18N
             if (disabled) {
-                actions[i] = new DisabledWhenSortedAction(a);
+                if (a instanceof DisableableAction) {
+                    actions[i] = ((DisableableAction) a).createDisableable(new PrivilegedAction() {
+                        @Override
+                        public Object run() {
+                            // Disabled when the table is sorted:
+                            return !isTableSorted();
+                        }
+                    });
+                } else {
+                    actions[i] = new DisabledWhenSortedAction(a);
+                }
             }
         }
         return actions;
@@ -1044,6 +1055,12 @@ public class TreeModelNode extends AbstractNode {
     }
 
     // innerclasses ............................................................
+
+    public static interface DisableableAction extends Action {
+
+        Action createDisableable(PrivilegedAction enabledTest);
+        
+    }
 
     private class DisabledWhenSortedAction implements Action {
 

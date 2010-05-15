@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+    Document   : template.xml
+    Created on : August 25, 2006, 5:39 PM
+    Author     : sweng
+    Description: Describes the HL7 Binding Component's extensibility element views on WSDL wizard
+-->
+<templateGroup namespace="http://schemas.sun.com/jbi/wsdl-extensions/hl7/" 
+	       xmlns="http://xml.netbeans.org/schema/templates"
+	       xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance"
+               xsi:schemaLocation="http://xml.netbeans.org/schema/templates 
+               templates.xsd" prefix="hl7">
+    <!--template name="HL7Transport" skeleton="true">
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message">
+                <extensionAttr name="use" defaultValue="encoded" />
+                <extensionAttr name="encodingStyle" defaultValue="hl7encoder-1.0" />
+            </extensionElement>
+        </wsdlElement>
+		<wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message">
+                <extensionAttr name="use" defaultValue="encoded" />
+                <extensionAttr name="encodingStyle" defaultValue="hl7encoder-1.0" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address" >
+                <extensionAttr name="location"  defaultValue="hl7://localhost:4040"/>
+                <extensionAttr name="transportProtocolName"  defaultValue="tcp-ip"/>
+            </extensionElement>
+			 <extensionElement name="protocolproperties" >
+				<extensionAttr name="acknowledgmentMode"  defaultValue="original"/>
+				<extensionAttr name="llpType"  defaultValue="MLLPv1"/>
+				<extensionAttr name="startBlockCharacter"  defaultValue="11"/>
+				<extensionAttr name="endDataCharacter"  defaultValue="28"/>
+				<extensionAttr name="endBlockCharacter"  defaultValue="13"/>
+				<extensionAttr name="hllpChecksumEnabled"  defaultValue="false"/>
+				<extensionAttr name="seqNumEnabled"  defaultValue="false"/>
+				<extensionAttr name="processingID"  defaultValue="P"/>
+				<extensionAttr name="versionID"  defaultValue="2.3.1"/>
+				<extensionAttr name="validateMSH"  defaultValue="false"/>
+				<extensionAttr name="fieldSeparator"  defaultValue="124"/>
+				<extensionAttr name="encodingCharacters"  defaultValue="^~\&amp;"/>
+				<extensionAttr name="sendingApplication"  defaultValue="Sun Open ESB HL7 BC"/>
+				<extensionAttr name="sendingFacility"  defaultValue="Sun Open ESB HL7 BC"/>
+				<extensionAttr name="enabledSFT"  defaultValue="false"/>
+				<extensionAttr name="softwareVendorOrganization"  defaultValue="Sun Microsystems, Inc"/>
+				<extensionAttr name="softwareCertifiedVersionOrReleaseNumber"  defaultValue="2.0"/>
+				<extensionAttr name="softwareProductName"  defaultValue="Sun Open ESB HL7 Binding Component"/>
+				<extensionAttr name="softwareBinaryID"  defaultValue="2.0"/>
+				<extensionAttr name="softwareProductInformation"  defaultValue="It is a binding component for HL7 over TCP/IP connection"/>
+            </extensionElement>
+			 <extensionElement name="communicationcontrols"/>
+        </wsdlElement>
+    </template-->
+    <template name="HL7 Version 2 - Inbound">
+        <wsdlTemplate file="wsdltemplates/HL7V2InOut.wsdl"/>
+    </template>
+     <template name="HL7 Version 2 - Outbound">
+        <wsdlTemplate file="wsdltemplates/HL7V2OutIn.wsdl"/>
+    </template>    
+    <!--template name="HL7 Version 3" default="true">
+        <wsdlTemplate file="wsdltemplates/HL7V3.wsdl"/>
+    </template-->    
+    
+</templateGroup>

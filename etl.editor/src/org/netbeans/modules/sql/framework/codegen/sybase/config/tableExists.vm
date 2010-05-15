@@ -1,0 +1,2 @@
+## WT #66604: Sybase system tables must be specified in lower case.
+SELECT name FROM sysobjects WHERE type = 'U' AND name = '$tableName'

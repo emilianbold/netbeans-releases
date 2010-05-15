@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Pick</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Pick</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<!-- add to the Property Editor section -->
+<p>The Pick element blocks the business process and waits until one of the specified events occurs. After the specified event occurs, the activity associated with that event is performed. The possible  events involved in the Pick activity are the arrival of a message or an "alarm" based on  a timer. The occurrence of the events is  mutually 
+  exclusive. 
+  If more than one of the events occurs, then the selection of the activity to perform 
+depends on which event occurred first. </p>
+<p>The Pick activity provides two branches, <tt>onMessage</tt> and <tt>onAlarm</tt>. The branch whose condition is satisfied first (i.e.  a message is received or the specified deadline passes) is executed. When you add a Pick element to your diagram, it automatically includes one <tt>onMessage</tt> statement in which you specify the properties of the message that the process  awaits from a partner service. Each Pick element must include at least one <tt>onMessage</tt> statement. The <tt>onAlarm</tt> branch contains a timer you can use to specify  how long the 
+process is to wait. </p>
+<p><b>To use the Pick element:</b></p>
+<ol>
+  <li>In the Design view, drag the Pick element from the Palette to the diagram.</li>
+  <li>Select the Pick element on the diagram. <br>
+    The 
+    Properties window shows the Pick properties (Ctrl-Shift-7).</li>
+  <li>(Optional) In the Properties window, select the Create Instance checkbox to enable creating an instance. This attribute is used when the Pick element starts an instance of a business process after receiving a message with the specified parameters. <br>
+  If you do not plan to start a new process instance, leave the Create Instance checkbox unselected. </li>
+  <li>In the <tt>onMessage</tt> branch, select the Receive element and configure the properties of the message for which the process is waiting. Follow the instructions for the <a href="receive.html">Receive</a> element.</li>
+  <li>From the Palette, drag the activity that will be  executed and place it inside the  <tt>onMessage</tt> branch. Configure the activity's properties. </li>
+  <li>(Optional) Add more <tt>onMessage</tt> branches by choosing Add &gt; On Message from the pop-up menu and configure them as described above. </li>
+  <li>(Optional) Add one or more <tt>onAlarm</tt> branches following the procedure below. </li>
+</ol>
+<p><b>To add an <tt>onAlarm</tt> branch (a timer) to a Pick element:</b></p>
+<ol>
+  <li>Right-click the Pick element and choose Add &gt; On Alarm from the pop-up menu.</li>
+  <li>Specify the following conditions for the <tt>onAlarm</tt> branch:</li>
+  <ul>
+  <li>Fixed date or duration. Use either the Properties window (as described below) or the <a href="../mapper/about_mapper.html" title="About the BPEL Mapper">BPEL Mapper</a>.</li>
+  <li>Expression. Use the <a href="../mapper/about_mapper.html" title="About the BPEL Mapper">BPEL Mapper</a> to specify an expression.</li>
+  </ul>
+  <li>To specify the fixed date or duration, in the Properties window, select one of the following expiration types from the Alarm Type drop-down list:</li>
+  <ul>
+    <li><b>For</b>. Select this type to set a delay period.</li>
+    <li><b>Until</b>. Select this type to specify the time until which the process is delayed. </li>
+  </ul>
+  <li>In the next row, click the ellipsis button (...) and specify the time in accordance with the selected expiration type. </li>
+  <li>From the Palette, drag an activity that will be  executed and place it inside the <tt>onAlarm</tt> branch. Configure the activity's properties. </li>
+  <li>(Optional) Add one or more <tt>onAlarm</tt> branches as described above.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="receive.html" title="Receive">Receive</a></dd>
+<dd><a href="../design/about_correlation_and_wizard.html" title="Understanding Correlation. Using Correlation Wizard">Understanding Correlation. Using the Correlation Wizard</a></dd>
+<dd><a href="../mapper/about_mapper.html" title="About the BPEL Mapper">About the BPEL Mapper</a></dd>
+<dd><a href="palette_struct_acts.html" title="BPEL Designer Palette: Structured Activities">BPEL Designer Palette: Structured Activities</a></dd>
+<dd><a href="../windows_editors/design_view.html" title="About the Design View of the BPEL Designer">About the Design View of the BPEL Designer</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

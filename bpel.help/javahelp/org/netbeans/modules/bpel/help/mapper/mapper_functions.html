@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved. 
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<title>XPath Function Reference</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>XPath Function Reference</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>A collection of XPath functions are available in the BPEL Mapper's menu bar. These functions are based on the XPath 1.0 specification. Also the menu contains some XPath extension functions. </p>
+<p>Each function has zero or more arguments. Each function returns a single result.</p>
+<p>The menu bar contains the following drop-down menus: <a href="#operator">Operator</a>, <a href="#boolean">Boolean</a>, <a href="#string">String</a>, <a href="#node">Node</a>, <a href="#number">Number</a>, <a href="#datetime">Date&amp;Time</a>, <a href="#bpel">BPEL</a>. </p>
+
+<h3><a name="operator"></a>Operator</h3>
+<p>The Operator menu contains the following functions:</p>
+<ul>
+  <li><tt><b>Greater</b></tt></li>
+  <li><tt><b>Greater or Equal</b></tt></li>
+  <li><tt><b>Less</b></tt></li>
+  <li><tt><b>Less or Equal</b></tt></li>
+  <li><tt><b>Addition</b></tt></li>
+  <li><tt><b>Subtraction</b></tt></li>
+  <li><tt><b>Multiplication</b></tt></li>
+  <li><tt><b>Division</b></tt></li>
+  <li><tt><b>Remainder</b></tt></li>
+  <li><tt><b>Negative</b></tt></li>
+  <li><tt><b>Not Equal</b></tt></li>
+  <li><tt><b>Equal</b></tt></li>
+</ul>
+<h3><a name="boolean"></a>Boolean</h3>
+<p>The Boolean menu contains the following functions:</p>
+<ul>
+<li><tt><b>Logical And</b></tt> uses the following logic: If both arguments are true, then the function returns true. If either argument is false, then the function returns false.</li>
+  <li><tt><b>Logical Or</b></tt> uses the following logic: If either argument is true, then the function returns true. If both arguments are false, then the function returns false.</li>
+  <li> <tt><b>Logical Not</b></tt> uses the following logic: If the argument is false, then the function returns true. If the argument is true, then the function returns false.</li>
+  <li> <tt><b>Language</b></tt> returns true or false depending on whether the language of the context node is the same as or is a sublanguage of the language specified in the argument.</li>
+  <li><tt><b>Logical False</b></tt> returns false.</li>
+  <li><tt><b>Logical True</b></tt> returns true.</li>
+  <li> <tt><b>Boolean</b></tt> converts the argument to a boolean. For detailed information about the logic, see the XPath 1.0 specification.</li>
+</ul>
+<h3><a name="string"></a>String</h3>
+<p>The String menu contains the following functions:</p>
+<ul>
+  <li> <tt><b>Contains</b></tt> uses the following logic: If the first argument string contains the second argument string, then the function returns true. Otherwise, the function returns false.</li>
+  <li> <tt><b>Normalize Space</b></tt> returns the argument string with whitespace normalized by stripping leading and trailing whitespace and by replacing sequences of whitespace characters with a single space.</li>
+  <li> <tt><b>String</b></tt> converts an object to a string.</li>
+  <li> <tt><b>Starts With</b></tt> uses the following logic: If the first argument string starts with the second argument string, then the function returns true. Otherwise, the function returns false.</li>
+  <li> <tt><b>String Length</b></tt> returns the number of characters in the string.</li>
+  <li> <tt><b>Substring</b></tt> returns the substring of the first argument starting at the position specified in the second argument with the length specified in the third argument. The position of the first character is 1, the position of the second character is 2, and so on. The third argument is optional. If the third argument is not specified, then the function returns the substring starting at the position specified in the second argument and continuing to the end of the string.</li>
+  <li> <tt><b>Substring Before</b></tt> returns the substring of the first argument string that precedes the first occurrence of the second argument string in the first argument string. If the first argument string does not contain the second argument string, then the function returns an empty string.</li>
+  <li> <tt><b>Substring After</b></tt> returns the substring of the first argument string that follows the first occurrence of the second argument string in the first argument string. If the first argument string does not contain the second argument string, then the function returns an empty string.</li>
+  <li> <tt><b>Translate</b></tt> returns the first argument string with occurrences of characters in the second argument string replaced by the character at the corresponding position in the third argument string.</li>
+  <li> <tt><b>Concat</b></tt> returns the concatenation of the arguments.</li>
+  <li> <tt><b>String Literal</b></tt> enables you to enter a string literal.
+    
+</ul>
+<h3><a name="node"></a>Node</h3>
+<p>The Nodes menu contains the following functions:</p>
+<ul>
+  <li> <tt><b>Local Name</b></tt> returns the local part of the expanded name of the node in the argument node-set that is first in document order. (An expanded name consists of a local part and a namespace URI.)</li>
+  <li> <tt><b>Name</b></tt> returns the qualified name that represents the expanded name of the node in the argument node-set that is first in document order. (An expanded name consists of a local part and a namespace URI.)</li>
+  <li> <tt><b>Namespace URI</b></tt> returns the namespace URI of the expanded name of the node in the argument node-set that is first in document order. (An expanded name consists of a local part and a namespace URI.)</li>
+  <li> <tt><b>Position</b></tt> returns the context position.</li>
+  <li> <tt><b>Last</b></tt> returns the context size.</li>
+  <li> <tt><b>Count</b></tt> returns the number of nodes in the argument node-set.</li>
+</ul>
+<h3><a name="number"></a>Number</h3>
+<p>The Number menu contains the following functions:</p>
+<ul>
+  <li> <tt><b>Number</b></tt> converts the argument to a number. For detailed information about the logic, see the XPath 1.0 specification.</li>
+  <li> <tt><b>Numeric Literal</b></tt> enables you to enter a number literal.
+  <li> <tt><b>Round</b></tt> returns the number that is closest to the argument and that is an integer.</li>
+  <li> <tt><b>Sum</b></tt> returns the sum, for each node in the argument node-set, of the result of converting the string values of the node to a number.</li>
+  <li> <tt><b>Floor</b></tt> returns the largest number that is not greater than the argument and that is an integer.</li>
+  <li> <tt><b>Ceiling</b></tt> returns the smallest number that is not less than the argument and that is an integer.</li>
+</ul>
+<h3><a name="datetime"></a>Date&Time </h3>
+<p>The Datetime menu contains the following  functions:</p>
+<ul>
+  <li> <tt><b>Current Date</b></tt> provides the current date.  </li>
+    <li> <tt><b>Current Time</b></tt> provides the current time.</li>
+    <li> <tt><b>Current Date and Time</b></tt> provides the current date and time.<br>
+        <li> <tt><b>Duration Literal</b></tt> enables you to enter a duration literal. Use the format specified in the XML Schema specification.</li>
+</li>
+</ul>
+<h3><a name="bpel"></a>BPEL</h3>
+<p>The BPEL menu contains  the following XPath extension functions:</p>
+<ul>
+<li><tt><b>doXslTransform.</b></tt>  This is an XPath extension function defined in WS-BPEL specification. It can be used in a BPEL Assign activity to call an XSLT transformation.</li>
+<li><tt><b>Wrap with Service Reference. </b></tt>This is a special case of doXslTransform function used to transform data into ServiceRefType. The function is intended to facilitate <a href="../elements/partner_link.html#dynamic_addr">Dynamic Addressing</a> usage. </li>
+<li><tt><b>doMarshal </b></tt>performs   serialization of an object. </li> <!-- of structured data? -->
+<li><tt><b>doUnMarshal </b></tt>performs   deserialization of an object.</li>
+</ul>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="mapper_mappings.html" title="Creating BPEL Mappings">Creating BPEL Mappings</a></dd>
+<dd><a href="about_mapper.html" title="About the BPEL Mapper">About the BPEL Mapper</a></dd>
+<dd><a href="mapper_predicates.html" title="Working with Predicates">Working with Predicates</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

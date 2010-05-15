@@ -1,0 +1,17 @@
+<soapenv:Envelope xmlns="http://manufacturing.org/xsd/purchase" 
+xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Body>
+    <sendPurchaseOrder>
+      <purchaseOrder>
+        <purchaseOrder xmlns="http://manufacturing.org/xsd/purchase">
+          <orderId>00012341</orderId>
+          <customerId>9876</customerId>
+          <orderDescription>ThrowInventoryFault_Any_Description</orderDescription>
+          <price></price>
+        </purchaseOrder>
+      </purchaseOrder>
+    </sendPurchaseOrder>
+  </soapenv:Body>
+</soapenv:Envelope>

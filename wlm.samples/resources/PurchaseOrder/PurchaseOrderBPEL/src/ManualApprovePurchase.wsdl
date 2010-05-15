@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="ManualApprovePurchase"
+        targetNamespace="http://jbi.com.sun/wfse/samples/purchase-order/wsdl"
+        xmlns="http://schemas.xmlsoap.org/wsdl/"
+        xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:po="http://jbi.com.sun/wfse/samples/purchase-order/xsd"
+        xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+        xmlns:tns="http://jbi.com.sun/wfse/samples/purchase-order/wsdl">
+
+    <!-- Type definitions -->
+    <types>
+        <xsd:schema targetNamespace="http://jbi.com.sun/wfse/samples/purchase-order/wsdl"
+                xmlns:tns="http://jbi.com.sun/wfse/samples/purchase-order/wsdl">
+            <xsd:import schemaLocation="PurchaseOrder.xsd"
+                    namespace="http://jbi.com.sun/wfse/samples/purchase-order/xsd"/>
+        </xsd:schema>
+    </types>
+
+    <message name="TaskInput">
+        <part name="order" element="po:purchaseOrder"/>
+    </message>
+    <message name="TaskOutput">
+        <part name="reply" element="po:orderReply"/>
+    </message>
+
+    <portType name="ApprovePurchasePT">
+        <operation name="ApprovePurchase">
+            <input name="ApprovePurchaseInput" message="tns:TaskInput"/>
+            <output name="ApprovePurchaseOutput" message="tns:TaskOutput"/>
+        </operation>
+    </portType>
+
+    <plink:partnerLinkType name="ApprovePurchaseLT">
+        <plink:role name="ApprovePurchase_Server" portType="tns:ApprovePurchasePT"/>
+    </plink:partnerLinkType>
+</definitions>
