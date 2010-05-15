@@ -1215,4 +1215,19 @@ public class IndentTestCase extends EditorBase {
             "}\n"
             );
     }
+
+    public void testPreprocessorIndentTyping() throws Exception {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "#ifdef AAA\n" +
+                "    int a;\n" +
+                "    |\n"
+                );
+        typeChar('#', true);
+        assertDocumentText("Incorrect line indent",
+                "#ifdef AAA\n" +
+                "    int a;\n" +
+                "#\n"
+                );
+    }
 }

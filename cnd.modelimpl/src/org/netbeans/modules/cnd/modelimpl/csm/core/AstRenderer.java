@@ -863,8 +863,19 @@ public class AstRenderer {
 
                     CsmClassForwardDeclaration cfdi = null;
 
+                    boolean typeof = false;
                     for (AST curr = firstChild; curr != null; curr = curr.getNextSibling()) {
                         switch (curr.getType()) {
+                            case CPPTokenTypes.LITERAL_typeof:
+                            case CPPTokenTypes.LITERAL___typeof:
+                            case CPPTokenTypes.LITERAL___typeof__:
+                                typeof = true;
+                                break;
+                            case CPPTokenTypes.CSM_EXPRESSION:
+                                if (typeof) {
+                                    classifier = curr.getFirstChild();
+                                }
+                                break;
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
                                 classifier = curr;
@@ -1282,7 +1293,23 @@ public class AstRenderer {
             tokType = tokType.getNextSibling();
         }
 
-        if (tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
+        boolean typeof = false;
+        if (tokType.getType() == CPPTokenTypes.LITERAL_typeof ||
+                tokType.getType() == CPPTokenTypes.LITERAL___typeof ||
+                tokType.getType() == CPPTokenTypes.LITERAL___typeof__
+                ) {
+            typeof = true;
+            AST next = tokType.getNextSibling();
+            if (next != null && next.getType() == CPPTokenTypes.LPAREN) {
+                next = next.getNextSibling();
+                typeAST = next;
+            }
+            if (typeAST != null && typeAST.getType() == CPPTokenTypes.CSM_EXPRESSION) {
+                typeAST = typeAST.getFirstChild();
+            }
+            tokType = next.getNextSibling();
+        }
+        if (typeof || tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
                 tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
                 tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && isThisReference) {
 

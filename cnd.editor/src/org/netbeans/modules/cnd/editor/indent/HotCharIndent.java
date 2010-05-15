@@ -57,10 +57,27 @@ public enum HotCharIndent {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                 if (checkCase(doc, fnw, "else")) { // NOI18N
                     return true;
+                } else if (checkCase(doc, fnw, "#else")) { // NOI18N
+                    return true;
                 }
             } catch (BadLocationException e) {
             }
-
+        } else if ("f".equals(typedText)) { // NOI18N
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, "#if")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "#elif")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "#ifdef")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "#ifndef")) { // NOI18N
+                    return true;
+                } else if (checkCase(doc, fnw, "#endif")) { // NOI18N
+                    return true;
+                }
+            } catch (BadLocationException e) {
+            }
         } else if (":".equals(typedText)) { // NOI18N
             try {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
@@ -85,7 +102,7 @@ public enum HotCharIndent {
             }
         }
         if (typedText != null &&
-            typedText.length() == 1 && Character.isLetter(typedText.charAt(0))) {
+            typedText.length() == 1 && (Character.isLetter(typedText.charAt(0)) || typedText.charAt(0) == '#')) {
             try {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                 if (checkCase(doc, fnw, typedText+"\n") || // NOI18N
