@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="FTP_WSDL_2" targetNamespace="http://j2ee.netbeans.org/wsdl/FTP_WSDL_2"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://j2ee.netbeans.org/wsdl/FTP_WSDL_2" xmlns:plink="http://schemas.xmlsoap.org/ws/2004/03/partner-link/" xmlns:ftp="http://schemas.xmlsoap.org/wsdl/ftp/">
+    <types/>
+    <message name="FTP_WSDL_2OperationRequest">
+        <part name="part1" type="xsd:string"/>
+    </message>
+    <message name="FTP_WSDL_2OperationReply">
+        <part name="part1" type="xsd:string"/>
+    </message>
+    <portType name="FTP_WSDL_2PortType">
+        <operation name="FTP_WSDL_2Operation">
+            <input name="input1" message="tns:FTP_WSDL_2OperationRequest"/>
+            <output name="output1" message="tns:FTP_WSDL_2OperationReply"/>
+        </operation>
+    </portType>
+    <!-- partnerLinkType are automatically generated when a new portType is added. partnerLinkType are used by BPEL processes. 
+In a BPEL process, a partner link represents the interaction between the BPEL process and a partner service. Each partner link is associated with a partner link type.
+A partner link type characterizes the conversational relationship between two services. The partner link type can have one or two roles.-->
+    <binding name="FTP_WSDL_2Binding" type="tns:FTP_WSDL_2PortType">
+        <ftp:binding/>
+        <operation name="FTP_WSDL_2Operation">
+            <ftp:operation/>
+            <input name="input1">
+                <ftp:transfer use="literal" pollIntervalMillis="-1" directory="" directoryAsPattern="false" file="f1" fileAsPattern="false" dirListStyle="UNIX" useUserDefinedHeuristics="false" userDefDirListStyle="" userDefDirListHeuristics="" usePassive="true" mode="BINARY" preCommand="NONE" preDirectory="" preDirectoryAsPattern="false" preFile="" preFileAsPattern="false" postCommand="NONE" postDirectory="" postDirectoryAsPattern="false" postFile="" postFileAsPattern="false"/>
+            </input>
+            <output name="output1">
+                <ftp:transfer use="literal" pollIntervalMillis="5000" directory="" directoryAsPattern="false" file="f2" fileAsPattern="false" dirListStyle="UNIX" useUserDefinedHeuristics="false" userDefDirListStyle="" userDefDirListHeuristics="" usePassive="true" mode="BINARY" preCommand="NONE" preDirectory="" preDirectoryAsPattern="false" preFile="" preFileAsPattern="false" postCommand="NONE" postDirectory="" postDirectoryAsPattern="false" postFile="" postFileAsPattern="false"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="FTP_WSDL_2Service">
+        <port name="FTP_WSDL_2Port" binding="tns:FTP_WSDL_2Binding">
+            <ftp:address url="ftp://:123@eagle.sun.com" useProxy="true" proxy="socks4://u2:password123@eagle.sun.com:0"/>
+        </port>
+    </service>
+    <plink:partnerLinkType name="FTP_WSDL_2Partner">
+        <plink:role name="FTP_WSDL_2PortTypeRole" portType="tns:FTP_WSDL_2PortType"/>
+    </plink:partnerLinkType>
+	<!-- ERROR
+	(1) Invalid port in URL, must be a positive number following host name as in localhost:21, url=socks4://u2:password123@eagle.sun.com:0
+	-->
+</definitions>

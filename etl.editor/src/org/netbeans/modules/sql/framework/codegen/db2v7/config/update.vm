@@ -1,0 +1,47 @@
+#set( $totalColumns = $sourceColumnIdentifiers.size())
+#set( $columnCounter = 1)
+#set( $displayedTgtColCounter = 0)
+#set( $indent = "    " )
+#set( $cntTgtCondCols = 0)
+#set( $cntSrcCondCols = 0)
+UPDATE $targetTable
+##
+## SET CLAUSE
+##
+SET (
+#foreach($mapping in $mappings)
+#if( $mapping.isKeyColumn() == false )
+#if($displayedTgtColCounter > 0),
+#end
+${indent}$mapping.getTarget().getSql() #set( $displayedTgtColCounter = $displayedTgtColCounter + 1 )
+#end
+#end
+) = (
+##
+## SUBSELECT CLAUSE
+##
+${indent}SELECT #if($distinct) DISTINCT #end
+
+#foreach($sColumn in $sourceColumnIdentifiers )
+${indent}${indent}$sColumn.getSql()#if($columnCounter < $totalColumns),
+#end
+#set( $columnCounter = $columnCounter + 1 )
+#end
+${indent}FROM $fromContent
+##
+## OPTIONAL:  where/filter condition(s)
+##
+#if($useUpdateWhere)
+${indent}WHERE
+#if($condition != "")${indent}${indent}$condition#end
+#end
+
+)
+#if($updateOnlyMatchedRows)
+WHERE ( #foreach($tgtCondCol in $tgtCondCols) #if($cntTgtCondCols > 0) , #end #set($cntTgtCondCols = $cntTgtCondCols + 1)
+$tgtCondCol
+#end ) IN (SELECT #foreach($srcCondCol in $srcCondCols) #if($cntSrcCondCols > 0) , #end #set($cntSrcCondCols = $cntSrcCondCols + 1)
+$srcCondCol #end
+${indent}FROM $fromContent
+)
+#end

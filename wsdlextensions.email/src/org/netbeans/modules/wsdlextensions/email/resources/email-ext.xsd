@@ -1,0 +1,968 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!--
+		The contents of this file are subject to the terms of the Common
+		Development and Distribution License (the License). You may not use
+		this file except in compliance with the License. You can obtain a copy
+		of the License at http://www.netbeans.org/cddl.html or
+		http://www.netbeans.org/cddl.txt. When distributing Covered Code,
+		include this CDDL Header Notice in each file and include the License
+		file at http://www.netbeans.org/cddl.txt. If applicable, add the
+		following below the CDDL Header, with the fields enclosed by brackets
+		[] replaced by your own identifying information: "Portions Copyrighted
+		[year] [name of copyright owner]" The Original Software is NetBeans.
+		The Initial Developer of the Original Software is Sun Microsystems,
+		Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All Rights
+		Reserved.
+	-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:email="http://schemas.sun.com/jbi/wsdl-extensions/email/"
+	targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/email/">
+    <xs:import namespace="http://schemas.xmlsoap.org/wsdl/"
+		schemaLocation="wsdl.xsd" />
+
+
+	<!-- Extensibility Elements/Types for the WSDL Binding -->
+
+    <xs:element name="IMAPbinding" type="email:ctBinding">
+        <xs:annotation>
+            <xs:documentation>
+				DESC_Element_IMAPbinding
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="POP3binding" type="email:ctBinding">
+        <xs:annotation>
+            <xs:documentation>
+				DESC_Element_POP3binding
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="SMTPbinding" type="email:ctBinding">
+        <xs:annotation>
+            <xs:documentation>
+				DESC_Element_SMTPbinding
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="ctBinding">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+	<!-- Extensibility Elements/Types for the WSDL Operation -->
+
+    <xs:element name="IMAPoperation" type="email:ctOperation">
+        <xs:annotation>
+            <xs:documentation>
+				DESC_Element_IMAPoperation
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="POP3operation" type="email:ctOperation">
+        <xs:annotation>
+            <xs:documentation>
+				DESC_Element_POP3operation
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="SMTPoperation" type="email:ctOperation">
+        <xs:annotation>
+            <xs:documentation>
+				DESC_Element_SMTPoperation
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="ctOperation">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+	<!-- Extensibility Elements/Types for the WSDL Operation Input -->
+
+    <xs:element name="IMAPinput" type="email:ctIMAPinput">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_IMAPinput
+            </xs:documentation>
+            <xs:appinfo>
+                <prop:ElementProperties
+					xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:Property attributeName="message" propertyOrder="1">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="subject" propertyOrder="2">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="from" propertyOrder="3">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="to" propertyOrder="4">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="cc" propertyOrder="5">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="bcc" propertyOrder="6">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="newsgroups" propertyOrder="7">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                </prop:ElementProperties>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="POP3input" type="email:ctPOP3input">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_POP3input
+            </xs:documentation>
+            <xs:appinfo>
+                <prop:ElementProperties
+					xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:Property attributeName="message" propertyOrder="1">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="subject" propertyOrder="2">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="from" propertyOrder="3">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="to" propertyOrder="4">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="cc" propertyOrder="5">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="bcc" propertyOrder="6">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="newsgroups" propertyOrder="7">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                </prop:ElementProperties>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="SMTPinput" type="email:ctSMTPinput">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_SMTPinput
+            </xs:documentation>
+            <xs:appinfo>
+                <prop:ElementProperties
+					xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:Property attributeName="message" propertyOrder="1">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="subject" propertyOrder="2">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="from" propertyOrder="3">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="to" propertyOrder="4">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="cc" propertyOrder="5">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="bcc" propertyOrder="6">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="newsgroups" propertyOrder="7">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                </prop:ElementProperties>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="IMAPattachment" type="email:ctIMAPAttachment">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_IMAPattachment
+            </xs:documentation>
+            <xs:appinfo>
+                <prop:ElementProperties
+					xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:Property attributeName="partName"
+						propertyOrder="1">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                </prop:ElementProperties>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="POP3attachment" type="email:ctPOP3Attachment">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_POP3attachment
+            </xs:documentation>
+            <xs:appinfo>
+                <prop:ElementProperties
+					xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:Property attributeName="partName"
+						propertyOrder="1">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                </prop:ElementProperties>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="SMTPattachment" type="email:ctSMTPAttachment">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_SMTPattachment
+            </xs:documentation>
+            <xs:appinfo>
+                <prop:ElementProperties
+					xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:Property attributeName="attachmentContentPart"
+						propertyOrder="1">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="attachmentFileNamePart"
+						propertyOrder="2">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser" />
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                </prop:ElementProperties>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="ctIMAPinput">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+
+                <!-- use attribute "saveAttachmentsToDir" instead
+                <xs:sequence>
+                    <xs:element ref="email:IMAPattachment" minOccurs="0"
+                        maxOccurs="unbounded">
+                    </xs:element>
+                </xs:sequence>
+                 -->
+                 
+                <xs:attribute name="message" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPmessage
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="subject" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPsubject
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="from" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPfrom
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="to" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPto
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="cc" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPcc
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="bcc" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPbcc
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="newsgroups" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            DESC_Attribute_IMAPnewsgroups
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+				<!--Disable NM attachments
+				<xs:attribute name="handleNMAttachments" type="xs:boolean"
+					use="optional" default="true">
+					<xs:annotation>
+						<xs:documentation>
+							DESC_Attribute_IMAPhandleNMAttachments
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute-->
+                <xs:attribute name="saveAttachmentsToDir" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            DESC_Attribute_IMAPsaveAttachmentsToDir
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="ctPOP3input">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+
+                <!-- use attribute "saveAttachmentsToDir" instead
+				<xs:sequence>
+					<xs:element ref="email:POP3attachment" minOccurs="0"
+						maxOccurs="unbounded">
+					</xs:element>
+				</xs:sequence>
+				-->
+
+                <xs:attribute name="message" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3message
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="subject" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3subject
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="from" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3from
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="to" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3to
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="cc" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3cc
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="bcc" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3bcc
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="newsgroups" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            DESC_Attribute_POP3newsgroups
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+				<!--Disable NMAttachments
+				<xs:attribute name="handleNMAttachments" type="xs:boolean"
+					use="optional" default="true">
+					<xs:annotation>
+						<xs:documentation>
+							DESC_Attribute_POP3handleNMAttachments
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute-->
+                <xs:attribute name="saveAttachmentsToDir" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            DESC_Attribute_POP3saveAttachmentsToDir
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="ctSMTPinput">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+
+                <xs:sequence>
+                    <xs:element ref="email:SMTPattachment" minOccurs="0"
+						maxOccurs="unbounded">
+                    </xs:element>
+                </xs:sequence>
+
+                <xs:attribute name="message" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPmessage
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="subject" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPsubject
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="from" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPfrom
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="to" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPto
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="cc" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPcc
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="bcc" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            DESC_Attribute_SMTPbcc
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="newsgroups" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            DESC_Attribute_SMTPnewsgroups
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="charset" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPcharset
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="use" type="email:stUseType" use="optional"
+					default="literal">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPuse
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="encodingStyle" type="xs:string"
+					use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPencodingStyle
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="sendOption" type="email:stSendOption"
+                    use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            DESC_Attribute_SMTPsendOption
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="embedImagesInHtml" type="xs:boolean"
+                    use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            DESC_Attribute_SMTPembedImagesInHtml
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="handleNMAttachments" type="xs:boolean"
+					use="optional" default="true">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPhandleNMAttachments
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="ctIMAPAttachment">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+                <xs:attribute name="partName" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_IMAPattachment_partName
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="saveToFile" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_IMAPattachment_saveToFile
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+				<!--
+					<xs:attribute name="contentType" type="xs:string" use="optional">
+					<xs:annotation>
+					<xs:documentation>DESC_Attribute_IMAPattachment_contentType
+					</xs:documentation> </xs:annotation> </xs:attribute> <xs:attribute
+					name="disposition" type="email:stDisposition" use="optional"
+					default="ATTACHMENT"> <xs:annotation>
+					<xs:documentation>DESC_Attribute_IMAPattachment_disposition
+					</xs:documentation> </xs:annotation> </xs:attribute> <xs:attribute
+					name="transferEncoding" type="xs:string" use="optional">
+					<xs:annotation>
+					<xs:documentation>DESC_Attribute_IMAPattachment_transferEncoding
+					</xs:documentation> </xs:annotation> </xs:attribute>
+				-->
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="ctPOP3Attachment">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+
+                <xs:attribute name="partName" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_POP3attachment_partName
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="saveToFile" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_POP3attachment_saveToFile
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+				<!--
+					<xs:attribute name="contentType" type="xs:string" use="optional">
+					<xs:annotation>
+					<xs:documentation>DESC_Attribute_POP3attachment_contentType
+					</xs:documentation> </xs:annotation> </xs:attribute> <xs:attribute
+					name="disposition" type="email:stDisposition" use="optional"
+					default="ATTACHMENT"> <xs:annotation>
+					<xs:documentation>DESC_Attribute_POP3attachment_disposition
+					</xs:documentation> </xs:annotation> </xs:attribute> <xs:attribute
+					name="transferEncoding" type="xs:string" use="optional">
+					<xs:annotation>
+					<xs:documentation>DESC_Attribute_POP3attachment_transferEncoding
+					</xs:documentation> </xs:annotation> </xs:attribute>
+				-->
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="ctSMTPAttachment">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+                <xs:attribute name="attachmentContentPart" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_SMTPattachment_attachmentContentPart
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="attachmentFileNamePart" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_SMTPattachment_attachmentFileNamePart
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="readFromFile" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_SMTPattachment_readFromFile
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="contentType" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_SMTPattachment_contentType
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="disposition" type="email:stDisposition"
+					use="optional" default="ATTACHMENT">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_SMTPattachment_disposition
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+
+				<!--
+					<xs:attribute name="transferEncoding" type="xs:string"
+					use="optional"> <xs:annotation>
+					<xs:documentation>DESC_Attribute_SMTPattachment_transferEncoding
+					</xs:documentation> </xs:annotation> </xs:attribute>
+				-->
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+	<!-- Extensibility Element/Type for the WSDL Port -->
+
+    <xs:element name="IMAPaddress" type="email:ctIMAPaddress">
+        <xs:annotation>
+            <xs:documentation>
+				DESC_Element_IMAPaddress
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="POP3address" type="email:ctPOP3address">
+        <xs:annotation>
+            <xs:documentation>
+				DESC_Element_POP3address
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="SMTPaddress" type="email:ctSMTPAddress">
+        <xs:annotation>
+            <xs:documentation>
+				DESC_Element_SMTPaddress
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="ctIMAPaddress">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+                <xs:attribute name="emailServer" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPemailServer
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="port" type="email:stNumberWithAppVars"
+					use="optional" default="993">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPport
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="userName" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPuserName
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="password" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPpassword
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="useSSL" type="xs:boolean" use="optional"
+					default="true">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPuseSSL
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="mailFolder" type="xs:string" use="optional"
+					default="INBOX">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPmailFolder
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="maxMessageCount" type="email:stNumberWithAppVars"
+					use="optional" default="10">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPmaxMessageCount
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="messageAckMode" type="email:stModeType"
+					use="optional" default="automatic">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPmessageAckMode
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="messageAckOperation" type="email:stAckOperation"
+					use="optional" default="markAsRead">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPmessageAckOperation
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="pollingInterval" type="email:stNumberWithAppVars"
+					use="optional" default="1">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_IMAPpollingInterval
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="ctPOP3address">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+                <xs:attribute name="emailServer" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3emailServer
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="port" type="email:stNumberWithAppVars"
+					use="optional" default="995">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3port
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="userName" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3userName
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="password" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3password
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="useSSL" type="xs:boolean" use="optional"
+					default="true">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3useSSL
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+				<!--
+					<xs:attribute name="mailFolder" type="xs:string" use="optional"
+					fixed="INBOX"> <xs:annotation> <xs:documentation>
+					DESC_Attribute_POP3mailFolder </xs:documentation> </xs:annotation>
+					</xs:attribute>
+				-->
+                <xs:attribute name="maxMessageCount" type="email:stNumberWithAppVars"
+					use="optional" default="10">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3maxMessageCount
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="messageAckMode" type="email:stModeType"
+					use="optional" default="automatic">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3messageAckMode
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="messageAckOperation" type="email:stAckOperation"
+					use="optional" default="delete">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3messageAckOperation
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="pollingInterval" type="email:stNumberWithAppVars"
+					use="optional" default="1">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_POP3pollingInterval
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="ctSMTPAddress">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+                <xs:attribute name="location" type="xs:string" use="optional"
+					default="mailto:user@domain.com">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPlocation
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="emailServer" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPemailServer
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="port" type="email:stNumberWithAppVars"
+					use="optional" default="465">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPport
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="userName" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPuserName
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="password" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPpassword
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="useSSL" type="xs:boolean" use="optional"
+					default="true">
+                    <xs:annotation>
+                        <xs:documentation>
+							DESC_Attribute_SMTPuseSSL
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+	<!-- Some SimpleTypes used internally -->
+
+    <xs:simpleType name="stModeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="automatic" />
+            <xs:enumeration value="manual" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="stAckOperation">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="delete" />
+            <xs:enumeration value="markAsRead" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="stUseType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="literal" />
+            <xs:enumeration value="encoded" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="stNumberWithAppVars">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="((\d)*(\$\{[\w\.\-@#%/]+\})*)+"></xs:pattern>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="stDisposition">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ATTACHMENT"></xs:enumeration>
+            <xs:enumeration value="INLINE"></xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="stSendOption">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Text Only"></xs:enumeration>
+            <xs:enumeration value="HTML Only"></xs:enumeration>
+            <xs:enumeration value="XML Only"></xs:enumeration>
+            <xs:enumeration value="Both Text and HTML"></xs:enumeration>
+            <xs:enumeration value="Both Text and XML"></xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

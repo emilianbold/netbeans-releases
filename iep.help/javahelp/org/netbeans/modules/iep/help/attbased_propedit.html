@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Attribute Based Window Operator</title>
+</head>
+<body>
+
+<h2>Using the Attribute Based Window Operator</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+
+
+<p>The Attribute Based Window operator converts an input stream to a relation based on a specified attribute and a size that defines the range of values for the attribute.</p>
+
+<p>Assume that you select an attribute that has the INTEGER data type and that you set the size to 10. 
+If the most recently received event has a value of 50 for the attribute, then the relation consists of all events that have a value of between 40 and 50 for the attribute.</p>
+
+<p>The following data types are supported: INTEGER, BIGINT, DOUBLE, DATE, and TIMESTAMP. You cannot select an attribute that has the VARCHAR data type.</p>
+
+<p>The input to the Attribute Based Window operator is a stream.</p>
+
+<p>The output from the Attribute Based Window operator is a relation.</p>
+
+
+
+<p><strong>To use the Attribute Based Window operator:</strong></p>
+
+<ol>
+
+  <li>Drag an Attribute Based Window operator from the Palette to the Design view.</li>
+
+  <li>Connect the output of an operator that has stream output to the input of the Attribute Based Window operator.</li>
+  <li>Double-click the Attribute Based Window operator. The property editor opens. The attributes of the input schema are displayed in read-only mode.</li>
+
+  <li>In the Attribute drop-down menu, select the attribute that you want to track.</li>
+
+  <li>In the Size field, enter a numerical value that the operator will use to define the range of values. 
+      The operator determines the lowest value of the range by subtracting the size from the attribute value of the most recently received event.<br>
+      For attributes with the DATE data type, the size represents the number of days.<br>
+      For attributes with the TIMESTAMP data type, the size represents the number of seconds.</li>
+
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK.</li>
+
+</ol>
+
+
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="partitionwindow_propedit.html">Using the Partitioned Window Operator</a></dd>
+<dd><a href="timebased_window_propedit.html">Using the Time Based Window Operator</a></dd>
+<dd><a href="tuplebased_propedit.html">Using the Tuple Based Window Operator</a></dd>
+<dd>&nbsp;</dd>
+</dl>
+
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

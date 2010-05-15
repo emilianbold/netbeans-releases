@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Starting and Finishing a Debugging Session</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Starting and Finishing a BPEL Debugging Session </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<!--Review about testing procedures needed to start debugging, provide a workaround what to do if a session fails to start,  -->
+<p>A debugging session begins when you start the BPEL Debugger on the BPEL Service Engine. Only one debugging session can be running on the BPEL Service Engine at a given time. However, several Java debugging sessions can be started at the same time. </p>
+<p>After a BPEL debugging session starts, you can execute process instances step-by-step, inspecting the values of BPEL variables and XPath expressions in the <a href="debug_windows_variables.html">Local Variables</a> and <a href="watches.html">Watches</a> windows. You can monitor the execution of a BPEL process within a debugger session on the diagram in the Design view: the activities that are being executed are highlighted on the diagram as the current execution position advances. The <a href="debug_windows_execution.html">BPEL Process Execution</a> window also shows the execution of the BPEL process. </p>
+<p><b><a name="prepare"></a>To prepare for debugging:</b></p>
+<ul>
+  <li>In the Services window, check to be sure that the <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_start.html" title="Starting and Stopping a Server">Sun Java System Application 
+    Server is running</a>.</li>
+  <li>In the IDE, open the BPEL process in either the Source or Design view.</li>
+  <li>Set <a href="breakpoints.html">breakpoints</a> in the BPEL process. </li>
+  <li>(Optional) Set <a href="watches.html">watches</a> in the BPEL process. </li>
+</ul>
+<p><b>To start a debugging session on the BPEL Service Engine:</b></p>
+<ul>
+  <li>In the Projects window, right-click the Composite Applications project you want to debug and choose Debug  (BPEL) from the pop-up menu.<br>
+    The IDE  establishes a debug session on the BPEL Service Engine. Watch 
+    the BPEL Debugger Console window for confirmation. 
+    The connection might take some time to complete. When it is successfully completed, you can see the new session in the <a href="debug_windows_sessions.html">Sessions</a> window. On the BPEL Debugger Console tab in the Output window you can see the following messages:
+    <p><tt>17:20:01 Connecting to localhost:3343<br>
+17:20:01 Debug session started
+</tt></p>
+  
+  <p>If the  BPEL Debugger Console is not visible, choose Window &gt; Debugging &gt;  BPEL Debugger Console from the main menu. </p>
+  </li>
+</ul>
+<p>Note that the Debug Project (BPEL) command performs the following actions:</p>
+<ul>
+  <li>Enables debugging on the BPEL Service Engine (sets the <tt>DebugEnabled</tt> property of the BPEL Service Engine to <tt>true</tt>) </li>
+  <li>Builds  the BPEL Module project and adds it as a JBI Module to the Composite Application project </li>
+  <li>Deploys the BPEL Module project to the BPEL Service Engine</li>
+  <li>Starts the debugging session</li>
+</ul>
+<p>Therefore, whenever you start a debugging session you can be sure that the latest version of the BPEL process is deployed on the BPEL Service Engine. </p>
+<p>Now you can <a href="nbdocs://org.netbeans.modules.compapp.capshelp/org/netbeans/modules/compapp/capshelp/basics/jbi_tester.html" title="Testing a JBI Project">run a test case</a> and monitor the execution of the BPEL process until it stops or reaches a breakpoint. As the process advances, the current context is displayed <a href="monitor_debugger.html">on the diagram</a> and in the <a href="debug_windows_execution.html">BPEL Process Execution</a> window. </p>
+<p><b>To change the current debugging session:</b></p>
+<ul>
+<li>In the Sessions window, double-click the name of the session that you want to make current or choose Make Current from the pop-up menu.<br>
+  The session becomes current and the BPEL Process Instances and Local Variables windows are updated to show the data related to the new current session.</li>
+</ul>
+<p><b><a name="finish"></a>To finish a debugging session:</b></p>
+<ul>
+  <li>In the Sessions window, open the pop-up menu for the session you want to stop and choose Finish, or select Finish Debugger Session (Shift-F5) on the toolbar. <br>
+  A message that the debugging session is finished is displayed in the BPEL Debugger Console. </li>
+</ul>
+<p><b>To finish all debugging sessions:</b></p>
+<ul>
+  <li>In the Sessions window, right-click any session and choose 
+   Finish All.<br>
+  </li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/debug/debug_about.html" title="About Debugging Java Applications">About Debugging Java Applications</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_start.html" title="Starting and Stopping a Server">Starting and Stopping a Server</a></dd>
+   <dd><a href="debug_windows.html" title="BPEL Debugger Windows">BPEL Debugger Windows</a></dd>
+<dd><a href="breakpoints.html" title="Using Breakpoints to Debug BPEL Processes">Using Breakpoints to Debug BPEL Processes</a></dd>
+<dd><a href="watches.html" title="Using Watches to Debug BPEL Processes">Using Watches to Debug BPEL Processes</a></dd>
+<dd><a href="../logging/about_logging.html">Logging and Alerting</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

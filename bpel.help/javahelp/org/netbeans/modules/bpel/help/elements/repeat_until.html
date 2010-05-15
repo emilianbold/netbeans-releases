@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Repeat Until</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Repeat Until</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<!-- add to the Property Editor section -->
+<p>The Repeat Until activity repeatedly executes one or more recurring activities. The recurring activities 
+continue to be executed as long as the specified conditions remain in place. The Repeat Until activity contains
+other elements that are repeated while the success criteria you specify are
+met. If the condition you specify leads to false, the Repeat Until activity terminates and the BPEL process continues. </p>
+<ul class="note">
+<li>Note that the Repeat Until activity first executes the activity and then checks the validity of the condition. Conversely, the While activity first checks the validity of the condition and then executes the iterative operation. </li>
+</ul>
+<p><b>To use the Repeat Until element:</b></p>
+<ol>
+  <li>In the Design view, drag the Repeat Until element from the Palette to the diagram.</li>
+  <li>Select the Repeat Until element on the diagram. <br>
+    The 
+    Properties window shows the Repeat Until properties (Ctrl-Shift-7).</li>
+  <li>(Optional) In the Properties window, enter the name for the Repeat Until element. </li>
+  <li>Drag an activity that will be repeatedly executed and place it inside the Repeat Until element. If needed, configure the activity's properties. </li>
+  <li>Specify the condition using either of the following methods:</li>
+  <ul>
+    <li>In the Properties windows for the Repeat Until element, click the ellipsis button (...) for the Condition property and add a condition in the text editor window.</li>
+    <li>Open the BPEL Mapper window (Window &gt; BPEL Mapper) and specify the condition using the <a href="../mapper/about_mapper.html" title="About the BPEL Mapper">BPEL Mapper</a></li>
+  </ul>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="while.html" title="While">While</a></dd>
+<dd><a href="../mapper/about_mapper.html" title="About the BPEL Mapper">About the BPEL Mapper</a></dd>
+<dd><a href="palette_struct_acts.html" title="BPEL Designer Palette: Structured Activities">BPEL Designer Palette: Structured Activities</a></dd>
+<dd><a href="../windows_editors/design_view.html" title="About the Design View of the BPEL Designer">About the Design View of the BPEL Designer</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>
