@@ -424,7 +424,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.script.project</friend>
                 <friend>org.netbeans.modules.soa.pojo</friend>
                 <friend>org.netbeans.modules.soa.bindingwizard</friend>
-                <friend>org.netbeans.modules.soa.wsdl.bindingsupport.ui.util</friend>
+                <friend>org.netbeans.modules.soa.wsdl.bindingsupport</friend>
                 <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
                 <friend>org.netbeans.modules.xml.wsdlextui</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>

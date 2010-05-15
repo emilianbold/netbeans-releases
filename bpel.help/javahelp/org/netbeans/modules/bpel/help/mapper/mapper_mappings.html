@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Creating BPEL Mappings</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Creating BPEL Mappings</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>You can create a mapping from the source tree pane directly to the destination tree pane, without using any of the functions. 
+This type of mapping can be any of the following:</p>
+<ul>
+  <li>Variable to variable</li>
+  <li>Part to part</li>
+  <li>XSD element to XSD element</li>
+  <li>XSD attribute to XSD attribute</li>
+</ul>
+<p>You can also create a mapping that uses one or more <a href="mapper_functions.html">XPath functions and XPath extension functions</a> from the BPEL Mapper's menu bar. 
+  For example, if the business process includes a Wait activity that waits for a period of time, 
+  then you can use the <tt><b>Duration Literal</b></tt> function to specify the duration.</p>
+<p><b>To create a mapping without using any functions:</b></p>
+<ol>
+<li><a href="about_mapper.html">Open</a> the bpel mapper.</li>
+  <li>In the source tree pane, expand the tree component until the node that you want to map from appears.</li>
+  <li>If the destination tree pane contains a tree component, then expand the tree component until the node that you want to map to appears.
+  <p><strong>Tip:</strong> To expand or collapse all the nodes in the destination tree click Collapse/Expand icon located at the top of the tree. </p>
+  </li>
+  <li>Select the node in the source tree pane and drag the pointer to the node in the destination tree pane.<br>
+    A link connects the nodes.</li>
+</ol>
+<p><b>To use a function in a mapping:</b></p>
+<ol>
+  <li>Click the drop-down menu that contains the function.
+    
+  <li>Click the function.<br>
+    A function box appears in the middle pane.</li>
+  <li>Map any arguments into the appropriate connector on the left side of the function box. The source can be a node in the source tree pane, a string or the output from another function box. If an argument is optional, then a question mark appears after the argument name on the source pane.</li>
+  <li>Map the result from the right side of the function box. The destination can be a node in the destination tree pane or the input into another function box.</li>
+</ol>
+<p><b>To minimize a link or function in a mapping:</b></p>
+<ol>
+  <li>Select the link or function.</li>
+  <li>Click a small minus icon at the point where the link enters the destination tree pane. </li>
+</ol>
+<p><b>To delete a link or function in a mapping:</b></p>
+<ol>
+  <li>Select the link or function.</li>
+  <li>Press Delete.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="about_mapper.html" title="About the BPEL Mapper">About the BPEL Mapper</a></dd>
+<dd><a href="mapper_predicates.html" title="Working with Predicates">Working with Predicates</a></dd>
+<dd><a href="mapper_functions.html" title="XPath Function Reference">XPath Function Reference</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<definitions name="OneWayGet" targetNamespace="http://j2ee.netbeans.org/wsdl/OneWayGet"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="http://j2ee.netbeans.org/wsdl/OneWayGet"
+    xmlns:mq="http://schemas.sun.com/jbi/wsdl-extensions/mq/">
+    <message name="GetRequest">
+        <part name="content" type="xsd:string"/>
+    </message>
+    <portType name="OneWayGetPortType">
+        <operation name="Get">
+            <input name="input" message="tns:GetRequest"/>
+        </operation>
+    </portType>
+    <binding name="OneWayGetBinding" type="tns:OneWayGetPortType">
+        <mq:binding/>
+        <operation name="Get">
+            <mq:redelivery delay="5000" count="3"/>
+            <mq:operation queueName="default" queueOpenOptions="BIND_AS_DEFAULT,READ_AS_DEFAULT" transaction="NoTransaction" pollingInterval="5000"/>
+            <input name="input">
+                <mq:body use="literal" syncpoint="true" messageType="TextMessage" messageBody="content"/>
+            </input>
+        </operation>
+    </binding>
+    <service name="OneWayGetService">
+        <port name="OneWayGetPort" binding="tns:OneWayGetBinding">
+            <mq:address queueManagerName="QM_localhost"/>
+        </port>
+    </service>
+</definitions>

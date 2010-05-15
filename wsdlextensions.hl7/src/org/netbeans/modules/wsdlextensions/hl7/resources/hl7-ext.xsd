@@ -1,0 +1,542 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:hl7="http://schemas.sun.com/jbi/wsdl-extensions/hl7/" targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/hl7/">
+    <xs:import namespace="http://schemas.xmlsoap.org/wsdl/" schemaLocation="wsdl.xsd"/>
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- Start complex type defintions to define HL7 binding extensibility -->
+    <!-- elements                                                          -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+    <!-- Extensibility Element for the WSDL Binding -->
+    <xs:element name="binding" type="hl7:tBinding">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_binding</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tBinding">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement"/>
+		<!-- could add more attributes to the binding -->
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- Extensibility Element for the WSDL Operation -->
+    <xs:element name="operation" type="hl7:tOperation">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_operation</xs:documentation>
+	    <xs:appinfo>
+                <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:PropertyGroup name="MessageType" groupOrder="1" />
+                    <prop:Property attributeName="messageType" groupName="MessageType" propertyOrder="1" >
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                </prop:ElementProperties>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tOperation">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+	    <xs:attribute name="messageType" type="xs:string" use="optional" default="all">
+			<xs:annotation>
+			    <xs:documentation>DESC_Attribute_messageType</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	   </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- Extensibility Element for the WSDL Operation Input -->
+    <xs:element name="message" type="hl7:tMessage">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_message</xs:documentation>
+	    <xs:appinfo>
+                <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:PropertyGroup name="Message" groupOrder="1" />
+                    <prop:PropertyGroup name="Encoding" groupOrder="2" />
+                    <prop:Property attributeName="part" groupName="Message" propertyOrder="1" >
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="use" groupName="Encoding" propertyOrder="1">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="encodingStyle" groupName="Encoding" propertyOrder="2">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                </prop:ElementProperties>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tMessage">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+	    <xs:attribute name="part" type="xs:string" use="optional">
+			<xs:annotation>
+			    <xs:documentation>DESC_Attribute_part</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="use" type="hl7:useTypes" use="optional" default="encoded">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_use</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="encodingStyle" type="xs:string" use="optional" default="hl7encoder-1.0">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_encodingStyle</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+	   </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- Start complex type defintion to define HL7 address extensibility -->
+    <!-- element                                                          -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+    <!-- Extensibility Element for the WSDL Port -->
+    <xs:element name="address" type="hl7:tAddress">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_address</xs:documentation>
+	    <xs:appinfo>
+                <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:PropertyGroup name="Address" groupOrder="1" />
+                    <prop:Property attributeName="location" groupName="Address" propertyOrder="1" >
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="transportProtocolName" groupName="Address" propertyOrder="2">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                </prop:ElementProperties>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tAddress">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+		<xs:attribute name="location" type="xs:string" default="hl7://localhost:4040" use="optional">
+		    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_location</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="transportProtocolName" type="xs:string" use="optional">
+		    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_transportProtocolName</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- Start complex type defintion to define HL7 v2 protocolproperties extensibility -->
+    <!-- element                                                                        -->
+    <!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+    <!-- Extensibility Element for the WSDL Port -->
+    <xs:element name="protocolproperties" type="hl7:tProtocolProperties">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_protocolproperties</xs:documentation>
+	    <xs:appinfo>
+                <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:PropertyGroup name="Acknowledgment" groupOrder="1" />
+                    <prop:PropertyGroup name="Lower Level Protocol" groupOrder="2" />
+                    <prop:PropertyGroup name="MLLP V2" groupOrder="3" />
+                    <prop:PropertyGroup name="HLLP" groupOrder="4"/>                    
+                    <prop:PropertyGroup name="MSH Segment Validation" groupOrder="5" />
+                    <prop:PropertyGroup name="SFT Segment" groupOrder="6" />
+                    <prop:PropertyGroup name="Journal HL7 Message" groupOrder="7" />
+                    <prop:PropertyGroup name="Persistence" groupOrder="8" />
+
+                    
+		    <prop:Property attributeName="acknowledgmentMode" groupName="Acknowledgment" propertyOrder="1" >
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="llpType" groupName="Lower Level Protocol" propertyOrder="1">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>		    
+                    <prop:Property attributeName="startBlockCharacter" groupName="Lower Level Protocol" propertyOrder="2">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="endDataCharacter" groupName="Lower Level Protocol" propertyOrder="3">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="endBlockCharacter" groupName="Lower Level Protocol" propertyOrder="4">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="hllpChecksumEnabled" groupName="HLLP" propertyOrder="1">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+		    <prop:Property attributeName="mllpv2RetriesCountOnNak" groupName="MLLP V2" propertyOrder="1">
+		      <prop:SchemaCustomizer/>
+		    </prop:Property>
+		    <prop:Property attributeName="mllpv2RetryInterval" groupName="MLLP V2" propertyOrder="2">
+			 <prop:SchemaCustomizer/>
+		    </prop:Property>	
+		    <prop:Property attributeName="mllpv2TimeToWaitForAckNak" groupName="MLLP V2" propertyOrder="3">
+			 <prop:SchemaCustomizer/>
+		    </prop:Property>	
+                    <prop:Property attributeName="validateMSH" groupName="MSH Segment Validation" propertyOrder="1">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="seqNumEnabled" groupName="MSH Segment Validation" propertyOrder="2">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>		    
+                    <prop:Property attributeName="processingID" groupName="MSH Segment Validation" propertyOrder="3">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="versionID" groupName="MSH Segment Validation" propertyOrder="4">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="fieldSeparator" groupName="MSH Segment Validation" propertyOrder="5">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="encodingCharacters" groupName="MSH Segment Validation" propertyOrder="6">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="sendingApplication" groupName="MSH Segment Validation" propertyOrder="7">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="sendingFacility" groupName="MSH Segment Validation" propertyOrder="8">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="enabledSFT" groupName="SFT Segment" propertyOrder="1">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>		    
+                    <prop:Property attributeName="softwareVendorOrganization" groupName="SFT Segment" propertyOrder="2">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="softwareCertifiedVersionOrReleaseNumber" groupName="SFT Segment" propertyOrder="3">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="softwareProductName" groupName="SFT Segment" propertyOrder="4">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="softwareBinaryID" groupName="SFT Segment" propertyOrder="5">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="softwareProductInformation" groupName="SFT Segment" propertyOrder="6">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="softwareInstallDate" groupName="SFT Segment" propertyOrder="7">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="journallingEnabled" groupName="Journal HL7 Message" propertyOrder="1">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="persistenceEnabled" groupName="Persistence" propertyOrder="1">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>		 
+                </prop:ElementProperties>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tProtocolProperties">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+		<xs:attribute name="acknowledgmentMode" type="hl7:ackTypes" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_acknowledgmentMode</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		 <xs:attribute name="llpType" type="hl7:llpTypes" use="optional" default="MLLPv1">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_llpType</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="startBlockCharacter" type="xs:byte" default="11" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_startBlockCharacter</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="endDataCharacter" type="xs:byte" default="28" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_endDataCharacter</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="endBlockCharacter" type="xs:byte" default="13" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_endBlockCharacter</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="hllpChecksumEnabled" type="xs:boolean" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_hllpChecksumEnabled</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="mllpv2RetriesCountOnNak" type="xs:integer" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_mllpv2RetriesCountOnNak</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="mllpv2RetryInterval" type="xs:long" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_mllpv2RetryInterval</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="mllpv2TimeToWaitForAckNak" type="xs:long" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_mllpv2TimeToWaitForAckNak</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="seqNumEnabled" type="xs:boolean" use="optional">
+		    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_seqNumEnabled</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="processingID" type="hl7:processingID" use="optional" default="D">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_processingID</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="versionID" type="hl7:verIDs" use="optional" default="2.3.1">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_versionID</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="validateMSH" type="xs:boolean" use="optional" >
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_validateMSH</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="fieldSeparator" type="xs:byte" use="optional" >
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_fieldSeparator</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="encodingCharacters" type="xs:string" use="optional" >
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_encodingCharacters</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="sendingApplication" type="xs:string" use="optional" >
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_sendingApplication</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="sendingFacility" type="xs:string" use="optional" >
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_sendingFacility</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="enabledSFT" type="xs:boolean" use="optional" >
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_enabledSFT</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="softwareVendorOrganization" type="xs:string" use="optional" default="Sun Microsystems, Inc" >
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_softwareVendorOrganization</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="softwareCertifiedVersionOrReleaseNumber" type="xs:string" use="optional" default="6.0" >
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_softwareCertifiedVersionOrReleaseNumber</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="softwareProductName" type="xs:string" use="optional" default="Sun Open ESB HL7 Binding Component" >
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_softwareProductName</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="softwareBinaryID" type="xs:string" use="optional" default="6.0" >
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_softwareBinaryID</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="softwareProductInformation" type="xs:string" use="optional" default="It is a binding component for HL7 over TCP/IP connection" >
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_softwareProductInformation</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="softwareInstallDate" type="hl7:empty_yyyyMMddHHmm" use="optional" >
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_softwareInstallDate</xs:documentation>
+                    </xs:annotation> 
+                </xs:attribute>
+		<xs:attribute name="journallingEnabled" type="xs:boolean" use="optional">
+		    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_journallingEnabled</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="persistenceEnabled" type="xs:boolean" use="optional">
+		    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_persistenceEnabled</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute> 
+           </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+     <!-- Extensibility Element for the WSDL Port -->
+  <xs:element name="communicationcontrols" type="hl7:tCommunicationControls">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_communicationcontrols</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tCommunicationControls">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+		<xs:sequence>
+			<xs:element ref="hl7:communicationcontrol" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+   
+    <xs:element name="communicationcontrol" type="hl7:tCommunicationControl">
+	<xs:annotation>
+	<xs:documentation>"communicationcontrol" defines the communication control name and its associated recourse actions that is applied on hl7 endpoint</xs:documentation>
+	</xs:annotation>
+    </xs:element>
+    <xs:complexType name="tCommunicationControl">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:attribute name="name" type="hl7:comControlNames" use="required">
+					<xs:annotation>
+						<xs:documentation>Specifies the name of the Communication Control</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="value" type="hl7:comControlValue" use="optional">
+					<xs:annotation>
+						<xs:documentation>Specifies the value of the Communication Control</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="enabled" type="xs:boolean" use="optional" default="false">
+					<xs:annotation>
+						<xs:documentation>Enables or disables the Communication Control</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="recourseAction" type="hl7:recourseActions" use="required">
+					<xs:annotation>
+						<xs:documentation>Specifies the name of the recourse action, to be executed by hl7 endpoint at runtime once the configured threshold value is hit. The supported recourse actions against each communication control is: {TIME_TO_WAIT_FOR_A_RESPONSE->[Resend, Reset, Suspend] , NAK_RECEIVED->[Resend, Reset], MAX_NO_RESPONSE:[Suspend, Reset], MAX_NAK_RECEIVED:[Suspend, Reset], MAX_NAK_SENT:[Suspend, Reset], MAX_CANNED_NAK_SENT:[Suspend, Reset], MAX_CONNECT_RETRIES:[Suspend, Error]}</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- Start simple type defintions to define type enumerations          -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+    <xs:simpleType name="llpTypes">
+	<xs:restriction base="xs:string">
+	   <xs:enumeration value="MLLPv1"/>
+	   <xs:enumeration value="MLLPv2"/>
+	   <xs:enumeration value="HLLP"/>
+	</xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="useTypes">
+	<xs:restriction base="xs:string">
+	    <xs:enumeration value="encoded"/>
+	    <xs:enumeration value="literal"/>
+	</xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ackTypes">
+	<xs:restriction base="xs:string">
+           <xs:enumeration value="original"/>
+	   <xs:enumeration value="enhanced"/>
+	</xs:restriction>
+    </xs:simpleType>	
+    <xs:simpleType name="v3ackTypes">
+	<xs:restriction base="xs:string">
+           <xs:enumeration value="immediate"/>
+	   <xs:enumeration value="deferred"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="verIDs">
+ 	<xs:restriction base="xs:string">
+           <xs:enumeration value="2.1"/>
+	   <xs:enumeration value="2.2"/>
+	   <xs:enumeration value="2.3"/>
+	   <xs:enumeration value="2.3.1"/>
+	   <xs:enumeration value="2.4"/>
+	   <xs:enumeration value="2.5"/>
+	   <xs:enumeration value="2.5.1"/>
+	   <xs:enumeration value="2.6"/>
+	</xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="processingID">
+	<xs:restriction base="xs:string">
+           <xs:enumeration value="D"/>
+	   <xs:enumeration value="P"/>
+	   <xs:enumeration value="T"/>
+	</xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="processingCode">
+        <xs:restriction base="xs:string">
+           <xs:enumeration value="D"/>
+	   <xs:enumeration value="P"/>
+	   <xs:enumeration value="T"/>
+	</xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="yyyyMMddHHmm">
+	 <xs:annotation>
+            <xs:documentation>DESC_SimpleType_yyyyMMddHHmm</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+          <xs:pattern value="[0-9][0-9][0-9][0-9](0[1-9]|1[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1])(0[0-9]|1[0-9]|2[0-3])[0-5][0-9]"/>
+       </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="empty_yyyyMMddHHmm">
+        <xs:union memberTypes="hl7:yyyyMMddHHmm hl7:empty"/>
+    </xs:simpleType>
+    
+    <xs:simpleType name="empty">
+        <xs:restriction base="xs:string">
+        <xs:maxLength value="0"/>
+    </xs:restriction>
+</xs:simpleType>    
+    <!--communication control names-->
+    <xs:simpleType name="comControlNames">
+	<xs:restriction base="xs:string">
+	    <xs:enumeration value="TIME_TO_WAIT_FOR_A_RESPONSE"/>
+	    <xs:enumeration value="NAK_RECEIVED"/>
+	    <xs:enumeration value="MAX_NO_RESPONSE"/>
+	    <xs:enumeration value="MAX_NAK_RECEIVED"/>
+	    <xs:enumeration value="MAX_NAK_SENT"/>
+	    <xs:enumeration value="MAX_CANNED_NAK_SENT"/>
+            <xs:enumeration value="MAX_CONNECT_RETRIES"/>
+	</xs:restriction>
+    </xs:simpleType>
+    
+     <!--Recourse Actions-->
+    <xs:simpleType name="recourseActions">
+	<xs:restriction base="xs:string">
+	  <xs:enumeration value=""/>
+	  <xs:enumeration value="Reset"/>
+	  <xs:enumeration value="Resend"/>
+	  <xs:enumeration value="Suspend"/>
+          <xs:enumeration value="Error"/>
+          <xs:enumeration value="Skipmessage"/>
+<!--	  <xs:enumeration value="Exit"/> -->
+	</xs:restriction>
+    </xs:simpleType>	
+
+    <xs:simpleType name="comControlValue">
+	<xs:union memberTypes="xs:long xs:string"/>
+    </xs:simpleType>
+    
+</xs:schema>

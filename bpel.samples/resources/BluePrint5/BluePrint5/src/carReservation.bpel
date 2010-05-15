@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+  * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
+    may be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<process name="carReservation"
+         targetNamespace="http://www.seebeyond.com/eInsight/carReservation"
+         xmlns:tns="http://www.seebeyond.com/eInsight/carReservation"
+         xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:ns0="http://localhost/BluePrint5/CarReservation"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+         xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor2"
+         xmlns:sxat="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Attachment"
+         xmlns:sxeh="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"
+         xmlns:rsrv="http://ReservationSystem.org/xsd/reserve">
+
+    <import namespace="http://localhost/BluePrint5/CarReservation"
+            location="CarReservation.wsdl"
+            importType="http://schemas.xmlsoap.org/wsdl/"></import>
+
+    <partnerLinks>
+        <partnerLink name="reservationPLink" partnerLinkType="ns0:CarReservationPLinkType" myRole="reservingRole"/>
+        <partnerLink name="reservationStatusPLink" partnerLinkType="ns0:CarReservStatusPLinkType" partnerRole="statusReceivingRole"/>
+    </partnerLinks>
+    
+    <variables>
+        <variable name="reserveCar" messageType="ns0:CarReservation"></variable>
+        <variable name="sendCarStatus" messageType="ns0:CarReservationStatus"></variable>
+    </variables>
+    
+    <sequence>
+        <receive name="reserveCar"
+                 partnerLink="reservationPLink"
+                 portType="ns0:CarReservationPortType"
+                 operation="reserveCar"
+                 variable="reserveCar"
+                 createInstance="yes">
+        </receive>
+        <assign name="Assign">
+            <copy>
+                <from>$reserveCar.reserveCarPart/rsrv:reservationID</from>
+                <to>$sendCarStatus.status/rsrv:reservationID</to>
+            </copy>
+            <copy>
+                <from>contains($reserveCar.reserveCarPart/rsrv:description, 'book_car')</from>
+                <to>$sendCarStatus.status/rsrv:reservationStatus</to>
+            </copy>
+        </assign>
+        <invoke name="sendCarStatus"
+                partnerLink="reservationStatusPLink"
+                portType="ns0:CarStatusPortType"
+                operation="sendCarStatus"
+                inputVariable="sendCarStatus"></invoke>
+    </sequence>
+</process>

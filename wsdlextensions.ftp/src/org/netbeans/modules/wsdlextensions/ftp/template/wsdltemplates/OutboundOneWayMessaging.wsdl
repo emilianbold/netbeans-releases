@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="OutboundOneWayMessaging" targetNamespace="http://j2ee.netbeans.org/wsdl/BpelModule2/OutboundOneWayMessaging"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://j2ee.netbeans.org/wsdl/BpelModule2/OutboundOneWayMessaging" xmlns:ftp="http://schemas.sun.com/jbi/wsdl-extensions/ftp/">
+    <types/>
+    <message name="OutboundOneWayMessagingOperationRequest">
+        <part name="part1" type="xsd:string"/>
+    </message>
+    <portType name="OutboundOneWayMessagingPortType">
+        <operation name="OutboundOneWayMessagingOperation">
+            <input name="input1" message="tns:OutboundOneWayMessagingOperationRequest"/>
+        </operation>
+    </portType>
+    <binding name="OutboundOneWayMessagingBinding" type="tns:OutboundOneWayMessagingPortType">
+        <ftp:binding/>
+        <operation name="OutboundOneWayMessagingOperation">
+            <ftp:operation/>
+            <input name="input1">
+                <ftp:message messageRepository="" messageName="" messageNamePrefixOB="" archive="true" protect="true" stage="true" use="literal" encodingStyle=""/>
+            </input>
+        </operation>
+    </binding>
+    <service name="OutboundOneWayMessagingService">
+        <port name="#SERVICE_NAME_OutboundOneWayMessagingPort" binding="tns:OutboundOneWayMessagingBinding">
+            <ftp:address url="ftp://anonymous:user\@yahoo.com@localhost:21" user="" password="" dirListStyle="UNIX" useUserDefinedHeuristics="false" userDefDirListStyle="" userDefDirListHeuristics="" mode="BINARY" securedFTP="None" enableCCC="false" keyStore="" keyStorePassword="" keyAlias="" keyPassword="" trustStore="" trustStorePassword="" cmdChannelTimeout="45000" dataChannelTimeout="45000"/>
+        </port>
+    </service>
+</definitions>
