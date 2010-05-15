@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -42,27 +42,30 @@ package org.netbeans.modules.ide.ergonomics.fod;
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import junit.framework.Test;
+import org.netbeans.Module;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -71,7 +74,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class FeaturesOffDemandTest extends NbTestCase implements PropertyChangeListener {
+public class FeaturesOffDemandWithAutoloadDepsTest extends NbTestCase implements PropertyChangeListener {
     FileObject root;
     private static final InstanceContent ic = new InstanceContent();
 
@@ -79,9 +82,9 @@ public class FeaturesOffDemandTest extends NbTestCase implements PropertyChangeL
         FeatureManager.assignFeatureTypesLookup(new AbstractLookup(ic));
     }
     private int change;
-    
-    
-    public FeaturesOffDemandTest(String testName) {
+
+
+    public FeaturesOffDemandWithAutoloadDepsTest(String testName) {
         super(testName);
     }
 
@@ -90,7 +93,7 @@ public class FeaturesOffDemandTest extends NbTestCase implements PropertyChangeL
 
         return NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
-            addTest(FeaturesOffDemandTest.class).
+            addTest(FeaturesOffDemandWithAutoloadDepsTest.class).
             clusters("ergonomics[0-9]*").
             clusters("ide[0-9]*|java[0-9]*").
             gui(false)
@@ -122,11 +125,11 @@ public class FeaturesOffDemandTest extends NbTestCase implements PropertyChangeL
 
         FeatureInfo info = FeatureInfo.create(
             "java",
-            FeaturesOffDemandTest.class.getResource("FeatureInfo.xml"),
-            FeaturesOffDemandTest.class.getResource("TestBundle5.properties")
+            FeaturesOffDemandWithDepsTest.class.getResource("FeatureInfo.xml"),
+            FeaturesOffDemandWithDepsTest.class.getResource("TestBundle5.properties")
         );
         ic.add(info);
-        
+
         File dbp = new File(new File(getWorkDir(), "1st"), "dbproject");
         File db = new File(dbp, "project.properties");
         dbp.mkdirs();
@@ -166,7 +169,7 @@ public class FeaturesOffDemandTest extends NbTestCase implements PropertyChangeL
 
         Thread.sleep(1000);
         long after = System.currentTimeMillis();
-        
+
         List<Project> arr = Arrays.asList(OpenProjects.getDefault().openProjects().get());
         assertEquals("However one instance is there", 1, arr.size());
         Project newP = arr.get(0).getLookup().lookup(Project.class);
@@ -190,31 +193,53 @@ public class FeaturesOffDemandTest extends NbTestCase implements PropertyChangeL
 
         Long modified = sub.lastModified().getTime();
         assertEquals("enabled attribute is same as modification day", when, modified);
-
-        if (origContent.equals(sub.asText("UTF-8"))) {
+        final String middleState = sub.asText("UTF-8");
+        if (origContent.equals(middleState)) {
             fail("The module shall be enabled right now:\n" + sub.asText("UTF-8"));
         }
+        FeatureManager.incrementUnused(OpenProjects.getDefault().getOpenProjects());
 
-        for (int i = 0; i < 2; i++) {
-            FeatureManager.incrementUnused(OpenProjects.getDefault().getOpenProjects());
-        }
+        String mf = "" +
+                "OpenIDE-Module: org.depends.on.java.kit\n" +
+                "OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.platform\n" +
+                "\n" +
+                "\n" +
+                "";
+        File jar = emptyJAR("org-depends-on-java-kit.jar", mf);
+        Module module = Main.getModuleSystem().getManager().create(jar, jar, false, false, false);
+        assertFalse("Not yet enabled", module.isEnabled());
+        Main.getModuleSystem().getManager().enable(module);
+        assertTrue("enabled now", module.isEnabled());
+        FileObject dep = FileUtil.getConfigFile("Modules/org-depends-on-java-kit.xml");
+        assertNotNull("Module config file found", dep);
+
+        FeatureManager.incrementUnused(OpenProjects.getDefault().getOpenProjects());
         FeatureManager.disableUnused(2);
 
         assertTrue("Config file exists", sub.canRead());
         String newContent = sub.asText("UTF-8");
 
-        assertEquals("The content is the same as originally was", origContent, newContent);
+        assertEquals("The java.kit's state remains unmodified", middleState, newContent);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         change++;
     }
 
+    private File emptyJAR(String name, String manifest) throws IOException {
+        File f = new File(getWorkDir(), name);
+        Manifest mf = new Manifest(new ByteArrayInputStream(manifest.getBytes("utf-8")));
+        mf.getMainAttributes().putValue("Manifest-Version", "1.0");
+        JarOutputStream os = new JarOutputStream(new FileOutputStream(f), mf);
+        os.close();
 
+        return f;
+    }
 
     public static final class DD extends DialogDisplayer {
         static int cnt = 0;
-        
+
         @Override
         public Object notify(NotifyDescriptor descriptor) {
             cnt++;
@@ -225,6 +250,8 @@ public class FeaturesOffDemandTest extends NbTestCase implements PropertyChangeL
         public Dialog createDialog(DialogDescriptor descriptor) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
+
     }
+
+
 }
