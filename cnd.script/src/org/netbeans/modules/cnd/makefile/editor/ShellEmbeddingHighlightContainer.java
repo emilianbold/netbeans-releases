@@ -75,24 +75,58 @@ public class ShellEmbeddingHighlightContainer extends AbstractHighlightsContaine
 
     private ShellEmbeddingHighlightContainer(Document doc) {
         this.doc = doc;
+        this.highlights = Collections.emptyList();
     }
 
     @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         List<HighlightItem> highlightsCopy = highlights;
-        return highlightsCopy == null || highlightsCopy.isEmpty()
-                ? HighlightsSequence.EMPTY
-                : new ShellHighlightsSequence(highlightsCopy, startOffset, endOffset);
+        return ShellHighlightSequence.create(highlightsCopy, startOffset, endOffset);
     }
 
-    /*package*/ void setHighlights(final List<HighlightItem> highlights) {
+    /*package*/ void setHighlights(final List<HighlightItem> newHighlights) {
         NbDocument.runAtomic((StyledDocument) doc, new Runnable() {
             @Override
             public void run() {
-                ShellEmbeddingHighlightContainer.this.highlights = highlights;
-                fireHighlightsChange(0, doc.getLength());
+                int[] changedInterval = changedInterval(ShellEmbeddingHighlightContainer.this.highlights, newHighlights);
+                if (changedInterval != null) {
+                    ShellEmbeddingHighlightContainer.this.highlights = newHighlights;
+                    fireHighlightsChange(changedInterval[0], changedInterval[1]);
+                }
             }
         });
+    }
+
+    /*package*/ static int[] changedInterval(List<HighlightItem> oldHighlights, List<HighlightItem> newHighlights) {
+        int oldSize = oldHighlights.size();
+        int newSize = newHighlights.size();
+        int minSize = Math.min(oldSize, newSize);
+
+        int commonPrefix = 0;
+        for (int i = 0; i < minSize; ++i) {
+            if (HighlightItem.equals(oldHighlights.get(i), newHighlights.get(i))) {
+                ++commonPrefix;
+            } else {
+                break;
+            }
+        }
+
+        if (oldSize == newSize && commonPrefix == newSize) {
+            return null;
+        }
+
+        int commonSuffix = 0;
+        for (int i = 0; i < minSize; ++i) {
+            if (HighlightItem.equals(oldHighlights.get(oldSize - 1 - i), newHighlights.get(newSize - 1 - i))) {
+                ++commonSuffix;
+            } else {
+                break;
+            }
+        }
+
+        int changeStart = commonPrefix == 0 ? 0 : oldHighlights.get(commonPrefix - 1).end.getOffset();
+        int changeEnd = commonSuffix == 0 ? Integer.MAX_VALUE : oldHighlights.get(oldSize - commonSuffix).start.getOffset();
+        return new int[]{changeStart, changeEnd};
     }
 
     public static final class HighlightItem {
@@ -105,31 +139,85 @@ public class ShellEmbeddingHighlightContainer extends AbstractHighlightsContaine
             this.end = end;
             this.category = category;
         }
+
+        private static boolean equals(HighlightItem a, HighlightItem b) {
+            return a.start.getOffset() == b.start.getOffset()
+                    && a.end.getOffset() == b.end.getOffset()
+                    && a.category.equals(b.category);
+        }
+    }
+    
+    /**
+     * Returns index of the first {@link HighlightItem} that has nonzero
+     * overlap with interval <code>(startOffset, infinity)</code>.
+     * Returns <code>highlights.size()</code> if no overlap.
+     */
+    /*package*/ static int firstOverlap(List<HighlightItem> highlights, int startOffset) {
+        int left = 0; // indices less than 'left' have no overlap
+        int right = highlights.size(); // indices greater or equal to 'right' have overlap
+        while (left < right) {
+            int mid = (left + right) / 2;
+            HighlightItem midItem = highlights.get(mid);
+            if (midItem.end.getOffset() <= startOffset) {
+                left = mid + 1;
+            } else if (startOffset < midItem.start.getOffset()) {
+                right = mid;
+            } else {
+                return mid;
+            }
+        }
+        return left;
     }
 
-    private static final class ShellHighlightsSequence implements HighlightsSequence {
+    /**
+     * Returns index of the last {@link HighlightItem} that has nonzero
+     * overlap with interval <code>(-infinity, endOffset)</code>.
+     * Returns <code>-1</code> if no overlap.
+     */
+    /*package*/ static int lastOverlap(List<HighlightItem> highlights, int endOffset) {
+        int left = -1; // indices less or equal to 'left' have overlap
+        int right = highlights.size() - 1; // indices greater than 'right' have no overlap
+        while (left < right) {
+            int mid = (left + right + 1) / 2;
+            HighlightItem midItem = highlights.get(mid);
+            int itemStart = midItem.start.getOffset();
+            int itemEnd = midItem.end.getOffset();
+            if (endOffset <= itemStart) {
+                right = mid - 1;
+            } else if (itemEnd < endOffset) {
+                left = mid;
+            } else {
+                return mid;
+            }
+        }
+        return left;
+    }
+
+    private static final class ShellHighlightSequence implements HighlightsSequence {
 
         private static final FontColorSettings SETTINGS = MimeLookup.getLookup(MimePath.get(MIMENames.SHELL_MIME_TYPE)).lookup(FontColorSettings.class);
         private final Iterator<HighlightItem> highlightIterator;
         private HighlightItem currentItem;
 
-        private ShellHighlightsSequence(List<HighlightItem> highlights, int startOffset, int endOffset) {
-            int startIdx = -1;
-            int endIdx = -1;
-            for (int i = 0; i < highlights.size(); ++i) {
-                HighlightItem item = highlights.get(i);
-                if (startIdx < 0 && startOffset < item.end.getOffset()) {
-                    startIdx = i;
-                }
-                if (item.start.getOffset() < endOffset) {
-                    endIdx = i;
-                }
-            }
-            if (0 <= startIdx && 0 <= endIdx) {
-                this.highlightIterator = highlights.subList(startIdx, endIdx).iterator();
+        private static HighlightsSequence create(List<HighlightItem> highlights, int startOffset, int endOffset) {
+            final int startIdx;
+            final int endIdx;
+            if (startOffset < endOffset) {
+                startIdx = firstOverlap(highlights, startOffset);
+                endIdx = lastOverlap(highlights, endOffset);
             } else {
-                this.highlightIterator = Collections.<HighlightItem>emptyList().iterator();
+                startIdx = highlights.size();
+                endIdx = -1;
             }
+            if (startIdx <= endIdx) {
+                return new ShellHighlightSequence(highlights.subList(startIdx, endIdx).iterator());
+            } else {
+                return HighlightsSequence.EMPTY;
+            }
+        }
+
+        private ShellHighlightSequence(Iterator<HighlightItem> highlightIterator) {
+            this.highlightIterator = highlightIterator;
         }
 
         @Override

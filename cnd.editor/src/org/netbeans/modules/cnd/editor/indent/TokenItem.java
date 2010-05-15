@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.editor.indent;
 
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 
@@ -63,6 +64,10 @@ public final class TokenItem {
     public TokenSequence<CppTokenId> getTokenSequence() {
         return tokenSeq;
     }
+
+    public boolean isSkipPP(){
+        return skipPP;
+    }
     
     private void go() {
         tokenSeq.moveIndex(index);
@@ -71,6 +76,49 @@ public final class TokenItem {
 
     public CppTokenId getTokenID() {
         return tokenId;
+    }
+
+    public CppTokenId getTokenPPID() {
+        TokenSequence<CppTokenId> prep = tokenSeq.embedded(CppTokenId.languagePreproc());
+        if (prep == null){
+            return CppTokenId.PREPROCESSOR_START;
+        }
+        prep.moveStart();
+        while (prep.moveNext()) {
+            if (!(prep.token().id() == CppTokenId.WHITESPACE ||
+                    prep.token().id() == CppTokenId.PREPROCESSOR_START)) {
+                break;
+            }
+        }
+        Token<CppTokenId> directive = null;
+        if (prep.token() != null) {
+            directive = prep.token();
+        }
+        if (directive != null) {
+             switch (directive.id()) {
+                case PREPROCESSOR_DIRECTIVE:
+                case PREPROCESSOR_IF:
+                case PREPROCESSOR_IFDEF:
+                case PREPROCESSOR_IFNDEF:
+                case PREPROCESSOR_ELSE:
+                case PREPROCESSOR_ELIF:
+                case PREPROCESSOR_ENDIF:
+                case PREPROCESSOR_DEFINE:
+                case PREPROCESSOR_UNDEF:
+                case PREPROCESSOR_INCLUDE:
+                case PREPROCESSOR_INCLUDE_NEXT:
+                case PREPROCESSOR_LINE:
+                case PREPROCESSOR_IDENT:
+                case PREPROCESSOR_PRAGMA:
+                case PREPROCESSOR_WARNING:
+                case PREPROCESSOR_ERROR:
+                case PREPROCESSOR_DEFINED:
+                    return directive.id();
+                default:
+                     break;
+            }
+        }
+        return CppTokenId.PREPROCESSOR_START;
     }
 
     public int index() {
