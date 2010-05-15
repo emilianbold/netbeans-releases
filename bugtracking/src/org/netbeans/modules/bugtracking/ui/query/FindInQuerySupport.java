@@ -101,9 +101,9 @@ class FindInQuerySupport {
                 updatePattern();
             } else {
                 bar.setVisible(true);
-                bar.requestFocusInWindow();
                 updatePattern();
             }
+            bar.requestFocusInWindow();
         }
     }
 
