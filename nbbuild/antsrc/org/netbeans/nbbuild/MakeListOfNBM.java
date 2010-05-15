@@ -271,9 +271,10 @@ public class MakeListOfNBM extends Task {
         String include[] = ds.getIncludedFiles();
         log("Including files " + Arrays.toString(include), Project.MSG_VERBOSE);
         for( int j=0; j < include.length; j++ ){
-            if (osgi && !include[j].equals(moduleName) &&
-                    !include[j].equals("config/Modules/" + codename.replaceFirst("/\\d+$", "").replace('.', '-') + ".xml")) {
-                throw new BuildException("Cannot include other files with an OSGi bundle: " + include[j], getLocation());
+            String path = include[j].replace(File.separatorChar, '/');
+            if (osgi && !path.equals(moduleName) &&
+                    !path.equals("config/Modules/" + codename.replaceFirst("/\\d+$", "").replace('.', '-') + ".xml")) {
+                throw new BuildException("Cannot include other files with an OSGi bundle: " + path, getLocation());
             }
             try {
                 File inFile = new File( ds.getBasedir(), include[j] );
