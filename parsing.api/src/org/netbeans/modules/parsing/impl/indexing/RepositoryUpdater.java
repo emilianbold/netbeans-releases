@@ -3983,9 +3983,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         File f = null;
                         URL archiveUrl = FileUtil.getArchiveFile(root);
                         try {
-                            f = new File(archiveUrl != null ? archiveUrl.toURI() : root.toURI());
+                            URI uri = archiveUrl != null ? archiveUrl.toURI() : root.toURI();
+                            if (uri.getScheme().equals("file")) { //NOI18N
+                                f = new File(uri);
+                            }
                         } catch (URISyntaxException use) {
-                            LOGGER.log(Level.INFO, null, use);
+                            LOGGER.log(Level.INFO, "Can't convert " + root + " to java.io.File; archiveUrl=" + archiveUrl, use); //NOI18N
                         }
 
                         if (f != null) {
