@@ -152,6 +152,10 @@ public class Generate {
         ObjectReferenceExceptions.put("enableCollection", Collections.singleton((Class) java.lang.UnsupportedOperationException.class));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.ObjectReference.class.getName(), ObjectReferenceExceptions);
 
+        Map<String, Set<Class>> FieldExceptions = new LinkedHashMap<String, Set<Class>>();
+        FieldExceptions.put("type", Collections.singleton((Class) com.sun.jdi.ObjectCollectedException.class));
+        EXCEPTIONS_BY_METHODS.put(com.sun.jdi.Field.class.getName(), FieldExceptions);
+
         Map<String, Set<Class>> ThreadReferenceExceptions = new LinkedHashMap<String, Set<Class>>();
         // IllegalThreadStateException is thrown through JDWPException when INVALID_THREAD is received from JDWP.
         ThreadReferenceExceptions.put("*", Collections.singleton((Class) IllegalThreadStateException.class));
