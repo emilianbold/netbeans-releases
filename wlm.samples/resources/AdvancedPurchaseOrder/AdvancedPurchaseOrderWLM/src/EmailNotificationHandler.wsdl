@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="EmailNotificationHandler" targetNamespace="http://j2ee.netbeans.org/wsdl/EmailNotificationHandler"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://j2ee.netbeans.org/wsdl/EmailNotificationHandler"
+    xmlns:email="http://schemas.sun.com/jbi/wsdl-extensions/email/">
+    <types/>
+    <message name="NotificationHandlerOperationRequest">
+        <part name="addresses" type="xsd:string"/>
+        <part name="subject" type="xsd:string"/>
+        <part name="message" type="xsd:string"/>
+        <part name="from" type="xsd:string"/>
+    </message>
+    <portType name="NotificationHandlerPortType">
+        <wsdl:operation name="NotificationHandlerOperation">
+            <wsdl:input name="input1" message="tns:NotificationHandlerOperationRequest"/>
+        </wsdl:operation>
+    </portType>
+    <binding name="NotificationHandlerPortTypeBinding" type="tns:NotificationHandlerPortType">
+        <email:SMTPbinding/>
+        <operation name="NotificationHandlerOperation">
+            <email:SMTPoperation/>
+            <input name="input1">
+                <email:SMTPinput message="message" subject="subject" to="addresses" from="from"/>
+            </input>
+        </operation>
+    </binding>
+    <service name="EmailNotificationHandlerService">
+        <port name="NotificationHandlerPortTypeBindingPort" binding="tns:NotificationHandlerPortTypeBinding">
+            <email:SMTPaddress location="mailto:someUser@localhost.com" emailServer="yourserver" useSSL="false" port="465" userName="yourusername" password="yourpwd"/>
+        </port>
+    </service>
+</definitions>

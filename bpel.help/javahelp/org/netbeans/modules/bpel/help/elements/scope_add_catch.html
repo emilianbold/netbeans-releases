@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>BPEL Designer: Adding Catch Elements</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>BPEL Designer: Adding Catch Elements </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Catch activity can intercept and handle only specific types of fault. It can be used inside a Scope activity to handle faults before they can affect the entire process. These types of fault are defined by a <span lang="EN">globally unique variable QName and the type of data associated with the  fault.</span> </p>
+<p>The Catch element is created inside a Fault Handlers
+  container element. Thus, before adding Catch, you should <a href="scope_add_fault_handler.html" title="Adding Fault Handlers">add a Fault Handler container</a> element to the Process or Scope element. </p>
+<p><b>To add and configure a Catch activity: </b></p>
+<ol>
+  <li>If you have not added a Fault Handlers container, right-click the Scope or Process element  and choose Add &gt; Add Fault Handlers.</li>
+  <li>Right-click the Fault Handler container and choose Add &gt; Add Catch.</li>
+  <li>In the Properties window, configure the following Catch properties:</li>
+  <ul>
+  <li><b>Fault Name</b>. Select the QName of the fault from the list of faults, which contains the faults defined in the WSDL files.</li>
+  <li><b>Fault Variable Name </b>(Optional). Specify the name of an existing BPEL
+    variable that will contain the fault message. </li>
+  <li><b>Fault Variable Type</b> (Optional). Specify the type of the variable.</li>
+  </ul>
+  <li>Add an activity to the Catch element that will be performed in case of a fault. </li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="scope_add_fault_handler.html" title="Adding Fault Handlers">Adding Fault Handlers</a></dd>
+<dd><a href="throw.html" title="Throw">Throw</a></dd>
+<dd><a href="scope_add_catch_all.html" title="Adding Catch All Elements">Adding Catch All Elements</a></dd>
+<dd><a href="about_variable.html" title="About Variables in the BPEL Designer">About Variables in the BPEL Designer</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

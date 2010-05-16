@@ -356,7 +356,7 @@ public abstract class IndexerCache <T> {
                 }
 
                 final boolean fastTrackOnly;
-                if (mimeTypesToCheck == null || mimeTypesToCheck.size() == 0) {
+                if (mimeTypesToCheck == null || mimeTypesToCheck.isEmpty()) {
                     mimeTypesToCheck = Util.getAllMimeTypes();
                     fastTrackOnly = false;
                 } else {
@@ -430,7 +430,7 @@ public abstract class IndexerCache <T> {
 
                 if (fastTrackOnly) {
                     RP.post(new Runnable() {
-                        public void run() {
+                        public @Override void run() {
                             resetCache();
                             getData(null);
                         }
@@ -623,6 +623,7 @@ public abstract class IndexerCache <T> {
         // LookupListener implementation
         // --------------------------------------------------------------------
 
+        @Override
         public void resultChanged(LookupEvent ev) {
             task.schedule(0);
         }
@@ -631,6 +632,7 @@ public abstract class IndexerCache <T> {
         // PropertyChangeListener implementation
         // --------------------------------------------------------------------
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName() == null || EditorSettings.PROP_MIME_TYPES.equals(evt.getPropertyName())) {
                 task.schedule(123);
@@ -641,6 +643,7 @@ public abstract class IndexerCache <T> {
         // Runnable implementation
         // --------------------------------------------------------------------
 
+        @Override
         public void run() {
             resetCache();
         }
@@ -690,6 +693,7 @@ public abstract class IndexerCache <T> {
             orderByResolvers = order != null && order.size() > 0 ? order : null;
         }
 
+        @Override
         public int compare(IndexerInfo<T> o1, IndexerInfo<T> o2) {
             if (orderByResolvers != null) {
                 return compareByResolvers(o1, o2);

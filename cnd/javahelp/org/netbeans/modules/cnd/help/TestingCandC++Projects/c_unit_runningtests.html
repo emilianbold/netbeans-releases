@@ -11,66 +11,43 @@
 </head>
 <body>
 <h2>Running a C/C++ Unit Test</h2>
-<h3>***will need edits for new wizards</h3>
 <p><small><a href="#seealso">See Also</a>&nbsp;</small></p>
-<p>Once you have created a test or test suite, you can use the Run Test command
-  to initiate execution of the test. Run Test commands are available on source nodes only. 
+<p>Once you have created a test or test suite, you can use the Test command
+  to initiate execution of the test. The Test command is available from the context
+  menu of the project node, the Test Files node, and test subfolder nodes.
   After you run a test, you can choose to rerun individual tests that were
   executed during the test and displayed in the Test Results window.</p>
-<p><b>To run tests for an entire project:</b></p>
+<p><b>To run all tests for a project:</b></p>
 <ol>
-  <li>Select any node or file in the project you want to test in the Projects 
-    or Files window.</li>
+  <li>Select any node in the project in the Projects window.</li>
   <li>From the main menu, choose Run &gt; Test <i>project_name</i> (Alt-F6). 
     <p>The IDE executes all of the project's tests.</p>
   </li>
+  <li>You can also right-click the project node or the project's Test Files folder and select Test from the popup menu to execute
+  all the project's tests.</li>
 </ol>
-<ul class="note">
-  <li>If you want to run a subset of the project's tests or run the tests in a specific order,
-  you can create test suites that specify the tests to run as part of that suite.
-  After creating a test suite you run the suite in the same way you run a single test class. 
-</ul>
-<p><b>To run a test for a single class:</b></p>
-<ol>
-  <li>Select the node of the class for which you want to run a test in the Projects 
-    or Files window. </li>
-  <li>From the main menu, choose Run &gt; Run File &gt; Test <tt><i>classname</i></tt> 
-    (Ctrl-F6).</li>
-</ol>
-<ul class="note">
-  <li>You can also run a class's test by selecting the test class node itself 
-    and choosing Run &gt; Run File &gt; Run <tt><i>testclassname</i></tt> (Shift-F6). 
+<p><b>To run a single test suite:</b></p>
+<ul>
+  <li>Right-click the test suite subfolder under the Test Files node of project in the Projects
+     window and select Test. </li>
+  
 </ul>
 
 <p><b>To run a single test:</b></p>
 <ol>
-  <li>Run the test class or suite containing the test method.</li>
-  <li>In the Test Results window, right-click the test method and choose Run Again. </li>
+  <li>First, run the test suite containing the test.</li>
+  <li>In the Test Results window, right-click the test and choose Run Again. </li>
 </ol>
 
-<ul class="note">
-    <li>To run a single test method the method must be listed in the Test Results window.</li>
-</ul>
+<p class="note">A test cannot be run by itself without first running the test suite.
+</p>
 
-<h3>Working with Test Output</h3>
-<p>When you run a test, the IDE shows the test results in two tabs in the Unit Test Results window:</p>
-<ul>
-  <li>A summary of the passed and failed tests and the description of failed tests 
-    are displayed in the left pane of the window. 
-    Click the filter button (&nbsp;<img src="../images/junit_filter.gif" width="20" height="18">&nbsp;) 
-     to switch between viewing all test results and viewing only the failed tests.</li>
-  <li>The textual output from the unit tests is displayed in the right pane of the window.</li>
-</ul>
-
-<ul class="note">
-  <li>The output from the Ant process that builds and runs the test is displayed in the Output window.
-    Double-click any error to jump to the line in the code where the error occurred.</li>
-</ul>
 
 <dl> 
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="c_unit_creatingtests.html">Creating a C/C++ Unit Test</a></dd>
-  
+    <dd><a href="c_unit_resultswindow.html">Unit Tests Results Window</a></dd>
+    <dd><a href="c_unit_debuggingtests.html">Debugging C/C++ Unit Tests</a></dd>
 </dl> 
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+    Document   : template.xml
+    Created on : August 25, 2006, 5:39 PM
+    Author     : sweng
+    Description: Describes the JDBC Binding Component's extensibility element views on WSDL wizard
+-->
+<templateGroup namespace="http://schemas.sun.com/jbi/wsdl-extensions/jdbc/" 
+	       xmlns="http://xml.netbeans.org/schema/templates"
+	       xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance"
+               xsi:schemaLocation="http://xml.netbeans.org/schema/templates 
+               templates.xsd" prefix="jdbc">
+    <!--template name="DBOperation"-->
+    <template name="defaultSkeleton" skeleton="true">
+        <wsdlElement name="Binding">
+			<extensionElement name="binding">
+			</extensionElement>
+		</wsdlElement>
+		<wsdlElement name="BindingOperation">
+			<extensionElement name="operation">
+			</extensionElement>
+		</wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="input" >
+				<extensionAttr name="operationType" defaultValue="insert" />
+				<extensionAttr name="numberOfRecords" defaultValue="" />
+				<extensionAttr name="paramOrder" defaultValue="Please specify parameter order" />
+				<extensionAttr name="sql" defaultValue="Please specify sql statement" />
+				<extensionAttr name="PKName" defaultValue="Please specify PKName Column" />
+				<extensionAttr name="Transaction" defaultValue="NOTransaction" />
+				<extensionAttr name="MarkColumnValue" defaultValue="Please specify MarkColumnValue statement" />
+				<extensionAttr name="PollingPostProcessing" defaultValue="" />
+				<extensionAttr name="MoveRowToTableName" defaultValue="Please specify MoveRowToTableName Name" />
+				<extensionAttr name="TableName" defaultValue="Please specify TableName Name" />
+				<extensionAttr name="MarkColumnName" defaultValue="Please specify TableName Name" />
+				<extensionAttr name="PollMilliSeconds" defaultValue="10000" />
+            </extensionElement>
+		</wsdlElement>
+	   <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="output" >
+                <extensionAttr name="returnPartName" defaultValue="Please specify a value" />
+            </extensionElement>
+        </wsdlElement>
+		<wsdlElement name="ServicePort">
+			<extensionElement name="address" >
+				<extensionAttr name="jndiName"  defaultValue="Please specify a value"/>
+			</extensionElement>
+		</wsdlElement>
+    </template>    
+    <template name="Table" default="true">
+        <wsdlTemplate file="wsdltemplates/jdbc.wsdl.template.table.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="Prepared Statements">
+        <wsdlTemplate file="wsdltemplates/jdbc.wsdl.template.prep.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="Procedures">
+        <wsdlTemplate file="wsdltemplates/jdbc.wsdl.template.proc.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>
+    <template name="SQL File">
+        <wsdlTemplate file="wsdltemplates/jdbc.wsdl.template.wsdl"/>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message"/>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address"/>
+        </wsdlElement>
+    </template>    
+</templateGroup>

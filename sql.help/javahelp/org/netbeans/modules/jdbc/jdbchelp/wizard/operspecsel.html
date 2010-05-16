@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html>
+
+<head>
+<title>JDBC Database Wizard: Select Operation Specific Attributes Page</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+
+<h2>JDBC Database Wizard: Select Operation Specific Attributes Page</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The JDBC Database wizard allows you to quickly create a WSDL file for access to a table in a data source. 
+The wizard also generates a corresponding XML Schema file that defines the elements for the table and columns referenced in the WSDL file.</p>
+
+<!--
+<p>The generated WSDL file contains port type elements and binding elements for the following database operations:</p>
+
+<ul>
+<li>Insert</li>
+<li>Update</li>
+<li>Delete</li>
+<li>Find</li>
+<li>Poll Records</li>
+</ul>
+-->
+
+<p>The Select Operation Specific Attributes page allows you to select the columns to include in the generated WSDL file. 
+For each column selected, the wizard generates a SQL query to access the data in that column. 
+For each database operation (select, update, insert, poll records), you specify the column with the data that you want to access.</p>
+
+<ul class="note">
+  <li>The Delete database operation is not listed in the Select Operation Specific Attributes page because the Delete operation operates on a complete row in the database, not on specific columns.</li>
+</ul>
+
+<p>By default all columns and all available database operations are selected. 
+Use the Advanced button to modify the default selection.</p>
+
+
+<ul>
+<li><b>Select.</b> Select the table to include in the generated WSDL file.</li>
+<li><b>Advanced.</b> Opens a window that allows you to select specific columns for the data you want to access. 
+For each column selected, the wizard generates a SQL query to access the data in that column. 
+By default, all columns for all database operations are selected.</li>
+</ul>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../about.html" title="Generating WSDL from a JDBC Data Source">Generating WSDL from a JDBC Data Source</a></dd>
+<dd><a href="wsdlprops.html" title="JDBC Database Wizard: Enter WSDL Name Page">JDBC Database Wizard: Enter WSDL Name Page</a></dd>
+<dd><a href="tableobjsel.html" title="JDBC Database Wizard: Select DataSource and Table Objects Page">JDBC Database Wizard: Select DataSource and Table Objects Page</a></dd>
+<dd><a href="jndiinput.html" title="JDBC Database Wizard: Enter JNDI Name Page">JDBC Database Wizard: Enter JNDI Name Page</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

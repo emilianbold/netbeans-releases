@@ -1,0 +1,29 @@
+<definitions name="dummy" targetNamespace="dummy"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:tns="dummy" 
+    xmlns:file="http://schemas.sun.com/jbi/wsdl-extensions/file/">
+    <types/>
+    <message name="PollInputMessage">
+    </message>
+    <portType name="FileInboundPortType">
+        <operation name="poll">
+            <input name="input1" message="tns:PollInputMessage"/>
+        </operation>
+    </portType>
+    <binding name="FileInboundBinding" type="tns:FileInboundPortType">
+        <file:binding/>
+        <operation name="poll">
+            <file:operation verb="poll"/>
+            <input name="input1">
+                <file:message fileName="input.xml" pollingInterval="1000"/>
+            </input>
+        </operation>
+    </binding>
+    <service name="FileInboundService">
+        <port name="#SERVICE_NAME_InboundPort" binding="tns:FileInboundBinding">
+            <file:address fileDirectory="Default System Temp Dir"/>
+        </port>
+    </service>
+</definitions>

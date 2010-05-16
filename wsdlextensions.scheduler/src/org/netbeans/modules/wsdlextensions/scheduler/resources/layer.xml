@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC '-//NetBeans//DTD Filesystem 1.0//EN' 'http://www.netbeans.org/dtds/filesystem-1_0.dtd'>
+
+<filesystem>
+    <folder name="WSDLEditor">
+        <file name="scheduler-ext.xsd" url="scheduler-ext.xsd">
+            <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/scheduler/" />
+            <attr name="prefix" stringvalue="sched" />
+        </file>
+        
+        <folder name ="Binding">
+            <file name="SchedulerBinding">
+                <attr name="xsdFileName" stringvalue="scheduler-ext" />
+                <attr name="element" stringvalue="binding" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.scheduler.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/scheduler/resources/schedulerBinding16x16.png" /> 
+            </file>
+        </folder>
+     
+        <folder name ="BindingOperation">
+            <file name="SchedulerBindingOperation">
+                <attr name="xsdFileName" stringvalue="scheduler-ext" />
+                <attr name="element" stringvalue="operation" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.scheduler.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/scheduler/resources/operationMode16x16.png" /> 
+            </file>
+        </folder>
+			
+        <folder name ="BindingOperationInput">
+            <file name="SchedulerBindingTrigger">
+                <attr name="xsdFileName" stringvalue="scheduler-ext" />
+                <attr name="element" stringvalue="trigger" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.scheduler.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/scheduler/resources/trigger16x16.png" /> 
+            </file>
+        </folder>	        
+        <folder name ="ServicePort">
+            <file name="SchedulerActivePeriod" >
+                <attr name="xsdFileName" stringvalue="scheduler-ext" />
+                <attr name="element" stringvalue="active-period" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.scheduler.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/scheduler/resources/activePeriod16x16.png" /> 
+            </file>
+        </folder>	        
+    </folder>
+  
+    <folder name="SeeBeyondJbiComponents">
+        <!-- JBI Component -->
+        <folder name="sun-scheduler-binding">
+            <attr name="id" stringvalue="sun-scheduler-binding"/>
+            <attr name="type" stringvalue="Binding"/>
+            <attr name="description" stringvalue="Scheduler Binding"/>
+            <file name="scheduler.binding-1.0">
+                <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/scheduler/"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="bpel-nmproperties">
+        <folder name="scheduler-bc">
+            <attr name="display-name" stringvalue="Scheduler BC" />
+            <folder name="scheduler-inbound">
+                <attr name="display-name" stringvalue="Inbound" />
+                <file name="inbound-date">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.inbound.date"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Trigger Date"/>
+                </file>
+                <file name="inbound-name">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.inbound.name"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Trigger Name"/>
+                </file>
+                <file name="inbound-group">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.inbound.group"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Trigger Group"/>
+                </file>
+            </folder>
+            <!--folder name="scheduler-outbound">
+                <attr name="display-name" stringvalue="Outbound" />
+                <file name="outbound-group">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.group"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Trigger Group"/>
+                </file>
+                <file name="outbound-dateformat">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.dateformat"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Date Format"/>
+                </file>
+                <file name="outbound-mode">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.mode"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Scheduler Mode"/>
+                </file>
+                <file name="outbound-name">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.name"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Trigger Name"/>
+                </file>
+                <file name="outbound-type">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.type"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Trigger Type"/>
+                </file>
+                <file name="outbound-enabled">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.enabled"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}boolean"/>
+                    <attr name="display-name" stringvalue="Trigger Enabled"/>
+                </file>
+                <file name="outbound-description">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.description"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Trigger Description"/>
+                </file>
+                <file name="outbound-repeat">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.repeat"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Simple/Hybrid Trigger Repeat Count"/>
+                </file>
+                <file name="outbound-interval">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.interval"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}long"/>
+                    <attr name="display-name" stringvalue="Simple/Hybrid Trigger Interval"/>
+                </file>
+                <file name="outbound-cronexpr">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.cronexpr"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Cron/Hybrid Trigger Quartz CronExpression"/>
+                </file>
+                <file name="outbound-duration">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.duration"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}long"/>
+                    <attr name="display-name" stringvalue="Hybrid Trigger Duration"/>
+                </file>
+                <file name="outbound-starting">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.starting"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Active Period Starting Date"/>
+                </file>
+                <file name="outbound-ending">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.ending"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Active Period Ending Date"/>
+                </file>
+                <file name="outbound-timezone">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.scheduler.outbound.timezone"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Time Zone ID"/>
+                </file>
+            </folder-->
+        </folder>
+    </folder>
+  
+</filesystem>

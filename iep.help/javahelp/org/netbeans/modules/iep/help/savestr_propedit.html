@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html>
+
+
+
+<head>
+
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Save Stream Operator</title>
+
+</head>
+
+
+
+<body>
+
+<h2>Using the Save Stream Operator</h2>
+
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Save Stream and Replay Stream operators are intended to help you perform diagnostics. 
+For example, you can use these operators when the output from an IEP Module project is not the expected output.</p>
+
+<p>You first enable the Save Stream operator to begin saving an input stream to a database table. 
+You then use the Replay Stream operator to replay the events that the Save Stream operator saved to the database table.</p>
+
+<p>Before you begin, you must deploy an event process that contains a Stream Input operator.</p>
+
+
+
+<p><strong>To enable the Save Stream operator dynamically at runtime:</strong></p>
+
+<b>Note:</b> If you know up front that you want to save an input stream to a database table, then you can use the Save Stream operator at design time. 
+The property editor enables you to configure the same properties described in this procedure.
+
+<ol>
+
+  <li>Start the IEP monitoring and debugging tool. For detailed information about this tool, see the Open ESB wiki.</li>
+
+  <li>Run the <tt>listIEP</tt> command. You must specify the IEP service unit name as a parameter. 
+You can find the service unit name by going to the Services window of the IDE and expanding the Servers node, 
+the GlassFish V2 node, the JBI node, the Service Assemblies node, and the individual service assembly node.
+<br>The command returns a list of plan names. For example:
+<br><tt>[IEP] listIEP CompositeApp1-IepModule1<br>test_iep</tt></li>
+
+  <li>Run the <tt>listOperators</tt> command. You must specify the plan name as a parameter.
+<br>The command returns a list of the operators in the event process. For example:
+<br><tt>[IEP] listOperators test_iep<br>StreamInput0<br>StreamOutput0</tt></li>
+
+  <li>Run the <tt>addSaveStream</tt> command. 
+You must specify the following parameters: the plan name, the name of the Stream Input operator, the JNDI name of the database resource, 
+and the name of the database table where the input stream will be saved. 
+
+You can optionally specify a boolean parameter called Is Global, which indicates whether the table and its data are kept between deployments. 
+By default, the Is Global parameter is set to <tt>true</tt>.
+
+<br>The command returns the name of the Save Stream operator that was added. For example:
+<br><tt>[IEP] addSaveStream test_iep StreamInput0 jdbc/iepseDerbyNonXA STOCKTRANSACTIONS false<br>
+The result is StreamInput0SaveStream0</tt></li>
+
+  <li>The Save Stream operator begins saving the input stream to the database table. 
+If the table name that you specified does not exist, then the table is created.</li>
+
+</ol>
+
+
+
+<p><strong>To disable the Save Stream operator dynamically at runtime:</strong></p>
+
+<ol>
+
+  <li>Start the IEP monitoring and debugging tool. For detailed information about this tool, see the Open ESB wiki.</li>
+
+  <li>Run the <tt>removeSaveStream</tt> command. You must specify the following parameters: 
+the plan name and the name of the Save Stream operator. For example:
+<br><tt>[IEP] removeSaveStream test_iep StreamInput0SaveStream0</tt></li>
+
+  <li>The Save Stream operator stops saving the input stream to the database table.
+<br>If the Is Global parameter of the <tt>addSaveStream</tt> command was set to <tt>true</tt>, then the table and its data are not deleted. 
+However, if you subsequently modify the schema of the stream input (for example, by adding a column) and reenable the Save Stream operator, 
+then the table and its data are deleted at that time.
+<br>If the Is Global parameter of the <tt>addSaveStream</tt> command was set to <tt>false</tt>, then the table and its data are deleted.</li>
+
+</ol>
+
+
+
+<!--
+<p><strong>To enable the Save Stream operator at design time:</strong></p>
+
+<ol>
+
+  <li>Drag a Save Stream operator from the Palette to the Design view.</li>
+  <li>Double-click the Save Stream component. The property editor opens.</li>
+
+  <li>In the Table Name field, specify the name of the database table that will be created.</li>
+  <li>In the JNDI Name field, specify the JNDI name of the database resource.</li>
+  <li>By default, the Is Global check box is selected. 
+      This setting indicates that the table and its data are kept between deployments. 
+      If you want the operator to delete the table instead, then clear the Is Global check box.</li>
+
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK.</li>
+
+</ol>
+-->
+
+
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="replaystr_propedit.html">Using the Replay Stream Operator</a></dd>
+<dd>&nbsp;</dd>
+</dl>
+
+<hr>
+
+<small><a href="credits.html">Legal Notices</a></small>
+
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</body>
+
+</html>

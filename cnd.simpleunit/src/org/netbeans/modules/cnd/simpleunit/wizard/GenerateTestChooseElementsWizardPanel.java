@@ -101,7 +101,7 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx("GenerateTestChooseElementsWizard_HELP_ID");
+        return new HelpCtx("CreateTestWizardP1");
     }
 
     public boolean isValid() {

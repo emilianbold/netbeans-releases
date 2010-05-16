@@ -1,0 +1,37 @@
+<html:html xmlns:chiba="http://chiba.sourceforge.net/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:po="http://wlmse.sample/po" xmlns:xforms="http://www.w3.org/2002/xforms" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<html:head>
+<xforms:model id="model_0">
+<xforms:instance id="instance_0">
+<po:purchaseOrder xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+</xforms:instance>
+<xforms:bind id="bind_0" nodeset="/po:purchaseOrder">
+<xforms:bind id="bind_1" nodeset="po:orderId" xforms:required="true()" xforms:type="string"/>
+<xforms:bind id="bind_2" nodeset="po:purchaserName" xforms:required="true()" xforms:type="string"/>
+<xforms:bind id="bind_3" nodeset="po:productId" xforms:required="true()" xforms:type="string"/>
+<xforms:bind id="bind_4" nodeset="po:amount" xforms:required="true()" xforms:type="decimal"/>
+</xforms:bind>
+</xforms:model>
+</html:head>
+<html:body>
+<xforms:group id="group_0">
+<xforms:label id="label_0">Purchase Order</xforms:label>
+<xforms:output incremental="true" model="inputModel" ref="po:orderId">
+<xforms:label>Order Id</xforms:label>
+<xforms:alert id="alert_0">Please provide a valid value for 'Order Id'. 'Order Id' is a required 'String' value.</xforms:alert>
+</xforms:output>
+<xforms:output incremental="true" model="inputModel" ref="po:purchaserName">
+<xforms:label>Purchaser Name</xforms:label>
+<xforms:alert id="alert_1">Please provide a valid value for 'Purchaser Name'. 'Purchaser Name' is a required 'String' value.</xforms:alert>
+</xforms:output>
+<xforms:output incremental="true" model="inputModel" ref="po:productId">
+<xforms:label>Product Id</xforms:label>
+<xforms:alert id="alert_2">Please provide a valid value for 'Product Id'. 'Product Id' is a required 'String' value.</xforms:alert>
+</xforms:output>
+<xforms:output incremental="true" model="inputModel" ref="po:amount">
+<xforms:label>Amount</xforms:label>
+<xforms:alert id="alert_3">Please provide a valid value for 'Amount'. 'Amount' is a required 'Decimal' value.</xforms:alert>
+</xforms:output>
+</xforms:group>
+</html:body>
+</html:html>
+

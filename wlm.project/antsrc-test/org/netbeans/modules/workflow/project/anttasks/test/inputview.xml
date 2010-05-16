@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inputXForm>
+	<!-- see the table and tr/td here. Also note we generate <<xforms:output> in one <td> and  order Id: in another <td> , so it does not use <xforms:label> -->
+	<xforms:group xmlns:xforms="http://www.w3.org/2002/xforms" xmlns="http://www.w3.org/1999/xhtml">
+		<p>
+			<b>
+				<i>This is purchase Order Input.</i>
+			</b>
+		</p>
+		<p>                      </p>
+		<table border="1">
+			<tr>
+				<td>                        order Id:                    </td>
+				<td>
+					<xforms:output xmlns:po="http://wlmse.sample/po" incremental="true" model="inputModel" ref="po:orderId"/>
+				</td>
+			</tr>
+			<tr>
+				<td>                        product Id:                    </td>
+				<td>
+					<xforms:output xmlns:po="http://wlmse.sample/po" incremental="true" model="inputModel" ref="po:purchaserName"/>
+				</td>
+			</tr>
+			<tr>
+				<td>                        purchaser Name:                    </td>
+				<td>
+					<xforms:output xmlns:po="http://wlmse.sample/po" incremental="true" model="inputModel" ref="po:productId"/>
+				</td>
+			</tr>
+			<tr>
+				<td>                        amount:                    </td>
+				<td>
+					<xforms:output xmlns:po="http://wlmse.sample/po" incremental="true" model="inputModel" ref="po:amount"/>
+				</td>
+			</tr>
+		</table>
+	</xforms:group>
+</inputXForm>

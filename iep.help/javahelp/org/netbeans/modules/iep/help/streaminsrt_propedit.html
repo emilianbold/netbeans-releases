@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Insert Stream Operator Property Window </title>
+</head>
+<body>
+<h2>Using the Insert Stream Operator Property Window </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Insert Stream operator converts a relation  into a stream. When the insert stream operation is triggered, all changed or new records are issued.  </p>
+
+<p>In other words, the Insert Stream operator  passes  new records, unlike the Relation Output operator, 
+which issues individual records tagged with either a plus (+), meaning a new record, or tagged with minus (-), 
+meaning a record that was issued previously, but is no longer part of the relation result. </p>
+
+<p>If you want to output data from the IEP process, use the Insert Stream operator and connect it to a Stream Output operator.</p>
+
+<p><strong>To create an Insert Stream operator:</strong></p>
+
+<ol>
+  <li>Drag an Insert Stream operator from the Palette to the Design view.</li>
+  <li>As needed, connect the input of the new Insert Stream component to an operator that has Relation output.</li>
+  <li>Double-click the Insert Stream component. The property editor opens. Notice that the component has inherited the schema of its input relation.</li>
+  <li>As needed, configure the following property: Name.</li>
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK.</li>
+</ol>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="streamdel_propedit.html">Using the Delete Stream Property Editor</a></dd>
+<dd><a href="relstream_propedit.html">Using the Relation Stream Property Editor </a></dd>
+<dd>&nbsp;</dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

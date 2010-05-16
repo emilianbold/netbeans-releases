@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-java-j2seproject">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.soa.pojo.model.api.POJOLookupProvider.instance"/>
+            </folder>
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-soa-pojo-ui-POJONodeFactory.instance">
+                    <attr name="position" intvalue="281"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <file name="POJOPaletteController.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.palette.PaletteController"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.soa.pojo.ui.actions.POJOPaletteFactory.getPalette"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="JbiComponents">
+        <file name="sun-pojo-engine">
+            <attr name="id" stringvalue="sun-pojo-engine"/>
+            <attr name="description" stringvalue="This is a pojo service engine."/>
+            <attr name="type" stringvalue="Engine"/>
+        </file>
+    </folder>
+    <folder name="Templates">
+        <folder name="ESB">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.soa.pojo.resources.Bundle"/>
+            <file name="POJOProvider.java" url="POJOProvider.template">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/soa/pojo/resources/pojo.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.soa.pojo.resources.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.soa.pojo.wizards.POJOProviderWizardIterator"/>
+                <!-- Works only when Java SE project has main class -->
+                <!-- attr name="templateCategory" stringvalue="gui-java-application"/-->
+                <!-- Works for all 3 Java SE, Web and EJB projects -->
+                <attr name="templateCategory" stringvalue="web-service-clients"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/soa/pojo/resources/pOJOProvider.html"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="pojobinding.wsdl" url="pojobinding.wsdl">
+               <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/soa/pojo/resources/pojo.png"/>
+               <!--attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/bindingwizard/resources/wsdl_file.png"/-->
+               <attr name="template" boolvalue="true"/>
+               <attr name="instantiatingIterator" newvalue="org.netbeans.modules.soa.pojo.wizards.BindingWizardIterator"/>
+               <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/soa/pojo/resources/PojoBindingWizard.html"/>
+               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.soa.pojo.resources.Bundle"/>
+                <!-- Works only when Java SE project has main class -->
+                <!-- attr name="templateCategory" stringvalue="gui-java-application"/-->
+                <!-- Works for all 3 Java SE, Web and EJB projects -->
+               <attr name="templateCategory" stringvalue="web-service-clients"/>
+               <attr name="bindingConcreteConfiguration" stringvalue="true"/>
+           </file>
+        </folder>
+    </folder>
+    <folder name="POJOConsumer">
+        <folder name="ESB">
+            <file name="pojoconsumerbinding.wsdl" url="pojoconsumerbinding.wsdl">
+               <attr name="template" boolvalue="true"/>
+               <attr name="instantiatingIterator" newvalue="org.netbeans.modules.soa.pojo.wizards.POJOBindingConsumerPalleteWizardIterator"/>
+               <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/bindingwizard/resources/newBindingWizard.html"/>
+               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.soa.pojo.resources.Bundle"/>
+               <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/bindingwizard/resources/wsdl_file.png"/>
+               <attr name="bindingConcreteConfiguration" stringvalue="true"/>
+           </file>
+        </folder>
+    </folder>
+    <!-- till issue is fixed use http://www.netbeans.org/issues/show_bug.cgi?id=125442 -->
+    <!-- folder name="OpenESBPalette"-->
+    <folder name="CAPSEEPalette">
+        <folder name="OpenESB_POJO_Engine">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.soa.pojo.resources.Bundle"/>
+            <attr name="isExpanded" stringvalue="true"/>
+            <attr name="position" intvalue="51"/>
+            <file name="soa_pojo_provider.xml" url="soa_pojo_provider.xml">
+                <attr name="position" intvalue="101"/>
+            </file>
+            <file name="soa_pojo_consumer.xml" url="soa_pojo_consumer.xml">
+                <attr name="position" intvalue="110"/>
+            </file>
+            <file name="soa_pojo_binding_consumer.xml" url="soa_pojo_binding_consumer.xml">
+                <attr name="position" intvalue="120"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>

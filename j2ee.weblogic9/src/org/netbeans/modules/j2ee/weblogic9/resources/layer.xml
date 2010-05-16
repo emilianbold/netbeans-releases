@@ -41,7 +41,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <filesystem>
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
@@ -104,7 +103,7 @@ made subject to such option by the copyright holder.
                 -->
                 <file name="OptionalFactory.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory.create"/>
-                    <attr name="delegate" newvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalFactory"/>
+                    <attr name="delegate" newvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalDeploymentManagerFactory"/>
                     <attr name="noInitializationFinish" boolvalue="true"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.weblogic9.Bundle#TXT_displayName"/>

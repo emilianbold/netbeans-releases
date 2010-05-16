@@ -40,10 +40,12 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -58,6 +60,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.windows.InputOutput;
 
 /**
@@ -117,6 +120,21 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         if (execEnv.isLocal()) {
             delegate.execute(io);
             return;
+        } else {
+            try {
+                ConnectionManager.getInstance().connectTo(execEnv);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                if (io != null) {
+                    io.getErr().printf("%s\n", ex.getMessage()); //NOI18N
+                }
+                delegate.cancel();
+                return;
+            } catch (CancellationException ex) {
+                // don't log CancellationException
+                delegate.cancel();
+                return;
+            }
         }
 
         if (io != null) {

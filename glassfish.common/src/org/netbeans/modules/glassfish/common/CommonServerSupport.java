@@ -200,8 +200,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         char[] retChars = Keyring.read(key);
         if (null == retChars || retChars.length < 1 || !GlassfishModule.PASSWORD_CONVERTED_FLAG.equals(retVal)) {
             retChars = retVal.toCharArray();
-            Keyring.save(key, retChars, "a Glassfish/SJSAS passord");
-            properties.put(PASSWORD_ATTR, GlassfishModule.PASSWORD_CONVERTED_FLAG) ;
+            if (null != key) {
+                Keyring.save(key, retChars, "a Glassfish/SJSAS passord");
+                properties.put(PASSWORD_ATTR, GlassfishModule.PASSWORD_CONVERTED_FLAG) ;
+            }
         } else {
             retVal = String.copyValueOf(retChars);
         }
@@ -254,7 +256,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                 destdir = FileUtil.createFolder(FileUtil.getConfigRoot(),foldername);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
-            }
+        }
             if (null != destdir) {
                 candidate = new File(candidate, properties.get(DOMAIN_NAME_ATTR));
                 FileObject source = FileUtil.toFileObject(FileUtil.normalizeFile(candidate));
