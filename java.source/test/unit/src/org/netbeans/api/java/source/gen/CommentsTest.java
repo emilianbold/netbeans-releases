@@ -1492,6 +1492,94 @@ public class CommentsTest extends GeneratorTest {
         assertEquals(golden, res);
     }
 
+    public void testRemoveComment186176a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    /*test1\n" +
+            "     * test\n" +
+            "     */\n" +
+            "    /*test2\n" +
+            "     * test\n" +
+            "     */\n" +
+            "    private void test() {} \n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    /*test1\n" +
+            "     * test\n" +
+            "     */\n" +
+            "    private void test() {} \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(1);
+//                GeneratorUtilities.get(workingCopy).importComments(clazz, cut);
+                MethodTree newMethod = make.setLabel(mt, mt.getName());
+                GeneratorUtilities.get(workingCopy).copyComments(mt, newMethod, true);
+                make.removeComment(newMethod, 1, true);
+                workingCopy.rewrite(mt, newMethod);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testRemoveComment186176b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    /*test1\n" +
+            "     * test\n" +
+            "     */\n" +
+            "    private void test() {} \n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    /*test2*/\n" +
+            "    private void test() {} \n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree mt = (MethodTree) clazz.getMembers().get(1);
+//                GeneratorUtilities.get(workingCopy).importComments(clazz, cut);
+                MethodTree newMethod = make.setLabel(mt, mt.getName());
+                GeneratorUtilities.get(workingCopy).copyComments(mt, newMethod, true);
+                make.removeComment(newMethod, 0, true);
+                make.addComment(newMethod, Comment.create(Style.BLOCK, "/*test2*/"), true);
+                workingCopy.rewrite(mt, newMethod);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }
