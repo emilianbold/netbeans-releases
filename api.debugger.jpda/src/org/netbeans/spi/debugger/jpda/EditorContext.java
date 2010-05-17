@@ -73,17 +73,17 @@ public abstract class EditorContext {
     /** Annotation type constant. */
     public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "DisabledCondBreakpoint";
     /** Annotation type constant. */
-    public static final String FIELD_BREAKPOINT_ANNOTATION_TYPE = "NonLineBreakpoint";
+    public static final String FIELD_BREAKPOINT_ANNOTATION_TYPE = "FieldBreakpoint";
     /** Annotation type constant. */
-    public static final String CLASS_BREAKPOINT_ANNOTATION_TYPE = "NonLineBreakpoint";
+    public static final String CLASS_BREAKPOINT_ANNOTATION_TYPE = "ClassBreakpoint";
     /** Annotation type constant. */
-    public static final String DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE = "DisabledNonLineBreakpoint";
+    public static final String DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE = "DisabledFieldBreakpoint";
     /** Annotation type constant. */
-    public static final String METHOD_BREAKPOINT_ANNOTATION_TYPE = "NonLineBreakpoint";
+    public static final String METHOD_BREAKPOINT_ANNOTATION_TYPE = "MethodBreakpoint";
     /** Annotation type constant. */
-    public static final String DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE = "DisabledNonLineBreakpoint";
+    public static final String DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE = "DisabledMethodBreakpoint";
     /** Annotation type constant. */
-    public static final String DISABLED_CLASS_BREAKPOINT_ANNOTATION_TYPE = "DisabledNonLineBreakpoint";
+    public static final String DISABLED_CLASS_BREAKPOINT_ANNOTATION_TYPE = "DisabledClassBreakpoint";
     /** Annotation type constant. */
     public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC";
     /** Annotation type constant. */
