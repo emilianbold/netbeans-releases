@@ -86,7 +86,7 @@ public class HideFieldByVar extends HideField {
         }
 
         Element hidden = null;
-        for (Element e : compilationInfo.getElements().getAllMembers((TypeElement)el)) {
+        for (Element e : getAllMembers(compilationInfo, (TypeElement)el)) {
             if (stop) {
                 return null;
             }

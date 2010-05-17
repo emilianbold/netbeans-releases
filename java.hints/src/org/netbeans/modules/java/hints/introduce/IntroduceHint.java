@@ -262,21 +262,46 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         if (start >= end)
             return null;
 
+        TreePath tp = ci.getTreeUtilities().pathFor((start + end) / 2 + 1);
+
+        for ( ; tp != null; tp = tp.getParentPath()) {
+            Tree leaf = tp.getLeaf();
+
+            if (!StatementTree.class.isAssignableFrom(leaf.getKind().asInterface()))
+               continue;
+
+            long treeStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), leaf);
+            long treeEnd   = ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), leaf);
+
+            if (treeStart != start || treeEnd != end) {
+                continue;
+            }
+
+            List<? extends StatementTree> statements = CopyFinder.getStatements(tp);
+            statementsSpan[0] = statements.indexOf(tp.getLeaf());
+            statementsSpan[1] = statementsSpan[0];
+
+            return TreePathHandle.create(tp, ci);
+        }
+
         TreePath tpStart = ci.getTreeUtilities().pathFor(start);
         TreePath tpEnd = ci.getTreeUtilities().pathFor(end);
 
-        if (tpStart.getLeaf() != tpEnd.getLeaf() || tpStart.getLeaf().getKind() != Kind.BLOCK) {
-            //??? not in the same block:
+        if (tpStart.getLeaf() != tpEnd.getLeaf() || (tpStart.getLeaf().getKind() != Kind.BLOCK && tpStart.getLeaf().getKind() != Kind.CASE)) {
+                    //??? not in the same block:
             return null;
         }
 
         int from = -1;
         int to   = -1;
 
-        BlockTree block = (BlockTree) tpStart.getLeaf();
+        List<? extends StatementTree> statements =   tpStart.getLeaf().getKind() == Kind.BLOCK
+                                                   ? ((BlockTree) tpStart.getLeaf()).getStatements()
+                                                   : ((CaseTree) tpStart.getLeaf()).getStatements();
+
         int index = 0;
 
-        for (StatementTree s : block.getStatements()) {
+        for (StatementTree s : statements) {
             long sStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), s);
 
             if (sStart == start) {
@@ -295,7 +320,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         if (to == (-1))
-            to = block.getStatements().size() - 1;
+            to = statements.size() - 1;
 
         if (to < from) {
             return null;
@@ -304,7 +329,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         statementsSpan[0] = from;
         statementsSpan[1] = to;
 
-        return TreePathHandle.create(tpStart, ci);
+        return TreePathHandle.create(new TreePath(tpStart, statements.get(from)), ci);
     }
 
     public void run(CompilationInfo info) {
@@ -494,8 +519,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         TreePath block = h.resolve(info);
         TreePath method = findMethod(block);
         Element methodEl = info.getTrees().getElement(method);
-        BlockTree bt = (BlockTree) block.getLeaf();
-        List<? extends StatementTree> statementsToWrap = bt.getStatements().subList(statements[0], statements[1] + 1);
+        List<? extends StatementTree> parentStatements = CopyFinder.getStatements(block);
+        List<? extends StatementTree> statementsToWrap = parentStatements.subList(statements[0], statements[1] + 1);
         ScanStatement scanner = new ScanStatement(info, statementsToWrap.get(0), statementsToWrap.get(statementsToWrap.size() - 1), cancel);
         Set<TypeMirror> exceptions = new HashSet<TypeMirror>();
         int index = 0;
@@ -512,7 +537,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         List<TreePath> pathsOfStatementsToWrap = new LinkedList<TreePath>();
 
-        for (StatementTree s : bt.getStatements()) {
+        for (StatementTree s : parentStatements) {
             TreePath path = new TreePath(block, s);
 
             if (index >= statements[0] && index <= statements[1]) {
@@ -1712,21 +1737,21 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 public void run(WorkingCopy copy) throws Exception {
                     copy.toPhase(Phase.RESOLVED);
 
-                    TreePath block = parentBlock.resolve(copy);
+                    TreePath firstStatement = parentBlock.resolve(copy);
                     TypeMirror returnType = IntroduceMethodFix.this.returnType.resolve(copy);
 
-                    if (block == null || returnType == null) {
+                    if (firstStatement == null || returnType == null) {
                         return ; //TODO...
                     }
 
-                    GeneratorUtilities.get(copy).importComments(block.getLeaf(), copy.getCompilationUnit());
+                    GeneratorUtilities.get(copy).importComments(firstStatement.getParentPath().getLeaf(), copy.getCompilationUnit());
                     
-                    Scope s = copy.getTrees().getScope(block);
+                    Scope s = copy.getTrees().getScope(firstStatement);
                     boolean isStatic = copy.getTreeUtilities().isStaticContext(s);
-                    BlockTree statements = (BlockTree) block.getLeaf();
+                    List<? extends StatementTree> statements = CopyFinder.getStatements(firstStatement);
                     List<StatementTree> nueStatements = new LinkedList<StatementTree>();
 
-                    nueStatements.addAll(statements.getStatements().subList(0, from));
+                    nueStatements.addAll(statements.subList(0, from));
 
                     final TreeMaker make = copy.getTreeMaker();
                     List<VariableElement> parameters = resolveVariables(copy, IntroduceMethodFix.this.parameters);
@@ -1750,7 +1775,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         methodStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), additionalName.next(), type, null));
                     }
 
-                    methodStatements.addAll(statements.getStatements().subList(from, to + 1));
+                    methodStatements.addAll(statements.subList(from, to + 1));
 
                     Tree returnTypeTree = make.Type(returnType);
                     ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
@@ -1841,15 +1866,15 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     if (invocation != null)
                         nueStatements.add(make.ExpressionStatement(invocation));
 
-                    nueStatements.addAll(statements.getStatements().subList(to + 1, statements.getStatements().size()));
+                    nueStatements.addAll(statements.subList(to + 1, statements.size()));
 
                     if (replaceOther) {
                         //handle duplicates
                         Document doc = copy.getDocument();
                         List<TreePath> statementsPaths = new LinkedList<TreePath>();
 
-                        for (StatementTree t : statements.getStatements().subList(from, to + 1)) {
-                            statementsPaths.add(new TreePath(block, t));
+                        for (StatementTree t : statements.subList(from, to + 1)) {
+                            statementsPaths.add(new TreePath(firstStatement.getParentPath(), t));
                         }
 
                         for (MethodDuplicateDescription mdd : CopyFinder.computeDuplicatesAndRemap(copy, statementsPaths, new TreePath(copy.getCompilationUnit()), parameters, new AtomicBoolean())) {
@@ -1909,25 +1934,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             newStatements.addAll(parentStatements.subList(mdd.dupeEnd + 1, parentStatements.size()));
 
-                            Tree toReplace = mdd.firstLeaf.getParentPath().getLeaf();
-                            Tree nueTree;
-
-                            switch (toReplace.getKind()) {
-                                case BLOCK:
-                                    nueTree = make.Block(newStatements, false);
-                                    break;
-                                case CASE:
-                                    nueTree = make.Case(((CaseTree) mdd.firstLeaf.getParentPath().getLeaf()).getExpression(), newStatements);
-                                    break;
-                                default:
-                                    assert parentStatements.size() == 1 : parentStatements.toString();
-                                    assert newStatements.size() == 1 : newStatements.toString();
-                                    toReplace = parentStatements.get(0);
-                                    nueTree = newStatements.get(0);
-                                    break;
-                            }
-
-                            copy.rewrite(toReplace, nueTree);
+                            doReplaceInBlockCatchSingleStatement(copy, mdd.firstLeaf, newStatements);
                         }
 
                         introduceBag(doc).clear();
@@ -1957,11 +1964,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     MethodTree method = make.Method(mods, name, returnTypeTree, Collections.<TypeParameterTree>emptyList(), formalArguments, thrown, make.Block(methodStatements, false), null);
 
-                    TreePath pathToClass = findClass(block);
+                    TreePath pathToClass = findClass(firstStatement);
 
                     assert pathToClass != null;
                     
-                    Tree parent = findMethod(block).getLeaf();
+                    Tree parent = findMethod(firstStatement).getLeaf();
                     ClassTree nueClass = null;
                     if (parent.getKind() == Kind.METHOD) {
                         nueClass = GeneratorUtils.insertMethodAfter(copy, pathToClass, method, (MethodTree) parent);
@@ -1970,13 +1977,36 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     }
 
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
-                    copy.rewrite(statements, make.Block(nueStatements, statements.isStatic()));
+                    doReplaceInBlockCatchSingleStatement(copy, firstStatement, nueStatements);
                 }
             }).commit();
 
             return null;
         }
 
+    }
+
+    private static void doReplaceInBlockCatchSingleStatement(WorkingCopy copy, TreePath firstLeaf, List<? extends StatementTree> newStatements) {
+        TreeMaker make = copy.getTreeMaker();
+        Tree toReplace = firstLeaf.getParentPath().getLeaf();
+        Tree nueTree;
+
+        switch (toReplace.getKind()) {
+            case BLOCK:
+                nueTree = make.Block(newStatements, ((BlockTree) toReplace).isStatic());
+                break;
+            case CASE:
+                nueTree = make.Case(((CaseTree) toReplace).getExpression(), newStatements);
+                break;
+            default:
+                assert CopyFinder.getStatements(firstLeaf).size() == 1 : CopyFinder.getStatements(firstLeaf).toString();
+                assert newStatements.size() == 1 : newStatements.toString();
+                toReplace = firstLeaf.getLeaf();
+                nueTree = newStatements.get(0);
+                break;
+        }
+
+        copy.rewrite(toReplace, nueTree);
     }
 
     private static final class IntroduceExpressionBasedMethodFix implements Fix {

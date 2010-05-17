@@ -44,6 +44,7 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
@@ -236,10 +237,23 @@ public class Tiny {
         @TriggerPattern("new $coll<$param, $to>($params$)")
     })
     public static ErrorDescription enumMap(HintContext ctx) {
-        return enumHint(ctx, "java.util.Map", "java.util.EnumMap", "ERR_Tiny_enumMap");
+        Fix[] fixes;
+        Collection<? extends TreePath> mvars = ctx.getMultiVariables().get("$params$");
+
+        if (mvars != null && mvars.isEmpty()) {
+            String displayName = NbBundle.getMessage(Tiny.class, "FIX_Tiny_enumMap");
+
+            fixes = new Fix[] {
+                JavaFix.rewriteFix(ctx, displayName, ctx.getPath(), "new $coll<$param, $to>($param.class)")
+            };
+        } else {
+            fixes = new Fix[0];
+        }
+
+        return enumHint(ctx, "java.util.Map", "java.util.EnumMap", "ERR_Tiny_enumMap", fixes);
     }
 
-    private static ErrorDescription enumHint(HintContext ctx, String baseName, String targetTypeName, String key) {
+    private static ErrorDescription enumHint(HintContext ctx, String baseName, String targetTypeName, String key, Fix... fixes) {
         Element type = ctx.getInfo().getTrees().getElement(ctx.getVariables().get("$param"));
 
         if (type == null || type.getKind() != ElementKind.ENUM) {
@@ -278,7 +292,6 @@ public class Tiny {
 
         String displayName = NbBundle.getMessage(Tiny.class, key);
 
-        //TODO: fix(es) possible?
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fixes);
     }
 }

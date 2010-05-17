@@ -2673,6 +2673,7 @@ public class CasualDiff {
         Comment newC = safeNext(newIter);
         
         while (oldC != null && newC != null) {
+            if (!commentsMatch(oldC, newC)) return false;
             oldC = safeNext(oldIter);
             newC = safeNext(newIter);
         }
@@ -2696,14 +2697,19 @@ public class CasualDiff {
                 copyTo(localPointer, cStart);
             }
             first = false;
-            localPointer = Math.max(localPointer, oldC.endPos());
+            int nextTarget = Math.max(localPointer, oldC.endPos());
             if (commentsMatch(oldC, newC)) {
+                if (nextTarget > localPointer) {
+                    copyTo(localPointer, nextTarget);
+                }
                 oldC = safeNext(oldIter);
                 newC = safeNext(newIter);
             }
             else if (!listContains(newList, oldC)) {
                 if  (!listContains(oldList, newC)) {
 //                    append(Diff.modify(oldT, newT, oldC, newC));
+                    copyTo(localPointer, localPointer = oldC.pos());
+                    printer.printComment(newC, !trailing, false, true);
                     oldC = safeNext(oldIter);
                     newC = safeNext(newIter);
                 } else {
@@ -2715,6 +2721,7 @@ public class CasualDiff {
                 printer.print(newC.getText());
                 newC = safeNext(newIter);
             }
+            localPointer = nextTarget;
         }
         while (oldC != null) {
 //            append(Diff.delete(oldT, newT, oldC));

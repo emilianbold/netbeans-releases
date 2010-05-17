@@ -921,20 +921,22 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
         List<TrailingCommentsDataHolder> comments = new LinkedList<TrailingCommentsDataHolder>();
         int maxLines = 0;
         int newlines = 0;
+        int lastIndex = -1;
         while (seq.moveNext()) {
             if (seq.index() <= tokenIndexAlreadyAdded) continue;
+            if (lastIndex == (-1)) lastIndex = seq.index();
             Token<JavaTokenId> t = seq.token();
             if (t.id() == JavaTokenId.WHITESPACE) {
                 newlines += numberOfNL(t);
             } else if (isComment(t.id())) {
-                comments.add(new TrailingCommentsDataHolder(newlines, t, seq.index()));
+                comments.add(new TrailingCommentsDataHolder(newlines, t, lastIndex));
                 maxLines = Math.max(maxLines, newlines);
                 if (t.id() == JavaTokenId.LINE_COMMENT) {
                     newlines = 1;
                 } else {
                     newlines = 0;
                 }
-
+                lastIndex = -1;
             } else {
                 if (t.id() == JavaTokenId.RBRACE) maxLines = Integer.MAX_VALUE;
                 break;
@@ -950,7 +952,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
             if (h.newlines < maxLines) {
                 attachComments(Collections.singleton(h.comment), tree, commentService, CommentSet.RelativePosition.TRAILING);
             } else {
-                index = h.index;
+                index = h.index - 1;
                 break;
             }
         }
@@ -1044,7 +1046,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
                     return seq.offset() + seq.token().length();
             }
         }
-        return seq.offset(); 
+        return seq.offset() + (tokenIndexAlreadyAdded >= seq.index() ? seq.token().length() : 0);
     }
 
     private void consumeWS(TokenSequence<JavaTokenId> seq, boolean forward) {
