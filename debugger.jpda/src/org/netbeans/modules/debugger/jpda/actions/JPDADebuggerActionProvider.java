@@ -57,11 +57,13 @@ import java.util.Set;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 //import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
+import org.openide.util.Exceptions;
 
 import org.openide.util.WeakSet;
 
@@ -122,8 +124,10 @@ implements PropertyChangeListener {
             while (it.hasNext ()) {
                 StepRequest stepRequest = it.next ();
                 if (StepRequestWrapper.thread(stepRequest).equals (tr)) {
-                    //S ystem.out.println("  remove request " + stepRequest);
-                    EventRequestManagerWrapper.deleteEventRequest (erm, stepRequest);
+                    try {
+                        //S ystem.out.println("  remove request " + stepRequest);
+                        EventRequestManagerWrapper.deleteEventRequest(erm, stepRequest);
+                    } catch (InvalidRequestStateExceptionWrapper ex) {}
                     //SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
                     debugger.getOperator().unregister(stepRequest);
                     break;

@@ -434,9 +434,11 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                             ((JPDAStepImpl) boundaryStepPtr[0]).cancel();
                         }
                         try {
-                            EventRequestManagerWrapper.deleteEventRequest(
-                                    VirtualMachineWrapper.eventRequestManager(vm),
-                                    brReq);
+                            try {
+                                EventRequestManagerWrapper.deleteEventRequest(
+                                        VirtualMachineWrapper.eventRequestManager(vm),
+                                        brReq);
+                            } catch (InvalidRequestStateExceptionWrapper ex) {}
                             debugger.getOperator().unregister(brReq);
                         } catch (InternalExceptionWrapper e) {
                         } catch (VMDisconnectedExceptionWrapper e) {
@@ -495,6 +497,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                                 request);
                     } catch (InternalExceptionWrapper ex) {
                     } catch (VMDisconnectedExceptionWrapper ex) {
+                    } catch (InvalidRequestStateExceptionWrapper irex) {
                     }
                 }
             }

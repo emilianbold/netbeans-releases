@@ -194,6 +194,12 @@ public class Generate {
                 new Class [] { com.sun.jdi.ObjectCollectedException.class,
                                com.sun.jdi.request.InvalidRequestStateException.class })));
         EXCEPTIONS_BY_METHODS.put(com.sun.jdi.request.EventRequest.class.getName(), EventRequestExceptions);
+        Map<String, Set<Class>> EventRequestManagerExceptions = new LinkedHashMap<String, Set<Class>>();
+        EventRequestManagerExceptions.put("deleteEventRequest", Collections.singleton((Class)
+                com.sun.jdi.request.InvalidRequestStateException.class));
+        EventRequestManagerExceptions.put("deleteEventRequests", Collections.singleton((Class)
+                com.sun.jdi.request.InvalidRequestStateException.class));
+        EXCEPTIONS_BY_METHODS.put(com.sun.jdi.request.EventRequestManager.class.getName(), EventRequestManagerExceptions);
 
         Map<String, Set<Class>> EventSetExceptions = new LinkedHashMap<String, Set<Class>>();
         // IllegalThreadStateException is thrown through JDWPException when INVALID_THREAD is received from JDWP.

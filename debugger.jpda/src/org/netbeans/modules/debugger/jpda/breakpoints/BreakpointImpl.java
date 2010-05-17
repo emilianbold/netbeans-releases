@@ -296,9 +296,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             for (i = 0; i < k; i++) { 
                 EventRequest r = requests.get (i);
                 logger.fine("BreakpointImpl removeEventRequest: " + r);
-                EventRequestManagerWrapper.deleteEventRequest(
-                        VirtualMachineWrapper.eventRequestManager(vm),
-                        r);
+                try {
+                    EventRequestManagerWrapper.deleteEventRequest(
+                            VirtualMachineWrapper.eventRequestManager(vm),
+                            r);
+                } catch (InvalidRequestStateExceptionWrapper irex) {}
                 getDebugger ().getOperator ().unregister (r);
             }
             
@@ -313,9 +315,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         if (vm == null) return; 
         try {
             logger.fine("BreakpointImpl removeEventRequest: " + r);
-            EventRequestManagerWrapper.deleteEventRequest(
-                    VirtualMachineWrapper.eventRequestManager(vm),
-                    r);
+            try {
+                EventRequestManagerWrapper.deleteEventRequest(
+                        VirtualMachineWrapper.eventRequestManager(vm),
+                        r);
+            } catch (InvalidRequestStateExceptionWrapper irex) {}
             getDebugger ().getOperator ().unregister (r);
         } catch (VMDisconnectedExceptionWrapper e) {
         } catch (InternalExceptionWrapper e) {
@@ -487,9 +491,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                         stepThreadStatus = ThreadReference.THREAD_STATUS_ZOMBIE;
                     }
                     if (stepThreadStatus == ThreadReference.THREAD_STATUS_ZOMBIE) {
-                        EventRequestManagerWrapper.deleteEventRequest(
-                                VirtualMachineWrapper.eventRequestManager(MirrorWrapper.virtualMachine(thread)),
-                                step);
+                        try {
+                            EventRequestManagerWrapper.deleteEventRequest(
+                                    VirtualMachineWrapper.eventRequestManager(MirrorWrapper.virtualMachine(thread)),
+                                    step);
+                        } catch (InvalidRequestStateExceptionWrapper irex) {}
                         debugger.getOperator().unregister(step);
                         activeStepRequests.remove(i);
                         continue;

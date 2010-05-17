@@ -1632,10 +1632,12 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
 
             public boolean exec(Event event) {
                 try {
-                    //MonitorContendedEnteredEvent monitorEnteredEvent = (MonitorContendedEnteredEvent) event;
-                    EventRequestManagerWrapper.deleteEventRequest(
-                            VirtualMachineWrapper.eventRequestManager(vm),
-                            EventWrapper.request(event));
+                    try {
+                        //MonitorContendedEnteredEvent monitorEnteredEvent = (MonitorContendedEnteredEvent) event;
+                        EventRequestManagerWrapper.deleteEventRequest(
+                                VirtualMachineWrapper.eventRequestManager(vm),
+                                EventWrapper.request(event));
+                    } catch (InvalidRequestStateExceptionWrapper ex) {}
                     debugger.getOperator().unregister(EventWrapper.request(event));
                 } catch (InternalExceptionWrapper ex) {
                     return true;
