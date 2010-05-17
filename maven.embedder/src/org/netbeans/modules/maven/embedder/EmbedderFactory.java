@@ -83,6 +83,7 @@ import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
 import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
+import java.util.Enumeration;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.maven.embedder.exec.MyLifecycleExecutor;
 import org.netbeans.modules.maven.embedder.exec.NBBuildPlanner;
@@ -139,6 +140,16 @@ public final class EmbedderFactory {
         }
     }
 
+    private static Properties copySystemProperties() {
+        Properties props = new Properties();
+        Enumeration <Object> keys = System.getProperties().keys();
+        while(keys.hasMoreElements()) {
+            Object o = keys.nextElement();
+            props.put(o, System.getProperties().get(o));
+        }
+        return props;
+    }
+
     public static MavenEmbedder createProjectLikeEmbedder() {
         Configuration req = new DefaultConfiguration();
         req.setClassLoader(EmbedderFactory.class.getClassLoader());
@@ -146,8 +157,7 @@ public final class EmbedderFactory {
 
         //TODO remove explicit activation
         req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
-        Properties props = new Properties();
-        props.putAll(System.getProperties());
+        Properties props = copySystemProperties();
         req.setSystemProperties(fillEnvVars(props));
         File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE;
         File globalSettingsPath = InstalledFileLocator.getDefault().locate("maven2/settings.xml", null, false); //NOI18N
@@ -273,8 +283,7 @@ public final class EmbedderFactory {
         }
         req.setGlobalSettingsFile(globalSettingsPath);
         
-        Properties props = new Properties();
-        props.putAll(System.getProperties());
+        Properties props = copySystemProperties();
         req.setSystemProperties(fillEnvVars(props));
         
         req.setConfigurationCustomizer(new ContainerCustomizer() {

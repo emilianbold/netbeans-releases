@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="${pojoendpointname}" targetNamespace="${portTypeNamespace}"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="${portTypeNamespace}" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+    <types/>
+    <message name="${pojoendpointname}OperationRequest">
+        <part name="part1" type="xsd:anyType"/>
+    </message>
+    <message name="${pojoOutputResponse}">
+        <part name="part1" type="xsd:anyType"/>
+    </message>
+    <portType name="${pojoporttype}">
+        <operation name="${pojoendpointname}Operation">
+            <input name="input1" message="tns:${pojoendpointname}OperationRequest"/>
+            ${pojowdloutinput}
+        </operation>
+    </portType>
+</definitions>

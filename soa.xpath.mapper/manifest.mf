@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Specification-Version: 6.5.1
+OpenIDE-Module: org.netbeans.modules.soa.xpath.mapper
+OpenIDE-Module-Layer: org/netbeans/modules/soa/xpath/mapper/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/soa/xpath/mapper/Bundle.properties
+

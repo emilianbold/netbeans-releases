@@ -1,0 +1,4 @@
+org.netbeans.modules.wsdlextensions.scheduler.model.impl.SchedulerElementFactoryProvider$ActivePeriodFactory
+org.netbeans.modules.wsdlextensions.scheduler.model.impl.SchedulerElementFactoryProvider$BindingFactory
+org.netbeans.modules.wsdlextensions.scheduler.model.impl.SchedulerElementFactoryProvider$OperationFactory
+org.netbeans.modules.wsdlextensions.scheduler.model.impl.SchedulerElementFactoryProvider$TriggerFactory

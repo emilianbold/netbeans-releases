@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html>
+
+
+
+<head>
+
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Replay Stream Operator</title>
+
+</head>
+
+
+
+<body>
+
+<h2>Using the Replay Stream Operator</h2>
+
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Save Stream and Replay Stream operators are intended to help you perform diagnostics. 
+For example, you can use these operators when the output from an IEP Module project is not the expected output.</p>
+
+<p>You first enable the Save Stream operator to begin saving an input stream to a database table. 
+You then use the Replay Stream operator to replay the events that the Save Stream operator saved to the database table.</p>
+
+
+
+<p><strong>To use the Replay Stream operator:</strong></p>
+
+<ol>
+
+  <li>Drag a Replay Stream operator from the Palette to the Design view.</li>
+  <li>Connect the output of the Replay Stream operator to any operator that accepts stream input (for example, the Stream Output operator).</li>
+  <li>Double-click the Replay Stream operator. The property editor opens.</li>
+
+  <li>Click Select Table. The Select Table which has Stream Events wizard appears.</li>
+
+  <li>In step 1 of the wizard, do the following:</li>
+
+  <ol type="a">
+    <li>Select the data source.<br>
+        <b>Note:</b> Data sources are configured in the Databases node of the Services window.</li>
+    <li>Select the table where the events are being saved.</li>
+    <li>Click Next.</li>
+  </ol>
+
+  <li>In step 2 of the wizard, do the following:</li>
+
+  <ol type="a">
+    <li>Select the column or columns that you want to replay.</li>
+    <li>(Optional) Add a condition to the Where Clause area (for example, <tt>amount > 100</tt>).</li>
+    <li>Click Next.</li>
+  </ol>
+
+  <li>In step 3 of the wizard, do the following:</li>
+
+  <ol type="a">
+    <li>Select the <tt>EMS_TIMESTAMP</tt> column.</li>
+    <li>In the JNDI Name field, type the JNDI name of the database resource (for example, <tt>jdbc/iepseDerbyNonXA</tt>).</li>
+    <li>Click Finish. The property editor displays the values that you specified.</li>
+  </ol>
+
+  <li>By default, the Preserve Last Fetched Record check box is selected. 
+      This setting indicates that if the event process is redeployed, then the operator starts retrieving records where it left off.<br>
+      If you leave the Preserve Last Fetched Record check box selected, then you must specify a table name in the Last Fetched Record Table field. 
+      This table will be created in the IEP database, not in the external database table.<br>
+      If you want the operator to go back to the beginning of the table instead, then clear the Preserve Last Fetched Record check box.</li>
+
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK. The Replay Stream operator reads events from the database table and sends the events to the next operator.</li>
+
+</ol>
+
+
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="savestr_propedit.html">Using the Save Stream Operator</a></dd>
+<dd>&nbsp;</dd>
+</dl>
+
+<hr>
+
+<small><a href="credits.html">Legal Notices</a></small>
+
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</body>
+
+</html>

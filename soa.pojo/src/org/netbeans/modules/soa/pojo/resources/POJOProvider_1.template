@@ -1,0 +1,40 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+
+import javax.jbi.servicedesc.ServiceEndpoint;
+import org.open.esb.pojose.api.annotations.Endpoint;
+import org.open.esb.pojose.api.annotations.POJO;
+import org.open.esb.pojose.api.annotations.POJOCtx;
+
+import org.open.esb.pojose.api.annotations.Operation;
+import org.open.esb.pojose.api.res.POJOContext;
+
+/**
+ *
+ * @author ${user}
+ */
+
+@POJO
+public class ${name} {
+    
+    private static final Logger logger = Logger.getLogger(${name}.class.getName());
+
+    public ${name}() {
+    }
+    
+    /**
+     * POJO Operation
+     *
+     * @param message the message passed to the listener
+     */
+    public String pojoexecute(String input) {
+	return null;        
+    }
+}

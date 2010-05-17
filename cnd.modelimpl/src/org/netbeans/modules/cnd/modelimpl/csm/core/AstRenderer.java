@@ -171,6 +171,13 @@ public class AstRenderer {
                         DiagnosticExceptoins.register(e);
                     }
                     break;
+                case CPPTokenTypes.CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION:
+                    if (renderForwardClassDeclaration(token, currentNamespace, container, file, isRenderingLocalContext())) {
+                        break;
+                    } else {
+                        renderForwardMemberDeclaration(token, currentNamespace, container, file);
+                    }
+                    break;
                 case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
                     if (isClassSpecialization(token)) {
                         ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
@@ -856,8 +863,19 @@ public class AstRenderer {
 
                     CsmClassForwardDeclaration cfdi = null;
 
+                    boolean typeof = false;
                     for (AST curr = firstChild; curr != null; curr = curr.getNextSibling()) {
                         switch (curr.getType()) {
+                            case CPPTokenTypes.LITERAL_typeof:
+                            case CPPTokenTypes.LITERAL___typeof:
+                            case CPPTokenTypes.LITERAL___typeof__:
+                                typeof = true;
+                                break;
+                            case CPPTokenTypes.CSM_EXPRESSION:
+                                if (typeof) {
+                                    classifier = curr.getFirstChild();
+                                }
+                                break;
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
                                 classifier = curr;
@@ -955,7 +973,7 @@ public class AstRenderer {
             return false;
         }
         if (child.getType() == CPPTokenTypes.LITERAL_template) {
-            child = child.getNextSibling();
+            child = skipTemplateSibling(child);
             if (child == null) {
                 return false;
             }
@@ -1275,7 +1293,23 @@ public class AstRenderer {
             tokType = tokType.getNextSibling();
         }
 
-        if (tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
+        boolean typeof = false;
+        if (tokType.getType() == CPPTokenTypes.LITERAL_typeof ||
+                tokType.getType() == CPPTokenTypes.LITERAL___typeof ||
+                tokType.getType() == CPPTokenTypes.LITERAL___typeof__
+                ) {
+            typeof = true;
+            AST next = tokType.getNextSibling();
+            if (next != null && next.getType() == CPPTokenTypes.LPAREN) {
+                next = next.getNextSibling();
+                typeAST = next;
+            }
+            if (typeAST != null && typeAST.getType() == CPPTokenTypes.CSM_EXPRESSION) {
+                typeAST = typeAST.getFirstChild();
+            }
+            tokType = next.getNextSibling();
+        }
+        if (typeof || tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
                 tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
                 tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && isThisReference) {
 

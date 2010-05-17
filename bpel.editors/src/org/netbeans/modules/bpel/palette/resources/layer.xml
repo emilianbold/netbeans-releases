@@ -1,0 +1,199 @@
+<?xml version="1.0"?>
+<!--
+  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+  Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+  The contents of this file are subject to the terms of either the GNU
+  General Public License Version 2 only ("GPL") or the Common
+  Development and Distribution License("CDDL") (collectively, the
+  "License"). You may not use this file except in compliance with the
+  License. You can obtain a copy of the License at
+  http://www.netbeans.org/cddl-gplv2.html
+  or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+  specific language governing permissions and limitations under the
+  License.  When distributing the software, include this License Header
+  Notice in each file and include the License file at
+  nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+  particular file as subject to the "Classpath" exception as provided
+  by Sun in the GPL Version 2 section of the License file that
+  accompanied this code. If applicable, add the following below the
+  License Header, with the fields enclosed by brackets [] replaced by
+  your own identifying information:
+  "Portions Copyrighted [year] [name of copyright owner]"
+
+  Contributor(s):
+
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+  Microsystems, Inc. All Rights Reserved.
+
+  If you wish your version of this file to be governed by only the CDDL
+  or only the GPL Version 2, indicate your decision by adding
+  "[Contributor] elects to include this software in this distribution
+  under the [CDDL or GPL Version 2] license." If you do not indicate a
+  single choice of license, a recipient has the option to distribute
+  your version of this file under either the CDDL, the GPL Version 2 or
+  to extend the choice of license to its licensees as provided above.
+  However, if you add GPL Version 2 code and therefore, elected the GPL
+  Version 2 license, then the option applies only if the new code is
+  made subject to such option by the copyright holder.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+    <folder name="Menu">
+        <folder name="Tools">
+            <folder name="PaletteManager">
+                <file name="org-netbeans-modules-bpel-palette-SoaPaletteMenu.instance">
+                    <attr name="position" intvalue="1400"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Actions">
+        <folder name="BpelNodes">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.palette.resources.Bundle"/>
+
+            <file name="org-netbeans-modules-bpel-nodes-actions-FindUsagesAction.instance"/>
+            <file name="org-netbeans-modules-bpel-nodes-actions-GoToDiagrammAction.instance"/>
+            <file name="org-netbeans-modules-bpel-nodes-actions-ShowBpelMapperAction.instance"/>
+            <file name="org-netbeans-modules-bpel-nodes-actions-GoToLoggingAction.instance"/>
+            <file name="org-netbeans-modules-bpel-nodes-actions-GoToSourceAction.instance"/>
+        </folder>
+    </folder>
+
+    <folder name="Shortcuts">
+        <file name="DS-F9.shadow">
+            <attr name="originalFile" stringvalue="Actions/BpelNodes/org-netbeans-modules-bpel-nodes-actions-ShowBpelMapperAction.instance"/>
+        </file>
+    </folder>
+
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="xml">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-xml-xam-ui-actions-GoToAction.instance_hidden"/>
+                </folder>
+            </folder>
+            <folder name="x-bpel+xml">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-bpel-nodes-actions-GoToDiagrammAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/BpelNodes/org-netbeans-modules-bpel-nodes-actions-GoToDiagrammAction.instance"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-netbeans-modules-bpel-nodes-actions-separatorAfter.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="SoaPalette">
+        <folder name="WebService">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.palette.resources.webservice.Bundle"/>
+
+            <attr name="position" intvalue="100"/>
+            <file name="invoke.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/webservice/invoke.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="receive.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/webservice/receive.xml">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="reply.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/webservice/reply.xml">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="partner.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/webservice/partner.xml">
+                <attr name="position" intvalue="400"/>
+            </file>
+        </folder>
+
+        <folder name="BasicActivities">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.palette.resources.basic.Bundle"/>
+            <attr name="position" intvalue="200"/>
+
+            <file name="assign.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/basic/assign.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="javascript.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/basic/javascript.xml">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="validate.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/basic/validate.xml">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="empty.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/basic/empty.xml">
+                <attr name="position" intvalue="400"/>
+            </file>
+            <file name="wait.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/basic/wait.xml">
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="throw.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/basic/throw.xml">
+                <attr name="position" intvalue="600"/>
+            </file>
+            <file name="rethrow.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/basic/rethrow.xml">
+                <attr name="position" intvalue="700"/>
+            </file>
+            <file name="exit.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/basic/exit.xml">
+                <attr name="position" intvalue="800"/>
+            </file>
+            <file name="compensate.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/basic/compensate.xml">
+                <attr name="position" intvalue="900"/>
+            </file>
+            <file name="compensatescope.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/basic/compensatescope.xml">
+                <attr name="position" intvalue="1000"/>
+            </file>
+        </folder>
+
+        <folder name="StructuredActivities">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.palette.resources.structured.Bundle"/>
+            <attr name="position" intvalue="300"/>
+
+            <file name="if.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/structured/if.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="while.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/structured/while.xml">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="repeatuntil.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/structured/repeatuntil.xml">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="foreach.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/structured/foreach.xml">
+                <attr name="position" intvalue="400"/>
+            </file>
+            <file name="pick.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/structured/pick.xml">
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="flow.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/structured/flow.xml">
+                <attr name="position" intvalue="600"/>
+            </file>
+            <file name="sequence.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/structured/sequence.xml">
+                <attr name="position" intvalue="700"/>
+            </file>
+            <file name="scope.xml" url="nbresloc:/org/netbeans/modules/bpel/palette/resources/structured/scope.xml">
+                <attr name="position" intvalue="800"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Windows2">
+        <folder name="Groups">
+            <file name="bpel_designer.wsgrp" url="windowmanager/bpel_designer.wsgrp"/>
+            <folder name="bpel_designer">
+                <file name="properties.wstcgrp" url="windowmanager/properties.wstcgrp"/>
+                <file name="navigatorTC.wstcgrp" url="windowmanager/navigatorTC.wstcgrp"/>
+            </folder>
+            <file name="bpel_source.wsgrp" url="windowmanager/bpel_source.wsgrp"/>
+            <folder name="bpel_source">
+                <file name="properties.wstcgrp" url="windowmanager/properties.wstcgrp"/>
+                <file name="navigatorTC.wstcgrp" url="windowmanager/navigatorTC.wstcgrp"/>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="wsdl">
+        <file name="wsdl.wsdl" url="../../properties/editors/resources/wsdl.wsdl"/>
+    </folder>
+    
+</filesystem>

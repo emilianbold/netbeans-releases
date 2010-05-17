@@ -114,7 +114,12 @@ public enum MakefileTokenId implements TokenId {
     SEMICOLON("separator"), // NOI18N
 
     /**
-     * Keyword: <code>include</code>, <code>ifdef</code>, <code>endif</code>
+     * <code>include</code> keyword
+     */
+    INCLUDE("keyword"), // NOI18N
+
+    /**
+     * Other keyword: <code>ifdef</code>, <code>endif</code>, etc
      */
     KEYWORD("keyword"), // NOI18N
 

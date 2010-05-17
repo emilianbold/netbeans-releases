@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Web Service Orchestration Basics</title>
+</head>
+<body>
+<h2>Web Service Orchestration  Basics </h2>
+<!---- This topic, when finished, will give a very, very brief overview of BPMN/BPEL and the IDE's WSOrch features, and then of the steps involved in using the IDE 
+to orchestrate web services.  It recapitulates the "creating" part of the GSG or a
+quick-start guide, listing the major steps and explaining a little, generically, about each 
+step. It then refers the user to the GSG and the Quick Starts. --->
+<p> The IDE's BPEL Designer provides a highly graphical environment for  authoring, deploying and testing web-service centric business  processes.    This is often called web service orchestration and is one of  the keystones of service-oriented architecture (SOA). A BPEL process can be thought of as a logical aggregator and  coordinator of web services. In such a process, a collection of partner  web-service components can collaborate synchronously or asynchronously,  participate in long-lived conversations, and support fault handling. Thus, the IDE's BPEL Designer feature extends  the power of service-oriented architecture. </p>
+<p>The BPEL modeling environment includes deployment runtime,  and the ability to author, edit, test-run, and debug BPEL processes. The  BPEL Designer feature lets you use drag-and-drop 
+functionality to create visual diagrams of  business 
+processes to orchestrate web services. The BPEL Designer  feature supports two-way round-trip engineering of processes that are expressed in the Web Services Business Process Execution  Language Version 2.0 (WS-BPEL 2.0, or generically, BPEL). </p>
+<p>In the BPEL Designer, you can create a business diagram in the visual Design view or manipulate source code in the Source view. The BPEL source code and its visual diagram are always kept in sync. </p>
+<h3>Typical Tasks in Business Process Development </h3>
+<p>In the BPEL Designer, you can perform the following tasks 
+  to develop a business process. These tasks might iterate, and sometimes the order of tasks changes.</p>
+<ol>
+  <li> Use the New Project wizard to create a new <a href="create_project.html" title="Creating BPEL Module Projects">BPEL Module project</a> and a <a href="nbdocs://org.netbeans.modules.compapp.capshelp/org/netbeans/modules/compapp/capshelp/basics/about.html" title="About Composite Applications">Composite Application project</a>. </li>
+  <li>Create or import <a href="../windows_editors/add_files.html" title="Adding BPEL Files to BPEL Module Projects">BPEL process files</a> into the BPEL Module project. </li>
+  <li>Create or import <a href="../design/import_wsdl_resources.html" title="Adding WSDL and XML Schema Imports">WSDL resources</a> to act as partner services in your business 
+    process.</li>
+  <li>Import <a href="../design/import_wsdl_resources.html" title="Adding WSDL and XML Schema Imports">XML schema resources</a>. </li>
+  <li>Add <a href="../elements/about.html" title="About BPEL Elements">elements</a> to the business process diagram and further define them  by 
+    using property editors, custom editors, and pop-up menu options. </li>
+  <li>Add to the <a href="../windows_editors/source_ed.html" title="About the BPEL Designer Source View">source code</a> of the BPEL, WSDL, and XSD files. </li>
+  <li><a href="../test_run/build_project.html" title="Building BPEL Module Projects">Build</a> a BPEL Module project. </li>
+  <li><a href="../test_run/add_bpel_project.html" title="Adding BPEL Module to Composite Application Projects">Add</a> a BPEL project as a JBI Module to the Composite Application project.</li>
+  <li><a href="nbdocs://org.netbeans.modules.compapp.capshelp/org/netbeans/modules/compapp/capshelp/basics/deploy_project.html" title="Deploying Composite Application Projects">Deploy</a> the 
+    Composite Application project to the BPEL Service Engine runtime. </li>
+  <li><a href="../test_run/test_run.html" title="Performing Test Runs of BPEL Processes">Test-run</a> BPEL processes by sending sample messages to the deployed process.</li>
+  <li><a href="../debug/about.html">Debug</a> deployed business processes. </li>
+</ol>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+</body>
+</html>

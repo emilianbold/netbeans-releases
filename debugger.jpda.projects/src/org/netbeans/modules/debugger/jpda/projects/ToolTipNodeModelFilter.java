@@ -39,16 +39,21 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  *
  * @author martin
  */
-public class ToolTipNodeModelFilter implements NodeModelFilter {
+public class ToolTipNodeModelFilter implements ExtendedNodeModelFilter {
 
     @Override
     public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
@@ -81,6 +86,46 @@ public class ToolTipNodeModelFilter implements NodeModelFilter {
 
     @Override
     public void removeModelListener(ModelListener l) {
+    }
+
+    @Override
+    public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        return original.canRename(node);
+    }
+
+    @Override
+    public boolean canCopy(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        return original.canCopy(node);
+    }
+
+    @Override
+    public boolean canCut(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        return original.canCut(node);
+    }
+
+    @Override
+    public Transferable clipboardCopy(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
+        return original.clipboardCopy(node);
+    }
+
+    @Override
+    public Transferable clipboardCut(ExtendedNodeModel original, Object node) throws IOException, UnknownTypeException {
+        return original.clipboardCut(node);
+    }
+
+    @Override
+    public PasteType[] getPasteTypes(ExtendedNodeModel original, Object node, Transferable t) throws UnknownTypeException {
+        return original.getPasteTypes(node, t);
+    }
+
+    @Override
+    public void setName(ExtendedNodeModel original, Object node, String name) throws UnknownTypeException {
+        original.setName(node, name);
+    }
+
+    @Override
+    public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
+        return original.getIconBaseWithExtension(node);
     }
 
 }
