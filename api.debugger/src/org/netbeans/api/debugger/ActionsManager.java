@@ -415,8 +415,8 @@ public final class ActionsManager {
             }
             l.add (p);
         }
-        fireActionStateChanged (action);
         p.addActionsProviderListener (actionListener);
+        fireActionStateChanged (action);
     }
     
     private void registerActionsProviders(List<? extends ActionsProvider> aps) {
