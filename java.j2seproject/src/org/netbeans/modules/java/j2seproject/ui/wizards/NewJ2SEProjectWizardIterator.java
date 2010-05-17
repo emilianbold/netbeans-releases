@@ -138,9 +138,10 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         //handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_ReadingProperties"));
         Set<FileObject> resultSet = new HashSet<FileObject>();
         File dirF = (File)wiz.getProperty("projdir");        //NOI18N
-        if (dirF != null) {
-            dirF = FileUtil.normalizeFile(dirF);
+        if (dirF == null) {
+            throw new NullPointerException ("projdir == null, props:" + wiz.getProperties());
         }
+        dirF = FileUtil.normalizeFile(dirF);
         String name = (String)wiz.getProperty("name");        //NOI18N
         String mainClass = (String)wiz.getProperty("mainClass");        //NOI18N
         String librariesDefinition = (String)wiz.getProperty(PanelOptionsVisual.SHARED_LIBRARIES);

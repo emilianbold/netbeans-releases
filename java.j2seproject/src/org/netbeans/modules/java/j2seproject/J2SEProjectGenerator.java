@@ -73,6 +73,7 @@ import org.openide.util.MutexException;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -94,6 +95,8 @@ public class J2SEProjectGenerator {
      */
     public static AntProjectHelper createProject(final File dir, final String name, final String mainClass, 
             final String manifestFile, final String librariesDefinition) throws IOException {
+        Parameters.notNull("dir", dir); //NOI18N
+        Parameters.notNull("name", name);   //NOI18N
         final FileObject dirFO = FileUtil.createFolder(dir);
         // if manifestFile is null => it's TYPE_LIB
         final AntProjectHelper[] h = new AntProjectHelper[1];
@@ -128,7 +131,10 @@ public class J2SEProjectGenerator {
                                                   final File[] sourceFolders, final File[] testFolders, 
                                                   final String manifestFile, final String librariesDefinition,
                                                   final String buildXmlName) throws IOException {
-        assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
+        Parameters.notNull("dir", dir); //NOI18N
+        Parameters.notNull("name", name);   //NOI8N
+        Parameters.notNull("sourceFolders", sourceFolders); //NOI18N
+        Parameters.notNull("testFolders", testFolders); //NOI18N
         final FileObject dirFO = FileUtil.createFolder(dir);
         final AntProjectHelper[] h = new AntProjectHelper[1];
         // this constructor creates only java application type
