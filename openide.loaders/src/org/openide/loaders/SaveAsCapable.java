@@ -52,7 +52,7 @@ import org.openide.filesystems.FileObject;
  * for your documents by adding the following lines into your {@link DataObject}'s constructor:
  * 
  <code><pre>
-        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+        getCookieSet().assign(SaveAsCapable.class, new SaveAsCapable() {
             public void saveAs(FileObject folder, String fileName) throws IOException {
                 getDataEditorSupport().saveAs( folder, fileName );
             }
@@ -64,18 +64,12 @@ import org.openide.filesystems.FileObject;
  <code><pre>
     public class MyNode extends AbstractNode implements Node.Cookie {
         
-        public Node.Cookie getCookie(Class clazz) {
+        public MyNode() {
+            getCookieSet().assign(SaveAsCapable.class, new MySaveAsCapable());
             ...
-
-            if (SaveAsCapable.class.equals(clazz)) {
-                return new MySaveAsCookie();
-            }
-            ....
-
-            return super.getCookie(clazz);
         }
 
-        private class MySaveAsCookie implements Node.Cookie, SaveAsCapable {
+        private class MySaveAsCapable implements SaveAsCapable {
             public void saveAs(FileObject folder, String fileName) throws IOException {
                 FileObject newFile = folder.getFileObject(fileName);
 
