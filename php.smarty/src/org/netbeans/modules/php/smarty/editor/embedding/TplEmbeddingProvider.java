@@ -66,6 +66,7 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
 
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), TplTopTokenId.language());
         TokenSequence<TplTopTokenId> sequence = th.tokenSequence(TplTopTokenId.language());
+//        boolean isPhpEnabled = false;
 
         if (sequence == null) {
             Logger.getLogger("TplEmbeddingProvider").warning(
