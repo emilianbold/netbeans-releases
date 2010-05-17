@@ -280,7 +280,9 @@ public class WatchesNodeModel implements ExtendedNodeModel, DnDNodeModel {
                         if (index < 0) {
                             DebuggerManager.getDebuggerManager().createWatch(watchExpression);
                         } else {
-                            DebuggerManager.getDebuggerManager().createWatch(index, watchExpression);
+                            DebuggerManager.getDebuggerManager().createWatch(
+                                    Math.min(index, DebuggerManager.getDebuggerManager().getWatches().length),
+                                    watchExpression);
                         }
                     }
                     return t;
