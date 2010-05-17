@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.refactoring;
+package org.netbeans.modules.web.common.refactoring;
 
 import java.io.IOException;
 import javax.swing.event.ChangeListener;
@@ -47,6 +47,7 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -55,25 +56,25 @@ import org.openide.util.lookup.Lookups;
  *
  * @author marekfukala
  */
-public class HtmlRenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
+public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
     private final AbstractRefactoring refactoring;
     private RenamePanel panel;
     private final FileObject file;
 
-    public HtmlRenameRefactoringUI(FileObject file) {
+    public RenameRefactoringUI(FileObject file) {
 	this.file = file;
 	this.refactoring = new RenameRefactoring(Lookups.fixed(file));
     }
 
     @Override
     public String getName() {
-	return NbBundle.getMessage(HtmlRenameRefactoringUI.class, "LBL_Rename");
+	return NbBundle.getMessage(RenameRefactoringUI.class, "LBL_Rename"); //NOI18N
     }
 
     @Override
     public String getDescription() {
-	return "TODO";
+	return NbBundle.getMessage(RenameRefactoringUI.class, "LBL_FolderRefactoring");
     }
 
     @Override
@@ -84,9 +85,8 @@ public class HtmlRenameRefactoringUI implements RefactoringUI, RefactoringUIBypa
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
 	if (panel == null) {
-	    panel = new RenamePanel(file.getName(), parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename"), true, true);
+	    panel = new RenamePanel(file.getName(), parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename")); //NOI18N
 	}
-
 	return panel;
     }
 
@@ -104,7 +104,6 @@ public class HtmlRenameRefactoringUI implements RefactoringUI, RefactoringUIBypa
 	if (refactoring instanceof RenameRefactoring) {
 	    ((RenameRefactoring) refactoring).setNewName(panel.getNameValue());
 	}
-
 	return refactoring.fastCheckParameters();
     }
 
@@ -125,11 +124,15 @@ public class HtmlRenameRefactoringUI implements RefactoringUI, RefactoringUIBypa
 
     @Override
     public boolean isRefactoringBypassRequired() {
-	return false; //TODO fix this
+        return panel.isRenameWithoutRefactoring();
     }
 
     @Override
     public void doRefactoringBypass() throws IOException {
-	//TODO implement
+        DataObject dob  = DataObject.find(file);
+        if (dob!=null) {
+            dob.rename(panel.getNameValue());
+        }
     }
+
 }

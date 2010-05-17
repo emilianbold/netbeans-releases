@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.html.editor.refactoring;
+package org.netbeans.modules.web.common.refactoring;
 
 import java.awt.Component;
 import javax.swing.JPanel;
@@ -50,7 +50,7 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 /**
  * Rename refactoring parameters panel
  *
- * @author  Pavel Flaska
+ * @author  Marek Fukala
  */
 public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
@@ -58,29 +58,36 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     private final transient ChangeListener parent;
     
     private boolean initialized;
+
+    //static so the setting is preserved at least during one ide session
+    //TODO store it in settings
+    private static boolean renameWithoutRefactoring = false;
     
     /** Creates new form RenamePanelName */
-    public RenamePanel(String oldName, ChangeListener parent, String name, boolean editable, boolean showUpdateReferences) {
+    public RenamePanel(String oldName, ChangeListener parent, String name) {
         setName(name);
         this.oldName = oldName;
         this.parent = parent;
         initComponents();
-        updateReferencesCheckBox.setVisible(showUpdateReferences);
-        nameField.setEnabled(editable);
+        renameWithoutRefactoringCheckBox.setSelected(renameWithoutRefactoring);
         nameField.requestFocus();
         nameField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent event) {
                 RenamePanel.this.parent.stateChanged(null);
             }
+            @Override
             public void insertUpdate(DocumentEvent event) {
                 RenamePanel.this.parent.stateChanged(null);
             }
+            @Override
             public void removeUpdate(DocumentEvent event) {
                 RenamePanel.this.parent.stateChanged(null);
             }
         });
     }
 
+    @Override
     public void initialize() {
         if (initialized)
             return ;
@@ -102,7 +109,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
         label = new javax.swing.JLabel();
         nameField = new javax.swing.JTextField();
-        updateReferencesCheckBox = new javax.swing.JCheckBox();
+        renameWithoutRefactoringCheckBox = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setRequestFocusEnabled(false);
@@ -114,12 +121,11 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         nameField.setText(oldName);
         nameField.selectAll();
 
-        org.openide.awt.Mnemonics.setLocalizedText(updateReferencesCheckBox, org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameWithoutRefactoring")); // NOI18N
-        updateReferencesCheckBox.setEnabled(false);
-        updateReferencesCheckBox.setMargin(new java.awt.Insets(2, 2, 0, 2));
-        updateReferencesCheckBox.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(renameWithoutRefactoringCheckBox, org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameWithoutRefactoring")); // NOI18N
+        renameWithoutRefactoringCheckBox.setMargin(new java.awt.Insets(2, 2, 0, 2));
+        renameWithoutRefactoringCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                updateReferencesCheckBoxActionPerformed(evt);
+                renameWithoutRefactoringCheckBoxActionPerformed(evt);
             }
         });
 
@@ -133,7 +139,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                         .addComponent(label)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(nameField, javax.swing.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE))
-                    .addComponent(updateReferencesCheckBox))
+                    .addComponent(renameWithoutRefactoringCheckBox))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -143,38 +149,31 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                     .addComponent(label)
                     .addComponent(nameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(updateReferencesCheckBox)
+                .addComponent(renameWithoutRefactoringCheckBox)
                 .addContainerGap())
         );
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/html/editor/refactoring/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/common/refactoring/Bundle"); // NOI18N
         nameField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_nameField")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void updateReferencesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateReferencesCheckBoxActionPerformed
-//        textCheckBox.setEnabled(!updateReferencesCheckBox.isSelected());
-    }//GEN-LAST:event_updateReferencesCheckBoxActionPerformed
+    private void renameWithoutRefactoringCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameWithoutRefactoringCheckBoxActionPerformed
+        renameWithoutRefactoring = renameWithoutRefactoringCheckBox.isSelected();
+    }//GEN-LAST:event_renameWithoutRefactoringCheckBoxActionPerformed
                                                              
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel label;
     private javax.swing.JTextField nameField;
-    private javax.swing.JCheckBox updateReferencesCheckBox;
+    private javax.swing.JCheckBox renameWithoutRefactoringCheckBox;
     // End of variables declaration//GEN-END:variables
 
     public String getNameValue() {
         return nameField.getText();
     }
-
-    
-    public boolean searchJavadoc() {
-        return false;
+        
+    public boolean isRenameWithoutRefactoring() {
+        return renameWithoutRefactoring;
     }
-    
-//    public boolean isUpdateReferences() {
-//        if (updateReferencesCheckBox.isVisible() && updateReferencesCheckBox.isSelected())
-//            return false;
-//        return true;
-//    }
 
     @Override
     public Component getComponent() {

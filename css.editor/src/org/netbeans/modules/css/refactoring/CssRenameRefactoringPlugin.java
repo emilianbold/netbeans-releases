@@ -42,9 +42,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,9 +96,26 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
     private static final Logger LOGGER = Logger.getLogger(CssRenameRefactoringPlugin.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     private RenameRefactoring refactoring;
+    private Lookup lookup;
+    private CssElementContext context;
 
     public CssRenameRefactoringPlugin(RenameRefactoring refactoring) {
         this.refactoring = refactoring;
+        this.lookup = refactoring.getRefactoringSource();
+        this.context = lookup.lookup(CssElementContext.class);
+
+        if(context == null) {
+            //if a generic folder is rename this plugin is triggered but the lookup doesn't contain
+            //the CssElementContext since the RenameRefactoring was not created by the CssActionsImplementationProvider
+            //but some other, in this case the lookup contain the renamed FileObject
+            FileObject folder = lookup.lookup(FileObject.class);
+            assert folder != null;
+            assert folder.isFolder();
+
+            //create a context for the rename folder
+            context = new CssElementContext.Folder(folder);
+        }
+
     }
 
     @Override
@@ -111,8 +130,6 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             return new Problem(true, NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Error_ElementEmpty")); //NOI18N
         }
 
-        Lookup lookup = refactoring.getRefactoringSource();
-        CssElementContext context = lookup.lookup(CssElementContext.class);
         if(context instanceof CssElementContext.Editor) {
             CssElementContext.Editor editorContext = (CssElementContext.Editor)context;
             char firstChar = refactoring.getNewName().charAt(0);
@@ -153,8 +170,6 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
     @Override
     public Problem prepare(final RefactoringElementsBag refactoringElements) {
-        Lookup lookup = refactoring.getRefactoringSource();
-        CssElementContext context = lookup.lookup(CssElementContext.class);
         CssProjectSupport sup = CssProjectSupport.findFor(context.getFileObject());
         if (sup == null) {
             return null;
@@ -285,6 +300,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             FileObject renamedFolder = context.getFileObject();
 
             Map<FileObject, CssFileModel> modelsCache = new WeakHashMap<FileObject, CssFileModel>();
+            Set<Entry> refactoredReferenceEntries = new HashSet<Entry>();
             //now I need to find out what links go through the given folder
             for (FileObject source : source2dest.keySet()) {
                 List<Difference> diffs = new ArrayList<Difference>();
@@ -310,7 +326,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                             //XXX the model should contain string representation 2 entry map
                             //linear search :-(
                             for (Entry entry : imports) {
-                                if (entry.isValidInSourceDocument() && entry.getName().equals(dest.linkPath())) {
+                                if (!refactoredReferenceEntries.contains(entry) && entry.isValidInSourceDocument() && entry.getName().equals(dest.linkPath())) {
                                     //a matching entry found, add the rename refactoring
                                     CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(source);
 
@@ -322,6 +338,11 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                                             entry.getName(),
                                             modification.getModifiedReferencePath(),
                                             NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Modify_Css_File_Import"))); //NOI18N
+
+                                    //remember we already renamed this entry, and ignore it next time.
+                                    //There might be several references to the same css file,
+                                    //so we iterate over the same css model entries several times
+                                    refactoredReferenceEntries.add(entry);
                                 }
                             }
                         }
