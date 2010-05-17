@@ -696,13 +696,6 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                 boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
                 boolean isJSF20 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
 
-                //XXX: 182282: disable bundled lib in WebLogic.
-                if (isWebLogic(serverInstanceID)) {
-                    isJSF = false;
-                    isJSF12 = false;
-                    isJSF20 = false;
-                }
-
                 String libName = null; //NOI18N
                 if (isJSF20) {
                     libName = "JSF 2.0"; //NOI18N

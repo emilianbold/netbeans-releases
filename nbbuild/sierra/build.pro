@@ -46,11 +46,11 @@
     <property name="netbeans.type" value="java"/>
 
     <!-- GlassFish ESB latest continuous -->
-    <property name="gfesb.host" value="http://nephrite.russia.sun.com:8080"/>
-    <property name="gfesb.path" value="hudson/job/main/ws/cache/latest"/>
-    <property name="gfesb.file" value="main.zip"/>
-    <property name="gfesb.name" value="main"/>
-    <property name="gfesb.user" value=".netbeans/sierra"/>
+    <property name="sierra.host" value="http://nephrite.russia.sun.com:8080"/>
+    <property name="sierra.path" value="hudson/job/main/ws/cache/latest"/>
+    <property name="sierra.file" value="main.zip"/>
+    <property name="sierra.name" value="main"/>
+    <property name="sierra.user" value=".netbeans/sierra"/>
 
     <!-- NetBeans the latest nightly -->
     <property name="netbeans.host" value="http://smetiste.czech.sun.com"/>
