@@ -92,6 +92,10 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         return SharedClassObject.findObject(AllUsagesPerformanceAction.class, true);
     }
 
+    public static Action getFileContainerAction() {
+        return SharedClassObject.findObject(TestFileContainerAction.class, true);
+    }
+
     static final class SmartCompletionAnalyzerAction extends TestProjectReferencesAction {
 
         SmartCompletionAnalyzerAction() {
