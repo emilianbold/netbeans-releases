@@ -93,13 +93,15 @@ public class WsdlOperation implements WSOperation{
         NamedComponentReference<GlobalElement> gbr = part.getElement();
         if(gbr != null){
             GlobalElement gb = gbr.get();
-            List<ComplexType> complexTypes = gb.getChildren(ComplexType.class);
-            if(complexTypes != null && !complexTypes.isEmpty()){
-                for(ComplexType complexType : complexTypes){
-                    ComplexTypeDefinition def = complexType.getDefinition();
-                    List<LocalElement> elements = def.getChildren(LocalElement.class);
-                    for(LocalElement element : elements){
-                        parms.add(new WsdlParameter(element));
+            if (gb != null) {
+                List<ComplexType> complexTypes = gb.getChildren(ComplexType.class);
+                if(complexTypes != null && !complexTypes.isEmpty()){
+                    for(ComplexType complexType : complexTypes){
+                        ComplexTypeDefinition def = complexType.getDefinition();
+                        List<LocalElement> elements = def.getChildren(LocalElement.class);
+                        for(LocalElement element : elements){
+                            parms.add(new WsdlParameter(element));
+                        }
                     }
                 }
             }
