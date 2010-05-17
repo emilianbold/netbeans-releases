@@ -691,10 +691,10 @@ public class FormatVisitor extends DefaultVisitor {
 	}
 
 	while (ts.moveNext() && ts.offset() < node.getRight().getStartOffset()
-		&& ts.token().id() != PHPTokenId.PHP_TOKEN) {
+		&& ts.token().id() != PHPTokenId.PHP_TOKEN && ts.token().id() != PHPTokenId.PHP_OPERATOR) {
 	    addFormatToken(formatTokens);
 	}
-	if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
+	if (ts.token().id() == PHPTokenId.PHP_TOKEN || ts.token().id() == PHPTokenId.PHP_OPERATOR) {
 	    formatTokens.add(new FormatToken(whitespace, ts.offset()));
 	    addFormatToken(formatTokens);
 	    formatTokens.add(new FormatToken(whitespace, ts.offset() + ts.token().length()));
