@@ -1163,6 +1163,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         public void initialize() throws FileStateInvalidException {
             metaBase = getEjbModule().getMetaInf();
             metaBaseValue = evaluator().getProperty(EjbJarProjectProperties.META_INF);
+            if (resources != null) {
+                FileUtil.removeFileChangeListener(this, resources);
+            }
             resources = getEjbModule().getResourceDirectory();
             buildClasses = evaluator().getProperty(ProjectProperties.BUILD_CLASSES_DIR);
 
