@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,7 +51,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -98,7 +100,7 @@ public class CheckLicense extends Task {
         return f;
     }
 
-    public void execute () throws BuildException {
+    public @Override void execute() throws BuildException {
         if (fragment == null) {
             if (fragments == null) {
                 throw new BuildException("You must supply a fragment", getLocation());
@@ -107,12 +109,13 @@ public class CheckLicense extends Task {
             executeReplace();
             return;
         }
-        if (filesets.isEmpty ()) throw new BuildException("You must supply at least one fileset", getLocation());
-        Iterator it = filesets.iterator ();
+        if (filesets.isEmpty()) {
+            throw new BuildException("You must supply at least one fileset", getLocation());
+        }
         String failMsg = null;
         try {
-            while (it.hasNext ()) {
-                FileScanner scanner = ((FileSet) it.next()).getDirectoryScanner(getProject());
+            for (FileSet fileset : filesets) {
+                FileScanner scanner = fileset.getDirectoryScanner(getProject());
                 File baseDir = scanner.getBasedir ();
                 String[] files = scanner.getIncludedFiles ();
                 log ("Looking for " + fragment + " in " + files.length + " files in " + baseDir.getAbsolutePath ());
@@ -160,11 +163,10 @@ public class CheckLicense extends Task {
     }
     
     private void executeReplace() throws BuildException {
-        Iterator it = filesets.iterator ();
         try {
             byte[] workingArray = new byte[1024];
-            while (it.hasNext ()) {
-                FileScanner scanner = ((FileSet) it.next()).getDirectoryScanner(getProject());
+            for (FileSet fileset : filesets) {
+                FileScanner scanner = fileset.getDirectoryScanner(getProject());
                 File baseDir = scanner.getBasedir ();
                 String[] files = scanner.getIncludedFiles ();
                 log ("Replacing code in " + files.length + " files in " + baseDir.getAbsolutePath ());
@@ -180,10 +182,7 @@ public class CheckLicense extends Task {
                     boolean changed = false;
                     String prefix = null;
                     
-                    Iterator frags = fragments.iterator();
-                    while (frags.hasNext()) {
-                        Convert f = (Convert)frags.next();
-                        
+                    for (Convert f : fragments) {
                         Matcher matcher = f.orig.matcher(workingString);
                         
                         while (matcher.find()) {
@@ -250,7 +249,7 @@ public class CheckLicense extends Task {
         }
         
         String[] all = repl.split("\n");
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < all.length; i++) {
             if (startWithPrefix) {
                 sb.append(prefix);
