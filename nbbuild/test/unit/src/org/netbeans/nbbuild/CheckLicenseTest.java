@@ -44,29 +44,15 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /**
- *
  * @author Jaroslav Tulach
  */
 public class CheckLicenseTest extends NbTestCase {
 
     public CheckLicenseTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        //return new CheckLicenseTest("testReplaceHTMLLicense");
-        return new NbTestSuite(CheckLicenseTest.class);
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
     }
 
     public void testWeCanSearchForSunPublicLicense() throws Exception {
@@ -390,7 +376,9 @@ public class CheckLicenseTest extends NbTestCase {
     }        
 
     public void testMayReplaces() throws Exception {
-        if (isWindows()) return;
+        if (isWindows()) {
+            return;
+        }
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
 
@@ -516,7 +504,9 @@ public class CheckLicenseTest extends NbTestCase {
     }
     
     public void testReplacesTextSeparatedByNewLine() throws Exception {
-        if (isWindows()) return;
+        if (isWindows()) {
+            return;
+        }
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
 
         java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractString(
@@ -593,7 +583,9 @@ public class CheckLicenseTest extends NbTestCase {
     }        
     
     public void testReplacePropertiesLicense() throws Exception {
-        if (isWindows()) return;
+        if (isWindows()) {
+            return;
+        }
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
 
         java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicensePropertiesExample.properties");
