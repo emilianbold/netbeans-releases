@@ -379,6 +379,11 @@ public final class DebuggerManager implements ContextProvider {
             }
         }
         
+        if (sessionToStart != null) {
+            GestureSubmitter.logDebugStart(sessionToStart, engines);
+            setCurrentSession (sessionToStart);
+        }
+
         k = engines.size ();
         for (i = 0; i < k; i++) {
             if (Thread.interrupted()) {
@@ -407,12 +412,10 @@ public final class DebuggerManager implements ContextProvider {
                 if (i < (n - 1)) am.postAction(ActionsManager.ACTION_KILL); // kill the started engines
                 am.destroy();
             }
+            if (sessionToStart != null) {
+                sessionToStart.kill();
+            }
             return new DebuggerEngine[] {};
-        }
-        
-        if (sessionToStart != null) {
-            GestureSubmitter.logDebugStart(sessionToStart, engines);
-            setCurrentSession (sessionToStart);
         }
         
         DebuggerEngine[] des = new DebuggerEngine [engines.size ()];

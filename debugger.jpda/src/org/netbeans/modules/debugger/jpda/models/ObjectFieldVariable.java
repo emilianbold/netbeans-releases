@@ -229,6 +229,8 @@ implements org.netbeans.api.debugger.jpda.Field, Refreshable {
                 return null;
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return null;
+            } catch (ObjectCollectedExceptionWrapper ocex) {
+                return null;
             }
             if (type instanceof ReferenceType) {
                 return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) type);
