@@ -1850,6 +1850,11 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue185353_05.php", options);
     }
 
+    public void testIssue186183_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/issue186183_01.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
