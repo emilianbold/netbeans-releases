@@ -133,6 +133,11 @@ public class ShellEmbeddingProvider extends EmbeddingProvider {
                     inShell = false;
             }
         }
+
+        if (!localEmbeddings.isEmpty() && !cancelled) {
+            allEmbeddings.add(Embedding.create(localEmbeddings));
+        }
+
         return allEmbeddings;
     }
 
