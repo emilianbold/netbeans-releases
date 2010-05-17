@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
- Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+ Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
  SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- 
+
  $Id$
 -->
 
@@ -14,7 +17,7 @@
     targetNamespace="http://xml.netbeans.org/examples/targetNS/PO"
     xmlns:po="http://xml.netbeans.org/examples/targetNS/PO"
     elementFormDefault="qualified">
-    
+
     <xsd:include schemaLocation="include2.xsd"/>
 
     <xsd:annotation>
@@ -23,7 +26,7 @@
             Copyright 2000 Example.com. All rights reserved.
         </xsd:documentation>
     </xsd:annotation>
-        
+
     <xsd:attributeGroup name="dates-attr-group">
         <xsd:attribute name="orderDate" type="xsd:date"/>
         <xsd:attribute name="orderDate1" type="xsd:date"/>
