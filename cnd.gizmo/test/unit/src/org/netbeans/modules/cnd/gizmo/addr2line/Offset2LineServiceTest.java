@@ -40,17 +40,10 @@
 package org.netbeans.modules.cnd.gizmo.addr2line;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.StringReader;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -63,7 +56,6 @@ import org.netbeans.modules.cnd.gizmo.RemoteJarServiceProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 
 /**
  *
@@ -100,7 +92,7 @@ public class Offset2LineServiceTest extends NbTestCase {
 
         NativeProcess process = getJavaProcess(Offset2LineService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
         assertNotNull(process);
-        BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream(),Charset.forName("UTF-8"))); // NOI18N
         res2 = Offset2LineService.getOffset2Line(br);
         process.destroy();
         assertEquals(res1.size(), res2.size());
