@@ -46,7 +46,6 @@ import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.EditorRegistry;
@@ -348,7 +347,7 @@ public class TokenFormatter {
 
 	if (LOGGER.isLoggable(Level.FINE)) {
 	    long end = System.currentTimeMillis();
-	    LOGGER.fine("Creating formating stream took: " + (end - start.get()));
+	    LOGGER.log(Level.FINE, "Creating formating stream took: {0}", (end - start.get()));
 	}
 
 	final DocumentOptions docOptions = new DocumentOptions(doc);
@@ -362,8 +361,8 @@ public class TokenFormatter {
                 if (ts == null)  // if PHP is not top language
                     return;
 		if (LOGGER.isLoggable(Level.FINE)) {
-		    LOGGER.fine("Tokens in TS: " + ts.tokenCount());
-		    LOGGER.fine("Format tokens: " + formatTokens.size());
+		    LOGGER.log(Level.FINE, "Tokens in TS: {0}", ts.tokenCount());
+		    LOGGER.log(Level.FINE, "Format tokens: {0}", formatTokens.size());
 		}
 		MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
                     try {
@@ -1211,7 +1210,7 @@ public class TokenFormatter {
                 }
 		if (LOGGER.isLoggable(Level.FINE)) {
 		    long end = System.currentTimeMillis();
-		    LOGGER.fine("Applaying format stream took: " + (end - start.get())); // NOI18N
+		    LOGGER.log(Level.FINE, "Applaying format stream took: {0}", (end - start.get())); // NOI18N
 		}
 	    }
 
@@ -1641,7 +1640,7 @@ public class TokenFormatter {
                     document.insertString(realOffset, newText, null);
                     delta = delta - oldText.length() + newText.length();
                 } catch (BadLocationException ex) {
-                    LOGGER.throwing(this.getClass().getName(), "replaceSimpleSring", ex); //NOI18N
+                    LOGGER.throwing(TokenFormatter.this.getClass().getName(), "replaceSimpleSring", ex); //NOI18N
                 }
                 return delta;
             }
