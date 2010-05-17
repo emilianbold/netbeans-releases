@@ -336,6 +336,9 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                     if (isSmartyOpenDelimiter(text)) {
                         state = State.OPEN_DELIMITER;
                         input.backup(openDelimiterLength);
+                        if (input.readLength() > 0) {
+                            return TplTopTokenId.T_HTML;
+                        }
                     }
                     if (LexerUtils.isWS(c)) {
                         return TplTopTokenId.T_HTML;
