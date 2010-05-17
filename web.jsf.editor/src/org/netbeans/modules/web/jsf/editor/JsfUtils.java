@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,6 +52,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
@@ -145,7 +147,11 @@ public class JsfUtils {
             AstNode root = null;
             //no html root node, we need to find a root node of some other ast tree
             //belonging to some namespace
-            for (AstNode r : result.roots().values()) {
+            Collection<AstNode> roots = new ArrayList<AstNode>();
+            roots.addAll(result.roots().values());
+            roots.add(result.root(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE));
+
+            for (AstNode r : roots) {
                 //find first open tag node
 
                 List<AstNode> chs = r.children(new AstNode.NodeFilter() {

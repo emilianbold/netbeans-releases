@@ -248,37 +248,45 @@ public class HtmlParserResult extends ParserResult {
 
     private List<Error> findErrors() {
         final List<Error> _errors = new ArrayList<Error>();
-        AstNodeUtils.visitChildren(root(),
-                new AstNodeVisitor() {
 
-                    public void visit(AstNode node) {
-                        if (node.type() == AstNode.NodeType.OPEN_TAG ||
-                                node.type() == AstNode.NodeType.ENDTAG ||
-                                node.type() == AstNode.NodeType.UNKNOWN_TAG) {
+        AstNodeVisitor errorsCollector = new AstNodeVisitor() {
 
-                            for (Description desc : node.getDescriptions()) {
-                                if (desc.getType() < Description.WARNING) {
-                                    continue;
-                                }
-                                //some error in the node, report
-                                DefaultError error =
-                                        new DefaultError(desc.getKey(), //NOI18N
-                                        desc.getText(),
-                                        desc.getText(),
-                                        getSnapshot().getSource().getFileObject(),
-                                        desc.getFrom(),
-                                        desc.getTo(),
-                                        false /* not line error */,
-                                        desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
+            @Override
+            public void visit(AstNode node) {
+                if (node.type() == AstNode.NodeType.OPEN_TAG
+                        || node.type() == AstNode.NodeType.ENDTAG
+                        || node.type() == AstNode.NodeType.UNKNOWN_TAG) {
 
-                                error.setParameters(new Object[]{node});
-
-                                _errors.add(error);
-
-                            }
+                    for (Description desc : node.getDescriptions()) {
+                        if (desc.getType() < Description.WARNING) {
+                            continue;
                         }
+                        //some error in the node, report
+                        DefaultError error =
+                                new DefaultError(desc.getKey(), //NOI18N
+                                desc.getText(),
+                                desc.getText(),
+                                getSnapshot().getSource().getFileObject(),
+                                desc.getFrom(),
+                                desc.getTo(),
+                                false /* not line error */,
+                                desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
+
+                        error.setParameters(new Object[]{node});
+
+                        _errors.add(error);
+
                     }
-                });
+                }
+            }
+        };
+
+        Collection<AstNode> roots = new ArrayList<AstNode>();
+        roots.addAll(roots().values());
+        roots.add(root(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE));
+        for(AstNode root : roots) {
+            AstNodeUtils.visitChildren(root, errorsCollector);
+        }
 
         return _errors;
 
@@ -300,6 +308,7 @@ public class HtmlParserResult extends ParserResult {
 
     private static class Accessor extends HtmlParserResultAccessor {
 
+        @Override
         public HtmlParserResult createInstance(Snapshot snapshot, SyntaxParserResult result) {
             return new HtmlParserResult(snapshot, result);
         }

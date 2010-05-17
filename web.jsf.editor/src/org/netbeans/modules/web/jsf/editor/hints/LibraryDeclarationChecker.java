@@ -57,6 +57,7 @@ import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNode.Attribute;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
+import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -101,13 +102,13 @@ public class LibraryDeclarationChecker extends HintsProvider {
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
         final Collection<FaceletsLibrary> declaredLibraries = new ArrayList<FaceletsLibrary>();
         JsfSupport jsfSupport = JsfSupport.findFor(context.doc);
-        Map<String, FaceletsLibrary> libs = Collections.EMPTY_MAP;
+        Map<String, FaceletsLibrary> libs = Collections.emptyMap();
         if (jsfSupport != null) {
             libs = jsfSupport.getFaceletsLibraries();
         }
 
         //Find the namespaces declarations itself
-        //a.take the html AST
+        //a.take the html AST & the AST for undeclared components
         //b.search for nodes with xmlns attribute
         //ugly, grr, the whole namespace support needs to be fixed
         final Map<String, AstNode.Attribute> namespace2Attribute = new HashMap<String, Attribute>();
@@ -129,44 +130,57 @@ public class LibraryDeclarationChecker extends HintsProvider {
         });
         final String docText = docTextRef.get(); //may be null if BLE happens (which is unlikely)
 
-        AstNodeUtils.visitChildren(root, new AstNodeVisitor() {
+        AstNodeVisitor namespacesCollector = new AstNodeVisitor() {
 
             @Override
             public void visit(AstNode node) {
-                if (node.type() == AstNode.NodeType.OPEN_TAG) {
-                    //put all NS attributes to the namespace2Attribute map for #1.
-                    Collection<AstNode.Attribute> nsAttrs = node.getAttributes(new AstNode.AttributeFilter() {
+                //put all NS attributes to the namespace2Attribute map for #1.
+                Collection<AstNode.Attribute> nsAttrs = node.getAttributes(new AstNode.AttributeFilter() {
 
-                        @Override
-                        public boolean accepts(Attribute attribute) {
-                            return "xmlns".equals(attribute.namespacePrefix()); //NOI18N
-                        }
-                    });
-                    for (AstNode.Attribute attr : nsAttrs) {
-                        namespace2Attribute.put(attr.unquotedValue(), attr);
+                    @Override
+                    public boolean accepts(Attribute attribute) {
+                        return "xmlns".equals(attribute.namespacePrefix()); //NOI18N
                     }
-                } else if (node.type() == AstNode.NodeType.UNKNOWN_TAG && node.getNamespacePrefix() != null) {
-                    //3. check for undeclared components
-
-                    List<HintFix> fixes = new ArrayList<HintFix>();
-                    List<FaceletsLibrary> libs = FixLibDeclaration.getLibsByPrefix(context.doc, node.getNamespacePrefix());
-
-                    for (FaceletsLibrary lib : libs){
-                        FixLibDeclaration fix = new FixLibDeclaration(context.doc, node.getNamespacePrefix(), lib);
-                        fixes.add(fix);
-                    }
-
-                    //this itself means that the node is undeclared since
-                    //otherwise it wouldn't appear in the pure html parse tree
-                    Hint hint = new Hint(DEFAULT_ERROR_RULE,
-                            NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT"), //NOI18N
-                            context.parserResult.getSnapshot().getSource().getFileObject(),
-                            JsfUtils.createOffsetRange(snapshot, docText, node.startOffset(), node.startOffset() + node.name().length() + 1 /* "<".length */),
-                            fixes, DEFAULT_ERROR_HINT_PRIORITY);
-                    hints.add(hint);
+                });
+                for (AstNode.Attribute attr : nsAttrs) {
+                    namespace2Attribute.put(attr.unquotedValue(), attr);
                 }
             }
-        });
+        };
+
+        AstNodeUtils.visitChildren(root, namespacesCollector, AstNode.NodeType.OPEN_TAG);
+        AstNode undeclaredComponentsTreeRoot = result.root(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE);
+        if(undeclaredComponentsTreeRoot != null) {
+            AstNodeUtils.visitChildren(undeclaredComponentsTreeRoot, namespacesCollector, AstNode.NodeType.OPEN_TAG);
+
+            //check for undeclared tags
+            AstNodeUtils.visitChildren(undeclaredComponentsTreeRoot, new AstNodeVisitor() {
+
+                @Override
+                public void visit(AstNode node) {
+                    if (node.type() == AstNode.NodeType.OPEN_TAG && node.getNamespacePrefix() != null) {
+                        //3. check for undeclared components
+
+                        List<HintFix> fixes = new ArrayList<HintFix>();
+                        List<FaceletsLibrary> libs = FixLibDeclaration.getLibsByPrefix(context.doc, node.getNamespacePrefix());
+
+                        for (FaceletsLibrary lib : libs){
+                            FixLibDeclaration fix = new FixLibDeclaration(context.doc, node.getNamespacePrefix(), lib);
+                            fixes.add(fix);
+                        }
+
+                        //this itself means that the node is undeclared since
+                        //otherwise it wouldn't appear in the pure html parse tree
+                        Hint hint = new Hint(DEFAULT_ERROR_RULE,
+                                NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT"), //NOI18N
+                                context.parserResult.getSnapshot().getSource().getFileObject(),
+                                JsfUtils.createOffsetRange(snapshot, docText, node.startOffset(), node.startOffset() + node.name().length() + 1 /* "<".length */),
+                                fixes, DEFAULT_ERROR_HINT_PRIORITY);
+                        hints.add(hint);
+                    }
+                }
+            });
+        }
 
         for (String namespace : declaredNamespaces) {
             FaceletsLibrary lib = libs.get(namespace);
@@ -181,7 +195,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                             NbBundle.getMessage(HintsProvider.class, "MSG_MISSING_LIBRARY"), //NOI18N
                             context.parserResult.getSnapshot().getSource().getFileObject(),
                             JsfUtils.createOffsetRange(snapshot, docText, attr.nameOffset(), attr.valueOffset() + attr.value().length()),
-                            Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
+                            Collections.<HintFix>emptyList(), DEFAULT_ERROR_HINT_PRIORITY);
                     hints.add(hint);
                 }
             }
