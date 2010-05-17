@@ -138,12 +138,16 @@ public class ShLexerTest extends NbTestCase {
 
     @Test
     public void testEscapedLine() {
-        TokenSequence<ShTokenId> ts = getShellTokenSequence("\\\necho foo");
+        TokenSequence<ShTokenId> ts = getShellTokenSequence("\\\necho foo\\\necho bar");
 
         assertNextTokenEquals(ts, OPERATOR, "\\\n");
         assertNextTokenEquals(ts, COMMAND, "echo");
         assertNextTokenEquals(ts, WHITESPACE, " ");
         assertNextTokenEquals(ts, IDENTIFIER, "foo");
+        assertNextTokenEquals(ts, OPERATOR, "\\\n");
+        assertNextTokenEquals(ts, IDENTIFIER, "echo");
+        assertNextTokenEquals(ts, WHITESPACE, " ");
+        assertNextTokenEquals(ts, IDENTIFIER, "bar");
 
         assertFalse("No more tokens", ts.moveNext());
     }
