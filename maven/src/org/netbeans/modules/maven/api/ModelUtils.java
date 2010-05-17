@@ -88,13 +88,15 @@ public final class ModelUtils {
             final String classifier, final boolean acceptNull)
     {
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            private static final String BUNDLE_TYPE = "bundle"; //NOI18N
+            @Override
             public void performOperation(POMModel model) {
                 Dependency dep = checkModelDependency(model, group, artifact, true);
                 dep.setVersion(version);
                 if (acceptNull || scope != null) {
                     dep.setScope(scope);
                 }
-                if (acceptNull || type != null) {
+                if (acceptNull || (type != null && !BUNDLE_TYPE.equals(type))) {
                     dep.setType(type);
                 }
                 if (acceptNull || classifier != null) {
