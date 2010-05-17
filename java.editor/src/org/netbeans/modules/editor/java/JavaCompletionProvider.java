@@ -4331,7 +4331,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 ret.add(paramStrings);
                                 break;
                             }
-                            if (!types.isAssignable(argTypes[i], param))
+                            if (argTypes[i].getKind() != TypeKind.ERROR && !types.isAssignable(argTypes[i], param))
                                 break;
                         }
                     }
@@ -4391,9 +4391,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (varArgs && !parIt.hasNext() && param.getKind() == TypeKind.ARRAY) {
                             if (types.isAssignable(argTypes[i], param))
                                 varArgs = false;
-                            else if (!types.isAssignable(argTypes[i], ((ArrayType)param).getComponentType()))
+                            else if (argTypes[i].getKind() != TypeKind.ERROR && !types.isAssignable(argTypes[i], ((ArrayType)param).getComponentType()))
                                 break;
-                        } else if (!types.isAssignable(argTypes[i], param))
+                        } else if (argTypes[i].getKind() != TypeKind.ERROR && !types.isAssignable(argTypes[i], param))
                             break;
                     }
                 }

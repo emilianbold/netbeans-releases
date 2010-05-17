@@ -412,7 +412,6 @@ public class GdbAttachPanel extends JPanel implements ProcessListReader {
     // End of variables declaration//GEN-END:variables
 
     private void hostComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {
-        System.err.println(evt);
         updateProcessList(true);
     }
 
