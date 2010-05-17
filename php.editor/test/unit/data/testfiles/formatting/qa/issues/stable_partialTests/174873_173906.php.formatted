@@ -1,7 +1,7 @@
 <?php
 
 try {
-    if ($foo== 'bar') {
+    if ($foo == 'bar') {
         
     } else {
         return false;
