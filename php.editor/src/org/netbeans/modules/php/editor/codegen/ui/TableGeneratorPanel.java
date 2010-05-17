@@ -359,45 +359,7 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
         connVariableLabel = new javax.swing.JLabel();
         connVariableTextField = new javax.swing.JTextField();
 
-        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
-            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
-                return connVariableTextField;
-            }//end getDefaultComponent
-
-            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
-                return connVariableTextField;
-            }//end getFirstComponent
-
-            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
-                return connVariableTextField;
-            }//end getLastComponent
-
-            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  dbconnComboBox){
-                    return tableComboBox;
-                }
-                if(aComponent ==  tableComboBox){
-                    return columnList;
-                }
-                if(aComponent ==  columnList){
-                    return connVariableTextField;
-                }
-                return connVariableTextField;//end getComponentAfter
-            }
-            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  tableComboBox){
-                    return dbconnComboBox;
-                }
-                if(aComponent ==  columnList){
-                    return tableComboBox;
-                }
-                if(aComponent ==  connVariableTextField){
-                    return columnList;
-                }
-                return connVariableTextField;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         dbconnLabel.setLabelFor(dbconnComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(dbconnLabel, org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "ConnectionGeneratorPanel.dbconnLabel.text")); // NOI18N
@@ -471,12 +433,23 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
         );
 
         dbconnLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.dbconnLabel.AccessibleContext.accessibleName")); // NOI18N
+        dbconnLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.dbconnLabel.AccessibleContext.accessibleDescription")); // NOI18N
         dbconnComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.dbconnComboBox.AccessibleContext.accessibleName")); // NOI18N
         dbconnComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.dbconnComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        tableLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.tableLabel.AccessibleContext.accessibleName")); // NOI18N
+        tableLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.tableLabel.AccessibleContext.accessibleDescription")); // NOI18N
         tableComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.tableComboBox.AccessibleContext.accessibleName")); // NOI18N
         tableComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.tableComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        columnLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.columnLabel.AccessibleContext.accessibleName")); // NOI18N
+        columnLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.columnLabel.AccessibleContext.accessibleDescription_1")); // NOI18N
+        columnScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.columnScrollPane.AccessibleContext.accessibleName")); // NOI18N
+        columnScrollPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.columnScrollPane.AccessibleContext.accessibleDescription_1")); // NOI18N
+        connVariableLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.connVariableLabel.AccessibleContext.accessibleName")); // NOI18N
         connVariableTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.connVariableTextField.AccessibleContext.accessibleName")); // NOI18N
         connVariableTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.connVariableTextField.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "TableGeneratorPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void dbconnComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dbconnComboBoxActionPerformed

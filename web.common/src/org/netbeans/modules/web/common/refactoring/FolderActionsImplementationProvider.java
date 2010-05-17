@@ -36,82 +36,74 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.refactoring;
+package org.netbeans.modules.web.common.refactoring;
 
-import org.netbeans.modules.web.common.refactoring.RenameRefactoringUI;
-import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
 /**
- * Generic rename refactoring UI for all kinds of file possibly refered from an html code.
- * The main purpose is to allow refactoring of html references to such files.
- *
- * Please look at REFACTORABLE_TYPES field to find out what mimetypes this refactoring
- * plugin registeres an UI for.
- *
- * Anyone who want to provide its own rename refactoring has to register his 
- * ActionsImplementationProvider to a lower position.
+ * Generic refactoring UI for folder rename for web-like projects
  *
  * @author marekfukala
  */
-//default position=Integet.MAX_VALUE; all who wants to provide its own refactgoring UI
-//for one of the registered mimetypes has to use a lower position
-@ServiceProvider(service = ActionsImplementationProvider.class)
-public class HtmlActionsImplementationProvider extends ActionsImplementationProvider {
-
-    //all mimetypes which we want to register the rename refactoring ui to
-    //basically the list should contain all mimetypes which can be referenced from an html file
-    //since this service provider has a very high position, if one of the mimetypes has
-    //its own refactoring UI registered that one will be prefered.
-    public static Collection<String> REFACTORABLE_TYPES = 
-            Arrays.asList(new String[]{"text/html", "text/xhtml", "text/x-css", "text/javascript",
-            "image/gif", "image/jpeg", "image/png", "image/bmp"}); //NOI18N
+@ServiceProvider(service = ActionsImplementationProvider.class, position = 100000)
+public class FolderActionsImplementationProvider extends ActionsImplementationProvider {
 
     @Override
-    //file rename
     public boolean canRename(Lookup lookup) {
-	Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-	//we are able to rename only one node selection [at least for now ;-) ]
-	if (nodes.size() != 1) {
-	    return false;
-	}
-
-        //apply only on supported mimetypes and if not invoked in editor context
-	Node node = nodes.iterator().next();
-        EditorCookie ec = getEditorCookie(node);
-        if(ec == null || !isFromEditor(ec)) {
-            FileObject fo = getFileObjectFromNode(node);
-            return fo != null && REFACTORABLE_TYPES.contains(fo.getMIMEType());
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        //we are able to rename only one node selection [at least for now ;-) ]
+        if (nodes.size() != 1) {
+            return false;
         }
 
-	return false;
+        //apply only on supported mimetypes and if not invoked in editor context
+        Node node = nodes.iterator().next();
+        EditorCookie ec = getEditorCookie(node);
+        if (ec == null || !isFromEditor(ec)) {
+            FileObject fo = getFileObjectFromNode(node);
+            if (fo != null && fo.isValid() && fo.isFolder()) {
+                //check if the folder is a part of a web-like project using the
+                //web root query
+                if (ProjectWebRootQuery.getWebRoot(fo) != null) {
+                    //looks like the file is a web like project
+                    try {
+                        return !fo.getFileSystem().isReadOnly();
+                    } catch (FileStateInvalidException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+
+        return false;
 
     }
 
     @Override
-    //file rename
     public void doRename(Lookup selectedNodes) {
-	Collection<? extends Node> nodes = selectedNodes.lookupAll(Node.class);
+        Collection<? extends Node> nodes = selectedNodes.lookupAll(Node.class);
         assert nodes.size() == 1;
         Node node = nodes.iterator().next();
         FileObject file = getFileObjectFromNode(node);
         UI.openRefactoringUI(new RenameRefactoringUI(file));
     }
 
-
     private static FileObject getFileObjectFromNode(Node node) {
-	DataObject dobj = node.getLookup().lookup(DataObject.class);
-	return dobj != null ? dobj.getPrimaryFile() : null;
+        DataObject dobj = node.getLookup().lookup(DataObject.class);
+        return dobj != null ? dobj.getPrimaryFile() : null;
     }
 
     private static boolean isFromEditor(EditorCookie ec) {
@@ -125,8 +117,6 @@ public class HtmlActionsImplementationProvider extends ActionsImplementationProv
     }
 
     private static EditorCookie getEditorCookie(Node node) {
-	return node.getLookup().lookup(EditorCookie.class);
+        return node.getLookup().lookup(EditorCookie.class);
     }
-
-
 }
