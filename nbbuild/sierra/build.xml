@@ -170,7 +170,6 @@
 
     <!-- clean, build, nbm -->
     <target name="clean">
-        <delete dir="${home}/nbbuild/netbeans/extra"/>
         <delete dir="${home}/nbbuild/netbeans/soa"/>
         <delete dir="${home}/nbbuild/netbeans/xml"/>
         <antcall target="clean-01"/>
@@ -182,8 +181,6 @@
         <antcall target="build-01"/>
         <antcall target="build-02"/>
         <antcall target="build-03"/>
-        <delete dir="${home}/nbbuild/netbeans/soa"/>
-        <move file="${home}/nbbuild/netbeans/extra" tofile="${home}/nbbuild/netbeans/soa"/>
     </target>
 
     <target name="nbm">
