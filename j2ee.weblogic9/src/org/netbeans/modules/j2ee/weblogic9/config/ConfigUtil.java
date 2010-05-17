@@ -84,10 +84,7 @@ class ConfigUtil {
             fs.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
                     String name = file.getName();
-                    FileObject configFO = folder.getFileObject(name);
-                    if (configFO == null) {
-                        configFO = folder.createData(name);
-                    }
+                    FileObject configFO = FileUtil.createData(folder, name);
                     FileLock lock = configFO.lock();
                     try {
                         OutputStream os = new BufferedOutputStream(configFO.getOutputStream(lock), 4086);

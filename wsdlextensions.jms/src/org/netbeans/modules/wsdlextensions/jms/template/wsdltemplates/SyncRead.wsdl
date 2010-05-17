@@ -1,0 +1,33 @@
+<definitions name="dummy" targetNamespace="dummy"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:tns="dummy" 
+    xmlns:jms="http://schemas.sun.com/jbi/wsdl-extensions/jms/">
+    <types/>
+     <message name="SolicitedReadInputMessage">
+    </message>
+     <message name="SolicitedReadOutputMessage">
+    </message>    
+    <portType name="JMSSolicitedReadPortType">
+        <operation name="read">
+            <input name="input1" message="tns:SolicitedReadInputMessage"/>
+            <output name="output1" message="tns:SolicitedReadOutputMessage"/>
+        </operation>
+    </portType>
+    <binding name="JMSSolicitedReadBinding" type="tns:JMSSolicitedReadPortType">
+        <jms:binding/>
+        <operation name="read">
+            <jms:operation verb="read" destination="DefaultQueue" destinationType="Queue"/>
+            <input name="input1"/>
+            <output name="output1">
+                <jms:message messageType="TextMessage" textPart="change me"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="JMSSolicitedReadService">
+        <port name="#SERVICE_NAME_SolicitedReadPort" binding="tns:JMSSolicitedReadBinding">
+            <jms:address connectionURL="lookup://jms/tx/default"/>
+        </port>
+    </service>
+</definitions>

@@ -53,6 +53,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -90,7 +91,8 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private volatile boolean isInterrupted;
     private boolean cancelled = false;
     private Future<ProcessInfoProvider> infoProviderSearchTask;
-    private Future<Integer> result = null;
+    private Future<Integer> waitTask = null;
+    private AtomicInteger result = null;
     private InputStream inputStream;
     private InputStream errorStream;
     private OutputStream outputStream;
@@ -143,11 +145,27 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             create();
             setState(State.RUNNING);
             findInfoProvider();
-            result = NativeTaskExecutorService.submit(new Callable<Integer>() {
+            waitTask = NativeTaskExecutorService.submit(new Callable<Integer>() {
 
                 @Override
                 public Integer call() throws Exception {
-                    return waitResult();
+                    int exitCode = -1;
+
+                    try {
+                        exitCode = waitResult();
+                        result = new AtomicInteger(exitCode);
+                        setState(State.FINISHED);
+                    } catch (InterruptedException ex) {
+                        result = new AtomicInteger(exitCode);
+                        setState(State.CANCELLED);
+                        throw ex;
+                    } catch (Throwable th) {
+                        result = new AtomicInteger(exitCode);
+                        setState(State.ERROR);
+                        Exceptions.printStackTrace(th);
+                    }
+
+                    return exitCode;
                 }
             }, "Waiting for " + id); // NOI18N
         } catch (Throwable ex) {
@@ -245,22 +263,22 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             if (cancelled) {
                 return;
             }
+
+            setState(State.CANCELLED);
+
             cancelled = true;
         }
 
-
         cancel();
 
-        // result == null if createAndStart() failed
-        if (result != null) {
+        // waitTask == null if createAndStart() failed
+        if (waitTask != null) {
             try {
-                result.get();
+                waitTask.get();
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
             }
         }
-
-        setState(State.CANCELLED);
     }
 
     /**
@@ -281,24 +299,19 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     public final int waitFor() throws InterruptedException {
         int exitStatus = -1;
 
-        if (result == null) {
+        if (waitTask == null) {
             // createAndStart() failed
             return exitStatus;
         }
 
         try {
-            exitStatus = result.get();
-            setState(State.FINISHED);
-        } catch (InterruptedException ex) {
-            setState(State.CANCELLED);
-            throw ex;
+            exitStatus = waitTask.get();
         } catch (ExecutionException ex) {
             if (ex.getCause() instanceof InterruptedException) {
-                setState(State.CANCELLED);
                 throw (InterruptedException) ex.getCause();
+            } else {
+                Exceptions.printStackTrace(ex);
             }
-            setState(State.ERROR);
-            Exceptions.printStackTrace(ex);
         }
 
         return exitStatus;
@@ -316,19 +329,20 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      */
     @Override
     public final int exitValue() {
-        synchronized (stateLock) {
-            if (result == null || !result.isDone()) {
-                // Process not started yet...
-                throw new IllegalThreadStateException();
-            }
-            try {
+        if (waitTask == null || !waitTask.isDone()) {
+            if (result != null) {
                 return result.get();
-            } catch (InterruptedException ex) {
-                // cancelled
-                return -1;
-            } catch (ExecutionException ex) {
-                return -1;
             }
+            // Process not started/finished yet...
+            throw new IllegalThreadStateException();
+        }
+        try {
+            return waitTask.get();
+        } catch (InterruptedException ex) {
+            // cancelled
+            return -1;
+        } catch (ExecutionException ex) {
+            return -1;
         }
     }
 

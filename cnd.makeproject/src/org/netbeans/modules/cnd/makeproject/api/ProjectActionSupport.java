@@ -52,6 +52,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -511,13 +512,15 @@ public class ProjectActionSupport {
         private boolean checkProject(ProjectActionEvent pae) {
             Project project = pae.getProject();
             if (project != null) { // paranoidal null checks are better than latent NPE :)
-                FileObject projectDirectory = project.getProjectDirectory();
-                if (projectDirectory != null) {
-                    FileObject nbproject = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
-                    if (nbproject != null) {
-                        // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
-                        File file = FileUtil.toFile(nbproject);
-                        return file != null && file.exists();
+                if (OpenProjects.getDefault().isProjectOpen(project)) {
+                    FileObject projectDirectory = project.getProjectDirectory();
+                    if (projectDirectory != null) {
+                        FileObject nbproject = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
+                        if (nbproject != null) {
+                            // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
+                            File file = FileUtil.toFile(nbproject);
+                            return file != null && file.exists();
+                        }
                     }
                 }
             }

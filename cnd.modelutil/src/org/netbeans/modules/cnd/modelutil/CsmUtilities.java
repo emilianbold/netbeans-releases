@@ -89,6 +89,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -418,6 +419,26 @@ public class CsmUtilities {
                             if (csmFile != null) {
                                 files.add(csmFile);
                             }
+                        }
+                    }
+                }
+                if (CndUtils.isDebugMode()) {
+                    for (int i = 0; i < files.size(); i++) {
+                        CsmFile csmFile = files.get(i);
+                        CsmProject csmProject = csmFile.getProject();
+                        if (csmProject != null) {
+                            Object platformProject = csmProject.getPlatformProject();
+                            if (platformProject == null || !csmProject.isValid()) {
+                                CndUtils.assertTrueInConsole(false, "FILE " + csmFile + " from invalid PROJECT " + csmProject); // NOI18N
+                            } else if (platformProject.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
+                                if (i == 0 && files.size() > 1) {
+                                    CndUtils.assertTrue(false, "!!! STANDALONE FILE " + csmFile + "\nTOOK PRIORITY OVER OTHER FILES " + files); // NOI18N
+                                } else {
+//                                    System.err.printf("STANDALONE FILE TO BE USED %s\n", csmFile); // NOI18N
+                                }
+                            }
+                        } else {
+                           CndUtils.assertTrue(false, "FILE WITHOUT PROJECT" + csmFile); // NOI18N
                         }
                     }
                 }

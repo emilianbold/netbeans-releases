@@ -741,4 +741,12 @@ public class PropertyModelTest extends TestBase {
         assertTrue(csspv.success());
 
     }
+
+    public void testIssue185995() {
+        Property p = PropertyModel.instance().getProperty("border-color");
+
+        CssPropertyValue csspv = new CssPropertyValue(p, "transparent transparent");
+        assertTrue(csspv.success());
+
+    }
 }

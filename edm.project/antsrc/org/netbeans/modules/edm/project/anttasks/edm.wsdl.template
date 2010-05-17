@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--this is the edm wsdl template file -->
+<wsdl:definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:slnk="http://schemas.xmlsoap.org/ws/2002/07/service-link/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:tns="http://com.sun.jbi/edm/edmengine"
+	xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="edm"
+        xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	targetNamespace="http://com.sun.jbi/edm/edmengine">
+	<wsdl:types>
+		<xsd:schema elementFormDefault="qualified"
+			targetNamespace="http://com.sun.jbi/edm/edmengine">
+			<xsd:element name="inputItem">
+				<xsd:complexType>
+					<xsd:sequence>
+                                            <xsd:element name="page" type="xsd:string"></xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>	
+			<xsd:element name="outputItem">
+				<xsd:complexType>
+					<xsd:sequence>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>	
+
+                </xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="input">                
+                <wsdl:part name="page" type="xsd:string"/>  
+                <wsdl:part name="row" type="xsd:string"/>  
+                <wsdl:part name="column" type="xsd:string"/>  
+	</wsdl:message>
+	<wsdl:message name="output">
+		<wsdl:part name="part" element="tns:outputItem" />
+	</wsdl:message>
+	<wsdl:portType name="edmPortType">
+		<wsdl:operation name="execute">
+			<wsdl:input message="tns:input" name="inputMsg" />
+			<wsdl:output message="tns:output" name="outputMsg" />
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="Binding" type="tns:edmPortType">
+		<wsdl:operation name="execute">
+			<wsdl:input  name="inputMsg" />
+			<wsdl:output name="outputMsg" />
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="edmService">
+		<wsdl:port name="edmPort" binding="tns:Binding">
+		</wsdl:port>
+	</wsdl:service>
+	<plink:partnerLinkType name="edmPartnerLinkType">
+        <plink:role name="myrole" portType="tns:edmPortType"/>
+    </plink:partnerLinkType>
+</wsdl:definitions>

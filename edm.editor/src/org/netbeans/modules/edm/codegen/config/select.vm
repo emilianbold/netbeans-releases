@@ -1,0 +1,20 @@
+#set( $totalColumns = $sourceColumnIdentifiers.size())
+#set( $columnCounter = 1)
+#set( $indent = "    " )
+${nestedIndent}SELECT #if($distinct) DISTINCT #end
+
+#foreach($sColumn in $sourceColumnIdentifiers )
+${nestedIndent}${indent}$sColumn.getSql()#if($aliasColumns) AS $sColumn.getAliasName()#end#if($columnCounter < $totalColumns), #end
+
+#set( $columnCounter = $columnCounter + 1)
+#end
+#if($selectAliasName != "")${selectAliasName} #end#parse("org/netbeans/modules/edm/codegen/config/from.vm")
+#if($useWhere)
+${nestedIndent}#parse("org/netbeans/modules/edm/codegen/config/where.vm")
+#end
+#if($limit != "")
+${nestedIndent}LIMIT ${limit}
+#end
+#if($useGroupBy)
+${nestedIndent}#parse("org/netbeans/modules/edm/codegen/config/groupBy.vm")
+#end

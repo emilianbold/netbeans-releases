@@ -17,9 +17,6 @@
        About C/C++ Unit Testing
     </h2>
     <p>
-       ***this will need to be updated when c unit test implementation complete
-    </p>
-    <p>
        <small><a href="#seealso">See Also</a></small>
     </p>
     <p>
@@ -57,7 +54,7 @@
       </object>
     </p>
     <p>
-       The Simple tests are ....
+       The Simple tests use the IDE's own simple framework for running tests.
     </p>
     <h3>
        C/C++ Test Types in the IDE
@@ -80,32 +77,30 @@
       </li>
     </ul>
     <p>
-       You can generate tests by right-clicking the Test Files folder of a project in the Projects
-      window and selecting New &gt; New <i>test-type</i>.
+       You can generate tests by right-clicking a source file in the Projects window
+       and selecting Create Test.
     </p>
     <h3>
        Unit Test Structure
     </h3>
     <p>
-       The IDE represents unit tests as subfolders of the Test Files folder. By default, when the
-      IDE generates C/C++ tests each test file has the name of the class it is testing appended by
-      the word Test (for example, <tt>MyClassTest.java</tt>).
+       The IDE stores unit tests as subfolders of the <tt>test</tt> folder, by default. You can
+       specify a different name if you want as you create the tests.
     </p>
     <p>
-       Each standard project has a default test folder that is used to store the unit tests. This
+       Each managed project has a default test logical folder that is used to store the unit tests. This
       folder is displayed as the Test File node in the Projects window. You can add any number of
-      test folders to your project. Test files and the source files they test cannot be located in
-      the same source tree.???
+      test folders to your project.
     </p>
     <dl>
       <dt>
          <a name="seealso">See Also</a>
       </dt>
       <dd>
-        <a href="c_unit_overview.html">Working with JUnit</a>
+        <a href="c_unit_overview.html">Overview of C/C++ Unit Tests</a>
       </dd>
       <dd>
-        <a href="c_unit_quickref.html">JUnit Tasks: Quick Reference</a>
+        <a href="c_unit_quickref.html">C/C++ Unit Test Tasks: Quick Reference</a>
       </dd>
     </dl>
     <hr>

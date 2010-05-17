@@ -344,7 +344,7 @@ public class ModelSupport implements PropertyChangeListener {
                     model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
                 }
             };
-            nativeProject.runOnCodeModelReadiness(task);
+            nativeProject.runOnProjectReadiness(task);
         }
     }
 

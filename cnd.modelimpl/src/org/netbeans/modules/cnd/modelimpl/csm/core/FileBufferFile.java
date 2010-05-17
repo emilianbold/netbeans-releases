@@ -209,4 +209,9 @@ public class FileBufferFile extends AbstractFileBuffer {
     public FileBufferFile(DataInput input) throws IOException {
         super(input);
     }
+
+    @Override
+    public char[] getCharBuffer() throws IOException {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    }
 }

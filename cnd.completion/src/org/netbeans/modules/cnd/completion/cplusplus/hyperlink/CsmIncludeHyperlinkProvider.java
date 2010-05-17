@@ -131,7 +131,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 if (brokenInclude != null) {
                     toShow = brokenInclude.getContainingFile();
                     // jump into problem file
-                    postJump(brokenInclude, "goto_source_source_not_found", "cannot-open-include-element");//NOI18N
+                    return postJump(brokenInclude, "goto_source_source_not_found", "cannot-open-include-element");//NOI18N
                 }
             }
             CsmIncludeHierarchyResolver.showIncludeHierachyView(toShow);

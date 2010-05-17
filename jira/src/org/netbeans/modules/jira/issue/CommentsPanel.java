@@ -72,7 +72,6 @@ import javax.swing.text.StyledDocument;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
@@ -258,7 +257,7 @@ public class CommentsPanel extends JPanel {
                     doc.remove(off, length);
                     doc.insertString(off, comment.substring(pos[i], pos[i+1]), hlStyle);
                 } catch (BadLocationException blex) {
-                        blex.printStackTrace();
+                    Jira.LOG.log(Level.INFO, blex.getMessage(), blex);
                 }
             }
         }

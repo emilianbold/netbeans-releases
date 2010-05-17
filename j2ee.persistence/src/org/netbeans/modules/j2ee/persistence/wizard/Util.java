@@ -521,8 +521,13 @@ public class Util {
                 }
             }
             if(!isContainerManaged(project)){
-                JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(ProviderUtil.getConnection(persistenceUnit).getDriverClass());
-                PersistenceLibrarySupport.addDriver(project, driver[0]);
+                DatabaseConnection connection = ProviderUtil.getConnection(persistenceUnit);
+                if( connection!=null ){
+                    JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(connection.getDriverClass());
+                    PersistenceLibrarySupport.addDriver(project, driver[0]);
+                } else {
+                    Logger.getLogger("global").log(Level.INFO, "Can't find connection for persistence unit"); //NOI18N
+                }
             }
        }
 
