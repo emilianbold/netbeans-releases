@@ -90,6 +90,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
             if (copyTask != null) {
                 copyTask.cancel(true);
             }
+            localFile.getParentFile().mkdirs();
             copyTask = CommonTasksSupport.downloadFile(remoteFile, env, localFile.getAbsolutePath(), null);
         }
         try {
