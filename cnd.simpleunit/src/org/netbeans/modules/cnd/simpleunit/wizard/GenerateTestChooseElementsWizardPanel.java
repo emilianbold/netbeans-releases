@@ -79,12 +79,14 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
      * component from this class, just use getComponent().
      */
     private GenerateTestChooseElementsVisualPanel component;
+    private final String unitTestKind;
     private final ChangeSupport cs;
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private Task task;
     private WizardDescriptor wizard;
 
-    public GenerateTestChooseElementsWizardPanel() {
+    public GenerateTestChooseElementsWizardPanel(String unitTestKind) {
+        this.unitTestKind = unitTestKind;
         cs = new ChangeSupport(this);
     }
 
@@ -101,7 +103,8 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx("CreateTestWizardP1");
+        return new HelpCtx(AbstractUnitTestIterator.CND_UNITTEST_KIND_CPPUNIT.equals(unitTestKind)?
+            "CreateCppUnitTestWizardP1" : "CreateTestWizardP1"); // NOI18N
     }
 
     public boolean isValid() {
