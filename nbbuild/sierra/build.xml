@@ -43,8 +43,8 @@
     <import file="build.tst"/>
 
     <target name="main-zip"  depends="init,netbeans,clean,build,javadoc,zip"/>
-    <target name="main-nbm"  depends="init,gfesb,clean,nbms"/>
-    <target name="main-test" depends="init,run-daily,gfesb,unit-test"/>
+    <target name="main-nbm"  depends="init,sierra,clean,nbms"/>
+    <target name="main-test" depends="init,run-daily,sierra,unit-test"/>
 
     <target name="init">
         <property name="env.BUILD_NUMBER" value=""/>
@@ -71,21 +71,21 @@
         <delete dir="${home}/nbbuild/netbeans"/>
         <unzip src="${cache}/netbeans/${netbeans.zip}" dest="${home}/nbbuild"/>
 
-        <replace file="${home}/nbbuild/netbeans/etc/netbeans.conf" token="${netbeans.user}" value="${gfesb.user}"/>
+        <replace file="${home}/nbbuild/netbeans/etc/netbeans.conf" token="${netbeans.user}" value="${sierra.user}"/>
         <echo file="${build.number}" message="netbeans build: ${netbeans.file}${line.separator}" append="true"/>
-        <echo file="${build.number}" message="gfesb build: ${time.stamp}${line.separator}" append="true"/>
-        <echo file="${build.number}" message="gfesb hudson: ${env.BUILD_NUMBER}${line.separator}" append="true"/>
+        <echo file="${build.number}" message="sierra build: ${time.stamp}${line.separator}" append="true"/>
+        <echo file="${build.number}" message="sierra hudson: ${env.BUILD_NUMBER}${line.separator}" append="true"/>
         <echo file="${build.number}" message="repository: ${repository}" append="true"/>
         <chmod file="${home}/nbbuild/netbeans/bin/netbeans" perm="ugo+rx"/>
     </target>
 
-    <!-- gfesb -->
-    <target name="gfesb">
-        <mkdir dir="${cache}/gfesb"/>
-        <property name="gfesb.url" value="${gfesb.host}/${gfesb.path}/${gfesb.file}"/>
-        <get src="${gfesb.url}" dest="${cache}/gfesb/${gfesb.name}.zip" usetimestamp="true"/>
+    <!-- sierra -->
+    <target name="sierra">
+        <mkdir dir="${cache}/sierra"/>
+        <property name="sierra.url" value="${sierra.host}/${sierra.path}/${sierra.file}"/>
+        <get src="${sierra.url}" dest="${cache}/sierra/${sierra.name}.zip" usetimestamp="true"/>
         <delete dir="${home}/nbbuild/netbeans"/>
-        <unzip src="${cache}/gfesb/${gfesb.name}.zip" dest="${home}/nbbuild"/>
+        <unzip src="${cache}/sierra/${sierra.name}.zip" dest="${home}/nbbuild"/>
     </target>
 
     <!-- zip -->
