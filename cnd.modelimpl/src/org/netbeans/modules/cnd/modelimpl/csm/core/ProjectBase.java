@@ -47,6 +47,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -2697,6 +2699,31 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     FileContainer getFileContainer() {
         FileContainer fc = weakFileContainer.getContainer();
         return fc != null ? fc : FileContainer.empty();
+    }
+
+    public void traceContainer(PrintStream err){
+        err.println("FileContainer for project "+toString()); //NOI18N
+        FileContainer container = getFileContainer();
+        for(Map.Entry<CharSequence, FileEntry> entry : container.getFileStorage().entrySet()){
+            err.println("\tEntry "+entry.getKey()); //NOI18N
+            if (entry.getValue().getStatePairs().isEmpty()) {
+                err.println("\t\tState EMPTY"); //NOI18N
+                continue;
+            }
+            for(PreprocessorStatePair pair : entry.getValue().getStatePairs()) {
+                err.println("\t\tState"); //NOI18N
+                String text = pair.toString();
+                StringTokenizer st = new StringTokenizer(text,"\n"); //NOI18N
+                while(st.hasMoreTokens()) {
+                    String s = st.nextToken();
+                    if ("Snapshot".equals(s)) { //NOI18N
+                        err.println("\t\t\t"+s+"{...}"); //NOI18N
+                        break;
+                    }
+                    err.println("\t\t\t"+s); //NOI18N
+                }
+            }
+        }
     }
 
     private final WeakContainer<GraphContainer> weakGraphContainer;

@@ -73,6 +73,9 @@ Contributor(s):
             <file name="TestRepositoryDistributionAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestRepositoryDistributionAction.getInstance"/>
             </file>
+            <file name="TestFileContainerAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getFileContainerAction"/>
+            </file>
         </folder>
     </folder>
     <folder name="Projects">
@@ -122,6 +125,10 @@ Contributor(s):
             <file name="TestRepositoryDistributionAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestRepositoryDistributionAction.instance"/>
                 <attr name="position" intvalue="1800"/>
+            </file>
+            <file name="TestRepositoryDistributionAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestFileContainerAction.instance"/>
+                <attr name="position" intvalue="1900"/>
             </file>
         </folder>
     </folder>
