@@ -41,7 +41,7 @@ package org.netbeans.modules.cnd.gizmo;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -68,7 +68,7 @@ public class RemoteJarServiceProvider implements SetupProvider {
         if (path.indexOf('!') > 0) {
             path = path.substring(0, path.indexOf('!')); // NOI18N
         }
-        if (path.startsWith("file:")) {
+        if (path.startsWith("file:")) { // NOI18N
             path = path.substring(5);
         }
         File file = new File(path);
@@ -85,6 +85,7 @@ public class RemoteJarServiceProvider implements SetupProvider {
 
     public static NativeProcess getJavaProcess(Class<?> clazz, ExecutionEnvironment env, String[] arguments) throws IOException{
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setCharset(Charset.forName("UTF-8")); // NOI18N
         npb.setExecutable("java"); //NOI18N
         List<String> args = new ArrayList<String>();
         args.add("-cp"); //NOI18N
