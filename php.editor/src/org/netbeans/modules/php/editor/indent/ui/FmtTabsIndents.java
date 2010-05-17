@@ -95,6 +95,39 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         arrayItemsIndentationLabel = new javax.swing.JLabel();
         arrayItemsIndentationField = new javax.swing.JTextField();
 
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return continuationIndentSizeField;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return continuationIndentSizeField;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return arrayItemsIndentationField;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  continuationIndentSizeField){
+                    return arrayItemsIndentationField;
+                }
+                if(aComponent ==  initialIndentSizeField){
+                    return continuationIndentSizeField;
+                }
+                return continuationIndentSizeField;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  arrayItemsIndentationField){
+                    return continuationIndentSizeField;
+                }
+                if(aComponent ==  continuationIndentSizeField){
+                    return initialIndentSizeField;
+                }
+                return arrayItemsIndentationField;//end getComponentBefore
+
+            }}
+        );
         setName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_TabsAndIndents")); // NOI18N
         setOpaque(false);
 
@@ -104,7 +137,7 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         initialIndentLabel.setLabelFor(initialIndentSizeField);
         org.openide.awt.Mnemonics.setLocalizedText(initialIndentLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.initialIndentLabel.text")); // NOI18N
 
-        arrayItemsIndentationLabel.setLabelFor(continuationIndentSizeField);
+        arrayItemsIndentationLabel.setLabelFor(arrayItemsIndentationField);
         org.openide.awt.Mnemonics.setLocalizedText(arrayItemsIndentationLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.arrayItemsIndentationLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -143,15 +176,20 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         );
 
         continuationIndentSizeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.continuationIndentSizeLabel.AccessibleContext.accessibleName")); // NOI18N
+        continuationIndentSizeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.continuationIndentSizeLabel.AccessibleContext.accessibleDescription")); // NOI18N
         continuationIndentSizeField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.continuationIndentSizeField.AccessibleContext.accessibleName")); // NOI18N
         continuationIndentSizeField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.continuationIndentSizeField.AccessibleContext.accessibleDescription")); // NOI18N
         initialIndentLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.initialIndentLabel.AccessibleContext.accessibleName")); // NOI18N
+        initialIndentLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.initialIndentLabel.AccessibleContext.accessibleDescription")); // NOI18N
         initialIndentSizeField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.initialIndentSizeField.AccessibleContext.accessibleName")); // NOI18N
         initialIndentSizeField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.initialIndentSizeField.AccessibleContext.accessibleDescription")); // NOI18N
         arrayItemsIndentationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.arrayItemsIndentationLabel.AccessibleContext.accessibleName")); // NOI18N
+        arrayItemsIndentationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.arrayItemsIndentationLabel.AccessibleContext.accessibleDescription")); // NOI18N
         arrayItemsIndentationField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.arrayItemsIndentationField.AccessibleContext.accessibleName")); // NOI18N
+        arrayItemsIndentationField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.arrayItemsIndentationField.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
