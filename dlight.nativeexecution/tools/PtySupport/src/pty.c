@@ -15,6 +15,11 @@
 #include <signal.h>
 #include <fcntl.h>
 
+#if defined __CYGWIN__ && !defined WCONTINUED
+//added for compatibility with cygwin 1.5
+#define WCONTINUED 0
+#endif
+
 static void set_noecho(int);
 
 /*
