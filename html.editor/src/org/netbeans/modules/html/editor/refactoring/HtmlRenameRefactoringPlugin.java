@@ -205,7 +205,9 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
                         }
                     }
                 }
-                modificationResult.addDifferences(source, diffs);
+                if(!diffs.isEmpty()) {
+                    modificationResult.addDifferences(source, diffs);
+                }
             }
 
         } catch (IOException ex) {
@@ -267,7 +269,9 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
                     }
                 }
 
-                modificationResult.addDifferences(refering, diffs);
+                if(!diffs.isEmpty()) {
+                    modificationResult.addDifferences(refering, diffs);
+                }
 
             } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);

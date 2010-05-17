@@ -282,7 +282,9 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                     }
                 }
 
-                modificationResult.addDifferences(file, diffs);
+                if(!diffs.isEmpty()) {
+                    modificationResult.addDifferences(file, diffs);
+                }
 
             } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
@@ -348,7 +350,9 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                         }
                     }
                 }
-                modificationResult.addDifferences(source, diffs);
+                if(!diffs.isEmpty()) {
+                    modificationResult.addDifferences(source, diffs);
+                }
             }
 
         } catch (IOException ex) {
@@ -375,7 +379,9 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                         NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector"))); //NOI18N
             }
         }
-        modificationResult.addDifferences(context.getFileObject(), diffs);
+        if(!diffs.isEmpty()) {
+            modificationResult.addDifferences(context.getFileObject(), diffs);
+        }
 
     }
 
@@ -443,7 +449,9 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                                 NbBundle.getMessage(CssRenameRefactoringPlugin.class, renameMsgKey))); //NOI18N
                     }
                 }
-                modificationResult.addDifferences(file, diffs);
+                if(!diffs.isEmpty()) {
+                    modificationResult.addDifferences(file, diffs);
+                }
 
             } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
