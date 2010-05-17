@@ -72,8 +72,6 @@ public final class ViewUpdates implements DocumentListener {
 
     private DocumentListener incomingModificationListener;
 
-    private boolean incomingModification;
-
     int rebuildStartOffset;
 
     int rebuildEndOffset;
@@ -146,8 +144,13 @@ public final class ViewUpdates implements DocumentListener {
         assert (endIndexBatch > startIndex) : "endIndexBatch=" + endIndexBatch + " > startIndex=" + startIndex; // NOI18N
         ParagraphView startChild = documentView.getEditorView(startIndex);
         ParagraphView lastChild = documentView.getEditorView(endIndexBatch - 1);
+        int docTextLength = documentView.getDocument().getLength() + 1;
         int startOffset = startChild.getStartOffset();
         int endOffset = lastChild.getEndOffset();
+        assert (startOffset <= endOffset) : "startOffset=" + startOffset + // NOI18N
+                " > endOffset=" + endOffset + "\n" + documentView.toStringDetail(); // NOI18N
+        assert (endOffset <= docTextLength) : "endOffset=" + endOffset + // NOI18N
+                " > docTextLength=" + docTextLength + "\n" + documentView.toStringDetail(); // NOI18N
         ViewBuilder viewBuilder = new ViewBuilder(
                 null, documentView, startIndex, viewFactories, startOffset, endOffset, endOffset, 0, true);
         try {
@@ -165,7 +168,7 @@ public final class ViewUpdates implements DocumentListener {
             mutex.lock();
             documentView.checkDocumentLocked();
             try {
-                if (!documentView.isActive()) {
+                if (!documentView.isUpdatable()) {
                     return;
                 }
                 // Insert into document was performed -> update or rebuild views
@@ -295,7 +298,7 @@ public final class ViewUpdates implements DocumentListener {
                 }
                 resetRebuildInfo();
             } finally {
-                incomingModification = false;
+                documentView.setIncomingModification(false);
                 mutex.unlock();
             }
         }
@@ -308,7 +311,7 @@ public final class ViewUpdates implements DocumentListener {
             mutex.lock();
             documentView.checkDocumentLocked();
             try {
-                if (!documentView.isActive()) {
+                if (!documentView.isUpdatable()) {
                     return;
                 }
                 // Removal in document was performed -> update or rebuild views
@@ -421,7 +424,7 @@ public final class ViewUpdates implements DocumentListener {
                 }
                 resetRebuildInfo();
             } finally {
-                incomingModification = false;
+                documentView.setIncomingModification(false);
                 mutex.unlock();
             }
         }
@@ -434,7 +437,7 @@ public final class ViewUpdates implements DocumentListener {
             mutex.lock();
             documentView.checkDocumentLocked();
             try {
-                if (!documentView.isActive()) {
+                if (!documentView.isUpdatable()) {
                     return;
                 }
                 checkFactoriesComponentInited();
@@ -446,7 +449,7 @@ public final class ViewUpdates implements DocumentListener {
                 resetRebuildInfo();
                 documentView.checkIntegrity();
             } finally {
-                incomingModification = false;
+                documentView.setIncomingModification(false);
                 mutex.unlock();
             }
         }
@@ -498,7 +501,7 @@ public final class ViewUpdates implements DocumentListener {
             mutex.lock();
             try {
                 documentView.checkDocumentLocked();
-                if (documentView.isActive() && !incomingModification) {
+                if (documentView.isActive()) {
                     if (isRebuildNecessary()) {
                         int rStartOffset = rebuildStartOffset;
                         int rEndOffset = rebuildEndOffset;
@@ -572,17 +575,17 @@ public final class ViewUpdates implements DocumentListener {
 
         @Override
         public void insertUpdate(DocumentEvent e) {
-            incomingModification = true;
+            documentView.setIncomingModification(true);
         }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
-            incomingModification = true;
+            documentView.setIncomingModification(true);
         }
 
         @Override
         public void changedUpdate(DocumentEvent e) {
-            incomingModification = true;
+            documentView.setIncomingModification(true);
         }
 
     }

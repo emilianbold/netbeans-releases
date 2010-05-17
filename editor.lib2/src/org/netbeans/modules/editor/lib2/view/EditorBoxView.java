@@ -217,6 +217,14 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
         return new EditorBoxViewChildren<V>(capacity);
     }
 
+    protected void releaseChildren(boolean resetSpans) {
+        children = null;
+        if (resetSpans) {
+            setMajorAxisSpan(0d);
+            setMinorAxisSpan(0f);
+        }
+    }
+
     /*
      * Replaces child views.
      *
