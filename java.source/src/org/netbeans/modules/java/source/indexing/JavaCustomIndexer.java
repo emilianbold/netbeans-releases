@@ -144,6 +144,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
                 return;
             }
+            APTUtils.sourceRootRegistered(context.getRoot(), context.getRootURI());
             APTUtils aptUtils = APTUtils.get(root);
             if (aptUtils != null && aptUtils.verifyAttributes(root, context.isAllFilesIndexing()))
                 return;
@@ -807,6 +808,8 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
             assert removedRoots != null;
+            JavaIndex.LOG.log(Level.FINE, "roots removed: {0}", removedRoots);
+            APTUtils.sourceRootUnregistered(removedRoots);
             final ClassIndexManager cim = ClassIndexManager.getDefault();
             final JavaFileFilterListener ffl = JavaFileFilterListener.getDefault();
             try {
