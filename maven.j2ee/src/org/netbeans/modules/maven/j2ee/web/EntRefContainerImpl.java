@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
@@ -119,7 +120,7 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
         FileObject ejbReferenceEjbClassFO = SourceUtils.getFileObject(ejbReference.getComponentName(refType), ejbReference.getClasspathInfo());
         assert ejbReferenceEjbClassFO != null : "Reference FileObject not found: " + ejbReference.getComponentName(refType);
         Project otherPrj = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
-        NbMavenProject oprj = otherPrj.getLookup().lookup(NbMavenProject.class);
+        final NbMavenProject oprj = otherPrj.getLookup().lookup(NbMavenProject.class);
         String jarName = "";
         if (oprj != null) {
             jarName = oprj.getMavenProject().getBuild().getFinalName();  //NOI18N
@@ -134,11 +135,18 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
                     project.getProjectDirectory().getFileObject("pom.xml"),//NOI18N
                     Collections.<ModelOperation<POMModel>>singletonList(new ModelOperation<POMModel>() {
 
+                @Override
                 public void performOperation(POMModel model) {
                     //add as dependency
-                    Dependency d = ModelUtils.checkModelDependency(model, grId, artId, true);
-                    if (d != null) {
-                        d.setVersion(version);
+                    if (!ModelUtils.hasModelDependency(model, grId, artId)) {
+                        Dependency d = ModelUtils.checkModelDependency(model, grId, artId, true);
+                        if (d != null) {
+                            d.setVersion(version);
+                            if (NbMavenProject.TYPE_EJB.equals(oprj.getPackagingType()) ||
+                                NbMavenProject.TYPE_WAR.equals(oprj.getPackagingType())) {
+                                d.setScope(Artifact.SCOPE_PROVIDED);
+                            }
+                        }
                     }
                 }
             }));
