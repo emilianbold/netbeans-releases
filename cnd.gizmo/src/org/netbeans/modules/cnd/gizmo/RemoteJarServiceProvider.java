@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.cnd.gizmo;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -60,25 +62,30 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 public class RemoteJarServiceProvider implements SetupProvider {
     private static final Class<?> service = Offset2LineService.class;
     private static final String relativePath;
+    private static final String localAbsPath;
     static {
         String path = service.getProtectionDomain().getCodeSource().getLocation().getPath();
-        path = path.replace('\\', '/'); // NOI18N
-        path = path.substring(path.lastIndexOf("cnd/")+4); // NOI18N
         if (path.indexOf('!') > 0) {
             path = path.substring(0, path.indexOf('!')); // NOI18N
         }
-        relativePath = path;
+        if (path.startsWith("file:")) { // NOI18N
+            path = path.substring(5);
+        }
+        File file = new File(path);
+        localAbsPath = file.getAbsolutePath(); // it should be absolute anyhow
+        relativePath = file.getName();
     }
 
     @Override
     public Map<String, String> getBinaryFiles(ExecutionEnvironment env) {
         Map<String, String> result = new HashMap<String, String>();
-        result.put(relativePath, relativePath); // NOI18N
+        result.put(relativePath, localAbsPath); // NOI18N
         return result;
     }
 
     public static NativeProcess getJavaProcess(Class<?> clazz, ExecutionEnvironment env, String[] arguments) throws IOException{
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setCharset(Charset.forName("UTF-8")); // NOI18N
         npb.setExecutable("java"); //NOI18N
         List<String> args = new ArrayList<String>();
         args.add("-cp"); //NOI18N

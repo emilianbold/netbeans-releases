@@ -225,6 +225,7 @@ implements PropertyChangeListener {
         final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
         if (ec == null) return lineNumber;
         final BaseDocument doc = (BaseDocument)ec.getDocument();
+        if (doc == null) return lineNumber;
         final int rowStartOffset = Utilities.getRowStartFromLineOffset(doc, lineNumber - 1);
         final int rowEndOffset;
         try {

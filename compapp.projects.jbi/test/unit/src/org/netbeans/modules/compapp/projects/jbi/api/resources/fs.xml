@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="JbiExtensions">
+        <folder name="ConfigExtension">
+            <attr name="xsdFileName" stringvalue="config-ext.xsd" />
+            <attr name="extensionType" stringvalue="endpoint" />
+            <attr name="extensionTarget" stringvalue="sun-http-binding" />
+            <attr name="prefix" stringvalue="config" />
+            <attr name="namespace" stringvalue="http://www.sun.com/jbi/descriptor/configuration"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.namebeans.modules.compapp.configextension.Bundle" />
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/namebeans/modules/compapp/configextension/resources/config-ext.png" />
+            <folder name="application-config">
+                <file name="name">
+                    <attr name="type" stringvalue="String"/>
+                    <attr name="description" stringvalue="Application Configuration Name"/>
+                </file>
+            </folder>
+        </folder>
+        
+        <folder name="RedeliveryExtension">
+            <attr name="xsdFileName" stringvalue="config-ext.xsd" />
+            <attr name="extensionType" stringvalue="connection" />
+            <attr name="extensionTarget" stringvalue="all" />
+            <attr name="prefix" stringvalue="redelivery" />
+            <attr name="namespace" stringvalue="http://www.sun.com/jbi/qos/redelivery"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.namebeans.modules.compapp.configextension.Bundle" />
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/namebeans/modules/compapp/configextension/resources/config-ext.png" />
+            <folder name="redelivery">
+                <folder name="on-failure">
+                    <attr name="choice" stringvalue="true"/>
+                    <folder name="error-endpoint">
+                        <file name="endpoint-name">
+                            <attr name="type" stringvalue="String"/>
+                            <attr name="description" stringvalue="Error endpoint name"/>
+                        </file>
+                        <file name="service-name">
+                            <attr name="type" stringvalue="QName"/>
+                            <attr name="description" stringvalue="Error endpoint service name"/>
+                        </file>
+                    </folder>
+                    <folder name="delete"/>
+                    <folder name="suspend"/>  
+                </folder>
+                <file name="maxAttempts">
+                    <attr name="type" stringvalue="Integer"/>
+                    <attr name="description" stringvalue="Maximum redelivery attempts"/>
+                </file>
+                <file name="waitTime">
+                    <attr name="type" stringvalue="Integer"/>
+                    <attr name="description" stringvalue="Maximum redelivery wait time (mil seconds)"/>
+                </file>
+            </folder>
+        </folder>
+        
+        <folder name="ThrottlingExtension">
+            <attr name="xsdFileName" stringvalue="config-ext.xsd" />
+            <attr name="extensionType" stringvalue="connection" />
+            <attr name="extensionTarget" stringvalue="all" />
+            <attr name="prefix" stringvalue="throttling" />
+            <attr name="namespace" stringvalue="http://www.sun.com/jbi/qos/throttling"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.namebeans.modules.compapp.configextension.Bundle" />
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/namebeans/modules/compapp/configextension/resources/config-ext.png" />
+            <folder name="throttling">
+                <file name="maximumConcurrencyLimit">
+                    <attr name="type" stringvalue="Integer"/>
+                    <attr name="description" stringvalue="Maximim Concurrency Limit"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
+</filesystem>

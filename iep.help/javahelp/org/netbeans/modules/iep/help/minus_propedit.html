@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Minus Operator Property Editor</title>
+</head>
+<body>
+
+<h2>Using the Minus Operator Property Editor </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Minus Operator subtracts one relation from another. 
+The order of subtraction is determined by the order in which you connect the input relations. 
+You cannot subtract unlike operator attributes. 
+The input schemas must be identical, with identical names and types for all attributes.</p>
+
+<p><strong>To create a Minus operator:</strong></p>
+
+<ol>
+
+  <li>Drag a Minus operator from the Palette to the Design view.</li>
+  <li>Connect two or more input relations. </li>
+
+  <li>Click the Minus operator icon. The property editor opens.<br>
+  The Expression field provides the order of the minus expression. 
+  This is initially determined by the order in which the inputs were connected. 
+  You can determine this by opening the properties pane for the Minus operator. 
+  The input ID list provides the order of the operators that the Minus operator subtracts Next. 
+  Open the properties pane for the relations feeding into the Minus operator and examine their ID.</li>
+
+  <li>To change the order in the Expression dialog box, select the Subtract From drop down list, and a new primary operator. 
+  The new primary operator becomes the first operator on the Expression field.<br>
+  You can connect additional inputs to the Minus operator at a later time.<br>
+  You can also remove inputs. When you do so, the Expression is automatically updated.</li>
+
+</ol>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="distinct_propedit.html">Using the Distinct Operator Property Editor</a></dd>
+<dd><a href="intersect_propedit.html">Using the Intersect Operator Property Editor </a></dd>
+<dd><a href="union_propedit.html">Using the Union Operator Property Editor</a></dd>
+<dd><a href="unionall_propedit.html">Using the Union All Operator Property Editor </a></dd>
+<dd>&nbsp;</dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

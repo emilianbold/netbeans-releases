@@ -1,0 +1,6 @@
+#IEP Palette: Actions
+MSG_ErrorNoFocusedDocument=No document selected. Please select a document to insert the item into.
+ACT_OpenIepCustomizer=&IEP Components
+
+#IEP Palette: categories
+<--NbPaletteCodeGen-->

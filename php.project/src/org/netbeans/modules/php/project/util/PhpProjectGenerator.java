@@ -303,20 +303,12 @@ public final class PhpProjectGenerator {
         assert projectDir != null;
         assert sourceDir != null;
 
-        StringBuilder buffer = new StringBuilder(200);
-        for (PhpFrameworkProvider provider : frameworkExtenders.keySet()) {
-            if (buffer.length() > 0) {
-                buffer.append("|"); // NOI18N
-            }
-            buffer.append(provider.getName());
-        }
-
         PhpProjectUtils.logUsage(PhpProjectGenerator.class, "USG_PROJECT_CREATE_PHP", Arrays.asList(
                 FileUtil.isParentOf(projectDir, sourceDir) ? "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
                 runAs != null ? runAs.name() : "", // NOI18N
                 "1", // NOI18N
                 (copyFiles != null && copyFiles == Boolean.TRUE) ? "COPY_FILES_YES" : "COPY_FILES_NO", // NOI18N
-                buffer.toString()));
+                PhpProjectUtils.getFrameworksForUsage(frameworkExtenders.keySet())));
     }
 
     /**

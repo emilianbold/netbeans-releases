@@ -77,10 +77,18 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
 
 	@Override
         public void actionPerformed(ActionEvent a) {
+	    Color initialColor = null;
+	    if (button == foregroundButton)
+		initialColor = termOptions.getForeground();
+	    else if (button == backgroundButton)
+		initialColor = termOptions.getBackground();
+	    else if (button == selectionButton)
+		initialColor = termOptions.getSelectionBackground();
+
             Color newColor = JColorChooser.showDialog(
                 SwingUtilities.getAncestorOfClass(Dialog.class, button),
                 name,
-                null);
+                initialColor);
 
             if (newColor != null) {
                 button.setBackground(newColor);
@@ -143,7 +151,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         new PropertyChangeListener() {
 	@Override
             public void propertyChange(PropertyChangeEvent e) {
-                previewTermOptions();
+		refreshView();
             }
         };
 
@@ -154,24 +162,37 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
      * @param termOptions
      */
     public void setTermOptions(TermOptions termOptions) {
+
         if (this.termOptions != null)
             this.termOptions.removePropertyChangeListener(propertyListener);
-        this.termOptions = termOptions;
 
-        applyTermOptions();
+        this.termOptions = termOptions;
 
         if (this.termOptions != null)
             this.termOptions.addPropertyChangeListener(propertyListener);
 
-        previewTermOptions();
+	refreshView();
 
+    }
+
+    private void refreshView() {
+        if (termOptions != null)
+            termOptions.removePropertyChangeListener(propertyListener);
+
+	try {
+	    applyTermOptions();
+	} finally {
+	    if (termOptions != null)
+		termOptions.addPropertyChangeListener(propertyListener);
+	}
+        previewTermOptions();
     }
 
     /**
      * Transfer model values to view widgets.
      */
     private void applyTermOptions() {
-        // TMP fontSizeSpinner.setValue(termOptions.getFontSize());
+        fontSizeSpinner.setValue(termOptions.getFontSize());
         fontText.setText(termOptions.getFont().getFamily() +
 		         " " +					// NOI18N
 			 termOptions.getFont().getSize());
@@ -213,22 +234,6 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
             }
             p = p.getParent();
         }
-        /* TMP
-        invalidate();
-        Component p = getParent();
-        if (p != null) {
-            p.validate();
-        }
-
-        Component p = getParent();
-        while (p != null) {
-            if (p instanceof JFrame) {
-                ((JFrame) p).pack();
-                break;
-            }
-            p = p.getParent();
-        }
-         */
     }
 
     /**
@@ -238,12 +243,6 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         if (term == null)
             return;
 
-        /* OLD
-        Font font = new Font("monospaced",
-                             Font.PLAIN,
-                             termOptions.getFontSize());
-        term.setFont(font);
-         */
         term.setFixedFont(true);
         term.setFont(termOptions.getFont());
 
@@ -368,7 +367,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
                 add(fontSizeLabel, gridBagConstraints);
 
-                fontSizeSpinner.setModel(new javax.swing.SpinnerNumberModel(12, 8, 48, 2));
+                fontSizeSpinner.setModel(new javax.swing.SpinnerNumberModel(12, 8, 48, 1));
                 fontSizeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
                         public void stateChanged(javax.swing.event.ChangeEvent evt) {
                                 fontSizeSpinnerStateChanged(evt);
@@ -563,19 +562,16 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
 
     private void restoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreActionPerformed
         termOptions.resetToDefault();
-        applyTermOptions();
-        previewTermOptions();
+	refreshView();
     }//GEN-LAST:event_restoreActionPerformed
 
     private void fontSizeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_fontSizeSpinnerStateChanged
-        /* OLD
         int fontSize = termOptions.getFontSize();
         Object fontSizeObj = fontSizeSpinner.getValue();
         if (fontSizeObj instanceof Integer) {
             fontSize = ((Integer) fontSizeObj).intValue();
             termOptions.setFontSize(fontSize);
         }
-         */
     }//GEN-LAST:event_fontSizeSpinnerStateChanged
 
     private void historySizeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_historySizeSpinnerStateChanged

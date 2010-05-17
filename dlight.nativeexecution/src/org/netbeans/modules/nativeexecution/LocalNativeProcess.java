@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
@@ -56,10 +57,12 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.netbeans.modules.nativeexecution.support.Win32APISupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
 
     private Process process = null;
+    private final CountDownLatch additionalMsgLatch = new CountDownLatch(1);
 
     public LocalNativeProcess(NativeProcessInfo info) {
         super(info);
@@ -146,7 +149,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         final ProcessBuilder pb = new ProcessBuilder(); // NOI18N
 
         final MacroMap jointEnv = MacroMap.forExecEnv(ExecutionEnvironmentFactory.getLocal());
-        jointEnv.putAll(pb.environment());
         jointEnv.putAll(info.getEnvironment());
 
         if (isInterrupted()) {
@@ -185,7 +187,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         creation_ts = System.nanoTime();
 
-        setErrorStream(process.getErrorStream());
+        setErrorStream(new ErrorStream(process.getErrorStream(), additionalMsgLatch));
         setInputStream(process.getInputStream());
         setOutputStream(process.getOutputStream());
 
@@ -217,7 +219,31 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             return -1;
         }
 
-        return process.waitFor();
+        try {
+            int exitcode = process.waitFor();
+
+            /*
+             * Bug 179555 - Qt application fails to run in case of default qt sdk installation
+             */
+
+            if (exitcode == -1073741515 && Utilities.isWindows()) {
+                // This means Initialization error. May be the reason is that no required dll found
+                StringBuilder cmd = new StringBuilder();
+                for (String s : info.getCommand()) {
+                    cmd.append(s).append(' ');
+                }
+
+                String errorMsg = loc("LocalNativeProcess.windowsProcessStartFailed.1073741515.text", cmd.toString()); // NOI18N
+                if (info.isPtyMode()) {
+                    errorMsg = errorMsg.replaceAll("\n", "\n\r"); // NOI18N
+                }
+
+                ((ErrorStream) getErrorStream()).addErrorMessage(errorMsg);
+            }
+            return exitcode;
+        } finally {
+            additionalMsgLatch.countDown();
+        }
     }
 
     @Override
@@ -229,5 +255,39 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(LocalNativeProcess.class, key, params);
+    }
+
+    private static class ErrorStream extends InputStream {
+
+        private final InputStream orig;
+        private final CountDownLatch additionalMsgLatch;
+        private transient ByteArrayInputStream additionalMsg = null;
+
+        public ErrorStream(InputStream orig, CountDownLatch additionalMsgLatch) {
+            this.orig = orig;
+            this.additionalMsgLatch = additionalMsgLatch;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int c = orig.read();
+
+            if (c < 0) {
+                try {
+                    additionalMsgLatch.await();
+                } catch (InterruptedException ex) {
+                }
+            }
+
+            if (additionalMsg != null && c < 0) {
+                c = additionalMsg.read();
+            }
+
+            return c;
+        }
+
+        private void addErrorMessage(String additionalMsg) {
+            this.additionalMsg = new ByteArrayInputStream(additionalMsg.getBytes());
+        }
     }
 }

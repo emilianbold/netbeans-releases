@@ -1,0 +1,18 @@
+#if($isDisableConstraint)
+
+   ${statementSeparator}
+   ## Enable Primary Key
+   ALTER TABLE $targetTable ENABLE CONSTRAINT $targetTablePkName
+   ## ${statementSeparator}
+
+   ## Enable Foreign Keys
+   ## set( $fkCounter = 0)
+   ## set( $totalFKs = $targetTableForeignKeys.size())
+   ## foreach( $fk in ${targetTableForeignKeys} )
+   ##    ALTER TABLE $targetTable ENABLE CONSTRAINT $fk.getName()
+   ##    #if($fkCounter < $totalFKs)
+   ##        ${statementSeparator}
+   ##    #end
+   ##    #set( $fkCounter = $fkCounter + 1)
+   ## #end
+#end 

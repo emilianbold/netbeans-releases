@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.Action;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
@@ -67,6 +68,7 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.openide.util.Exceptions;
 
 /** Expression Language completion provider implementation
  *
@@ -217,59 +219,46 @@ public class ElCompletionProvider implements CompletionProvider {
         protected void queryEL(CompletionResultSet result, 
                 JTextComponent component, int offset) 
         {
-            BaseDocument doc = (BaseDocument) component.getDocument();
-            JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
-
-            boolean queryingJsp = JspUtils.isJspDocument(doc);
-            JspELExpression elExpr = new JspELExpression(sup);
-            int parseType = elExpr.parse(offset); //this initializes the expression
-            int anchor = offset - elExpr.getReplace().length();
-            result.setAnchorOffset(anchor);
-
-            switch (parseType) {
-                case ELExpression.EL_START:
-                    // implicit objects
-                    for (ELImplicitObject implOb : 
-                        ELImplicitObjects.getELImplicitObjects(
-                                elExpr.getReplace(), elExpr)) 
-                    {
-                        result.addItem(ElCompletionItem.createELImplicitObject(
-                                implOb.getName(), anchor, implOb.getType()));
-                    }
-
-                    if (queryingJsp) {
-                        // defined beans on the page
-                        BeanData[] beans = sup.getBeanData();
-                        if (beans != null) {
-                            for (int i = 0; i < beans.length; i++) {
-                                if (beans[i].getId().startsWith(elExpr.getReplace())) {
-                                    result.addItem(ElCompletionItem.createELBean(
-                                            beans[i].getId(), anchor, beans[i].getClassName()));
+            try {
+                BaseDocument doc = (BaseDocument) component.getDocument();
+                JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
+                boolean queryingJsp = JspUtils.isJspDocument(doc);
+                JspELExpression elExpr = new JspELExpression(sup, offset);
+                int parseType = elExpr.parse();
+                int anchor = offset - elExpr.getReplace().length();
+                result.setAnchorOffset(anchor);
+                switch (parseType) {
+                    case ELExpression.EL_START:
+                        // implicit objects
+                        for (ELImplicitObject implOb : ELImplicitObjects.getELImplicitObjects(elExpr.getReplace(), elExpr)) {
+                            result.addItem(ElCompletionItem.createELImplicitObject(implOb.getName(), anchor, implOb.getType()));
+                        }
+                        if (queryingJsp) {
+                            // defined beans on the page
+                            BeanData[] beans = sup.getBeanData();
+                            if (beans != null) {
+                                for (int i = 0; i < beans.length; i++) {
+                                    if (beans[i].getId().startsWith(elExpr.getReplace())) {
+                                        result.addItem(ElCompletionItem.createELBean(beans[i].getId(), anchor, beans[i].getClassName()));
+                                    }
                                 }
                             }
+                            List<Function> functions = ELFunctions.getFunctions(sup, elExpr.getReplace());
+                            Iterator<Function> iter = functions.iterator();
+                            while (iter.hasNext()) {
+                                Function fun = iter.next();
+                                result.addItem(ElCompletionItem.createELFunction(fun.getName(), offset - elExpr.getReplace().length(), fun.getReturnType(), fun.getPrefix(), fun.getParameters()));
+                            }
                         }
-                        //Functions
-                        List<Function> functions = 
-                            ELFunctions.getFunctions(sup, elExpr.getReplace());
-                        Iterator<Function> iter = functions.iterator();
-                        while (iter.hasNext()) {
-                            Function fun = iter.next();
-                            result.addItem(ElCompletionItem.createELFunction(
-                                    fun.getName(),
-                                    offset - elExpr.getReplace().length(),
-                                    fun.getReturnType(),
-                                    fun.getPrefix(),
-                                    fun.getParameters()));
-                        }
-                    }
-                    break;
-                case ELExpression.EL_BEAN:
-                case ELExpression.EL_IMPLICIT:
-                    List<CompletionItem> items = elExpr.getPropertyCompletionItems(
-                            elExpr.getObjectClass(), anchor);
-                    result.addAllItems(items);
-                    break;
-                    
+                        break;
+                    case ELExpression.EL_BEAN:
+                    case ELExpression.EL_IMPLICIT:
+                        List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass(), anchor);
+                        result.addAllItems(items);
+                        break;
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }

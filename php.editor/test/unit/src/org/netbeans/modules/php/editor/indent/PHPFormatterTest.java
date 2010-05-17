@@ -1033,6 +1033,20 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceWithinParens08.php", options);
     }
 
+    public void testSpacesWithinMethodDeclParens02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinMethodDeclParens, true);
+        options.put(FmtOptions.spaceWithinMethodCallParens, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinMethodDecl01.php", options);
+    }
+
+    public void testSpacesWithinMethodDeclParens03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinMethodDeclParens, false);
+        options.put(FmtOptions.spaceWithinMethodCallParens, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinMethodDecl02.php", options);
+    }
+
     public void testSpacesWithinTypeCastParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceWithinTypeCastParens, false);

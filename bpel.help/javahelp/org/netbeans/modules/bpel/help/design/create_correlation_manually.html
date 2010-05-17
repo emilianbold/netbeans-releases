@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>BPEL Designer: Adding Correlation Sets Manually</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>BPEL Designer: Adding Correlation Sets Manually </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<h3>Correlation in Four Steps</h3>
+<p>These are four basic steps to manually enable correlation in a process:</p>
+<ol>
+  <li>Define one or more properties in the WSDL file <a href="nbdocs://org.netbeans.modules.xml.wsdlui/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor_prop.html" title="Configuring Properties and Property Aliases Using the WSDL View">using the WSDL Editor</a> or <a href="add_props_navigator.html">using the Navigator window</a>. </li>
+  <li>Define property aliases in the WSDL file <a href="nbdocs://org.netbeans.modules.xml.wsdlui/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor_prop.html" title="Configuring Properties and Property Aliases Using the WSDL View">using the WSDL Editor</a> or <a href="add_props_navigator.html">using the Navigator window</a>.</li>
+  <li>Define a <a href="create_correlation_manually.html#define_corr" title="Adding Correlation Sets">correlation set</a> for the Process on the BPEL diagram, using one or more of the properties.</li>
+  <li> <a href="create_correlation_manually.html#add_corr" title="Adding Correlation Sets">Associate</a> one or more correlation sets with a message that is  sent or received in an Invoke, Receive, Reply, or Pick activity. </li>
+</ol>
+
+<p>You can add properties and property aliases to a WSDL file using one of the following methods:</p>
+<ul class="note">
+<li>Using the WSDL Editor. For details, see <a href="nbdocs://org.netbeans.modules.xml.wsdlui/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor_prop.html" title="Configuring Properties and Property Aliases Using the WSDL View">Configuring Properties and Property Aliases Using the WSDL View</a>. </li>
+<li>In the BPEL Logical View of the Navigator. For details, see <a href="add_props_navigator.html" title="Adding Properties and Property Aliases to WSDL Files from the Navigator">Adding Properties and Property Aliases to WSDL Files Using the Navigator</a>. </li>
+</ul>
+<p>After properties and property aliases are added to an imported WSDL file, you can define correlation sets for the Process element. </p>
+<p><b><a name="define_corr"></a>To define a correlation set:</b></p>
+<ol>
+  <li>In the Design view, right-click the Process element and choose Add &gt; Correlation Set. <br>
+          Alternatively, in the  BPEL Logical View of the Navigator window, right-click the Correlation Sets node and  choose Add Correlation Set.  </li>
+    <li>In the Add Correlation Set dialog box, specify the name for the correlation set and click Add to add properties.</li>
+    <li>In the Property Chooser dialog box, expand the WSDL file node, and select a property to add to the set. </li>
+    <li>(Optional) Clear the Show Imported Files Only checkbox to view the contents of non-imported WSDL and XML schema files. </li>
+    <ul class="note">
+      <li> By default, the Property Chooser   dialog box only shows those files that have   already been referenced in the process. However, the project may contain   other <tt>.wsdl</tt> and <tt>.xsd</tt> files which have not yet been imported into the   process. If you select a type for the new property that is defined in a   non-imported file, the IDE will automatically add the required import to   the BPEL process. </li>
+    </ul>
+    <li>Click OK. </li>
+</ol>
+ <p>The correlation sets defined for the Process have global visibility. The name of  a correlation set must be unique among the names of other correlation sets. </p>
+ <p>After defining a correlation set, add it to the Invoke, Receive,  or Reply elements. You can also associate a correlation set with the On Message branch of a Pick activity and the On Event</tt> branch of an Event Handlers container element. </p>
+ <p><b><a name="add_corr"></a>To add a correlation set to an activity:</b></p>
+ <ol>
+   <li>In the Design view, double-click an element (Invoke, Receive,   Reply,  the On Message branch of Pick, or the On Event branch of an Event Handlers container element).</li>
+   <li>In the Property Editor, select the Correlations tab and click Add. <br>
+   </li>
+   <li>In the Choose a Correlation Set dialog box, expand the Correlation Sets node, select the correlation set and click OK.</li>
+   <li>Choose the initiate attribute for this correlation set from the Initiate drop-down list. You can select one of the following options: <br>
+   <ul>
+   <li><tt><b>Yes</b>.</tt> The activity must attempt to initiate the correlation set.</li>
+   <li><tt><b>Join</b></tt>. The activity must attempt to initiate the correlation set if the correlation set is not yet initiated.</li>
+   <li><tt><b>No.</b></tt> The activity must not attempt to initiate the correlation set. This is the default option.  </li>
+   </ul>
+   </li>
+   <li>For an Invoke activity, specify the message pattern. <br>
+   From the Pattern drop-down list, select a pattern attribute to indicate whether the correlation applies to the outbound message (<tt>request</tt>), inbound message (<tt>response</tt>), or both (<tt>request-response</tt>).</li>
+   <li>(Optional) Add more correlation sets as needed and click OK.</li>
+</ol>
+<h3><a name="corr_attributes"></a>Correlation Attributes</h3>
+<p> A correlation  within a synchronous Invoke activity has an additional attribute: <tt>pattern</tt>. This attribute specifies whether the correlation set applies to the request message, the response message, or both. </p>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="about_correlation_and_wizard.html" title="Understanding Correlation. Using Correlation Wizard">Understanding Correlation. Using the Correlation Wizard</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.xml.wsdlui/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor_prop.html" title="Configuring Properties and Property Aliases Using the WSDL View">Configuring Properties and Property Aliases Using the WSDL View</a></dd>
+<dd><a href="../elements/pick.html" title="Pick">Pick</a></dd>
+<dd><a href="../elements/invoke.html" title="Invoke">Invoke</a></dd>
+<dd><a href="../elements/receive.html" title="Receive">Receive</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

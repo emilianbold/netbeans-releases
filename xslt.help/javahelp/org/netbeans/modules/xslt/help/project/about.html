@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+>
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+        <title>About XSLT Module Projects</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>
+             About XSLT Module Projects
+        </h2>
+        <p>
+            <small><a href="#seealso">See Also</a></small>
+        </p>
+        <p>
+            An XSLT Module project is a group of source files that includes the following files:
+        </p>
+        <ul>
+            <li>
+                XSL stylesheet (<tt>.xsl</tt>) files, which contain the source code for the XSL transformation rules to be applied to incoming messages
+            </li>
+            <li>
+                Web service interface (<tt>.wsdl</tt>) files, which define the interfaces of the XSL Transformation Service and, in the Service Bridge type of the XSL Transformation Service, interfaces for the web services it exchanges messages with
+            </li>
+            <li>
+                XML schema definition (<tt>.xsd</tt>) files, which define the structure of the incoming and outgoing messages
+            </li>
+        </ul>
+        <p>
+            Within an XSLT Module project, you can add XML Schema and WSDL files, create and edit XSL stylesheet files compliant with the XSLT 1.0 specification, configure project properties, and build the project. To deploy and test-run your XSL Transformation Service, you must add the XSLT Module project, as a JBI component, to a Composite Application project.
+        </p>
+        <p>
+            The Projects window shows a logical view of project contents and stores project-related files in folders within various nodes. All source files are located in the Transformation Files node of the top-level XSLT Module project node. You can create new subnodes and add project-related files to them. In the Files window, you can view a directory-based view of XSLT Module projects.
+        </p>
+        <p>
+            Building an XSLT Module project creates a project <tt>.jar</tt> file named <tt>SEDeployment.jar</tt>. Referencing this project <tt>.jar</tt> in a Composite Application project makes it available as a Service Unit in a deployable Service Assembly.
+        </p>
+        <dl>
+            <dt>
+                <a name="seealso">See Also</a>
+            </dt>
+            <dd>
+                <a href="create.html" title="Creating XSLT Module Projects">Creating XSLT Module Projects</a>
+            </dd>
+            <dd>
+                <a href="addxsl.html" title="Adding XSL Files to XSLT Module Projects">Adding XSL Files to XSLT Module Projects</a>
+            </dd>
+            <dd>
+                <a href="build.html" title="Building XSLT Module Projects">Building XSLT Module Projects</a>
+            </dd>
+            <dd>
+                <a href="deploy.html" title="Deploying XSLT Module Projects">Deploying XSLT Module Projects</a>
+            </dd>
+            <dd>
+                <a href="test.html" title="Testing XSLT Module Projects">Testing XSLT Module Projects</a>
+            </dd>
+            <dd>
+                <a href="nbdocs://org.netbeans.modules.xml.schema.core/org/netbeans/modules/xml/schema/core/tasks/creatingxmlschema.html" title="Creating XML Schema Files">Creating XML Schema Files</a>
+            </dd>
+            <dd>
+                <a href="nbdocs://org.netbeans.modules.xml.wsdlui/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor_creating.html#newwsdl" title="Creating a WSDL File">Creating a WSDL File</a>
+            </dd>
+            <dd>
+                <a href="nbdocs://org.netbeans.modules.xml.schema.core/org/netbeans/modules/xml/schema/core/tasks/retrievingxmlresources.html" title="Retrieving XML Resources">Retrieving XML Resources</a>
+            </dd>
+        </dl>
+        <hr>
+        <small>  
+<a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="150">
+            <tr>
+                <td>
+                     &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                     &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                     &nbsp;
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>
