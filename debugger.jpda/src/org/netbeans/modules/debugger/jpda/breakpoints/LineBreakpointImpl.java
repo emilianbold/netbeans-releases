@@ -131,6 +131,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
     
     private int                 lineNumber;
+    private int                 breakpointLineNumber;
     private int                 lineNumberForUpdate = -1;
     private BreakpointsReader   reader;
     
@@ -149,13 +150,18 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         set ();
     }
 
-    private synchronized void updateLineNumber() {
+    private void updateLineNumber() {
         // int line = getBreakpoint().getLineNumber();
         // We need to retrieve the original line number which is associated
         // with the start of this session.
-        lineNumber = EditorContextBridge.getContext().getLineNumber(
-                getBreakpoint(),
+        LineBreakpoint lb = getBreakpoint();
+        int theLineNumber = EditorContextBridge.getContext().getLineNumber(
+                lb,
                 getDebugger());
+        synchronized (this) {
+            breakpointLineNumber = lb.getLineNumber();
+            lineNumber = theLineNumber;
+        }
    }
 
     @Override
@@ -368,7 +374,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     }
 
     @Override
-    protected synchronized void classLoaded (List<ReferenceType> referenceTypes) {
+    protected void classLoaded (List<ReferenceType> referenceTypes) {
         LineBreakpoint breakpoint = getBreakpoint();
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Classes "+referenceTypes+" loaded for breakpoint "+breakpoint);
@@ -376,7 +382,13 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         boolean submitted = false;
         String failReason = null;
         ReferenceType noLocRefType = null;
-        int lineNumberToSet = lineNumber;
+        int lineNumberToSet;
+        final int origBreakpointLineNumber;
+        int newBreakpointLineNumber;
+        synchronized (this) {
+            lineNumberToSet = lineNumber;
+            newBreakpointLineNumber = origBreakpointLineNumber = breakpointLineNumber;
+        }
         String currFailReason = null;
 
         // if there is no location available, find correct line candidate and run the body again
@@ -422,10 +434,11 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             } // for
             if (counter == 0) {
                 if (!submitted && noLocRefType != null) {
-                    int newLineNumber = findBreakableLine(breakpoint.getURL(), lineNumber);
-                    if (newLineNumber != lineNumber && newLineNumber >= 0 &&
+                    int newLineNumber = findBreakableLine(breakpoint.getURL(), origBreakpointLineNumber);
+                    if (newLineNumber != origBreakpointLineNumber && newLineNumber >= 0 &&
                             findBreakpoint(breakpoint.getURL(), newLineNumber) == null) {
-                        lineNumberToSet = newLineNumber;
+                        newBreakpointLineNumber = newLineNumber;
+                        lineNumberToSet += newLineNumber - origBreakpointLineNumber;
                         currFailReason = failReason;
                         failReason = null;
                         continue;
@@ -440,9 +453,11 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             }
         } // for
         if (submitted) {
-            if (lineNumber != lineNumberToSet) {
-                lineNumberForUpdate = lineNumberToSet;
-                breakpoint.setLineNumber(lineNumberToSet);
+            synchronized (this) {
+                if (origBreakpointLineNumber != newBreakpointLineNumber) {
+                    lineNumberForUpdate = newBreakpointLineNumber;
+                    breakpoint.setLineNumber(newBreakpointLineNumber);
+                }
             }
             setValidity(Breakpoint.VALIDITY.VALID, failReason); // failReason is != null for partially submitted breakpoints (to some classes only)
         } else {
@@ -512,10 +527,12 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (LineBreakpoint.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
-            if (lineNumberForUpdate != -1) {
-                lineNumber = lineNumberForUpdate;
-                lineNumberForUpdate = -1;
-                return; // do not call super.propertyChange(evt);
+            synchronized (this) {
+                if (lineNumberForUpdate != -1) {
+                    lineNumber = lineNumberForUpdate;
+                    lineNumberForUpdate = -1;
+                    return; // do not call super.propertyChange(evt);
+                }
             }
             int old = lineNumber;
             updateLineNumber();
@@ -775,7 +792,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         return result[0];
     }
 
-    static LineBreakpoint findBreakpoint (String url, int lineNumber) {
+    private static LineBreakpoint findBreakpoint (String url, int lineNumber) {
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
         for (int i = 0; i < breakpoints.length; i++) {
             if (!(breakpoints[i] instanceof LineBreakpoint)) {
