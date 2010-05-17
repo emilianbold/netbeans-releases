@@ -360,7 +360,7 @@ public final class EventRequestManagerWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    public static void deleteEventRequest(com.sun.jdi.request.EventRequestManager a, com.sun.jdi.request.EventRequest b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static void deleteEventRequest(com.sun.jdi.request.EventRequestManager a, com.sun.jdi.request.EventRequest b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper {
         try {
             a.deleteEventRequest(b);
         } catch (com.sun.jdi.InternalException ex) {
@@ -368,11 +368,13 @@ public final class EventRequestManagerWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.request.InvalidRequestStateException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    public static void deleteEventRequests(com.sun.jdi.request.EventRequestManager a, java.util.List<? extends com.sun.jdi.request.EventRequest> b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static void deleteEventRequests(com.sun.jdi.request.EventRequestManager a, java.util.List<? extends com.sun.jdi.request.EventRequest> b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper {
         try {
             a.deleteEventRequests(b);
         } catch (com.sun.jdi.InternalException ex) {
@@ -380,6 +382,8 @@ public final class EventRequestManagerWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.request.InvalidRequestStateException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper(ex);
         }
     }
 
