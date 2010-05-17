@@ -1200,6 +1200,35 @@ public class IntroduceHintTest extends NbTestCase {
                        3, 2);
     }
 
+    public void testIntroduceMethodFromSingleStatement153399a() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test(java.util.List<? extends String> l, java.util.List<? extends String> ll) {\n" +
+                       "        if (true) |System.err.println(l.get(0));|\n" +
+                       "    }\n" +
+                       "}",
+                       "package test; import java.util.List; public class Test { public static void test(java.util.List<? extends String> l, java.util.List<? extends String> ll) { if (true) name(l); } private static void name(List<? extends String> l) { System.err.println(l.get(0)); } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
+
+    public void testIntroduceMethodFromSingleStatement153399b() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test(java.util.List<? extends String> l, java.util.List<? extends String> ll) {\n" +
+                       "        switch (ll.size()) {\n" +
+                       "           case 0:\n" +
+                       "              |System.err.println(l.get(0));\n" +
+                       "              System.err.println(l.get(0));|\n" +
+                       "              break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}",
+                       "package test; import java.util.List; public class Test { public static void test(java.util.List<? extends String> l, java.util.List<? extends String> ll) { switch (ll.size()) { case 0: name(l); break; } } private static void name(List<? extends String> l) { System.err.println(l.get(0)); System.err.println(l.get(0)); } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         
