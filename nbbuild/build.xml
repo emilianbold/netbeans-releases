@@ -902,7 +902,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
   </target>
 
   <target name="tryme-setup-debug-args" if="debug.port" >
-    <property name="debug.pause" value="n" />
+    <property name="debug.pause" value="y" />
     <property name="debug.server" value="y" />
     
     <property name="tryme.debug.args" value="-J-Xdebug -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=${debug.server},address=${debug.port}" />
