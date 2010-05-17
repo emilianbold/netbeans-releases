@@ -272,11 +272,17 @@ public class HostUpdates {
         Set<File> refreshDirs = new HashSet<File>();
         for (FileDownloadInfo info : infos) {
             handle.progress(NbBundle.getMessage(getClass(), "RemoteUpdatesProgress_Message", info.getLocalFile().getName()), cnt++);
+            File dirToRefresh = info.getLocalFile().getParentFile();
+            while (!dirToRefresh.exists() && dirToRefresh != null) {
+                dirToRefresh = dirToRefresh.getParentFile();
+            } // no need to create here, info.download() will do this; but we need to refresh on previously existing ones
             info.download();
             if (info.getState() == FileDownloadInfo.State.DONE) {
                 // Refreshing the file itself does not work.
                 // Need to refresh containing directory.
-                refreshDirs.add(info.getLocalFile().getParentFile());
+                if (dirToRefresh != null) {
+                    refreshDirs.add(dirToRefresh);
+                }
             }
         }
         // Bug 183353 - Files tab is not updated when downloading completes
