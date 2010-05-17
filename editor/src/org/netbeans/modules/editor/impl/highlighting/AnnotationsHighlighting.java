@@ -48,13 +48,16 @@ import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
@@ -110,18 +113,19 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
 
     @Override
     public void changedLine(final int line) {
-        scheduleRefresh(343); //ms
+        scheduleRefresh(isTyping() ? 343 : 43); //ms
     }
 
     @Override
     public void changedAll() {
-        scheduleRefresh(43); //ms
+        scheduleRefresh(isTyping() ? 343 : 43); //ms
     }
 
     // ----------------------------------------------------------------------
     //  Private implementation
     // ----------------------------------------------------------------------
 
+    // -J-Dorg.netbeans.modules.editor.impl.highlighting.AnnotationsHighlighting.level=FINE
     private static final Logger LOG = Logger.getLogger(AnnotationsHighlighting.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(LAYER_TYPE_ID);
 
@@ -134,6 +138,7 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
     private RequestProcessor.Task refreshAllLinesTask = null;
 
     private void scheduleRefresh(int delay) {
+        LOG.log(Level.FINE, "scheduleRefresh: delay={0}", delay); //NOI18N
         synchronized (this) {
             if (refreshAllLines == null) {
                 refreshAllLines = new R();
@@ -143,6 +148,11 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
                 refreshAllLinesTask.schedule(delay);
             }
         }
+    }
+
+    private static boolean isTyping() {
+        JTextComponent jtc = EditorRegistry.focusedComponent();
+        return jtc != null ? DocumentUtilities.isWriteLocked(jtc.getDocument()) : false;
     }
 
     private final class R implements Runnable {

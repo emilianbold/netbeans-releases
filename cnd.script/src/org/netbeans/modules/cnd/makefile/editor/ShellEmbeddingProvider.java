@@ -68,7 +68,7 @@ public class ShellEmbeddingProvider extends EmbeddingProvider {
 
     private volatile boolean cancelled;
 
-    private ShellEmbeddingProvider() {
+    /*package*/ ShellEmbeddingProvider() {
     }
 
     @Override
