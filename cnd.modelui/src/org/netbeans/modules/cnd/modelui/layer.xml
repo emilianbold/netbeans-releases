@@ -126,7 +126,7 @@ Contributor(s):
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestRepositoryDistributionAction.instance"/>
                 <attr name="position" intvalue="1800"/>
             </file>
-            <file name="TestRepositoryDistributionAction.shadow">
+            <file name="TestFileContainerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestFileContainerAction.instance"/>
                 <attr name="position" intvalue="1900"/>
             </file>
