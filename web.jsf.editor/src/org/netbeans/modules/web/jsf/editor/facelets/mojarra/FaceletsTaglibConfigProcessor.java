@@ -4,9 +4,12 @@
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -14,7 +17,7 @@
  * a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
  * or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
- * 
+ *
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
  * Sun designates this particular file as subject to the "Classpath" exception
