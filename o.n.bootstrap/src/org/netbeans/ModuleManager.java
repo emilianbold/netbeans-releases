@@ -67,6 +67,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import org.openide.LifecycleManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
@@ -1603,7 +1604,7 @@ public final class ModuleManager {
             Util.err.warning("Cyclic module dependencies, will not shut down cleanly: " + deps); // NOI18N
             return true;
         }
-        if (! installer.closing(sortedModules)) {
+        if (!TopSecurityManager.officialExit && !installer.closing(sortedModules)) {
             return false;
         }
         if (midHook != null) {
@@ -1618,5 +1619,15 @@ public final class ModuleManager {
         NetigsoFramework.shutdownFramework();
         installer.close(sortedModules);
         return true;
+    }
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread("close modules") { // NOI18N
+            public @Override void run() {
+                if (System.getSecurityManager() instanceof TopSecurityManager) {
+                    TopSecurityManager.officialExit = true;
+                    LifecycleManager.getDefault().exit();
+                }
+            }
+        });
     }
 }
