@@ -204,12 +204,12 @@ public class ShellEmbeddingHighlightContainer extends AbstractHighlightsContaine
             final int endIdx;
             if (startOffset < endOffset) {
                 startIdx = firstOverlap(highlights, startOffset);
-                endIdx = lastOverlap(highlights, endOffset);
+                endIdx = lastOverlap(highlights, endOffset) + 1;
             } else {
                 startIdx = highlights.size();
-                endIdx = -1;
+                endIdx = 0;
             }
-            if (startIdx <= endIdx) {
+            if (startIdx < endIdx) {
                 return new ShellHighlightSequence(highlights.subList(startIdx, endIdx).iterator());
             } else {
                 return HighlightsSequence.EMPTY;
