@@ -101,7 +101,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
                     NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName"),
                     NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_IW_LocationSrcDesc"), true),
             new ProjectServerWizardPanel(J2eeModule.WAR, 
-                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_IW_Step2"),
+                    NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectServer"),
                     NbBundle.getMessage(NewWebProjectWizardIterator.class, "TXT_WebExtSources"),
                     true, false, true, false, true, false),
             new PanelSourceFolders.Panel()
