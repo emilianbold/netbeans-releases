@@ -49,7 +49,9 @@ import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 
@@ -85,7 +87,8 @@ import org.openide.util.Exceptions;
             compilerSets.clear();
             try {
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-                pb.setExecutable("/bin/sh").setArguments("-s"); // NOI18N
+                HostInfo hinfo = HostInfoUtils.getHostInfo(executionEnvironment);
+                pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
                 process = pb.call();
                 process.getOutputStream().write(ToolchainScriptGenerator.generateScript(null).getBytes());
                 process.getOutputStream().close();
