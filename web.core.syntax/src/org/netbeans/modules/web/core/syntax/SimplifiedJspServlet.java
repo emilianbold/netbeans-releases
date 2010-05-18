@@ -160,15 +160,11 @@ public class SimplifiedJspServlet extends JSPProcessor {
 
         processIncludes();
 
-        TokenHierarchy tokenHierarchy = null;
+        //XXX The InputAttribute from the document are not copied to the following TokenHierarchy,
+        //the JspLexer behaviour may seem to be inaccurate in some cases!
+        TokenHierarchy<CharSequence> tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());
 
-        if (doc != null){
-            tokenHierarchy = TokenHierarchy.get(doc);
-        } else {
-            tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());
-        }
-
-        TokenSequence tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence
+        TokenSequence<JspTokenId> tokenSequence = tokenHierarchy.tokenSequence(JspTokenId.language()); //get top level token sequence
         if (!tokenSequence.moveNext()) {
             return; //no tokens in token sequence
         }
@@ -178,7 +174,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
          * note: We count on the fact the scripting language in JSP is Java
          */
         do {
-            Token token = tokenSequence.token();
+            Token<JspTokenId> token = tokenSequence.token();
 
             if (token.id() == JspTokenId.SCRIPTLET) {
                 int blockStart = token.offset(tokenHierarchy);
@@ -201,7 +197,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
             }
         } while (tokenSequence.moveNext());
 
-        processJavaInTagValues();
+        processJavaInTagValues(tokenSequence); //repositions the tokenSequence
 
 
         String extendsClass = null; //NOI18N
@@ -251,16 +247,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
      *
      * additionaly it returns a list of imports found
      */
-    private void processJavaInTagValues() {
-        TokenHierarchy tokenHierarchy = null;
-
-        if (doc != null){
-            tokenHierarchy = TokenHierarchy.get(doc);
-        } else {
-            tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());
-        }
-        
-        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+    private void processJavaInTagValues(TokenSequence<JspTokenId> tokenSequence) {
         tokenSequence.moveStart();
 
         while (tokenSequence.moveNext()) {
@@ -365,10 +352,6 @@ public class SimplifiedJspServlet extends JSPProcessor {
                                     // attr values can be specified using double or single quotes
                                     && (val.charAt(0) == '"' || val.charAt(0) == '\'')
                                     && val.charAt(val.length() - 1) == val.charAt(0)) {
-
-                                // a hack for compatibility with
-                                // org.netbeans.modules.editor.java.Utilities.isJavaContext()
-                                tokenSequence.createEmbedding(JavaTokenId.language(), 1, 1);
 
                                 int startOffset = tokenSequence.offset() + 1;
                                 int len = val.length() - 1;

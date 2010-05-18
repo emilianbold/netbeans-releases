@@ -455,7 +455,7 @@ public class PopupManager {
                 // check whether popup registers keystroke
                 KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
                 Object obj = im.get(ks);
-                LOG.log(Level.FINE, "Keystroke for event {0}: {1}; action-map-key=", new Object [] { e, ks, obj }); //NOI18N
+                LOG.log(Level.FINE, "Keystroke for event {0}: {1}; action-map-key={2}", new Object [] { e, ks, obj }); //NOI18N
                 if (obj != null && 
                     !obj.equals("tooltip-no-action") && obj.equals("tooltip-hide-action") //NOI18N ignore ToolTipSupport installed actions
                 ) {
@@ -471,8 +471,15 @@ public class PopupManager {
                     }
                 }
 
-                // hide tooltip if any was shown
-                Utilities.getEditorUI(textComponent).getToolTipSupport().setToolTipVisible(false);
+                if (e.getKeyCode() != KeyEvent.VK_CONTROL &&
+                    e.getKeyCode() != KeyEvent.VK_SHIFT &&
+                    e.getKeyCode() != KeyEvent.VK_ALT &&
+                    e.getKeyCode() != KeyEvent.VK_ALT_GRAPH &&
+                    e.getKeyCode() != KeyEvent.VK_META
+                ) {
+                    // hide tooltip if any was shown
+                    Utilities.getEditorUI(textComponent).getToolTipSupport().setToolTipVisible(false);
+                }
             }
         }
     } // End of PopupKeyListener class

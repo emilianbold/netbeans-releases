@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,11 +34,13 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.gizmo.actions;
 
 import java.nio.charset.Charset;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -78,6 +80,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.gizmo.CppSymbolDemanglerFactoryImpl;
 import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
@@ -189,7 +192,15 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
 
         DLightConfigurationOptions options = configuration.getConfigurationOptions(false);
         if (options instanceof GizmoConfigurationOptions) {
-            ((GizmoConfigurationOptions) options).configure(pae.getProject());
+            GizmoConfigurationOptions gizmoConfigurationOptions = ((GizmoConfigurationOptions) options);
+            gizmoConfigurationOptions.configure(pae.getProject());
+            Collection<String> toolNames  = gizmoConfigurationOptions.getActiveToolNames();
+            String collectedToolNames = "";//NOI18N
+            Iterator<String> it = toolNames.iterator();
+            while (it.hasNext()){
+                collectedToolNames += it.next() + ": " ;//NOI18N
+            }
+            UIGesturesSupport.submit("USG_CND_PROFILE_INDICATORS", collectedToolNames);//NOI18N
         }
 
         NativeExecutableTarget target = new NativeExecutableTarget(targetConf);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,7 +42,6 @@
 package org.netbeans.modules.navigator;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Color;
 import java.util.List;
 import java.util.logging.Logger;
@@ -51,6 +50,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.ErrorManager;
@@ -160,7 +160,21 @@ public final class NavigatorTC extends TopComponent {
         }
         
         this.selectedPanel = panel;
-        ((CardLayout)contentArea.getLayout()).show(contentArea, String.valueOf(panelIdx));
+        assert SwingUtilities.isEventDispatchThread() : "Called in AWT queue.";
+        JComponent comp = this.selectedPanel.getComponent();
+        if (comp == null) {
+                    Throwable npe = new NullPointerException(
+                            "Method " + this.selectedPanel.getClass().getName() +  //NOI18N
+                            ".getComponent() must not return null under any condition!"  //NOI18N
+                    );
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, npe);
+
+        } else {
+            contentArea.removeAll();
+            contentArea.add(panel.getComponent(), BorderLayout.CENTER);
+            revalidate();
+            repaint();
+        }
         // #93123: follow-up, synchronizing combo selection with content area selection
         panelSelector.setSelectedIndex(panelIdx);
     }
@@ -196,23 +210,10 @@ public final class NavigatorTC extends TopComponent {
             panelSelector.removeAllItems();
             // #63777: hide panel selector when only one panel available
             holderPanel.setVisible(panelsCount != 1);
-            // fill with new content
-            JComponent curComp = null;
             int i = 0;
             boolean selectFound = false;
             for (NavigatorPanel curPanel : panels) {
                 panelSelector.addItem(curPanel.getDisplayName());
-                curComp = curPanel.getComponent();
-                // for better error report in cases like #68544
-                if (curComp == null) {
-                    Throwable npe = new NullPointerException(
-                            "Method " + curPanel.getClass().getName() +  //NOI18N
-                            ".getComponent() must not return null under any condition!"  //NOI18N
-                    );
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, npe);
-                } else {
-                    contentArea.add(curComp, String.valueOf(i));
-                }
                 if (curPanel == select) {
                     selectFound = true;
                 }
@@ -231,10 +232,6 @@ public final class NavigatorTC extends TopComponent {
     /** Returns combo box, UI for selecting proper panels */
     public JComboBox getPanelSelector () {
         return panelSelector;
-    }
-    
-    public JComponent getContentArea () {
-        return contentArea;
     }
     
     // Window System related methods >>
@@ -367,7 +364,7 @@ public final class NavigatorTC extends TopComponent {
 
         add(holderPanel, java.awt.BorderLayout.NORTH);
 
-        contentArea.setLayout(new java.awt.CardLayout());
+        contentArea.setLayout(new java.awt.BorderLayout());
         add(contentArea, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
     

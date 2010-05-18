@@ -1,0 +1,4 @@
+#if($isDisableConstraint)
+    ${statementSeparator}
+    ALTER TABLE $targetTable CHECK CONSTRAINT ALL
+#end

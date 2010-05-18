@@ -137,7 +137,7 @@ public class RecentProjectsPanel extends JPanel implements Constants {
     
     private void addProject( JPanel panel, int row, final UnloadedProjectInformation project ) {
         OpenProjectAction action = new OpenProjectAction( project );
-        ActionButton b = new ActionButton( action, project.getURL().toString(), false );
+        ActionButton b = new ActionButton( action, project.getURL().toString(), false, "RecentProject" ); //NOI18N
         b.setFont( BUTTON_FONT );
         b.getAccessibleContext().setAccessibleName( b.getText() );
         b.getAccessibleContext().setAccessibleDescription( 

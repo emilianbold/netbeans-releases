@@ -562,6 +562,11 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         private FileEntry(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey) {
             this.fileNew = fileNew;
             this.data = (state == null) ? null : new PreprocessorStatePair(state, FilePreprocessorConditionState.PARSING);
+//            if (state == null) {
+//                if (CndUtils.isDebugMode()) {
+//                    CndUtils.assertTrueInConsole(false, "creating null based entry for " + fileKey); // NOI18N
+//                }
+//            }
             this.canonical = getCanonicalKey(fileKey);
             this.modCount = 0;
         }
@@ -630,15 +635,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
          */
         public Object getLock() {
             return this;
-        }
-
-        //@Deprecated
-        private synchronized APTPreprocHandler.State getState() {
-            final Iterator<PreprocessorStatePair> iterator = getStatePairs().iterator();
-            if (iterator.hasNext()) {
-                return iterator.next().state;
-            }
-            return null;
         }
 
         private synchronized void debugClearState() {

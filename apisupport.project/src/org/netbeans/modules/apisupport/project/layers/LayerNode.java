@@ -90,6 +90,8 @@ import org.openide.xml.XMLUtil;
  */
 public final class LayerNode extends FilterNode implements Node.Cookie {
     
+    private static final RequestProcessor RP = new RequestProcessor(LayerNode.class);
+
     private final boolean specialDisplayName;
 
     public LayerNode(LayerHandle handle) {
@@ -159,7 +161,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                         showContextNode = false;
                     }
                     final boolean b = showContextNode;
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
                         @Override
                         public void run() {
                             initialize(b);

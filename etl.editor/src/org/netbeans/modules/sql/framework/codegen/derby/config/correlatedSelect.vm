@@ -1,0 +1,18 @@
+##
+## correlatedSelect.vm
+##
+#set($colsPrinted = 0)
+SELECT
+#foreach($mapping in $mappings)
+#if( $mapping.isKeyColumn() == false )
+#if($colsPrinted > 0),
+#end $mapping.getSource().getSql() #set( $colsPrinted = $colsPrinted + 1)
+#end
+#end
+#foreach($asc in $additionalSrcCols)
+#if($colsPrinted > 0),
+#end $asc #set( $colsPrinted = $colsPrinted + 1)
+#end
+
+FROM $fromContent
+#if($condition != "")WHERE  $condition#end

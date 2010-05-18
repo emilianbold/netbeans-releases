@@ -1,0 +1,909 @@
+****************** ANSI ***********************
+(1) ANSI INSERT STATEMENT
+
+  -- Insert extracted source table into target table
+  INSERT INTO ETLPOC.EMP_TARGET (
+        ETLPOC.EMP_TARGET.ID, 
+        ETLPOC.EMP_TARGET.DOB, 
+        ETLPOC.EMP_TARGET.NAME
+  ) 
+  SELECT 
+        S1.ID, 
+        S1.DOB, 
+        (S1.FNAME || S1.LNAME) 
+  FROM 
+        ETLPOC.EMP S1 WHERE  ( (S1.ID) 
+        NOT IN (SELECT ETLPOC.EMP_TARGET.ID FROM ETLPOC.EMP_TARGET ) )
+  
+
+(2) ANSI INSERT UPDATE (MERGE) STATEMENT
+  -- Merge target table with the extracted source table
+  UPDATE ( 
+        SELECT 
+              S1.DOB AS s_column1, 
+              T1.DOB AS d_column1, 
+              (S1.FNAME || S1.LNAME) AS s_column2, 
+              T1.NAME AS d_column2 
+        FROM ETLPOC.EMP_TARGET T1, 
+              ETLPOC.EMP S1 
+        WHERE (T1.ID = S1.ID)
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2  
+  
+  INSERT INTO ETLPOC.EMP_TARGET (
+        ETLPOC.EMP_TARGET.ID, 
+        ETLPOC.EMP_TARGET.DOB, 
+        ETLPOC.EMP_TARGET.NAME
+  ) 
+  SELECT 
+        S1.ID, 
+        S1.DOB, 
+        (S1.FNAME || S1.LNAME) 
+  FROM 
+        ETLPOC.EMP S1 WHERE  ( (S1.ID) 
+        NOT IN (SELECT ETLPOC.EMP_TARGET.ID FROM ETLPOC.EMP_TARGET ) )
+  
+
+(3) ANSI UPDATE STATEMENT
+  -- Update selected columns in target table
+  UPDATE ( 
+        SELECT 
+              S1."DOB" AS s_column1, 
+              T1."DOB" AS d_column1, 
+              (S1."FNAME" || S1."LNAME") AS s_column2, 
+              T1."NAME" AS d_column2 
+        FROM "ETLPOC"."EMP_TARGET" T1, 
+              "ETLPOC"."EMP" S1 
+        WHERE (T1."ID" = S1."ID")
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2
+
+(4) ANSI DELETE STATEMENT
+
+******** JOIN CASE *********
+(1) INSERT sTATEMENT
+
+  -- Insert extracted source table into target table
+  INSERT INTO ETLPOC.EMP_TARGET (
+        ETLPOC.EMP_TARGET.ID, 
+        ETLPOC.EMP_TARGET.DOB, 
+        ETLPOC.EMP_TARGET.NAME, 
+        ETLPOC.EMP_TARGET.SALARY
+  ) 
+  SELECT 
+        S1.ID, 
+        S1.DOB, 
+        (S1.FNAME || S1.LNAME), 
+        S2.BASE_SALARY 
+  FROM 
+        ETLPOC.EMP S1
+         INNER JOIN ETLPOC.SALARY S2
+         ON (S2.ID = S1.SID)  WHERE  ( (S1.ID) 
+        NOT IN (SELECT ETLPOC.EMP_TARGET.ID FROM ETLPOC.EMP_TARGET ) )
+  
+(2) INSERT UPDATE
+  -- Merge target table with the extracted source table
+  UPDATE ( 
+        SELECT 
+              S1.ID AS s_column1, 
+              T1.ID AS d_column1, 
+              S1.DOB AS s_column2, 
+              T1.DOB AS d_column2, 
+              (S1.FNAME || S1.LNAME) AS s_column3, 
+              T1.NAME AS d_column3, 
+              S2.BASE_SALARY AS s_column4, 
+              T1.SALARY AS d_column4 
+        FROM ETLPOC.EMP_TARGET T1, ETLPOC.EMP S1
+         INNER JOIN ETLPOC.SALARY S2
+         ON (S2.ID = S1.SID)
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2, 
+        d_column3 = s_column3, 
+        d_column4 = s_column4 ? 
+  
+  INSERT INTO ETLPOC.EMP_TARGET (
+        ETLPOC.EMP_TARGET.ID, 
+        ETLPOC.EMP_TARGET.DOB, 
+        ETLPOC.EMP_TARGET.NAME, 
+        ETLPOC.EMP_TARGET.SALARY
+  ) 
+  SELECT 
+        S1.ID, 
+        S1.DOB, 
+        (S1.FNAME || S1.LNAME), 
+        S2.BASE_SALARY 
+  FROM 
+        ETLPOC.EMP S1
+         INNER JOIN ETLPOC.SALARY S2
+         ON (S2.ID = S1.SID)  WHERE  ( (S1.ID) 
+        NOT IN (SELECT ETLPOC.EMP_TARGET.ID FROM ETLPOC.EMP_TARGET ) )
+  
+(3) UPDATE
+
+  -- Update selected columns in target table
+  UPDATE ( 
+        SELECT 
+              S1.ID AS s_column1, 
+              T1.ID AS d_column1, 
+              S1.DOB AS s_column2, 
+              T1.DOB AS d_column2, 
+              (S1.FNAME || S1.LNAME) AS s_column3, 
+              T1.NAME AS d_column3, 
+              S2.BASE_SALARY AS s_column4, 
+              T1.SALARY AS d_column4 
+        FROM ETLPOC.EMP_TARGET T1, ETLPOC.EMP S1
+         INNER JOIN ETLPOC.SALARY S2
+         ON (S2.ID = S1.SID)
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2, 
+        d_column3 = s_column3, 
+        d_column4 = s_column4
+
+
+*******************ORACLE 8 *************************
+
+(1) INSERT STATEMENT
+  -- Insert extracted source table into target table
+  INSERT INTO "ETLPOC"."EMP_TARGET" (
+        "ETLPOC"."EMP_TARGET"."ID", 
+        "ETLPOC"."EMP_TARGET"."DOB", 
+        "ETLPOC"."EMP_TARGET"."NAME"
+  ) 
+  SELECT 
+        S1."ID", 
+        S1."DOB", 
+        (S1."FNAME" || S1."LNAME") 
+  FROM 
+        "ETLPOC"."EMP" S1 WHERE  ( (S1."ID") 
+        NOT IN (SELECT "ETLPOC"."EMP_TARGET"."ID" FROM "ETLPOC"."EMP_TARGET" ) )
+  
+(2) INSERT UPDATE (MERGE) STATEMENT
+
+  -- Merge target table with the extracted source table
+  UPDATE ( 
+        SELECT 
+              S1."DOB" AS s_column1, 
+              T1."DOB" AS d_column1, 
+              (S1."FNAME" || S1."LNAME") AS s_column2, 
+              T1."NAME" AS d_column2 
+        FROM "ETLPOC"."EMP_TARGET" T1, 
+              "ETLPOC"."EMP" S1 
+        WHERE (T1."ID" = S1."ID")
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2 ? 
+  
+  INSERT INTO "ETLPOC"."EMP_TARGET" (
+        "ETLPOC"."EMP_TARGET"."ID", 
+        "ETLPOC"."EMP_TARGET"."DOB", 
+        "ETLPOC"."EMP_TARGET"."NAME"
+  ) 
+  SELECT 
+        S1."ID", 
+        S1."DOB", 
+        (S1."FNAME" || S1."LNAME") 
+  FROM 
+        "ETLPOC"."EMP" S1 WHERE  ( (S1."ID") 
+        NOT IN (SELECT "ETLPOC"."EMP_TARGET"."ID" FROM "ETLPOC"."EMP_TARGET" ) )
+  
+
+(3) UPDATE STATEMENT
+  -- Update selected columns in target table
+  UPDATE ( 
+        SELECT 
+              S1."DOB" AS s_column1, 
+              T1."DOB" AS d_column1, 
+              (S1."FNAME" || S1."LNAME") AS s_column2, 
+              T1."NAME" AS d_column2 
+        FROM "ETLPOC"."EMP_TARGET" T1, 
+              "ETLPOC"."EMP" S1 
+        WHERE (T1."ID" = S1."ID")
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2
+
+(4) DELETE STATEMENT
+
+
+******** JOIN CASE *********
+(1) INSERT STATEMENT
+  -- Insert extracted source table into target table
+  INSERT INTO "ETLPOC"."EMP_TARGET" (
+        "ETLPOC"."EMP_TARGET"."ID", 
+        "ETLPOC"."EMP_TARGET"."DOB", 
+        "ETLPOC"."EMP_TARGET"."NAME", 
+        "ETLPOC"."EMP_TARGET"."SALARY"
+  ) 
+  SELECT 
+        S1."ID", 
+        S1."DOB", 
+        (S1."FNAME" || S1."LNAME"), 
+        S2."BASE_SALARY" 
+  FROM 
+        "ETLPOC"."EMP" S1, "ETLPOC"."SALARY" S2 
+        WHERE (S2."ID" = S1."SID")  AND  ( (S1."ID") 
+        NOT IN (SELECT "ETLPOC"."EMP_TARGET"."ID" FROM "ETLPOC"."EMP_TARGET" ) )
+  
+
+(2) INSERT UPDATE (MERGE) STATEMENT
+  -- Merge target table with the extracted source table
+  UPDATE ( 
+        SELECT 
+              S1."ID" AS s_column1, 
+              T1."ID" AS d_column1, 
+              S1."DOB" AS s_column2, 
+              T1."DOB" AS d_column2, 
+              (S1."FNAME" || S1."LNAME") AS s_column3, 
+              T1."NAME" AS d_column3, 
+              S2."BASE_SALARY" AS s_column4, 
+              T1."SALARY" AS d_column4 
+        FROM "ETLPOC"."EMP_TARGET" T1, "ETLPOC"."EMP" S1, "ETLPOC"."SALARY" S2  
+        WHERE (S2."ID" = S1."SID")
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2, 
+        d_column3 = s_column3, 
+        d_column4 = s_column4 ? 
+  
+  INSERT INTO "ETLPOC"."EMP_TARGET" (
+        "ETLPOC"."EMP_TARGET"."ID", 
+        "ETLPOC"."EMP_TARGET"."DOB", 
+        "ETLPOC"."EMP_TARGET"."NAME", 
+        "ETLPOC"."EMP_TARGET"."SALARY"
+  ) 
+  SELECT 
+        S1."ID", 
+        S1."DOB", 
+        (S1."FNAME" || S1."LNAME"), 
+        S2."BASE_SALARY" 
+  FROM 
+        "ETLPOC"."EMP" S1, "ETLPOC"."SALARY" S2 
+        WHERE (S2."ID" = S1."SID")  AND  ( (S1."ID") 
+        NOT IN (SELECT "ETLPOC"."EMP_TARGET"."ID" FROM "ETLPOC"."EMP_TARGET" ) )
+  
+(3) UPDATE STATEMENT
+
+  -- Update selected columns in target table
+  UPDATE ( 
+        SELECT 
+              S1."ID" AS s_column1, 
+              T1."ID" AS d_column1, 
+              S1."DOB" AS s_column2, 
+              T1."DOB" AS d_column2, 
+              (S1."FNAME" || S1."LNAME") AS s_column3, 
+              T1."NAME" AS d_column3, 
+              S2."BASE_SALARY" AS s_column4, 
+              T1."SALARY" AS d_column4 
+        FROM "ETLPOC"."EMP_TARGET" T1, "ETLPOC"."EMP" S1, "ETLPOC"."SALARY" S2  
+        WHERE (S2."ID" = S1."SID")
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2, 
+        d_column3 = s_column3, 
+        d_column4 = s_column4
+
+(4) DELETE STATEMENT
+
+******************************************************
+
+****************** ORACLE9 ********************
+
+(1) ORACLE9 INSERT STATEMENT
+
+SAME AS ORACLE8
+
+(2) ORACLE9 INSERT UPDATE (MERGE) STATEMENT  
+
+  -- Transform and Load <oracle9:Oracle> (Executes on Target Database)
+  MERGE INTO "ETLPOC"."EMP_TARGET" T1  
+  USING (
+        SELECT 
+              S1."ID" AS column1, 
+              S1."DOB" AS column2, 
+              (S1."FNAME" || S1."LNAME") AS column3
+         FROM 
+              "ETLPOC"."EMP" S1
+  ) S 
+  ON ((T1."ID" = S.column1)) 
+  WHEN MATCHED THEN 
+         UPDATE SET 
+              T1."DOB" = S.column2, 
+              T1."NAME" = S.column3 
+  WHEN NOT MATCHED THEN 
+        INSERT (
+              T1."ID", 
+              T1."DOB", 
+              T1."NAME"
+        ) 
+        VALUES (
+              S.column1, 
+              S.column2, 
+              S.column3
+        )
+
+(3) ORACLE 9 UPDATE STATEMENT
+  -- Transform and Load <oracle9:Oracle> (Executes on Target Database)
+  UPDATE ( 
+        SELECT 
+              S1."DOB" AS s_column1, 
+              T1."DOB" AS d_column1, 
+              (S1."FNAME" || S1."LNAME") AS s_column2, 
+              T1."NAME" AS d_column2 
+        FROM "ETLPOC"."EMP_TARGET" T1, 
+              "ETLPOC"."EMP" S1 
+        WHERE (T1."ID" = S1."ID")
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2
+
+(4) ORACLE 9 DELETE 
+
+  -- Transform and Load <oracle9:Oracle> (Executes on Target Database)
+  DELETE FROM "ETLPOC"."EMP_TARGET" 
+  WHERE 
+        ("ETLPOC"."EMP_TARGET"."ID" = "ETLPOC"."EMP"."ID")
+
+
+
+******** JOIN CASE *********
+(1) INSERT STATEMENT
+  -- Insert extracted source table into target table
+  INSERT INTO "ETLPOC"."EMP_TARGET" (
+        "ETLPOC"."EMP_TARGET"."ID", 
+        "ETLPOC"."EMP_TARGET"."DOB", 
+        "ETLPOC"."EMP_TARGET"."NAME", 
+        "ETLPOC"."EMP_TARGET"."SALARY"
+  ) 
+  SELECT 
+        S1."ID", 
+        S1."DOB", 
+        (S1."FNAME" || S1."LNAME"), 
+        S2."BASE_SALARY" 
+  FROM 
+        "ETLPOC"."EMP" S1
+         INNER JOIN "ETLPOC"."SALARY" S2
+         ON (S2."ID" = S1."SID")  WHERE  ( (S1."ID") 
+        NOT IN (SELECT "ETLPOC"."EMP_TARGET"."ID" FROM "ETLPOC"."EMP_TARGET" ) )
+  
+
+(2) INSERT UPDATE (MERGE) STATEMENT
+
+  -- Merge target table with the extracted source table
+  MERGE INTO "ETLPOC"."EMP_TARGET" T1  
+  USING (
+        SELECT 
+              S1."ID" AS column1, 
+              S1."DOB" AS column2, 
+              (S1."FNAME" || S1."LNAME") AS column3, 
+              S2."BASE_SALARY" AS column4
+         FROM "ETLPOC"."EMP" S1
+         INNER JOIN "ETLPOC"."SALARY" S2
+         ON (S2."ID" = S1."SID")
+  ) J1 
+  ON ((T1."ID" = J1.column1)) 
+  WHEN MATCHED THEN 
+         UPDATE SET 
+              T1."DOB" = J1.column2, 
+              T1."NAME" = J1.column3, 
+              T1."SALARY" = J1.column4 
+  WHEN NOT MATCHED THEN 
+        INSERT (
+              T1."ID", 
+              T1."DOB", 
+              T1."NAME", 
+              T1."SALARY"
+        ) 
+        VALUES (
+              J1.column1, 
+              J1.column2, 
+              J1.column3, 
+              J1.column4
+        )
+
+
+(3) UPDATE STATEMENT
+  -- Update selected columns in target table
+  UPDATE ( 
+        SELECT 
+              S1."ID" AS s_column1, 
+              T1."ID" AS d_column1, 
+              S1."DOB" AS s_column2, 
+              T1."DOB" AS d_column2, 
+              (S1."FNAME" || S1."LNAME") AS s_column3, 
+              T1."NAME" AS d_column3, 
+              S2."BASE_SALARY" AS s_column4, 
+              T1."SALARY" AS d_column4 
+        FROM "ETLPOC"."EMP_TARGET" T1, "ETLPOC"."EMP" S1
+         INNER JOIN "ETLPOC"."SALARY" S2
+         ON (S2."ID" = S1."SID")
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2, 
+        d_column3 = s_column3, 
+        d_column4 = s_column4
+(4) DELETE STATEMENT
+
+
+*************************** DB2 ********************************
+(1) INSERT STATEMENT
+  SAME AS ansi
+
+(2) INSERT UPDATE (MERGE) STATEMENT
+  same as ANSI
+
+(3) UPDATE STATEMENT
+
+same as ANSI
+
+(4) DELETE STATEMENT
+
+******** JOIN CASE *********
+(1) INSERT STATEMENT
+SAME AS ansi
+
+(2) INSERT UPDATE (MERGE) STATEMENT
+same as ANSI
+
+(3) UPDATE STATEMENT
+same as ANSI
+(4) DELETE STATEMENT
+
+
+************************* SQLSERVER ****************************
+(1) INSERT STATEMENT
+  -- Insert extracted source table into target table
+  INSERT INTO [ETLPOC].[EMP_TARGET] (
+        [ETLPOC].[EMP_TARGET].[ID], 
+        [ETLPOC].[EMP_TARGET].[DOB], 
+        [ETLPOC].[EMP_TARGET].[NAME]
+  ) 
+  SELECT 
+        S1.[ID], 
+        S1.[DOB], 
+        (S1.[FNAME] + S1.[LNAME]) 
+  FROM 
+        [ETLPOC].[EMP] S1 WHERE  ( (S1.[ID]) 
+        NOT IN (SELECT [ETLPOC].[EMP_TARGET].[ID] FROM [ETLPOC].[EMP_TARGET] ) )
+  
+
+
+(2) INSERT UPDATE (MERGE) STATEMENT
+    -- Merge target table with the extracted source table
+  UPDATE ( 
+        SELECT 
+              S1.[DOB] AS s_column1, 
+              T1.[DOB] AS d_column1, 
+              (S1.[FNAME] + S1.[LNAME]) AS s_column2, 
+              T1.[NAME] AS d_column2 
+        FROM [ETLPOC].[EMP_TARGET] T1, 
+              [ETLPOC].[EMP] S1 
+        WHERE (T1.[ID] = S1.[ID])
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2 ? 
+  
+  INSERT INTO [ETLPOC].[EMP_TARGET] (
+        [ETLPOC].[EMP_TARGET].[ID], 
+        [ETLPOC].[EMP_TARGET].[DOB], 
+        [ETLPOC].[EMP_TARGET].[NAME]
+  ) 
+  SELECT 
+        S1.[ID], 
+        S1.[DOB], 
+        (S1.[FNAME] + S1.[LNAME]) 
+  FROM 
+        [ETLPOC].[EMP] S1 WHERE  ( (S1.[ID]) 
+        NOT IN (SELECT [ETLPOC].[EMP_TARGET].[ID] FROM [ETLPOC].[EMP_TARGET] ) )
+  
+
+(3) UPDATE STATEMENT
+
+  -- Update selected columns in target table
+  UPDATE ( 
+        SELECT 
+              S1.[DOB] AS s_column1, 
+              T1.[DOB] AS d_column1, 
+              (S1.[FNAME] + S1.[LNAME]) AS s_column2, 
+              T1.[NAME] AS d_column2 
+        FROM [ETLPOC].[EMP_TARGET] T1, 
+              [ETLPOC].[EMP] S1 
+        WHERE (T1.[ID] = S1.[ID])
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2
+
+(4) DELETE STATEMENT
+
+
+******** JOIN CASE *********
+(1) INSERT STATEMENT
+  -- Insert extracted source table into target table
+  INSERT INTO [ETLPOC].[EMP_TARGET] (
+        [ETLPOC].[EMP_TARGET].[ID], 
+        [ETLPOC].[EMP_TARGET].[DOB], 
+        [ETLPOC].[EMP_TARGET].[NAME], 
+        [ETLPOC].[EMP_TARGET].[SALARY]
+  ) 
+  SELECT 
+        S1.[ID], 
+        S1.[DOB], 
+        (S1.[FNAME] + S1.[LNAME]), 
+        S2.[BASE_SALARY] 
+  FROM 
+        [ETLPOC].[EMP] S1
+         INNER JOIN [ETLPOC].[SALARY] S2
+         ON (S2.[ID] = S1.[SID])  WHERE  ( (S1.[ID]) 
+        NOT IN (SELECT [ETLPOC].[EMP_TARGET].[ID] FROM [ETLPOC].[EMP_TARGET] ) )
+  
+(2) INSERT UPDATE (MERGE) STATEMENT
+  -- Merge target table with the extracted source table
+  UPDATE ( 
+        SELECT 
+              S1.[ID] AS s_column1, 
+              T1.[ID] AS d_column1, 
+              S1.[DOB] AS s_column2, 
+              T1.[DOB] AS d_column2, 
+              (S1.[FNAME] + S1.[LNAME]) AS s_column3, 
+              T1.[NAME] AS d_column3, 
+              S2.[BASE_SALARY] AS s_column4, 
+              T1.[SALARY] AS d_column4 
+        FROM [ETLPOC].[EMP_TARGET] T1, [ETLPOC].[EMP] S1
+         INNER JOIN [ETLPOC].[SALARY] S2
+         ON (S2.[ID] = S1.[SID])
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2, 
+        d_column3 = s_column3, 
+        d_column4 = s_column4 ? 
+  
+  INSERT INTO [ETLPOC].[EMP_TARGET] (
+        [ETLPOC].[EMP_TARGET].[ID], 
+        [ETLPOC].[EMP_TARGET].[DOB], 
+        [ETLPOC].[EMP_TARGET].[NAME], 
+        [ETLPOC].[EMP_TARGET].[SALARY]
+  ) 
+  SELECT 
+        S1.[ID], 
+        S1.[DOB], 
+        (S1.[FNAME] + S1.[LNAME]), 
+        S2.[BASE_SALARY] 
+  FROM 
+        [ETLPOC].[EMP] S1
+         INNER JOIN [ETLPOC].[SALARY] S2
+         ON (S2.[ID] = S1.[SID])  WHERE  ( (S1.[ID]) 
+        NOT IN (SELECT [ETLPOC].[EMP_TARGET].[ID] FROM [ETLPOC].[EMP_TARGET] ) )
+  
+(3) UPDATE STATEMENT
+  -- Update selected columns in target table
+  UPDATE ( 
+        SELECT 
+              S1.[ID] AS s_column1, 
+              T1.[ID] AS d_column1, 
+              S1.[DOB] AS s_column2, 
+              T1.[DOB] AS d_column2, 
+              (S1.[FNAME] + S1.[LNAME]) AS s_column3, 
+              T1.[NAME] AS d_column3, 
+              S2.[BASE_SALARY] AS s_column4, 
+              T1.[SALARY] AS d_column4 
+        FROM [ETLPOC].[EMP_TARGET] T1, [ETLPOC].[EMP] S1
+         INNER JOIN [ETLPOC].[SALARY] S2
+         ON (S2.[ID] = S1.[SID])
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2, 
+        d_column3 = s_column3, 
+        d_column4 = s_column4
+
+(4) DELETE STATEMENT
+
+************************* SYBASE *****************************
+(1) INSERT STATEMENT
+
+  -- Insert extracted source table into target table
+  INSERT INTO ETLPOC."EMP_TARGET" (
+        ETLPOC."EMP_TARGET"."ID", 
+        ETLPOC."EMP_TARGET"."DOB", 
+        ETLPOC."EMP_TARGET"."NAME"
+  ) 
+  SELECT 
+        S1."ID", 
+        S1."DOB", 
+        (S1."FNAME" + S1."LNAME") 
+  FROM 
+        ETLPOC."EMP" S1 WHERE  ( (S1."ID") 
+        NOT IN (SELECT ETLPOC."EMP_TARGET"."ID" FROM ETLPOC."EMP_TARGET" ) )
+  
+
+(2) INSERT UPDATE (MERGE) STATEMENT
+
+  -- Merge target table with the extracted source table
+  UPDATE ( 
+        SELECT 
+              S1."DOB" AS s_column1, 
+              T1."DOB" AS d_column1, 
+              (S1."FNAME" + S1."LNAME") AS s_column2, 
+              T1."NAME" AS d_column2 
+        FROM ETLPOC."EMP_TARGET" T1, 
+              ETLPOC."EMP" S1 
+        WHERE (T1."ID" = S1."ID")
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2 ? 
+  
+  INSERT INTO ETLPOC."EMP_TARGET" (
+        ETLPOC."EMP_TARGET"."ID", 
+        ETLPOC."EMP_TARGET"."DOB", 
+        ETLPOC."EMP_TARGET"."NAME"
+  ) 
+  SELECT 
+        S1."ID", 
+        S1."DOB", 
+        (S1."FNAME" + S1."LNAME") 
+  FROM 
+        ETLPOC."EMP" S1 WHERE  ( (S1."ID") 
+        NOT IN (SELECT ETLPOC."EMP_TARGET"."ID" FROM ETLPOC."EMP_TARGET" ) )
+  
+
+(3) UPDATE STATEMENT
+  -- Update selected columns in target table
+  UPDATE ( 
+        SELECT 
+              S1."DOB" AS s_column1, 
+              T1."DOB" AS d_column1, 
+              (S1."FNAME" + S1."LNAME") AS s_column2, 
+              T1."NAME" AS d_column2 
+        FROM ETLPOC."EMP_TARGET" T1, 
+              ETLPOC."EMP" S1 
+        WHERE (T1."ID" = S1."ID")
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2
+(4) DELETE STATEMENT
+
+
+******** JOIN CASE *********
+(1) INSERT STATEMENT
+  -- Insert extracted source table into target table
+  INSERT INTO ETLPOC."EMP_TARGET" (
+        ETLPOC."EMP_TARGET"."ID", 
+        ETLPOC."EMP_TARGET"."DOB", 
+        ETLPOC."EMP_TARGET"."NAME", 
+        ETLPOC."EMP_TARGET"."SALARY"
+  ) 
+  SELECT 
+        S1."ID", 
+        S1."DOB", 
+        (S1."FNAME" + S1."LNAME"), 
+        S2."BASE_SALARY" 
+  FROM 
+        ETLPOC."EMP" S1
+         INNER JOIN ETLPOC."SALARY" S2
+         ON (S2."ID" = S1."SID")  WHERE  ( (S1."ID") 
+        NOT IN (SELECT ETLPOC."EMP_TARGET"."ID" FROM ETLPOC."EMP_TARGET" ) )
+  
+(2) INSERT UPDATE (MERGE) STATEMENT
+  -- Merge target table with the extracted source table
+  UPDATE ( 
+        SELECT 
+              S1."ID" AS s_column1, 
+              T1."ID" AS d_column1, 
+              S1."DOB" AS s_column2, 
+              T1."DOB" AS d_column2, 
+              (S1."FNAME" + S1."LNAME") AS s_column3, 
+              T1."NAME" AS d_column3, 
+              S2."BASE_SALARY" AS s_column4, 
+              T1."SALARY" AS d_column4 
+        FROM ETLPOC."EMP_TARGET" T1, ETLPOC."EMP" S1
+         INNER JOIN ETLPOC."SALARY" S2
+         ON (S2."ID" = S1."SID")
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2, 
+        d_column3 = s_column3, 
+        d_column4 = s_column4 ? 
+  
+  INSERT INTO ETLPOC."EMP_TARGET" (
+        ETLPOC."EMP_TARGET"."ID", 
+        ETLPOC."EMP_TARGET"."DOB", 
+        ETLPOC."EMP_TARGET"."NAME", 
+        ETLPOC."EMP_TARGET"."SALARY"
+  ) 
+  SELECT 
+        S1."ID", 
+        S1."DOB", 
+        (S1."FNAME" + S1."LNAME"), 
+        S2."BASE_SALARY" 
+  FROM 
+        ETLPOC."EMP" S1
+         INNER JOIN ETLPOC."SALARY" S2
+         ON (S2."ID" = S1."SID")  WHERE  ( (S1."ID") 
+        NOT IN (SELECT ETLPOC."EMP_TARGET"."ID" FROM ETLPOC."EMP_TARGET" ) )
+  
+(3) UPDATE STATEMENT
+  -- Update selected columns in target table
+  UPDATE ( 
+        SELECT 
+              S1."ID" AS s_column1, 
+              T1."ID" AS d_column1, 
+              S1."DOB" AS s_column2, 
+              T1."DOB" AS d_column2, 
+              (S1."FNAME" + S1."LNAME") AS s_column3, 
+              T1."NAME" AS d_column3, 
+              S2."BASE_SALARY" AS s_column4, 
+              T1."SALARY" AS d_column4 
+        FROM ETLPOC."EMP_TARGET" T1, ETLPOC."EMP" S1
+         INNER JOIN ETLPOC."SALARY" S2
+         ON (S2."ID" = S1."SID")
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2, 
+        d_column3 = s_column3, 
+        d_column4 = s_column4
+
+(4) DELETE STATEMENT
+
+
+******************** AXION *************************************
+(1) INSERT STATEMENT
+  -- Insert extracted source table into target table
+  INSERT INTO "EMP_TARGET" (
+        "EMP_TARGET"."ID", 
+        "EMP_TARGET"."DOB", 
+        "EMP_TARGET"."NAME"
+  ) 
+  SELECT 
+        S1."ID", 
+        S1."DOB", 
+        (S1."FNAME" || S1."LNAME") 
+  FROM 
+        "EMP" S1 WHERE  ( (S1."ID") 
+        NOT IN (SELECT "EMP_TARGET"."ID" FROM "EMP_TARGET" ) )
+  
+
+(2) INSERT UPDATE (MERGE) STATEMENT
+
+  -- Merge target table with the extracted source table
+  MERGE INTO "EMP_TARGET" T1  
+  USING (
+        SELECT 
+              S1."ID" AS column1, 
+              S1."DOB" AS column2, 
+              (S1."FNAME" || S1."LNAME") AS column3
+         FROM 
+              "EMP" S1
+  ) S 
+  ON (T1."ID" = S.column1) 
+  WHEN MATCHED THEN 
+         UPDATE SET 
+              T1."DOB" = S.column2, 
+              T1."NAME" = S.column3 
+  WHEN NOT MATCHED THEN 
+        INSERT (
+              T1."ID", 
+              T1."DOB", 
+              T1."NAME"
+        ) 
+        VALUES (
+              S.column1, 
+              S.column2, 
+              S.column3
+        )
+
+
+(3) UPDATE STATEMENT
+
+  -- Update selected columns in target table
+  UPDATE ( 
+        SELECT 
+              S1."DOB" AS s_column1, 
+              T1."DOB" AS d_column1, 
+              (S1."FNAME" || S1."LNAME") AS s_column2, 
+              T1."NAME" AS d_column2 
+        FROM "EMP_TARGET" T1, 
+              "EMP" S1 
+        WHERE (T1."ID" = S1."ID")
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2
+(4) DELETE STATEMENT
+
+******** JOIN CASE *********
+(1) INSERT STATEMENT
+  -- Insert extracted source table into target table
+  INSERT INTO "EMP_TARGET" (
+        "EMP_TARGET"."ID", 
+        "EMP_TARGET"."DOB", 
+        "EMP_TARGET"."NAME", 
+        "EMP_TARGET"."SALARY"
+  ) 
+  SELECT 
+        S1."ID", 
+        S1."DOB", 
+        (S1."FNAME" || S1."LNAME"), 
+        S2."BASE_SALARY" 
+  FROM 
+        "EMP" S1
+         INNER JOIN "SALARY" S2
+         ON (S2."ID" = S1."SID")  WHERE  ( (S1."ID") 
+        NOT IN (SELECT "EMP_TARGET"."ID" FROM "EMP_TARGET" ) )
+  
+(2) INSERT UPDATE (MERGE) STATEMENT
+  -- Merge target table with the extracted source table
+  MERGE INTO "EMP_TARGET" T1  
+  USING (
+        SELECT 
+              S1."ID" AS column1, 
+              S1."DOB" AS column2, 
+              (S1."FNAME" || S1."LNAME") AS column3, 
+              S2."BASE_SALARY" AS column4
+         FROM "EMP" S1
+         INNER JOIN "SALARY" S2
+         ON (S2."ID" = S1."SID")
+  ) J1 
+  ON (T1."ID" = J1.column1) 
+  WHEN MATCHED THEN 
+         UPDATE SET 
+              T1."DOB" = J1.column2, 
+              T1."NAME" = J1.column3, 
+              T1."SALARY" = J1.column4 
+  WHEN NOT MATCHED THEN 
+        INSERT (
+              T1."ID", 
+              T1."DOB", 
+              T1."NAME", 
+              T1."SALARY"
+        ) 
+        VALUES (
+              J1.column1, 
+              J1.column2, 
+              J1.column3, 
+              J1.column4
+        )
+(3) UPDATE STATEMENT
+
+  -- Update selected columns in target table
+  UPDATE ( 
+        SELECT 
+              S1."ID" AS s_column1, 
+              T1."ID" AS d_column1, 
+              S1."DOB" AS s_column2, 
+              T1."DOB" AS d_column2, 
+              (S1."FNAME" || S1."LNAME") AS s_column3, 
+              T1."NAME" AS d_column3, 
+              S2."BASE_SALARY" AS s_column4, 
+              T1."SALARY" AS d_column4 
+        FROM "EMP_TARGET" T1, "EMP" S1
+         INNER JOIN "SALARY" S2
+         ON (S2."ID" = S1."SID")
+  ) 
+  SET 
+        d_column1 = s_column1, 
+        d_column2 = s_column2, 
+        d_column3 = s_column3, 
+        d_column4 = s_column4
+
+(4) DELETE STATEMENT
+

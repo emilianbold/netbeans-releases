@@ -44,6 +44,7 @@ import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -188,7 +189,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                     }
                 });
 
-                BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream(),Charset.forName("UTF-8"))); // NOI18N
                 Map<String, AbstractFunctionToLine> res = Offset2LineService.getOffset2Line(out);
 
                 int rc = process.waitFor();
@@ -228,11 +229,14 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                 sourceInfoMap = Offset2LineService.getOffset2Line(executable);
                 logger.log(Level.FINE, "Loaded lines info for {0} functions from executable file {1}", new Object[]{sourceInfoMap.size(), executable}); // NOI18N
             } catch (FileNotFoundException ex) {
-                DLightLogger.instance.log(Level.SEVERE, ex.getMessage(), ex);
+                DLightLogger.instance.log(Level.INFO, ex.getMessage(), ex);
+                sourceInfoMap = Collections.<String, AbstractFunctionToLine>emptyMap();
             } catch (IOException ex) {
                 DLightLogger.instance.log(Level.INFO, ex.getMessage());
+                sourceInfoMap = Collections.<String, AbstractFunctionToLine>emptyMap();
             } catch (Throwable ex) {
                 DLightLogger.instance.log(Level.INFO, ex.getMessage(), ex);
+                sourceInfoMap = Collections.<String, AbstractFunctionToLine>emptyMap();
             }
             cache.put(executable, sourceInfoMap.isEmpty()?
                 Collections.<String, AbstractFunctionToLine>emptyMap() : sourceInfoMap);

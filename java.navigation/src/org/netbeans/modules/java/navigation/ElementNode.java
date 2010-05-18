@@ -62,13 +62,11 @@ import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.OpenAction;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -301,7 +299,8 @@ public class ElementNode extends AbstractNode {
         ic.add(d,new InstanceContent.Convertor<Description, DataObject>(){
             public DataObject convert(Description d) {
                 try {
-                    return DataObject.find(d.getFileObject());
+                    final FileObject fo = d.getFileObject();
+                    return fo == null ? null : DataObject.find(fo);
                 } catch (DataObjectNotFoundException ex) {
                     return null;
                 }

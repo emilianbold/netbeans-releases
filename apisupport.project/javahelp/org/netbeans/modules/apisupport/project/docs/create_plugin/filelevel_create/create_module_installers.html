@@ -7,29 +7,29 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
-    <title>Creating a Module Installer</title>
+    <title>Creating a Module Installer/Activator</title>
     <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-    <h2>Creating a Module Installer</h2>
+    <h2>Creating a Module Installer/Activator</h2>
     <p><small> 
         <a href="#seealso">See Also</a> 
     </small></p>
 
 
-    <p>A <a href="about_module_installers.html">module installer</a>
+    <p>A module installer (for a NetBeans module) or activator (for an OSGi bundle)
     is a Java class that provides hooks for
     running code on startup or when a module is loaded.
     It can also run cleanup code when a module is uninstalled
     or disabled.
 
-    <p><b>To create a new module installer:</b>
+    <p><b>To create a new installer/activator:</b>
     <ol>
         <li>Right-click a module project and choose New &gt; Other. In the
-        New File wizard, choose Module Installer under the Module
+        New File wizard, choose Installer/Activator under the Module
         Development category.
-        <li>In the Module Installer page, you have to set the following:
+        <li>In the New Installer/Activator page, you have to set the following:
         <ul>
 
             <li><b>Package.</b> Specifies the name of the package where the

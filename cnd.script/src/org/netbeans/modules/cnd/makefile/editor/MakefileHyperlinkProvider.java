@@ -46,7 +46,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
@@ -146,10 +145,8 @@ public class MakefileHyperlinkProvider implements HyperlinkProvider {
                     // ok, just skip them
                     break;
 
-                case KEYWORD:
-                    if (TokenUtilities.equals(prevToken.text(), "include")) { // NOI18N
-                        kind = MakefileElement.Kind.INCLUDE;
-                    }
+                case INCLUDE:
+                    kind = MakefileElement.Kind.INCLUDE;
                     break PREV_LOOP;
 
                 default:

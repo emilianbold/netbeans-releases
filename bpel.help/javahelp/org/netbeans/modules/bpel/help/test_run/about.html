@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Deploying and Performing Test Runs of BPEL Processes</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Deploying and Performing Test Runs of BPEL Processes</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p> This topic describes the tasks you have to perform to deploy and   test-run your business process.</p>
+<table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
+   process step. The right column contains detail information to accomplish that process.">
+  <tr valign="top"> 
+    <td align="center"><img src="../images/circle1.gif" alt="Number one"><br>
+
+      <b>Build <br>
+      BPEL 
+      Module project</b></td>
+    <td> 
+      <ul>
+        <li>(Optional) <a href="build_project.html">Build your BPEL Module</a> project.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"> 
+      <p><img src="../images/circle2.gif" alt="Number two"><br>
+
+        <b>Create CA project</b> </p>
+    </td>
+    <td> 
+      <ul>
+        <li><a href="nbdocs://org.netbeans.modules.compapp.capshelp/org/netbeans/modules/compapp/capshelp/basics/create_project.html" title="Creating Composite Application Projects">Create a Composite Application project</a> if you have not already done so. For sample processes, the IDE creates this type of projects automatically.</li>
+      </ul>
+
+    </td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"> <img src="../images/circle3.gif" alt="Number three"><br>
+      <b>Add BPEL Module project</b> </td>
+
+    <td> 
+      <ul>
+        <li><a href="add_bpel_project.html">Add the BPEL Module as a JBI Module</a> to the Composite Application project.</li>
+      </ul>
+
+    </td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"> <img src="../images/circle4.gif" alt="Number four" width="21" height="21"><br>
+      <b>Build CA project</b> </td>
+
+    <td> 
+     <ul>
+        <li>(Optional) Build the Composite Application project.</li>
+      </ul>
+    </td>
+  </tr>
+<tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+<tr valign="top"> 
+    <td align="center"> <img src="../images/circle5.gif" alt="Number five" width="21" height="21"><br>
+      <b>Start application server</b> </td>
+
+    <td> 
+      <ul>
+        <li>Make sure that the <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_start.html" title="Starting and Stopping a Server">Application Server is started</a>.</li>
+     </ul>
+    </td>
+  </tr>
+<tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"> <img src="../images/circle6.gif" alt="Number six" width="21" height="21"><br>
+      <b>Deploy CA project</b> </td>
+
+    <td> 
+     <ul>
+        <li><a href="nbdocs://org.netbeans.modules.compapp.capshelp/org/netbeans/modules/compapp/capshelp/basics/deploy_project.html" title="Deploying Composite Application Projects">Deploy</a> the Composite Application project. </li>
+      </ul>
+    </td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"> <img src="../images/circle7.gif" alt="Number seven" width="21" height="21"><br>
+      <b>Create and run test cases</b> </td>
+
+    <td> 
+     <ol>
+        <li><a href="nbdocs://org.netbeans.modules.compapp.capshelp/org/netbeans/modules/compapp/capshelp/basics/jbi_tester.html" title="Testing a JBI Project">Create test cases</a> (for sample processes, test cases are automatically created; for new projects, you need to create at least one test case).</li>
+                <li><a href="nbdocs://org.netbeans.modules.compapp.capshelp/org/netbeans/modules/compapp/capshelp/basics/jbi_tester.html" title="Testing a JBI Project">Run</a> one or several test cases.</li>
+      </ol>
+    </td>
+  </tr>
+</table>
+<ul class="note">
+<li>You can also debug your BPEL process after it is deployed to the server. See <a href="../debug/about.html" title="About Debugging BPEL Processes">About Debugging BPEL Processes</a> for more information on how to debug BPEL applications. </li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../basics/project_lifecycle.html" title="Understanding Service Oriented Architecture Projects">Understanding Service Oriented Architecture Projects</a></dd>
+<dd><a href="../basics/create_project.html" title="Creating BPEL Module Projects">Creating BPEL Module Projects</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.compapp.capshelp/org/netbeans/modules/compapp/capshelp/basics/create_project.html" title="Creating Composite Application Projects">Creating Composite Application Projects</a></dd>
+  <dd><a href="../debug/about.html" title="About Debugging BPEL Processes">About Debugging BPEL Processes </a></dd>
+  <dd><a href="../logging/about_logging.html">Logging and Alerting</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

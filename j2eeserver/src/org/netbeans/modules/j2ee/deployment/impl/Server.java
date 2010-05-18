@@ -158,7 +158,7 @@ public class Server implements Node.Cookie {
             }
         }
         if (factory == null) {
-            throw new IllegalStateException("Can't acquire DeploymentFacory"); //NOI18N
+            throw new IllegalStateException("Can't acquire DeploymentFactory for " + name); //NOI18N
         }
         return factory;
     }

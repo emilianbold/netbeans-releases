@@ -97,21 +97,21 @@ public class PreprocessorFileFilterImplementation implements JavaFileFilterImple
     }
     
     public CharSequence filterCharSequence(final CharSequence charSequence) {
-//        if (!pch.isPreprocessorOn()) return charSequence;
-//        final StringWriter sw = new StringWriter();
-//        new CommentingPreProcessor(new CommentingPreProcessor.Source() {
-//            public Reader createReader() throws IOException {
-//                return new StringReader(charSequence.toString());
-//            }
-//        }, new CommentingPreProcessor.Destination() {
-//            public Writer createWriter(boolean validOutput) throws IOException {
-//                return sw;
-//            }
-//            public void doInsert(int line, String s) throws IOException {}
-//            public void doRemove(int line, int column, int length) throws IOException {}
-//        }, getAbilities()).run();
-//        return sw.toString();
-        return charSequence; //see issue #107490
+        if (!pch.isPreprocessorOn()) return charSequence;
+        final StringWriter sw = new StringWriter();
+        new CommentingPreProcessor(new CommentingPreProcessor.Source() {
+            public Reader createReader() throws IOException {
+                return new StringReader(charSequence.toString());
+            }
+        }, new CommentingPreProcessor.Destination() {
+            public Writer createWriter(boolean validOutput) throws IOException {
+                return sw;
+            }
+            public void doInsert(int line, String s) throws IOException {}
+            public void doRemove(int line, int column, int length) throws IOException {}
+        }, getAbilities()).run();
+        return sw.toString();
+//        return charSequence; //see issue #107490
     }
     
     public Writer filterWriter(final Writer w) {

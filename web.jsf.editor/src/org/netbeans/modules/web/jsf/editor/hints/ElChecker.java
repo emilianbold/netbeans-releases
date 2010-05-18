@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.BadLocationException;
 
 import javax.swing.text.Document;
 
@@ -60,6 +61,7 @@ import org.netbeans.modules.web.core.syntax.checker.JspElChecker;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.jsf.editor.el.JsfElExpression;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -120,29 +122,26 @@ public class ElChecker extends HintsProvider {
             TokenSequence<ELTokenId> tokenSequence, FileObject fileObject,
             List<Map<Class<? extends ELExpression>, ELExpression>> expressions ) 
     {
-        JsfElExpression elExpr = new JsfElExpression( webModule , doc );
-        elExpr.parse(offset);
-        
-        int startOffset = elExpr.getStartOffset();
-        if ( startOffset == -1){
-            tokenSequence.move(offset);
-            if ( !tokenSequence.movePrevious() ){
-                return;
+        try {
+            JsfElExpression elExpr = new JsfElExpression(webModule, doc, offset);
+            elExpr.parse();
+            int startOffset = elExpr.getStartOffset();
+            if (startOffset == -1) {
+                tokenSequence.move(offset);
+                if (!tokenSequence.movePrevious()) {
+                    return;
+                }
+                collectExpressions(webModule, doc, tokenSequence.offset(), tokenSequence, fileObject, expressions);
+            } else {
+                ELExpression expr = myJspChecker.parseExpression(doc, elExpr.getContextOffset());
+                Map<Class<? extends ELExpression>, ELExpression> map = new HashMap<Class<? extends ELExpression>, ELExpression>();
+                map.put(elExpr.getClass(), elExpr);
+                map.put(expr.getClass(), expr);
+                expressions.add(map);
+                collectExpressions(webModule, doc, startOffset, tokenSequence, fileObject, expressions);
             }
-            collectExpressions(webModule, doc, tokenSequence.offset(), tokenSequence, 
-                    fileObject, expressions);
-        }
-        else {
-            ELExpression expr = myJspChecker.parseExpression( doc, elExpr.getContextOffset());
-            
-            Map<Class<? extends ELExpression>, ELExpression> map = new HashMap<
-                Class<? extends ELExpression>, ELExpression>();
-            map.put(elExpr.getClass(), elExpr);
-            map.put( expr.getClass(), expr);
-            expressions.add( map );
-            
-            collectExpressions(webModule, doc, startOffset, tokenSequence, 
-                    fileObject, expressions );
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     

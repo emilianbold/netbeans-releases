@@ -253,10 +253,8 @@ public final class ConnectionManager {
                     PasswordManager.getInstance().clearPassword(env);
                 }
                 return false;
-            } else if (connectionTask.problem == Problem.CONNECTION_TIMEOUT) {
-                throw new IOException("Timeout connecting to " + env); // NOI18N
             } else {
-                throw new IOException("Problem connecting to " + env + ": " + connectionTask.problem.name()); // NOI18N
+                throw new IOException(env.getDisplayName() + ": " + connectionTask.problem.name()); // NOI18N
             }
         }
 
@@ -346,12 +344,17 @@ public final class ConnectionManager {
 
     private void reconnect(ExecutionEnvironment env) throws IOException {
         synchronized (sessions) {
-            disconnect(env);
+            disconnectImpl(env);
             connectTo(env);
         }
     }
 
     public void disconnect(ExecutionEnvironment env) {
+        disconnectImpl(env);
+        PasswordManager.getInstance().onExplicitDisconnect(env);
+    }
+
+    private void disconnectImpl(ExecutionEnvironment env) {
         synchronized (sessions) {
             Session session = sessions.remove(env);
             if (session != null) {

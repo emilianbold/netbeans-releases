@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="jdbcwsdl" targetNamespace="http://j2ee.netbeans.org/wsdl/jdbcbc"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:tns="http://j2ee.netbeans.org/wsdl/jdbcbc" 
+    xmlns:ns="http://j2ee.netbeans.org/xsd/tableSchema"
+    xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype" xmlns:jdbc="http://schemas.sun.com/jbi/wsdl-extensions/jdbc/">
+    <types>
+	<xsd:schema targetNamespace="http://j2ee.netbeans.org/wsdl/jdbcbc">
+            <xsd:import namespace="http://j2ee.netbeans.org/xsd/tableSchema" schemaLocation="jdbc.xsd.template"/>
+	</xsd:schema>
+    </types>
+    <message name="inputMsg">
+        <part name="part" element="ns:CUSTOMER"/>
+    </message>
+    <message name="outputMsg">
+        <part name="part" element="ns:CUSTOMER"/>
+    </message>
+    <portType name="jdbcPortType">
+        <operation name="execute">
+            <input name="inputExecute" message="tns:inputMsg"/>
+	    <output name="outputExecute" message="tns:outputMsg"/>
+        </operation>
+    </portType>
+    <binding name="binding" type="tns:jdbcPortType">
+        <jdbc:binding/>
+        <operation name="execute">
+            <jdbc:operation/>
+            <input name="inputExecute">
+               <jdbc:spinput ExecutionString="call" Transaction="XATransaction" ProcedureName="APP.TestOutbound" />
+            </input>
+	    <output name="outputExecute">
+                <jdbc:spoutput returnPartName="part"/>
+            </output>
+         </operation>
+    </binding>
+    <service name="service">
+        <port name="port" binding="tns:binding">
+            <jdbc:address jndiName="jndiname"/>
+        </port>
+    </service>
+    <plink:partnerLinkType name="jdbcpartner">
+        <plink:role name="jdbcPortTypeRole" portType="tns:jdbcPortType"/>
+    </plink:partnerLinkType>
+</definitions>

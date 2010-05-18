@@ -245,7 +245,7 @@ public class ManDocumentation {
                 exitStatus = np.execute("man", null, name); // NOI18N
             }
         } else {
-            exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, "-s3", name); // NOI18N
+            exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, "-S3", name); // NOI18N
         }
         StringReader sr;
         if (exitStatus != null) {

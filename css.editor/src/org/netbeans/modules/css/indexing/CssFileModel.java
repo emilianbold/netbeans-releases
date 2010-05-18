@@ -101,7 +101,7 @@ public class CssFileModel {
             }
         });
 
-        return new CssFileModel(result.get(), snapshot.get());
+        return result.get() == null ? null : new CssFileModel(result.get(), snapshot.get());
     }
 
     public static CssFileModel create(CssParserResult result) {

@@ -154,7 +154,6 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
     }
 
     public Node.Cookie getCookie(Class clazz) {
-
         if (ViewCookie.class.equals(clazz)) {
             return getViewCookie();
         }
@@ -198,12 +197,8 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
                 }
             }
             finally {
-                if (input != null) {
-                    input.close();
-                }
-                if (output != null) {
-                    output.close();
-                }
+                input.close();
+                output.close();
             }
         }
     }

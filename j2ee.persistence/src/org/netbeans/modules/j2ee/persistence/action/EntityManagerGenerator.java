@@ -209,7 +209,6 @@ public final class EntityManagerGenerator {
         }
         
         try {
-            // TODO: fix ASAP! 1st PU is taken, needs to find the one which realy owns given file
             Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceScope.getPersistenceXml());
             if(persistence != null){
                 PersistenceUnit[] pus=persistence.getPersistenceUnit();

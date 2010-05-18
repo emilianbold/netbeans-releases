@@ -93,6 +93,13 @@ public abstract class CsmStandaloneFileProvider {
     public abstract void notifyClosed(CsmFile file);
     
     /**
+     * this method checks if file is standalone
+     * @param file
+     * @return true if passed file is standalone
+     */
+    public abstract boolean isStandalone(CsmFile file);
+
+    /**
      * A dummy provider that never returns any results.
      */
     private static final class Empty extends CsmStandaloneFileProvider {
@@ -104,8 +111,14 @@ public abstract class CsmStandaloneFileProvider {
             return null;
         }
 
+        @Override
         public void notifyClosed(CsmFile file) {
         
+        }
+
+        @Override
+        public boolean isStandalone(CsmFile file) {
+            return false;
         }
     } 
 }

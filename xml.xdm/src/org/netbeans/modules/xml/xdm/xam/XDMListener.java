@@ -182,7 +182,9 @@ public class XDMListener implements PropertyChangeListener {
                 assert namespacePathToRoot.size() == pathToRoot.size();
             }
             //
-            ChangeInfo change = prepareChangeInfo(pathToRoot, namespacePathToRoot);
+            ChangeInfo change = model.prepareChangeInfo(pathToRoot);
+            // Rollback fix for issue #166177 because it causes issue #186068
+            // ChangeInfo change = prepareChangeInfo(pathToRoot, namespacePathToRoot);
             change.setAdded(isAdded);
             processChange(change);
         }
@@ -264,6 +266,7 @@ public class XDMListener implements PropertyChangeListener {
         return domNodes;
     }
 
+    // This method isn't used after fix for issue #166177 rolled back
     protected ChangeInfo prepareChangeInfo(List<? extends Node> pathToRoot,
             List<? extends Node> nsContextPathToRoot) {
         // we already handle change on root before enter here

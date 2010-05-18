@@ -43,11 +43,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import javax.swing.Action;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
@@ -70,6 +74,7 @@ public class CndTestIOProvider extends IOProvider {
     private List<Listener> listeners = new ArrayList();
 
     public CndTestIOProvider() {
+        //System.err.printf("CndTestIOProvider.ctor\n");
     }
 
     @Override
@@ -79,6 +84,16 @@ public class CndTestIOProvider extends IOProvider {
 
 
     public InputOutput getIO(String name, boolean newIO) {
+        return new TrivialIO(name);
+    }
+
+    @Override
+    public InputOutput getIO(String name, Action[] actions) {
+        return new TrivialIO(name);
+    }
+
+    @Override
+    public InputOutput getIO(String name, Action[] actions, IOContainer ioContainer) {
         return new TrivialIO(name);
     }
 
@@ -190,6 +205,111 @@ public class CndTestIOProvider extends IOProvider {
             } else {
                 stream.print("[" + name + "]  "); // NOI18N
             }
+        }
+
+        @Override
+        public void println(String s, OutputListener l, boolean important) throws IOException {
+            println(s);
+        }
+
+        @Override
+        public PrintWriter append(CharSequence csq) {
+            print(csq.toString());
+            return this;
+        }
+
+        @Override
+        public PrintWriter append(CharSequence csq, int start, int end) {
+            print(csq.subSequence(start, end).toString());
+            return this;
+        }
+
+        @Override
+        public PrintWriter append(char c) {
+            print(c);
+            return this;
+        }
+
+        @Override
+        public PrintWriter format(String format, Object... args) {
+            return printf(format, args);
+        }
+
+        @Override
+        public PrintWriter format(Locale l, String format, Object... args) {
+            return printf(l, format, args);
+        }
+
+        @Override
+        public void print(boolean b) {
+            print("" + b);
+        }
+
+        @Override
+        public void print(char c) {
+            fireLinePrinted("" + c);
+            stream.print(c);
+        }
+
+        @Override
+        public void print(int i) {
+            print("" + i);
+        }
+
+        @Override
+        public void print(long l) {
+            print("" + l);
+        }
+
+        @Override
+        public void print(float f) {
+            print("" + f);
+        }
+
+        @Override
+        public void print(double d) {
+            print("" + d);
+        }
+
+        @Override
+        public void print(char[] s) {
+            fireLinePrinted(new String(s));
+            stream.print(s);
+        }
+
+        @Override
+        public void print(String s) {
+            fireLinePrinted(s);
+            stream.print(s);
+        }
+
+        @Override
+        public void print(Object obj) {
+            print(obj == null ? "null" : obj.toString());
+        }
+
+        @Override
+        public PrintWriter printf(String format, Object... args) {
+            String text = String.format(format, args);
+            print(text);
+            return this;
+        }
+
+        @Override
+        public PrintWriter printf(Locale l, String format, Object... args) {
+            String text = String.format(l, format, args);
+            print(text);
+            return this;
+        }
+
+        @Override
+        public void write(char[] buf) {
+            print(buf);
+        }
+
+        @Override
+        public void write(String s) {
+            print(s);
         }
 
         public void println(String s, OutputListener l) throws IOException {

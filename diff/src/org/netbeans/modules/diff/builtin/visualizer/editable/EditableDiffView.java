@@ -257,9 +257,13 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                     
                     try {
                         setSource1(ss1);
+                    } catch (IOException ioex) {
+                        Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, "Diff source 1 unavailable", ioex); //NOI18N
+                    }
+                    try {
                         setSource2(ss2);
                     } catch (IOException ioex) {
-                        Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, "Diff source unavailable", ioex);
+                        Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, "Diff source 2 unavailable", ioex); //NOI18N
                     }
 
                     if (jTabbedPane != null) {

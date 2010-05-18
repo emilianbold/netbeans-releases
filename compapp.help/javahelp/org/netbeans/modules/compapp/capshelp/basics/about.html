@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>About Composite Application Projects</title>
+</head>
+<body>
+<h2>About Composite Application Projects</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>A Composite Application project is used to create a service assembly that can 
+  be deployed to the Java Business Integration (JBI) server. Within the Composite 
+  Application project, you can:</p>
+<ul>
+  <li>Assemble an application that uses multiple project types (BPEL, XSLT, IEP, 
+    or SQL).</li>
+  <li>Configure external/edge access protocols (SOAP, JMS, SMTP, and others).</li>
+  <li>Build JBI deployment packages.</li>
+  <li>Deploy the application image to the target JBI server.</li>
+  <li>Monitor the status of JBI server components and applications.</li>
+</ul>
+<p>The JBI server can contain different service engines. One service engine is 
+  the BPEL service engine. For a Composite Application project to be deployed 
+  to the BPEL (and any other) service engines, it must include JBI modules created 
+  from a BPEL Module project. You can also create and execute test cases that 
+  can then be run, in JUnit fashion, against the deployed Composite Application.</p>
+<p>Three samples are supplied, illustrating the relationship between 
+  BPEL Module projects and Composite Application projects. 
+  See <a href="nbdocs://org.netbeans.modules.bpel.help/org/netbeans/modules/bpel/help/basics/create_sample.html" title="Creating Sample Processes in the BPEL Designer">Creating Sample Processes in the BPEL Designer</a>.</p>
+<p>The pop-up menu of a Composite Application project contains major commands 
+  you can run, such as: </p>
+<ul>
+  <li><a href="add_jbi_module.html" title="Adding JBI Modules to Composite Application Projects">Add 
+    JBI Module</a>. Adds a BPEL, XSLT, IEP, or SQL Module project to the Composite 
+    Application project. You must do this to deploy and test-run your Composite 
+    Application. </li>
+  <li>Build, clean and build, or clean the project. </li>
+  <li><a href="deploy_project.html" title="Deploying Composite Application Projects">Deploy</a>. 
+    Compiles the Composite Application project and deploys it to the BPEL (and 
+    any other) service engine. </li>
+  <li><a href="jbi_tester.html" title="Performing Test Runs">Test Project</a>. 
+    Runs test cases against this Composite Application project. </li>
+  <li>Debug (BPEL).</li>
+  <li><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_main.html">Set 
+    as Main Project</a></li>
+  <li>Open Required Projects.</li>
+  <li>Configure project properties, such as the project location in the filesystem, 
+    descriptions of the assembly unit and application subassembly, target engine, 
+    binding, and deployment components, and the server to which the project is 
+    deployed. To configure project properties, right-click the project's node 
+    and choose Properties. </li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="nbdocs://org.netbeans.modules.bpel.help/org/netbeans/modules/bpel/help/test_run/about.html" title="Deploying and Performing Test Runs of BPEL Processes">Deploying and Performing Test Runs of BPEL Processes</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.bpel.help/org/netbeans/modules/bpel/help/basics/project_lifecycle.html" title="Understanding Service Oriented Architecture Projects">Understanding Service Oriented Architecture Projects</a></dd>
+<dd><a href="create_project.html" title="Creating Composite Application Projects">Creating Composite Application Projects</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

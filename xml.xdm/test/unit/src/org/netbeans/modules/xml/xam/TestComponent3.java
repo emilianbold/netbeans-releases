@@ -58,7 +58,7 @@ import org.w3c.dom.NodeList;
 public class TestComponent3 extends AbstractDocumentComponent<TestComponent3> implements NamedReferenceable<TestComponent3> {
     public static String NS_URI = "http://www.test.com/TestModel";
     public static String NS2_URI = "http://www.test2.com/TestModel";
-    public static String NS_ERR_URI = "http://www.test2.com/TestModel/Err";
+    // public static String NS_ERR_URI = "http://www.test2.com/TestModel/Err";
     
     public TestComponent3(TestModel3 model, org.w3c.dom.Element e) {
         super(model, e);
@@ -120,7 +120,7 @@ public class TestComponent3 extends AbstractDocumentComponent<TestComponent3> im
             return new TestComponent3.D(model, e);
         } else if (e.getLocalName().equals("e") && NS_URI.equals(namespace)) {
             return new TestComponent3.E(model, e);
-        } else if (e.getLocalName().equals(Err.LNAME) && NS_ERR_URI.equals(namespace)) {
+        } else if (e.getLocalName().equals(Err.LNAME) && NS_URI.equals(namespace)) {
             return new TestComponent3.Err(model, e);
         } else {
             return null;
@@ -260,9 +260,9 @@ public class TestComponent3 extends AbstractDocumentComponent<TestComponent3> im
      */
     public static class Err extends TestComponent3 {
         public static final String LNAME = "err";
-        public static final QName QNAME = new QName(NS_ERR_URI, LNAME);
+        public static final QName QNAME = new QName(NS_URI, LNAME);
         public Err(TestModel3 model, int i) {
-            super(model, LNAME, NS_ERR_URI, i);
+            super(model, LNAME, NS_URI, i);
         }
         public Err(TestModel3 model, Element e) {
             super(model, e);

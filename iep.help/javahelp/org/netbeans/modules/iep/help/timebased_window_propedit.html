@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Time Based Window Operator</title>
+</head>
+<body>
+
+<h2>Using the Time Based Window Operator</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+
+
+<p>The Time Based Window operator converts an input stream to a relation based on a specified period of time.</p>
+
+<p>Assume that you set the period of time to five seconds. Each relation will consist of all events that arrived in the last five seconds.</p>
+
+<p>The input to the Time Based Window operator is a stream.</p>
+
+<p>The output from the Time Based Window operator is a relation.</p>
+
+
+
+<p><strong>To use the Time Based Window operator:</strong></p>
+
+<ol>
+
+  <li>Drag a Time Based Window operator from the Palette to the Design view.</li>
+
+  <li>Connect the output of an operator that has stream output to the input of the Time Based Window operator.</li>
+  <li>Double-click the Time Based Window operator. The property editor opens. The attributes of the input schema are displayed in read-only mode.</li>
+
+  <li>In the Size field and drop-down menu, specify the period of time.</li>
+
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK.</li>
+
+</ol>
+
+
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="attbased_propedit.html">Using the Attribute Based Window Operator</a></dd>
+<dd><a href="partitionwindow_propedit.html">Using the Partitioned Window Operator</a></dd>
+<dd><a href="tuplebased_propedit.html">Using the Tuple Based Window Operator</a></dd>
+<dd>&nbsp;</dd>
+</dl>
+
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

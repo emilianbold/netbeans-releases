@@ -1,0 +1,5 @@
+org.netbeans.modules.bpel.debugger.ui.breakpoint.BpelBreakpointListener
+org.netbeans.modules.bpel.debugger.ui.breakpoint.PersistenceManager
+org.netbeans.modules.bpel.debugger.ui.CurrentPositionAnnotationListener
+org.netbeans.modules.bpel.debugger.ui.CurrentProcessInstanceListener
+org.netbeans.modules.bpel.debugger.ui.ExecutionAnnotationsListener

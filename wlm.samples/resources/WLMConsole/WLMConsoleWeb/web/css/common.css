@@ -1,0 +1,153 @@
+/*
+ * Copyright (c) 2009, Sun Microsystems, Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * * Redistributions of source code must retain the above copyright notice,
+ *   this list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software without
+ *   specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+BODY, TD, TH, TABLE, P, FORM, UL, OL, DIV, INPUT, SELECT, OPTION, H3, H4 {
+    font-family: Arial, sans-serif;
+    font-size: 11pt;
+}
+
+H3 {
+    font-size: 16pt;
+    margin-top: 16pt;
+    margin-bottom: 8pt;
+}
+
+H4 {
+    font-size: 14pt;
+    margin-top: 14pt;
+    margin-bottom: 7pt;
+}
+
+A {
+    color: #003399;
+}
+
+FORM {
+    margin: 0;
+    padding: 0;
+}
+
+INPUT, SELECT, TEXTAREA {
+    border: 1px solid #98a0a5;
+}
+
+INPUT {
+    padding-left: 2pt;
+    padding-right: 2pt;
+}
+
+INPUT.DefaultValue {
+    color: #98a0a5;
+}
+
+INPUT.Button {
+    background: #e5e9ed url('../img/button-bg.png') repeat-x bottom left scroll;
+    padding: 0pt 10pt;
+    cursor: pointer;
+}
+
+INPUT.Button:hover {
+    background: #e5e9ed url('../img/button-bg-over.png') repeat-x bottom left scroll;
+}
+
+PRE, TEXTAREA, TT, CODE {
+    font-family: Monaco, Courier, monospace;
+    font-size: 10pt;
+}
+
+SMALL, .Smaller {
+    font-size: 80%;
+}
+
+/* Common page elements */
+#wrapper {
+    max-width: 1024px;
+    min-width: 600px;
+}
+
+#header {
+    position: relative;
+    height: 86px;
+    background: #c8d2dd url('../img/top-banner.png') no-repeat top left scroll;
+}
+
+#menu {
+    position: relative;
+    background: #c8d2dd;
+}
+
+#menu A {
+    text-decoration: none;
+}
+
+#menuPages {
+    padding: 2pt 4pt;
+}
+
+#menuOther {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    padding: 2pt 4pt;
+}
+
+#errorMessage {
+    width: 70%;
+    margin: 16pt auto;
+    text-align: center;
+    font-size: 12pt;
+    color: #ff0000;
+}
+
+#helpContent P {
+    margin-top: 0px;
+    margin-bottom: 11pt;
+}
+
+#helpContent P.Note {
+    margin-top: 11pt;
+    margin-bottom: 11pt;
+}
+
+#helpContent UL, #helpContent OL {
+    padding-left: 30pt;
+}
+
+#helpContent UL OL, #helpContent UL UL,
+#helpContent OL UL, #helpContent OL OL {
+    padding-left: 15pt;
+}
+
+#debugInformation {
+    display: none;
+    padding: 16pt;
+    font-size: 8pt;
+    color: #e5e9ed;
+}

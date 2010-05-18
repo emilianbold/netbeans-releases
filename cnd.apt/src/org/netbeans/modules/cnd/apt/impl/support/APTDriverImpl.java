@@ -50,11 +50,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTBuilder;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
-import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -123,7 +121,35 @@ public class APTDriverImpl {
         private APTFile lightAPT = null;
         public APTSyncCreator() {
         }
-        
+
+        private TokenStream getTokenStream(APTFileBuffer buffer, String lang, boolean isLight) throws IOException {
+            if (buffer.isFileBased()) {
+                Reader reader = null;
+                try {
+                    reader = buffer.getReader();
+                    if (isLight) {
+                        return APTTokenStreamBuilder.buildLightTokenStream(buffer.getAbsolutePath().toString(), reader, lang);
+                    } else {
+                        return APTTokenStreamBuilder.buildTokenStream(buffer.getAbsolutePath().toString(), reader, lang);
+                    }
+                } finally {
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (IOException ex) {
+                            APTUtils.LOG.log(Level.SEVERE, "exception on closing stream\n{0}", new Object[]{ex}); // NOI18N
+                        }
+                    }
+                }
+            } else {
+                if (isLight) {
+                    return APTTokenStreamBuilder.buildLightTokenStream(buffer.getAbsolutePath().toString(), buffer.getCharBuffer(), lang);
+                } else {
+                    return APTTokenStreamBuilder.buildTokenStream(buffer.getAbsolutePath().toString(), buffer.getCharBuffer(), lang);
+                }
+            }
+        }
+
         /** synchronized on instance */
         public synchronized APTFile findAPT(APTFileBuffer buffer, boolean withTokens, String lang) throws IOException {
             CharSequence path = buffer.getAbsolutePath();
@@ -137,54 +163,37 @@ public class APTDriverImpl {
             APTFile apt = _getAPTFile(path, withTokens);
             if (apt == null) {
                 // ok, create new apt
-                
-                // build token stream for file       
-                Reader reader = null;
-                try {
-                    reader = buffer.getReader();
-                    if (!withTokens) {
-                        TokenStream ts = APTTokenStreamBuilder.buildLightTokenStream(path, reader, lang);
-                        // build apt from light token stream
-                        apt = APTBuilder.buildAPT(path, ts);
-                        fullAPT = null;
-                        if (apt != null) {
-                            if (APTTraceFlags.TEST_APT_SERIALIZATION) {
-                                APTFile test = (APTFile) APTSerializeUtils.testAPTSerialization(buffer, apt);
-                                if (test != null) {
-                                    apt = test;
-                                } else {
-                                    System.err.println("error on serialization apt for file " + path); // NOI18N
-                                }
+                TokenStream ts = getTokenStream(buffer, lang, !withTokens);
+                // build apt from light token stream
+                apt = APTBuilder.buildAPT(path, ts);
+                if (!withTokens) {
+                    fullAPT = null;
+                    if (apt != null) {
+                        if (APTTraceFlags.TEST_APT_SERIALIZATION) {
+                            APTFile test = (APTFile) APTSerializeUtils.testAPTSerialization(buffer, apt);
+                            if (test != null) {
+                                apt = test;
+                            } else {
+                                System.err.println("error on serialization apt for file " + path); // NOI18N
                             }
-                            lightAPT = apt;
-                            _putAPTFile(path, lightAPT, false);
                         }
-                    } else {
-                        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(path, reader, lang);
-                        // build apt from token stream
-                        apt = APTBuilder.buildAPT(path, ts);
-                        fullAPT = apt;
-                        if (apt != null) {
-                            if (APTTraceFlags.TEST_APT_SERIALIZATION) {
-                                APTFile test = (APTFile) APTSerializeUtils.testAPTSerialization(buffer, apt);
-                                if (test != null) {
-                                    apt = test;
-                                } else {
-                                    System.err.println("error on serialization apt for file " + path); // NOI18N
-                                }
-                            }
-                            _putAPTFile(path, fullAPT, true);
-                            lightAPT = (APTFile) APTBuilder.buildAPTLight(apt);
-                            _putAPTFile(path, lightAPT, false);
-                        }
+                        lightAPT = apt;
+                        _putAPTFile(path, lightAPT, false);
                     }
-                } finally {
-                    if (reader != null) {
-                        try {
-                            reader.close();
-                        } catch (IOException ex) {
-                            APTUtils.LOG.log(Level.SEVERE, "exception on closing stream\n{0}", new Object[] { ex }); // NOI18N
+                } else {
+                    fullAPT = apt;
+                    if (apt != null) {
+                        if (APTTraceFlags.TEST_APT_SERIALIZATION) {
+                            APTFile test = (APTFile) APTSerializeUtils.testAPTSerialization(buffer, apt);
+                            if (test != null) {
+                                apt = test;
+                            } else {
+                                System.err.println("error on serialization apt for file " + path); // NOI18N
+                            }
                         }
+                        _putAPTFile(path, fullAPT, true);
+                        lightAPT = (APTFile) APTBuilder.buildAPTLight(apt);
+                        _putAPTFile(path, lightAPT, false);
                     }
                 }
             }

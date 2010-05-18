@@ -48,7 +48,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -98,7 +97,7 @@ public class CheckLicense extends Task {
         return f;
     }
 
-    public void execute () throws BuildException {
+    public @Override void execute() throws BuildException {
         if (fragment == null) {
             if (fragments == null) {
                 throw new BuildException("You must supply a fragment", getLocation());
@@ -107,12 +106,13 @@ public class CheckLicense extends Task {
             executeReplace();
             return;
         }
-        if (filesets.isEmpty ()) throw new BuildException("You must supply at least one fileset", getLocation());
-        Iterator it = filesets.iterator ();
+        if (filesets.isEmpty()) {
+            throw new BuildException("You must supply at least one fileset", getLocation());
+        }
         String failMsg = null;
         try {
-            while (it.hasNext ()) {
-                FileScanner scanner = ((FileSet) it.next()).getDirectoryScanner(getProject());
+            for (FileSet fileset : filesets) {
+                FileScanner scanner = fileset.getDirectoryScanner(getProject());
                 File baseDir = scanner.getBasedir ();
                 String[] files = scanner.getIncludedFiles ();
                 log ("Looking for " + fragment + " in " + files.length + " files in " + baseDir.getAbsolutePath ());
@@ -160,11 +160,10 @@ public class CheckLicense extends Task {
     }
     
     private void executeReplace() throws BuildException {
-        Iterator it = filesets.iterator ();
         try {
             byte[] workingArray = new byte[1024];
-            while (it.hasNext ()) {
-                FileScanner scanner = ((FileSet) it.next()).getDirectoryScanner(getProject());
+            for (FileSet fileset : filesets) {
+                FileScanner scanner = fileset.getDirectoryScanner(getProject());
                 File baseDir = scanner.getBasedir ();
                 String[] files = scanner.getIncludedFiles ();
                 log ("Replacing code in " + files.length + " files in " + baseDir.getAbsolutePath ());
@@ -180,10 +179,7 @@ public class CheckLicense extends Task {
                     boolean changed = false;
                     String prefix = null;
                     
-                    Iterator frags = fragments.iterator();
-                    while (frags.hasNext()) {
-                        Convert f = (Convert)frags.next();
-                        
+                    for (Convert f : fragments) {
                         Matcher matcher = f.orig.matcher(workingString);
                         
                         while (matcher.find()) {
@@ -250,7 +246,7 @@ public class CheckLicense extends Task {
         }
         
         String[] all = repl.split("\n");
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < all.length; i++) {
             if (startWithPrefix) {
                 sb.append(prefix);

@@ -87,6 +87,7 @@
 				<tocitem text="Managing C/C++ Remote Development Hosts" target="RemoteDevelopmentManageHosts" />
 				<tocitem text="File Sharing with Remote Development Hosts" target="RemoteDevelopmentFileSharing" />
 				<tocitem text="Setting Up C/C++ Projects for Remote Development" target="RemoteDevelopmentProjects" />
+				<tocitem text="Connecting a Terminal Emulator to a Remote Development Host" target="RemoteDevelopmentTerminal" />
 			</tocitem>
 		</tocitem>
 		<tocitem text="Profiling C/C++/Fortran Applications">
@@ -105,7 +106,7 @@
 			<tocitem text="About C and C++ Unit Tests" target="c_unit_about" />
 			<tocitem text="Overview of C/C++ Unit Tests" target="c_unit_overview" />
 			<tocitem text="C/C++ Unit Test Tasks: Quick Reference" target="c_unit_quickref" />
-			<tocitem text="Creating C/C++ Unit Tests" target="AddingUnitTests" />
+			<tocitem text="Creating C/C++ Unit Tests" target="c_unit_creatingtests" />
 			<tocitem text="Running C/C++ Unit Tests" target="c_unit_runningtests" />
 			<tocitem text="Viewing C/C++ Test Results" target="c_unit_resultswindow" />
 			<tocitem text="Debugging C/C++ Unit Tests" target="c_unit_debuggingtests" />

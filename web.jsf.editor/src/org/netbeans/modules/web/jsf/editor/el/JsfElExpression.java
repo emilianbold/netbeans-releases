@@ -69,6 +69,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -151,8 +152,8 @@ public class JsfElExpression extends ELExpression {
     MetadataModel<WebBeansModel> webBeansModel;
     protected String bundleName;
 
-    public JsfElExpression(WebModule wm, Document doc){
-        super(doc);
+    public JsfElExpression(WebModule wm, Document doc, int offset) throws BadLocationException{
+        super(doc, offset);
         this.webModule = wm;
 	this.webBeansModel = JsfSupport.findFor(doc).getWebBeansModel();
     }
@@ -201,6 +202,7 @@ public class JsfElExpression extends ELExpression {
             final int offset = getContextOffset();
             final String[] _value = new String[1];
             try {
+                //XXX the parsing should run on the ELExpression's snapshot, not the live document
                 ParserManager.parse(Collections.singleton(source), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {

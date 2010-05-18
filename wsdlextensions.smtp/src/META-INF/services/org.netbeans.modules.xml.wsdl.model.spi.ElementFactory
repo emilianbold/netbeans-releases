@@ -1,0 +1,5 @@
+org.netbeans.modules.wsdlextensions.smtp.impl.SMTPElementFactoryProvider$AddressFactory
+org.netbeans.modules.wsdlextensions.smtp.impl.SMTPElementFactoryProvider$BindingFactory
+org.netbeans.modules.wsdlextensions.smtp.impl.SMTPElementFactoryProvider$OperationFactory
+org.netbeans.modules.wsdlextensions.smtp.impl.SMTPElementFactoryProvider$InputFactory
+

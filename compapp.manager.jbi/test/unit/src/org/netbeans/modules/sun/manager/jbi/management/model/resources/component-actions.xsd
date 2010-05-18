@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://sun.com/jbi/components/ActionableMBeans"
+            xmlns:tns="http://sun.com/jbi/components/ActionableMBeans"
+            elementFormDefault="qualified">
+    <xsd:element name="root">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="tns:Action" maxOccurs="unbounded" minOccurs="0"/>
+            </xsd:sequence>          
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="Action" type="tns:ActionType"/>
+    <xsd:complexType name="ActionType">
+        <xsd:sequence>
+            <xsd:element name="MBeanKey" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="OperationName" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="DisplayName" type="xsd:string"/>
+            <xsd:element name="Description" type="xsd:string"/>
+            <xsd:element name="Enabled" type="xsd:boolean" default="false" minOccurs="0"/>
+            <xsd:element ref="tns:Action" maxOccurs="unbounded" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="isGroup" type="xsd:boolean" default="false"/>
+    </xsd:complexType>
+</xsd:schema> 

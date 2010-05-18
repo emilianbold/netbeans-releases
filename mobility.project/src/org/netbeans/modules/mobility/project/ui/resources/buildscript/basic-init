@@ -58,6 +58,15 @@
         <condition property="app-version.autoincrement.trigger">
             <istrue value="${{app-version.autoincrement}}"/>
         </condition>
+        <condition property="debug.timeout" value="30000">
+            <or>
+                <equals arg1="${{debugger.timeout}}" arg2="" trim="true"/>
+                <not>
+                    <isset property="debugger.timeout"/>
+                </not>
+            </or>
+        </condition>
+        <property name="debug.timeout" value="${{debugger.timeout}}" />
         <nb-overrideproperty name="buildsystem.baton" value="${{src.dir}}"/>
     </target>
 

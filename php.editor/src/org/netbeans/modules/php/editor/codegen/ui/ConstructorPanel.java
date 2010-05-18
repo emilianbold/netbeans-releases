@@ -185,9 +185,39 @@ public class ConstructorPanel extends JPanel {
         cbMethodGeneration = new javax.swing.JComboBox();
         cbGenerateDoc = new javax.swing.JCheckBox();
 
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return cbGenerateDoc;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return cbGenerateDoc;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return cbGenerateDoc;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  cbMethodGeneration){
+                    return cbGenerateDoc;
+                }
+                return cbGenerateDoc;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  cbGenerateDoc){
+                    return cbMethodGeneration;
+                }
+                return cbGenerateDoc;//end getComponentBefore
+
+            }}
+        );
+
+        label.setDisplayedMnemonic('G');
         label.setLabelFor(scrollPane);
         label.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.label.text")); // NOI18N
 
+        jLabel1.setDisplayedMnemonic('M');
         jLabel1.setLabelFor(cbMethodGeneration);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.jLabel1.text")); // NOI18N
 
@@ -223,7 +253,7 @@ public class ConstructorPanel extends JPanel {
         cbMethodGeneration.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbMethodGeneration.AccessibleContext.accessibleName")); // NOI18N
         cbMethodGeneration.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbMethodGeneration.AccessibleContext.accessibleDescription")); // NOI18N
 
-        cbGenerateDoc.setMnemonic('G');
+        cbGenerateDoc.setMnemonic('e');
         cbGenerateDoc.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbGenerateDoc.text")); // NOI18N
         cbGenerateDoc.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

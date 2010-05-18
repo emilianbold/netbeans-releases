@@ -46,6 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.openide.util.Lookup;
 
@@ -190,6 +191,9 @@ public class FileChangedManager extends SecurityManager {
             }
             int l = pingIO(0);
             if (l < load && priorityIO.get() == 0) {
+                return;
+            }
+            if (ChildrenSupport.isLock()) {
                 return;
             }
             Runnable goingToSleep = IDLE_CALL.get();

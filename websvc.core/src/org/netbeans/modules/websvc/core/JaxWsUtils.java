@@ -1336,20 +1336,22 @@ public class JaxWsUtils {
             WSDLModel wsdlModel = WSDLModelFactory.getDefault().
                     getModel(org.netbeans.modules.xml.retriever.catalog.Utilities.createModelSource(wsdlFO, true));
             Definitions definitions = wsdlModel.getDefinitions();
-            Collection<Binding> bindings = definitions.getBindings();
-            for (Binding binding : bindings) {
-                List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
-                for (SOAPBinding soapBinding : soapBindings) {
-                    if (soapBinding.getStyle() == Style.RPC) {
-                        Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
-                        for (BindingOperation bindingOperation : bindingOperations) {
-                            BindingInput bindingInput = bindingOperation.getBindingInput();
-                            if (bindingInput != null) {
-                                List<SOAPBody> soapBodies = bindingInput.getExtensibilityElements(SOAPBody.class);
-                                if (soapBodies != null && soapBodies.size() > 0) {
-                                    SOAPBody soapBody = soapBodies.get(0);
-                                    if (soapBody.getUse() == Use.ENCODED) {
-                                        return true;
+            if (definitions != null) {
+                Collection<Binding> bindings = definitions.getBindings();
+                for (Binding binding : bindings) {
+                    List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
+                    for (SOAPBinding soapBinding : soapBindings) {
+                        if (soapBinding.getStyle() == Style.RPC) {
+                            Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
+                            for (BindingOperation bindingOperation : bindingOperations) {
+                                BindingInput bindingInput = bindingOperation.getBindingInput();
+                                if (bindingInput != null) {
+                                    List<SOAPBody> soapBodies = bindingInput.getExtensibilityElements(SOAPBody.class);
+                                    if (soapBodies != null && soapBodies.size() > 0) {
+                                        SOAPBody soapBody = soapBodies.get(0);
+                                        if (soapBody.getUse() == Use.ENCODED) {
+                                            return true;
+                                        }
                                     }
                                 }
                             }

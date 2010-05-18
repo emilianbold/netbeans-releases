@@ -169,6 +169,10 @@
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
+                <friend>com.sun.dlight.apache</friend>
+                <friend>com.sun.dlight.php</friend>
+                <friend>com.sun.dlight.mysql</friend>
+                <friend>org.netbeans.modules.dlight.xml</friend>
                 <package>org.netbeans.modules.dlight.visualizers.api</package>
                 <package>org.netbeans.modules.dlight.visualizers.spi</package>
             </friend-packages>

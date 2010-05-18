@@ -76,6 +76,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class FormUtils
 {
     public static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.form"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("GUI Builder", 10, false); // NOI18N
 
     // constants for CopyProperties method
     public static final int CHANGED_ONLY = 1;
@@ -709,7 +710,7 @@ public class FormUtils
                     count = 0;
                     setWriteObjCounter_Method.invoke(null, comp, count);
                     // reinstall ComponentUI
-                    LOGGER.log(Level.INFO, "Reinstalling ComponentUI after interrupted serialization of component: "+comp); // NOI18N
+                    LOGGER.log(Level.INFO, "Reinstalling ComponentUI after interrupted serialization of component: {0}", comp); // NOI18N
                     ComponentUI ui = (ComponentUI) ui_Field.get(comp);
                     ui.installUI(comp);
                 }
@@ -937,7 +938,7 @@ public class FormUtils
             LOGGER.log(Level.INFO, dnfex.getMessage(), dnfex);
         }
         if (!(dob instanceof FormDataObject)) {
-            LOGGER.log(Level.INFO, "Unable to find FormDataObject for " + srcFile); // NOI18N
+            LOGGER.log(Level.INFO, "Unable to find FormDataObject for {0}", srcFile); // NOI18N
             return;
         }
         FormDataObject formDob = (FormDataObject)dob;
@@ -1791,4 +1792,9 @@ public class FormUtils
             return Introspector.getBeanInfo(clazz, Introspector.IGNORE_ALL_BEANINFO);
         }
     }
+
+    public static RequestProcessor getRequestProcessor() {
+        return RP;
+    }
+
 }

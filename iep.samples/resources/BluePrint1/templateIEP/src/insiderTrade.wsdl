@@ -1,0 +1,191 @@
+<definitions targetNamespace="insiderTrade_iep"
+             xmlns:tns="insiderTrade_iep"
+             xmlns:typens="insiderTrade_iep"
+             xmlns:defns="insiderTrade_iep"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:file="http://schemas.sun.com/jbi/wsdl-extensions/file/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/">
+<types>
+    <xsd:schema targetNamespace="insiderTrade_iep" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <xsd:element name="StockTransactions_MsgObj">
+            <xsd:complexType>
+                <xsd:sequence>
+                    <xsd:element name="symbol" type="xsd:string"/>
+                    <xsd:element name="price" type="xsd:double"/>
+                    <xsd:element name="shares" type="xsd:int"/>
+                    <xsd:element name="trader" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="StockTransactionsBatch_MsgObj">
+            <xsd:complexType>
+                <xsd:sequence>
+                    <xsd:element name="StockTransactions_MsgObj" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                    <xsd:element name="symbol" type="xsd:string"/>
+                    <xsd:element name="price" type="xsd:double"/>
+                    <xsd:element name="shares" type="xsd:int"/>
+                    <xsd:element name="trader" type="xsd:string"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="SuspiciousTransactions_MsgObj">
+            <xsd:complexType>
+                <xsd:sequence>
+                   <xsd:element name="symbol" type="xsd:string"/>
+                   <xsd:element name="price" type="xsd:double"/>
+                   <xsd:element name="shares" type="xsd:int"/>
+                   <xsd:element name="trader" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="TransactionsOfInterest_MsgObj">
+            <xsd:complexType>
+                <xsd:sequence>
+                   <xsd:element name="symbol" type="xsd:string"/>
+                   <xsd:element name="price" type="xsd:double"/>
+                   <xsd:element name="shares" type="xsd:int"/>
+                   <xsd:element name="trader" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+</types>
+
+<message name="StockTransactions_Msg">
+    <part name="input" element="typens:StockTransactions_MsgObj"/>
+</message>
+<message name="StockTransactionsBatch_Msg">
+    <part name="input" element="typens:StockTransactionsBatch_MsgObj"/>
+</message>
+<message name="SuspiciousTransactions_Msg">
+    <part name="output" element="typens:SuspiciousTransactions_MsgObj"/>
+</message>
+<message name="TransactionsOfInterest_Msg">
+    <part name="output" element="typens:TransactionsOfInterest_MsgObj"/>
+</message>
+
+<portType name="InputPt">
+    <operation name="StockTransactions">
+        <input message="tns:StockTransactions_Msg"/>
+    </operation>
+    <operation name="StockTransactionsBatch">
+        <input message="tns:StockTransactionsBatch_Msg"/>
+    </operation>
+</portType>
+<portType name="OutputPt_SuspiciousTransactions">
+    <operation name="SuspiciousTransactions">
+        <input message="tns:SuspiciousTransactions_Msg"/>
+    </operation>
+</portType>
+<portType name="OutputPt_TransactionsOfInterest">
+    <operation name="TransactionsOfInterest">
+        <input message="tns:TransactionsOfInterest_Msg"/>
+    </operation>
+</portType>
+
+<plnk:partnerLinkType name="InputPlt" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+    <plnk:role name = "InputRn" portType="tns:InputPt"/>
+</plnk:partnerLinkType>
+<plnk:partnerLinkType name="OutputPlt_SuspiciousTransactions" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+    <plnk:role name = "OutputRn_SuspiciousTransactions" portType="tns:OutputPt_SuspiciousTransactions"/>
+</plnk:partnerLinkType>
+<plnk:partnerLinkType name="OutputPlt_TransactionsOfInterest" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+    <plnk:role name = "OutputRn_TransactionsOfInterest" portType="tns:OutputPt_TransactionsOfInterest"/>
+</plnk:partnerLinkType>
+<!-- input binding -->
+<binding name="InputBinding" type="defns:InputPt">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="StockTransactions">
+        <soap:operation soapAction="StockTransactions"/>
+        <input>
+            <soap:body use="literal"/>
+        </input>
+    </operation>
+    <operation name="StockTransactionsBatch">
+        <soap:operation soapAction="StockTransactionsBatch"/>
+        <input>
+            <soap:body use="literal"/>
+        </input>
+    </operation>
+</binding>
+<!-- input service -->
+<service name="InputService">
+    <port name="InputPort" binding="tns:InputBinding">
+        <soap:address location="http://localhost:12100/service/insiderTrade_iep"/>
+    </port>
+</service>
+
+<!-- http output binding and service
+<binding name="OutputBinding_SuspiciousTransactions" type="defns:OutputPt_SuspiciousTransactions">
+    <operation name="SuspiciousTransactions">
+        <soap:operation soapAction="SuspiciousTransactions"/>
+        <input>
+            <soap:body use="literal"/>
+        </input>
+    </operation>
+</binding>
+<binding name="OutputBinding_TransactionsOfInterest" type="defns:OutputPt_TransactionsOfInterest">
+    <operation name="TransactionsOfInterest">
+        <soap:operation soapAction="TransactionsOfInterest"/>
+        <input>
+            <soap:body use="literal"/>
+        </input>
+    </operation>
+</binding>
+<service name="OutputService_SuspiciousTransactions">
+    <port name="OutputPort_SuspiciousTransactions" binding="tns:OutputBinding_SuspiciousTransactions">
+        <soap:address location="http://localhost:12100/service/insiderTrade_iep_SuspiciousTransactions_callee"/>
+    </port>
+</service>
+<service name="OutputService_TransactionsOfInterest">
+    <port name="OutputPort_TransactionsOfInterest" binding="tns:OutputBinding_TransactionsOfInterest">
+        <soap:address location="http://localhost:12100/service/insiderTrade_iep_TransactionsOfInterest_callee"/>
+    </port>
+</service>
+ end of http output binding and service -->
+
+<!-- file output binding and service -->
+<binding name="OutputBinding_SuspiciousTransactions" type="defns:OutputPt_SuspiciousTransactions">
+    <file:binding/>
+    <operation name="SuspiciousTransactions">
+        <file:operation/>
+        <input>
+            <file:message fileName="SuspiciousTransactions.txt"
+                    fileNameIsPattern="false"
+                    addEOL="false"
+                    multipleRecordsPerFile="true"
+                    use="literal"/>
+        </input>
+    </operation>
+</binding>
+<binding name="OutputBinding_TransactionsOfInterest" type="defns:OutputPt_TransactionsOfInterest">
+    <file:binding/>
+    <operation name="TransactionsOfInterest">
+        <file:operation/>
+        <input>
+            <file:message fileName="TransactionsOfInterest.txt"
+                    fileNameIsPattern="false"
+                    addEOL="false"
+                    multipleRecordsPerFile="true"
+                    use="literal"/>
+        </input>
+    </operation>
+</binding>
+<service name="OutputService_SuspiciousTransactions">
+    <port name="OutputPort_SuspiciousTransactions" binding="tns:OutputBinding_SuspiciousTransactions">
+        <file:address fileDirectory="C:/temp/insiderTrade_iep"/>
+    </port>
+</service>
+<service name="OutputService_TransactionsOfInterest">
+    <port name="OutputPort_TransactionsOfInterest" binding="tns:OutputBinding_TransactionsOfInterest">
+        <file:address fileDirectory="C:/temp/insiderTrade_iep"/>
+    </port>
+</service>
+<!-- end of file output binding and service -->
+</definitions>

@@ -133,6 +133,99 @@ public class FmtAlignment extends javax.swing.JPanel {
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
 
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return amTernaryOpCheckBox1;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return amTernaryOpCheckBox1;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return amTernaryOpCheckBox1;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  amAssignCheckBox1){
+                    return amParenthesizedCheckBox1;
+                }
+                if(aComponent ==  nlElseCheckBox){
+                    return nlWhileCheckBox;
+                }
+                if(aComponent ==  amBinaryOpCheckBox1){
+                    return amAssignCheckBox1;
+                }
+                if(aComponent ==  nlCatchCheckBox){
+                    return amMethodParamsCheckBox;
+                }
+                if(aComponent ==  nlWhileCheckBox){
+                    return nlModifiersCheckBox;
+                }
+                if(aComponent ==  amParenthesizedCheckBox1){
+                    return amForCheckBox1;
+                }
+                if(aComponent ==  amForCheckBox1){
+                    return amCallArgsCheckBox;
+                }
+                if(aComponent ==  nlModifiersCheckBox){
+                    return nlCatchCheckBox;
+                }
+                if(aComponent ==  amCallArgsCheckBox){
+                    return amImplementsCheckBox1;
+                }
+                if(aComponent ==  amMethodParamsCheckBox){
+                    return amBinaryOpCheckBox1;
+                }
+                if(aComponent ==  amArrayInitCheckBox1){
+                    return amTernaryOpCheckBox1;
+                }
+                if(aComponent ==  amImplementsCheckBox1){
+                    return amArrayInitCheckBox1;
+                }
+                return amTernaryOpCheckBox1;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  amParenthesizedCheckBox1){
+                    return amAssignCheckBox1;
+                }
+                if(aComponent ==  nlWhileCheckBox){
+                    return nlElseCheckBox;
+                }
+                if(aComponent ==  amAssignCheckBox1){
+                    return amBinaryOpCheckBox1;
+                }
+                if(aComponent ==  amMethodParamsCheckBox){
+                    return nlCatchCheckBox;
+                }
+                if(aComponent ==  nlModifiersCheckBox){
+                    return nlWhileCheckBox;
+                }
+                if(aComponent ==  amForCheckBox1){
+                    return amParenthesizedCheckBox1;
+                }
+                if(aComponent ==  amCallArgsCheckBox){
+                    return amForCheckBox1;
+                }
+                if(aComponent ==  nlCatchCheckBox){
+                    return nlModifiersCheckBox;
+                }
+                if(aComponent ==  amImplementsCheckBox1){
+                    return amCallArgsCheckBox;
+                }
+                if(aComponent ==  amBinaryOpCheckBox1){
+                    return amMethodParamsCheckBox;
+                }
+                if(aComponent ==  amTernaryOpCheckBox1){
+                    return amArrayInitCheckBox1;
+                }
+                if(aComponent ==  amArrayInitCheckBox1){
+                    return amImplementsCheckBox1;
+                }
+                return amTernaryOpCheckBox1;//end getComponentBefore
+
+            }}
+        );
         setName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "LBL_Alignment")); // NOI18N
         setOpaque(false);
 
@@ -268,6 +361,40 @@ public class FmtAlignment extends javax.swing.JPanel {
                 .addComponent(amForCheckBox1)
                 .addContainerGap(36, Short.MAX_VALUE))
         );
+
+        newLinesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.newLinesLabel.AccessibleContext.accessibleName")); // NOI18N
+        newLinesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.newLinesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        nlElseCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.nlElseCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        nlElseCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.nlElseCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        nlWhileCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.nlWhileCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        nlWhileCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.nlWhileCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        nlCatchCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.nlCatchCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        nlCatchCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.nlCatchCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        nlModifiersCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.nlModifiersCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        nlModifiersCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.nlModifiersCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        multilineAlignmentLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.multilineAlignmentLabel.AccessibleContext.accessibleName")); // NOI18N
+        multilineAlignmentLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.multilineAlignmentLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        amMethodParamsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amMethodParamsCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        amMethodParamsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amMethodParamsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        amCallArgsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amCallArgsCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        amCallArgsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amCallArgsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        amImplementsCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amImplementsCheckBox1.AccessibleContext.accessibleName")); // NOI18N
+        amImplementsCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amImplementsCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+        amArrayInitCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amArrayInitCheckBox1.AccessibleContext.accessibleName")); // NOI18N
+        amArrayInitCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amArrayInitCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+        amBinaryOpCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amBinaryOpCheckBox1.AccessibleContext.accessibleName")); // NOI18N
+        amBinaryOpCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amBinaryOpCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+        amTernaryOpCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amTernaryOpCheckBox1.AccessibleContext.accessibleName")); // NOI18N
+        amTernaryOpCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amTernaryOpCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+        amAssignCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amAssignCheckBox1.AccessibleContext.accessibleName")); // NOI18N
+        amAssignCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amAssignCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+        amForCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amForCheckBox1.AccessibleContext.accessibleName")); // NOI18N
+        amForCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amForCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+        amParenthesizedCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amParenthesizedCheckBox1.AccessibleContext.accessibleName")); // NOI18N
+        amParenthesizedCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.amParenthesizedCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

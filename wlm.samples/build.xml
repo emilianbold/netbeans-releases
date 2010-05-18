@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="netbeans" name="wlm.samples">
+    <description>Builds, tests, and runs the project org.netbeans.modules.wlm.samples</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+
+
+    <property name="zip.folder" value="src/org/netbeans/modules/wlm/samples/resources/zip"/>
+    <property name="purchaseordersrc" value="resources/PurchaseOrder/PurchaseOrder"/>
+    <property name="advancedpurchaseordersrc" value="resources/AdvancedPurchaseOrder/AdvancedPurchaseOrder"/>
+    <property name="wlmconsolesrc" value="resources/WLMConsole/WLMConsole"/>
+
+    <target name="jar" depends="init-zip,zip-purchaseorder,zip-advancedpurchaseorder,zip-wlmconsole,projectized-common.jar"/>
+                              
+    <target name="init-zip">
+        <delete dir="${zip.folder}"/>
+        <mkdir dir="${zip.folder}"/>
+    </target>
+
+    <target name="zip-purchaseorder">
+        <delete dir="${purchaseordersrc}WLM/build"/>
+        <delete dir="${purchaseordersrc}BPEL/build"/>
+        <delete dir="${purchaseordersrc}CompApp/build"/>
+
+        <delete dir="${purchaseordersrc}WLM/nbproject/private"/>
+        <delete dir="${purchaseordersrc}BPEL/nbproject/private"/>
+        <delete dir="${purchaseordersrc}CompApp/nbproject/private"/>
+
+        <zip destfile="${zip.folder}/PurchaseOrderWLM.zip"
+             basedir="${purchaseordersrc}WLM" update="true"/>
+        <zip destfile="${zip.folder}/PurchaseOrderBPEL.zip"
+             basedir="${purchaseordersrc}BPEL" update="true"/>
+        <zip destfile="${zip.folder}/PurchaseOrderCompApp.zip"
+             basedir="${purchaseordersrc}CompApp" update="true"/>
+    </target>
+
+    <target name="zip-advancedpurchaseorder">
+        <delete dir="${advancedpurchaseordersrc}WLM/build"/>
+        <delete dir="${advancedpurchaseordersrc}BPEL/build"/>
+        <delete dir="${advancedpurchaseordersrc}CompApp/build"/>
+
+        <delete dir="${advancedpurchaseordersrc}WLM/nbproject/private"/>
+        <delete dir="${advancedpurchaseordersrc}BPEL/nbproject/private"/>
+        <delete dir="${advancedpurchaseordersrc}CompApp/nbproject/private"/>
+
+        <zip destfile="${zip.folder}/AdvancedPurchaseOrderWLM.zip"
+             basedir="${advancedpurchaseordersrc}WLM" update="true"/>
+        <zip destfile="${zip.folder}/AdvancedPurchaseOrderBPEL.zip"
+             basedir="${advancedpurchaseordersrc}BPEL" update="true"/>
+        <zip destfile="${zip.folder}/AdvancedPurchaseOrderCompApp.zip"
+             basedir="${advancedpurchaseordersrc}CompApp" update="true"/>
+    </target>
+
+    <target name="zip-wlmconsole">
+        <delete dir="${wlmconsolesrc}Web/build"/>
+        <delete dir="${wlmconsolesrc}Web/dist"/>
+        <delete dir="${wlmconsolesrc}CompApp/build"/>
+        <delete dir="${wlmconsolesrc}CompApp/dist"/>
+
+        <delete dir="${wlmconsolesrc}Web/nbproject/private"/>
+        <delete dir="${wlmconsolesrc}CompApp/nbproject/private"/>
+
+        <zip destfile="${zip.folder}/WLMConsoleWeb.zip"
+             basedir="${wlmconsolesrc}Web" update="true"/>
+        <zip destfile="${zip.folder}/WLMConsoleCompApp.zip"
+             basedir="${wlmconsolesrc}CompApp" update="true"/>
+    </target>
+
+    <target name="check">
+        <ant dir="../../_code" inheritAll="true">
+            <property name="check.dir" value="${basedir}"/>
+        </ant>
+    </target>
+
+
+</project>

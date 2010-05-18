@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.iep.samples/1
+OpenIDE-Module-Layer: org/netbeans/modules/iep/samples/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/iep/samples/resources/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.3

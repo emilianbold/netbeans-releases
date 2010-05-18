@@ -86,7 +86,7 @@ public class AnnotationsTest extends CommonTestCase  {
     public void testModel() throws IOException, InterruptedException {
         
         addTopLevelElements();
-        
+         
         createJsfModel().runReadAction(new MetadataModelAction<JsfModel,Void>(){
 
             public Void run( JsfModel model ) throws Exception {

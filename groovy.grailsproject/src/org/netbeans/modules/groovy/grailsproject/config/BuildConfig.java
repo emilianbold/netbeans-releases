@@ -152,7 +152,7 @@ public final class BuildConfig {
             }
         }
 
-        return pluginsDirFile;
+        return FileUtil.normalizeFile(pluginsDirFile);
     }
 
     private synchronized void loadGlobalPluginsDirDefault() {

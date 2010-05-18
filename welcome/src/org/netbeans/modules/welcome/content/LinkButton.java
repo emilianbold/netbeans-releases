@@ -81,24 +81,25 @@ public abstract class LinkButton extends JButton
 
     private String usageTrackingId;
 
-    public LinkButton( String label ) {
-        this( label, false );
+    public LinkButton( String label, String usageTrackingId ) {
+        this( label, false, usageTrackingId );
     }
 
-    public LinkButton( String label, boolean showBorder ) {
-        this( label, Utils.getColor(LINK_COLOR), showBorder );
+    public LinkButton( String label, boolean showBorder, String usageTrackingId ) {
+        this( label, Utils.getColor(LINK_COLOR), showBorder, usageTrackingId );
     }
 
-    public LinkButton( String label, Color foreground ) {
-        this( label, foreground, false );
+    public LinkButton( String label, Color foreground, String usageTrackingId ) {
+        this( label, foreground, false, usageTrackingId );
     }
 
-    public LinkButton( String label, Color foreground, boolean showBorder ) {
+    public LinkButton( String label, Color foreground, boolean showBorder, String usageTrackingId ) {
         super( label );
         this.defaultForeground = foreground;
         this.showBorder = showBorder;
         setForeground( defaultForeground );
         setFont( BUTTON_FONT );
+        this.usageTrackingId = usageTrackingId;
 
         if( showBorder ) {
             setBorder( BorderFactory.createEmptyBorder(5, 11, 5, 11) );
@@ -227,5 +228,6 @@ public abstract class LinkButton extends JButton
         rec.setResourceBundleName(BundleSupport.BUNDLE_NAME);
 
         Constants.USAGE_LOGGER.log(rec);
+        System.err.println("usage: " + id);
     }
 }

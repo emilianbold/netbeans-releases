@@ -57,7 +57,7 @@ public class RemoteBuildProjectActionHandlerFactory implements ProjectActionHand
 
     @Override
     public boolean canHandle(Type type, Configuration configuration) {
-        if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN) {
+        if (type == PredefinedType.BUILD || type == PredefinedType.BUILD_TESTS || type == PredefinedType.CLEAN) {
             return RfsSyncFactory.ENABLE_RFS;
         } else {
             return false;

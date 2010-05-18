@@ -68,6 +68,12 @@ public final class APTTokenStreamBuilder {
         lexer.init(text, 0, lang);
         return lexer;
     }  
+
+    public static TokenStream buildTokenStream(char[] buf, String lang) {
+        APTLexer lexer = new APTLexer(buf);
+        lexer.init("", 0, lang); //NOI18N
+        return lexer;
+    }
     
     public static TokenStream buildLightTokenStream(CharSequence name, Reader in, String lang) {
         APTLexer lexer = new APTLexer(in);
@@ -75,10 +81,23 @@ public final class APTTokenStreamBuilder {
         lexer.setOnlyPreproc(true);
         return lexer;
     }    
+
+    public static TokenStream buildLightTokenStream(CharSequence name, char[] buf, String lang) {
+        APTLexer lexer = new APTLexer(buf);
+        lexer.init(name.toString(), 0, lang);
+        lexer.setOnlyPreproc(true);
+        return lexer;
+    }
     
     public static TokenStream buildTokenStream(CharSequence name, Reader in, String lang) {
         APTLexer lexer = new APTLexer(in);
         lexer.init(name.toString(), 0, lang);
         return lexer;
     }     
+
+    public static TokenStream buildTokenStream(CharSequence name, char[] buf, String lang) {
+        APTLexer lexer = new APTLexer(buf);
+        lexer.init(name.toString(), 0, lang);
+        return lexer;
+    }
 }

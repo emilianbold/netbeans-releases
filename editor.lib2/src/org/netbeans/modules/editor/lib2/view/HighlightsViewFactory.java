@@ -284,21 +284,11 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         }
 
         if (endOffset > startOffset) { // May possibly be == e.g. for cut-line action
+            // Coalesce highglihts events by reposting to RP and then to EDT
+            extendDirtyRegion(startOffset, endOffset);
             if (SYNC_HIGHLIGHTS) {
-                // firing directly is ok, because highlightChanged events are delivered under the document read-lock
-                Runnable r = new Runnable() {
-                    public @Override void run() {
-                        fireEvent(Collections.singletonList(createChange(startOffset, endOffset)));
-                    }
-                };
-                if (SwingUtilities.isEventDispatchThread()) {
-                    r.run();
-                } else {
-                    SwingUtilities.invokeLater(r);
-                }
+                dirtyRegionTask.run();
             } else {
-                // Coalesce highglihts events by reposting to RP and then to EDT
-                extendDirtyRegion(startOffset, endOffset);
                 dirtyRegionTask.schedule(0);
             }
         }

@@ -42,15 +42,21 @@ package org.netbeans.modules.php.zend;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.php.spi.actions.GoToActionAction;
+import org.netbeans.modules.php.spi.actions.GoToViewAction;
+import org.netbeans.modules.php.spi.actions.RunCommandAction;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.zend.ui.actions.RunCommandAction;
+import org.netbeans.modules.php.zend.ui.actions.ZendRunCommandAction;
+import org.netbeans.modules.php.zend.ui.actions.ZendGoToActionAction;
+import org.netbeans.modules.php.zend.ui.actions.ZendGoToViewAction;
+import org.netbeans.modules.php.zend.util.ZendUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
 public class ZendPhpModuleActionsExtender extends PhpModuleActionsExtender {
-    private static final List<Action> ACTIONS = Collections.<Action>singletonList(RunCommandAction.getInstance());
 
     @Override
     public String getMenuName() {
@@ -58,7 +64,32 @@ public class ZendPhpModuleActionsExtender extends PhpModuleActionsExtender {
     }
 
     @Override
+    public RunCommandAction getRunCommandAction() {
+        return ZendRunCommandAction.getInstance();
+    }
+
+    @Override
     public List<? extends Action> getActions() {
-        return ACTIONS;
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean isViewWithAction(FileObject fo) {
+        return ZendUtils.isViewWithAction(fo);
+    }
+
+    @Override
+    public boolean isActionWithView(FileObject fo) {
+        return ZendUtils.isAction(fo);
+    }
+
+    @Override
+    public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
+        return new ZendGoToActionAction(fo);
+    }
+
+    @Override
+    public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
+        return new ZendGoToViewAction(fo, offset);
     }
 }

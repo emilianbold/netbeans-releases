@@ -63,7 +63,7 @@ public class SystemOutTest extends TestBase {
             "        System.out.flush ();\n" +
             "    }\n" +
             "}",
-            "3:15-3:18:verifier:System out / err",
+            "3:15-3:18:verifier:Uses of System.out or System.err are often temporary debugging statements.",
             "FixImpl",
             (
                 "package test;\n" +
@@ -85,7 +85,7 @@ public class SystemOutTest extends TestBase {
             "        System.err.println ();\n" +
             "    }\n" +
             "}",
-            "3:15-3:18:verifier:System out / err",
+            "3:15-3:18:verifier:Uses of System.out or System.err are often temporary debugging statements.",
             "FixImpl",
             (
                 "package test;\n" +

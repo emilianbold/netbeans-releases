@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+  Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+  The contents of this file are subject to the terms of either the GNU
+  General Public License Version 2 only ("GPL") or the Common
+  Development and Distribution License("CDDL") (collectively, the
+  "License"). You may not use this file except in compliance with the
+  License. You can obtain a copy of the License at
+  http://www.netbeans.org/cddl-gplv2.html
+  or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+  specific language governing permissions and limitations under the
+  License. When distributing the software, include this License Header
+  Notice in each file and include the License file at
+  nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+  particular file as subject to the "Classpath" exception as provided
+  by Sun in the GPL Version 2 section of the License file that
+  accompanied this code. If applicable, add the following below the
+  License Header, with the fields enclosed by brackets [] replaced by
+  your own identifying information:
+  "Portions Copyrighted [year] [name of copyright owner]"
+
+  Contributor(s):
+
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+  Microsystems, Inc. All Rights Reserved.
+
+  If you wish your version of this file to be governed by only the CDDL
+  or only the GPL Version 2, indicate your decision by adding
+  "[Contributor] elects to include this software in this distribution
+  under the [CDDL or GPL Version 2] license." If you do not indicate a
+  single choice of license, a recipient has the option to distribute
+  your version of this file under either the CDDL, the GPL Version 2 or
+  to extend the choice of license to its licensees as provided above.
+  However, if you add GPL Version 2 code and therefore, elected the GPL
+  Version 2 license, then the option applies only if the new code is
+  made subject to such option by the copyright holder.
+-->
+<project name="bpel.samples" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <property name="zip.folder" value="src/org/netbeans/modules/bpel/samples/resources/zip"/>
+
+    <target name="jar" depends="init-zip,zip-trs,zip-synchronous,zip-asynchronous,zip-blueprint,projectized-common.jar"/>
+                              
+    <target name="init-zip">
+        <delete dir="${zip.folder}"/>
+        <mkdir dir="${zip.folder}"/>
+    </target>
+
+    <target name="zip-synchronous">
+        <delete dir="resources/Synchronous/Synchronous/build"/>
+        <zip destfile="${zip.folder}/Synchronous.zip"
+             basedir="resources/Synchronous/Synchronous" update="true"/>
+        <zip destfile="${zip.folder}/SynchronousApplication.zip"
+             basedir="resources/Synchronous/SynchronousApplication" update="true"/>
+    </target>
+    
+    <target name="zip-asynchronous">
+        <delete dir="resources/Asynchronous/Asynchronous/build"/>
+        <zip destfile="${zip.folder}/Asynchronous.zip"
+             basedir="resources/Asynchronous/Asynchronous" update="true"/>
+        <zip destfile="${zip.folder}/AsynchronousApplication.zip"
+             basedir="resources/Asynchronous/AsynchronousApplication" update="true"/>
+    </target>    
+    
+    <target name="zip-trs">
+        <delete dir="resources/TravelReservationService/TravelReservationService/build"/>
+        <zip destfile="${zip.folder}/TravelReservationService.zip"
+             basedir="resources/TravelReservationService/TravelReservationService" update="true"/>
+        <zip destfile="${zip.folder}/TravelReservationServiceApplication.zip"
+             basedir="resources/TravelReservationService/TravelReservationServiceApplication" update="true"/>
+        <zip destfile="${zip.folder}/ReservationPartnerServices.zip"
+             basedir="resources/TravelReservationService/ReservationPartnerServices" update="true"/>
+    </target>
+
+    <target name="zip-blueprint">
+        <delete dir="resources/BluePrint1/BluePrint1/build"/>
+        <zip destfile="${zip.folder}/BluePrint1.zip"
+             basedir="resources/BluePrint1/BluePrint1" update="true"/>
+        <zip destfile="${zip.folder}/BluePrint1Application.zip"
+             basedir="resources/BluePrint1/BluePrint1Application" update="true"/>
+        <delete dir="resources/BluePrint2/BluePrint2/build"/>
+        <zip destfile="${zip.folder}/BluePrint2.zip"
+             basedir="resources/BluePrint2/BluePrint2" update="true"/>
+        <zip destfile="${zip.folder}/BluePrint2Application.zip"
+             basedir="resources/BluePrint2/BluePrint2Application" update="true"/>
+        <delete dir="resources/BluePrint3/BluePrint3/build"/>
+        <zip destfile="${zip.folder}/BluePrint3.zip"
+             basedir="resources/BluePrint3/BluePrint3" update="true"/>
+        <zip destfile="${zip.folder}/BluePrint3Application.zip"
+             basedir="resources/BluePrint3/BluePrint3Application" update="true"/>
+        <delete dir="resources/BluePrint4/BluePrint4/build"/>
+        <zip destfile="${zip.folder}/BluePrint4.zip"
+             basedir="resources/BluePrint4/BluePrint4" update="true"/>
+        <zip destfile="${zip.folder}/BluePrint4Application.zip"
+             basedir="resources/BluePrint4/BluePrint4Application" update="true"/>
+        <delete dir="resources/BluePrint5/BluePrint5/build"/>
+        <zip destfile="${zip.folder}/BluePrint5.zip"
+             basedir="resources/BluePrint5/BluePrint5" update="true"/>
+        <zip destfile="${zip.folder}/BluePrint5Application.zip"
+             basedir="resources/BluePrint5/BluePrint5Application" update="true"/>
+    </target>      
+
+    <target name="check">
+        <ant dir="../../_code" inheritAll="true">
+            <property name="check.dir" value="${basedir}"/>
+        </ant>
+    </target>
+</project>

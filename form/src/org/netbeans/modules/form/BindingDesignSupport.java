@@ -400,7 +400,7 @@ public class BindingDesignSupport {
                             }
                             if (clazz == null) { // issue 118690
                                 // should not happen
-                                Logger.getLogger(getClass().getName()).log(Level.INFO, "ClassTree not found in " + resourceName); // NOI18N
+                                Logger.getLogger(getClass().getName()).log(Level.INFO, "ClassTree not found in {0}", resourceName); // NOI18N
                                 superClass[0] = Object.class.getName();
                                 return;
                             }
@@ -1199,9 +1199,9 @@ public class BindingDesignSupport {
                     buf.append(property.getJavaInitializationString());
                 }
             } catch (IllegalAccessException iaex) {
-                iaex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, iaex.getMessage(), iaex);
             } catch (InvocationTargetException itex) {
-                itex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, itex.getMessage(), itex);
             }
         }
     }
@@ -1222,7 +1222,7 @@ public class BindingDesignSupport {
                 Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, itex.getMessage(), itex);
             }
             if ((name != null) && group.getBinding(name) != null) {
-                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, "More than one binding with name: " + name); // NOI18N
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, "More than one binding with name: {0}", name); // NOI18N
                 name = null; // ignore name parameter
             }
         }

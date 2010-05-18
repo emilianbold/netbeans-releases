@@ -284,14 +284,13 @@ public class RefactoringContext {
 
             String element = getElementNameByType(si, type);
             if (element != null) {
-                //there's already an id selector, lets add the refactored styleinto it
-                Map<FileObject, Collection<EntryHandle>> declarations =
+                //get map existing selector declarations refered or refering by the 'file'
+                Map<FileObject, Collection<EntryHandle>> definitionsInAllFiles =
                         CssRefactoring.findAllOccurances(element, type, file, true);
 
-                ResolveDeclarationItem item = new ResolveDeclarationItemImpl(si, type, declarations);
-                if (!item.getPossibleDeclarations().isEmpty()) {
-                    toResolve.put(si, item);
-                }
+                ResolveDeclarationItem item = new ResolveDeclarationItemImpl(si, type, definitionsInAllFiles);
+                toResolve.put(si, item);
+
             }
 
         }
@@ -331,6 +330,7 @@ public class RefactoringContext {
                     declarations.add(new DeclarationItem(handle, file));
                 }
             }
+
         }
 
         @Override
@@ -343,4 +343,4 @@ public class RefactoringContext {
             return declarations;
         }
     }
-}
+        }

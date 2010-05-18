@@ -10,6 +10,5 @@
 
     <target name="nbdebug" description="Start NetBeans debugger" if="netbeans.home">
         <property name="debug.delay" value="5000"/>
-        <property name="debug.timeout" value="30000"/>
         <nb-mobility-debug address="${{jpda.port}}" name="${{app.codename}}" delay="${{debug.delay}}" timeout="${{debug.timeout}}" period="2000"/>
     </target>

@@ -117,7 +117,10 @@ public class RemoteServerSetup {
             RemoteUtil.LOGGER.log(Level.FINE, "RSS.setup: Updating \"{0}\" on {1}", new Object[]{path, executionEnvironment}); //NO18N
             if (binarySetupMap.containsKey(path)) {
                 String localFileName = binarySetupMap.get(path);
-                File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
+                File file = new File(localFileName);
+                if (!file.isAbsolute()) {
+                    file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
+                }
                 //String remotePath = REMOTE_LIB_DIR + file.getName();
                 String remotePath = path;
                 try {

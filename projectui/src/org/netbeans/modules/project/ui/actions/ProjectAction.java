@@ -88,8 +88,9 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         this( null, performer, namePattern, popupPattern, icon, lookup );
     }
     
-    private ProjectAction( String command, ProjectActionPerformer performer, String namePattern, String popupPattern, Icon icon, Lookup lookup ) {
-        super( icon, lookup, new Class[] { Project.class, DataObject.class } );
+    @SuppressWarnings("LeakingThisInConstructor")
+    private ProjectAction(String command, ProjectActionPerformer performer, String namePattern, String popupPattern, Icon icon, Lookup lookup) {
+        super(icon, lookup, new Class<?>[] {Project.class, DataObject.class});
         this.command = command;
         if ( command != null ) {
             ActionsUtil.SHORCUTS_MANAGER.registerAction( command, this );
@@ -102,8 +103,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
     
-    @Override
-    public void putValue( String key, Object value ) {
+    public final @Override void putValue( String key, Object value ) {
         super.putValue( key, value );
         
         if (Action.ACCELERATOR_KEY.equals(key)) {

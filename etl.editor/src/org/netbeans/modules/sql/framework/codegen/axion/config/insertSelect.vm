@@ -1,0 +1,90 @@
+##
+##
+## insertSelect.vm
+##
+## - targetTable: String; name of target table
+## - errorLogTable: String; name of error log table
+## - conditionQualifier: String (optional); [ "FIRST" | "ALL" ]
+## - validationCondition: String (optional); (possibly composite) predicate representing validation condition for insert
+## - targetColumnIdentifiers: List; ColumnIdentifiers representing target columns to receive inserted data
+## - errorColumnIdentifiers: List; ColumnIdentifiers representing error log table columns to receive data on exception
+## - errorValueIdentifiers: List; ColumnIdentifiers representing error log table data to be inserted
+## - aliasErrorColumns: boolean; true to use aliases for ColumnIdentifiers representing error log columns
+## - aliasErrorValues: boolean; true to use aliases for ColumnIdentifiers representing error log values
+##
+##
+#set( $totalTargetColumns = $targetColumnIdentifiers.size() )
+#set( $totalErrorColumns = $errorColumnIdentifiers.size() )
+#set( $totalErrorValues = $errorValueIdentifiers.size() )
+#set( $totalTargetValues = $targetValueIdentifiers.size() )
+#set( $columnCounter = 1 )
+INSERT #if( $conditionQualifier != "" )${conditionQualifier} #end
+
+##
+## If validation condition is present, do multi-table insert
+##
+#if( $validationCondition != "" )
+WHEN ${validationCondition} THEN
+INTO ${targetTable} (
+#foreach( $tColumn in $targetColumnIdentifiers )
+    $tColumn.getSql()#if($columnCounter < $totalTargetColumns),#end
+
+#set( $columnCounter = $columnCounter + 1)
+## END foreach( $tColumn )
+#end
+)
+#if( $totalTargetValues != 0 ) 
+#set( $valueCounter = 1 )
+VALUES (
+#foreach( $tValue in $targetValueIdentifiers )
+    #if( ${aliasTargetValues} )$tValue.getAliasName()#else$tValue.getSql()#end#if($valueCounter < $totalTargetValues), #end
+
+#set( $valueCounter = $valueCounter + 1)
+## END foreach( $eValue )
+#end
+)
+## END if( $totalTargetValues )
+#end
+ELSE
+INTO ${errorLogTable} (
+    "executionId", 
+#set( $columnCounter = 1 )
+#foreach( $eColumn in $errorColumnIdentifiers )
+    #if( ${aliasErrorColumns} )$eColumn.getAliasName()#else$eColumn.getSql()#end#if($columnCounter < $totalErrorColumns), #end
+
+#set( $columnCounter = $columnCounter + 1)
+## END foreach( $eColumn )
+#end
+)
+#if( $totalErrorValues != 0 ) 
+#set( $valueCounter = 1 )
+VALUES (
+	$SBYN_executionId,
+#foreach( $eValue in $errorValueIdentifiers )
+    #if( ${aliasErrorValues} )$eValue.getAliasName()#else$eValue.getSql()#end#if($valueCounter < $totalErrorValues), #end
+
+#set( $valueCounter = $valueCounter + 1)
+## END foreach( $eValue )
+#end
+)
+## END if( $totalErrorValues )
+#end
+(
+#parse("org/netbeans/modules/sql/framework/codegen/base/config/select.vm")
+)
+##
+## ELSE no validation condition present
+##
+#else
+INTO ${targetTable} (
+#foreach( $tColumn in $targetColumnIdentifiers )
+    $tColumn.getSql()#if($columnCounter < $totalTargetColumns),#end
+
+#set( $columnCounter = $columnCounter + 1)
+## END foreach
+#end
+)
+#parse("org/netbeans/modules/sql/framework/codegen/base/config/select.vm")
+## END if( $validationCondition )
+#end
+

@@ -853,7 +853,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             } else {
                 CompilerSet cs = (CompilerSet) value;
                 if (cs != null) {
-                    label.setText(cs.getDisplayName());
+                    label.setText(NbBundle.getMessage(PanelProjectLocationVisual.class, "Toolchain_Name_Text", cs.getName(), cs.getDisplayName())); // NOI18N
                 }
             }
             return label;

@@ -56,7 +56,6 @@ import org.netbeans.modules.form.palette.PaletteUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -162,7 +161,7 @@ public class EncloseAction extends NodeAction {
                 waitItem.setEnabled(false);
                 popup.add(waitItem);
                 // Find the containers outside EQ, see issue 123794
-                RequestProcessor.getDefault().post(new Runnable() {
+                FormUtils.getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
                         final PaletteItem[] items = getAllContainers();

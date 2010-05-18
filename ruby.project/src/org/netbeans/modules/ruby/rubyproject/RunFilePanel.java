@@ -236,6 +236,7 @@ final class RunFilePanel extends javax.swing.JPanel {
                 .add(displayDialog)
                 .add(18, 18, 18))
         );
+        displayDialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.displayDialog.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jvmArgsFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jvmArgsFieldActionPerformed

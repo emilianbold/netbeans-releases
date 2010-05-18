@@ -38,13 +38,10 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
-import java.util.Map;
-import java.util.Set;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
@@ -55,6 +52,11 @@ import org.openide.util.Exceptions;
  */
 public final class EnvWriter {
 
+    public static final String[] wellKnownVars = new String[]{
+        "LANG", "LC_COLLATE", "LC_CTYPE", "LC_MESSAGES", "LC_MONETARY", // NOI18N
+        "LC_NUMERIC", "LC_TIME", "TMPDIR", "PATH", "LD_LIBRARY_PATH", // NOI18N
+        "LD_PRELOAD" // NOI18N
+    };
     private final OutputStream os;
     private final boolean remote;
 
@@ -78,31 +80,20 @@ public final class EnvWriter {
     }
 
     public void write(final MacroMap env) throws IOException {
-        write(env.entrySet());
-    }
-
-    public void write(Map<String, String> env) throws IOException {
-        write(env.entrySet());
-    }
-
-    private void write(Set<Entry<String, String>> env) throws IOException {
         if (!env.isEmpty()) {
-            String name = null;
             String value = null;
             // Very simple sanity check of vars...
             Pattern pattern = Pattern.compile("[A-Z0-9_]+"); // NOI18N
 
-            for (Entry<String, String> entry : env) {
-                // ask key as is
-                name = entry.getKey();
+            for (String name : env.getExportVariablesSet()) {
                 // check capitalized key by pattern
                 if (!pattern.matcher(name.toUpperCase(java.util.Locale.ENGLISH)).matches()) {
                     continue;
                 }
 
-                value = entry.getValue();
+                value = env.get(name);
 
-                if (value != null) {
+                if (value != null && value.indexOf('"') < 0) {
                     os.write(getBytes(name + "=\"" + value + "\" && export " + name + "\n", remote)); // NOI18N
                     os.flush();
                 }

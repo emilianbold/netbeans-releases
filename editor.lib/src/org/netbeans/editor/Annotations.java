@@ -263,24 +263,12 @@ public class Annotations implements DocumentListener {
                     }
 
                     // insert newly created LineAnnotations into sorted array
-                    boolean inserted = false;
-                    for (int i=0; i < lineAnnotationsArray.size(); i++) {
-                        if (((LineAnnotations)lineAnnotationsArray.get(i)).getLine() > lineAnnos.getLine()) {
-                            lastGetLineAnnotationsIdx = -1;
-                            lastGetLineAnnotationsLine = -1;
-                            lastGetLineAnnotationsResult = null;
-                            lineAnnotationsArray.add(i, lineAnnos);
-                            inserted = true;
-                            break;
-                        }
-                    }
-                    if (!inserted) {
-                        lastGetLineAnnotationsIdx = -1;
-                        lastGetLineAnnotationsLine = -1;
-                        lastGetLineAnnotationsResult = null;
-                        lineAnnotationsArray.add(lineAnnos);
-                    }
+                    int pos = Collections.binarySearch(lineAnnotationsArray, lineAnnos, new LineAnnotationsComparator());
 
+                    lineAnnotationsArray.add(-pos - 1, lineAnnos);
+                    lastGetLineAnnotationsIdx = -1;
+                    lastGetLineAnnotationsLine = -1;
+                    lastGetLineAnnotationsResult = null;
                 }
                 else {
                     lineAnnos.addAnnotation(anno);
@@ -1441,5 +1429,12 @@ public class Annotations implements DocumentListener {
             return menuOneText.compareTo(menuTwoText);
         }
     } // End of MenuComparator class
+
+    private static class LineAnnotationsComparator implements Comparator<LineAnnotations> {
+        @Override
+        public int compare(LineAnnotations o1, LineAnnotations o2) {
+            return o1.getLine() - o2.getLine();
+        }
+    }
     
 }

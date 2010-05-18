@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby.lexer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeEvent;
@@ -120,9 +121,14 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
             
             List<String> markerList = new ArrayList<String>();
             markerList.addAll(Arrays.asList(preferences.get(TODO_MARKERS_KEY, "").split("\\|")));
-            
+
             if (!markerList.isEmpty()) {
                 markerList.remove("@todo"); // Applies to javadoc, and these tags are now colorized separately
+                for (Iterator<String> it = markerList.iterator(); it.hasNext();) {
+                    if (it.next().trim().isEmpty()) {
+                        it.remove();
+                    }
+                }
                 markers = markerList.toArray(new String[markerList.size()]);
             } else {
                 // Additional candidates: HACK, WORKAROUND, REMOVE, OLD

@@ -152,6 +152,117 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         cbOpenCloseBlockBrace = new javax.swing.JCheckBox();
         cbStatements = new javax.swing.JCheckBox();
 
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return cbStatements;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return cbStatements;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return cbStatements;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  cbOpenCloseBlockBrace){
+                    return cbStatements;
+                }
+                if(aComponent ==  assignOpsCombo){
+                    return cbOpenCloseBlockBrace;
+                }
+                if(aComponent ==  chainedMethodCallsCombo){
+                    return arrayInitCombo;
+                }
+                if(aComponent ==  methodCallArgsCombo){
+                    return chainedMethodCallsCombo;
+                }
+                if(aComponent ==  methodParamsCombo){
+                    return methodCallArgsCombo;
+                }
+                if(aComponent ==  extendsImplementsListCombo){
+                    return methodParamsCombo;
+                }
+                if(aComponent ==  doWhileStatementCombo){
+                    return binaryOpsCombo;
+                }
+                if(aComponent ==  extendsImplementsKeywordCombo){
+                    return extendsImplementsListCombo;
+                }
+                if(aComponent ==  ternaryOpsCombo){
+                    return assignOpsCombo;
+                }
+                if(aComponent ==  binaryOpsCombo){
+                    return ternaryOpsCombo;
+                }
+                if(aComponent ==  whileStatementComboBox){
+                    return doWhileStatementCombo;
+                }
+                if(aComponent ==  forStatementCombo){
+                    return ifStatementCombo;
+                }
+                if(aComponent ==  ifStatementCombo){
+                    return whileStatementComboBox;
+                }
+                if(aComponent ==  arrayInitCombo){
+                    return forCombo;
+                }
+                if(aComponent ==  forCombo){
+                    return forStatementCombo;
+                }
+                return cbStatements;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  cbStatements){
+                    return cbOpenCloseBlockBrace;
+                }
+                if(aComponent ==  cbOpenCloseBlockBrace){
+                    return assignOpsCombo;
+                }
+                if(aComponent ==  arrayInitCombo){
+                    return chainedMethodCallsCombo;
+                }
+                if(aComponent ==  chainedMethodCallsCombo){
+                    return methodCallArgsCombo;
+                }
+                if(aComponent ==  methodCallArgsCombo){
+                    return methodParamsCombo;
+                }
+                if(aComponent ==  methodParamsCombo){
+                    return extendsImplementsListCombo;
+                }
+                if(aComponent ==  binaryOpsCombo){
+                    return doWhileStatementCombo;
+                }
+                if(aComponent ==  extendsImplementsListCombo){
+                    return extendsImplementsKeywordCombo;
+                }
+                if(aComponent ==  assignOpsCombo){
+                    return ternaryOpsCombo;
+                }
+                if(aComponent ==  ternaryOpsCombo){
+                    return binaryOpsCombo;
+                }
+                if(aComponent ==  doWhileStatementCombo){
+                    return whileStatementComboBox;
+                }
+                if(aComponent ==  ifStatementCombo){
+                    return forStatementCombo;
+                }
+                if(aComponent ==  whileStatementComboBox){
+                    return ifStatementCombo;
+                }
+                if(aComponent ==  forCombo){
+                    return arrayInitCombo;
+                }
+                if(aComponent ==  forStatementCombo){
+                    return forCombo;
+                }
+                return cbStatements;//end getComponentBefore
+
+            }}
+        );
         setName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_Wrapping")); // NOI18N
         setOpaque(false);
         setLayout(new java.awt.BorderLayout());
@@ -403,27 +514,76 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         );
 
         extendsImplemetsKeywordLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplemetsKeywordLabel.AccessibleContext.accessibleName")); // NOI18N
+        extendsImplemetsKeywordLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplemetsKeywordLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        extendsImplementsKeywordCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplementsKeywordCombo.AccessibleContext.accessibleName")); // NOI18N
+        extendsImplementsKeywordCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplementsKeywordCombo.AccessibleContext.accessibleDescription")); // NOI18N
         extendsImplementsListLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplementsListLabel.AccessibleContext.accessibleName")); // NOI18N
+        extendsImplementsListLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplementsListLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        extendsImplementsListCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplementsListCombo.AccessibleContext.accessibleName")); // NOI18N
+        extendsImplementsListCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.extendsImplementsListCombo.AccessibleContext.accessibleDescription")); // NOI18N
         methodParamsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.methodParamsLabel.AccessibleContext.accessibleName")); // NOI18N
+        methodParamsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.methodParamsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        methodParamsCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.methodParamsCombo.AccessibleContext.accessibleName")); // NOI18N
+        methodParamsCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.methodParamsCombo.AccessibleContext.accessibleDescription")); // NOI18N
         methodCallArgsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.methodCallArgsLabel.AccessibleContext.accessibleName")); // NOI18N
+        methodCallArgsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.methodCallArgsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        methodCallArgsCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.methodCallArgsCombo.AccessibleContext.accessibleName")); // NOI18N
+        methodCallArgsCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.methodCallArgsCombo.AccessibleContext.accessibleDescription")); // NOI18N
         chainedMethodCallsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.chainedMethodCallsLabel.AccessibleContext.accessibleName")); // NOI18N
+        chainedMethodCallsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.chainedMethodCallsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        chainedMethodCallsCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.chainedMethodCallsCombo.AccessibleContext.accessibleName")); // NOI18N
+        chainedMethodCallsCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.chainedMethodCallsCombo.AccessibleContext.accessibleDescription")); // NOI18N
         arrayInitLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.arrayInitLabel.AccessibleContext.accessibleName")); // NOI18N
+        arrayInitLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.arrayInitLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        arrayInitCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.arrayInitCombo.AccessibleContext.accessibleName")); // NOI18N
+        arrayInitCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.arrayInitCombo.AccessibleContext.accessibleDescription")); // NOI18N
         forLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.forLabel.AccessibleContext.accessibleName")); // NOI18N
+        forLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.forLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        forCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.forCombo.AccessibleContext.accessibleName")); // NOI18N
+        forCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.forCombo.AccessibleContext.accessibleDescription")); // NOI18N
         forStatementLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.forStatementLabel.AccessibleContext.accessibleName")); // NOI18N
+        forStatementLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.forStatementLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        forStatementCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.forStatementCombo.AccessibleContext.accessibleName")); // NOI18N
+        forStatementCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.forStatementCombo.AccessibleContext.accessibleDescription")); // NOI18N
         ifStatementLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.ifStatementLabel.AccessibleContext.accessibleName")); // NOI18N
+        ifStatementLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.ifStatementLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        ifStatementCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.ifStatementCombo.AccessibleContext.accessibleName")); // NOI18N
+        ifStatementCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.ifStatementCombo.AccessibleContext.accessibleDescription")); // NOI18N
         whileStatementLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.whileStatementLabel.AccessibleContext.accessibleName")); // NOI18N
+        whileStatementLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.whileStatementLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        whileStatementComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.whileStatementComboBox.AccessibleContext.accessibleName")); // NOI18N
+        whileStatementComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.whileStatementComboBox.AccessibleContext.accessibleDescription")); // NOI18N
         doWhileStatementLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.doWhileStatementLabel.AccessibleContext.accessibleName")); // NOI18N
+        doWhileStatementLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.doWhileStatementLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        doWhileStatementCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.doWhileStatementCombo.AccessibleContext.accessibleName")); // NOI18N
+        doWhileStatementCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.doWhileStatementCombo.AccessibleContext.accessibleDescription")); // NOI18N
         binaryOpsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.binaryOpsLabel.AccessibleContext.accessibleName")); // NOI18N
+        binaryOpsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.binaryOpsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        binaryOpsCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.binaryOpsCombo.AccessibleContext.accessibleName")); // NOI18N
+        binaryOpsCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.binaryOpsCombo.AccessibleContext.accessibleDescription")); // NOI18N
         ternaryOpsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.ternaryOpsLabel.AccessibleContext.accessibleName")); // NOI18N
+        ternaryOpsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.ternaryOpsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        ternaryOpsCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.ternaryOpsCombo.AccessibleContext.accessibleName")); // NOI18N
+        ternaryOpsCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.ternaryOpsCombo.AccessibleContext.accessibleDescription")); // NOI18N
         assignOpsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.assignOpsLabel.AccessibleContext.accessibleName")); // NOI18N
+        assignOpsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.assignOpsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        assignOpsCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.assignOpsCombo.AccessibleContext.accessibleName")); // NOI18N
+        assignOpsCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.assignOpsCombo.AccessibleContext.accessibleDescription")); // NOI18N
         cbOpenCloseBlockBrace.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.cbOpenCloseBlockBrace.AccessibleContext.accessibleName")); // NOI18N
+        cbOpenCloseBlockBrace.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.cbOpenCloseBlockBrace.AccessibleContext.accessibleDescription")); // NOI18N
         cbStatements.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.cbStatements.AccessibleContext.accessibleName")); // NOI18N
+        cbStatements.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.cbStatements.AccessibleContext.accessibleDescription")); // NOI18N
 
         scrollPane.setViewportView(panel1);
+        panel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.panel1.AccessibleContext.accessibleName")); // NOI18N
+        panel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.panel1.AccessibleContext.accessibleDescription")); // NOI18N
 
         add(scrollPane, java.awt.BorderLayout.CENTER);
+        scrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.scrollPane.AccessibleContext.accessibleName")); // NOI18N
+        scrollPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.scrollPane.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbStatementsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbStatementsActionPerformed

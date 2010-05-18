@@ -337,6 +337,7 @@ public final class DerbyDatabasesImpl {
         File databaseHomeFile = new File(databaseHome);
         if (! databaseHomeFile.exists()) {
             Logger.getLogger(DerbyServerNode.class.getName()).log(Level.WARNING, "No JavaDB location found on " + databaseHomeFile);
+            return Collections.emptyList();
         }
         FileObject databaseHomeFO = FileUtil.toFileObject(databaseHomeFile);
         Enumeration<? extends FileObject> children = databaseHomeFO.getChildren(false);

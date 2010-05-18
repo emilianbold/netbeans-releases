@@ -399,6 +399,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
 
         /** for layer registration */
         public BrokenLinksActionFactory() {
+            putValue(Action.NAME, NbBundle.getMessage(J2SELogicalViewProvider.class, "LBL_Fix_Broken_Links_Action"));
             setEnabled(false);
             putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         }

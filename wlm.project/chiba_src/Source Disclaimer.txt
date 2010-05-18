@@ -1,0 +1,5 @@
+**Disclaimer**
+The schema to xform conversion code is borrowed from chiba (http://chiba.sourceforge.net/), chiba_src contains the source
+used for xform generation, the only change made is to replace references to xerces with JDK 5 api. 
+The full source can be obtained from chiba (http://chiba.sourceforge.net/),
+

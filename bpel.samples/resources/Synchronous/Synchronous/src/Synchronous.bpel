@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+  * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
+    may be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<process name="Synchronous"
+         targetNamespace="http://enterprise.netbeans.org/bpel/Synchronous/Synchronous"
+         xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+         xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor2"
+         xmlns:sxat="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Attachment"
+         xmlns:sxeh="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"
+         xmlns:wsdlNS="http://enterprise.netbeans.org/bpel/Synchronous/Synchronous"
+         xmlns:ns1="http://localhost/Synchronous/Synchronous"
+         xmlns:ns2="http://xml.netbeans.org/schema/Synchronous">
+
+    <documentation>
+        The synchronous BPEL process illustrates a simple synchronous flow. The process receives an input message and sends it back synchronously. A client starts the synchronous process by invoking a request-response operation. After invoking a synchronous process, the client is blocked until the process finishes and returns the result.
+    </documentation>
+
+    <import namespace="http://localhost/Synchronous/Synchronous"
+            location="Synchronous.wsdl"
+            importType="http://schemas.xmlsoap.org/wsdl/"/>
+
+    <partnerLinks>
+        <partnerLink
+            name="Synchronous"
+            partnerLinkType="ns1:partnerlinktype1"
+            myRole="partnerlinktyperole1">
+            
+            <documentation>
+                This partner link represents the client who sends an input message to the process and receives the response.
+            </documentation>
+        </partnerLink>
+    </partnerLinks>
+    
+    <variables>
+        <variable name="outputVar" messageType="ns1:responseMessage">
+            <documentation>Output variable.</documentation>
+        </variable>
+
+        <variable name="inputVar" messageType="ns1:requestMessage">
+            <documentation>Input variable.</documentation>
+        </variable>
+    </variables>
+    
+    <sequence>
+        <documentation>
+            The sequence includes several activities which are executed in lexical order.
+        </documentation>
+
+        <receive
+            name="start"
+            partnerLink="Synchronous"
+            operation="operation1"
+            portType="ns1:portType1"
+            variable="inputVar"
+            createInstance="yes">
+
+            <documentation>
+                The Receive activity makes the process to wait for the incoming message to arrive.
+            </documentation>
+        </receive>
+
+        <assign name="Assign1">
+            <documentation>
+                The Assign activity copies data from the input variable to the output variable.
+            </documentation>
+
+            <copy>
+                <from>$inputVar.inputType/ns2:paramA</from>
+                <to>$outputVar.resultType/ns2:paramA</to>
+            </copy>
+        </assign>
+
+        <reply
+            name="end"
+            partnerLink="Synchronous"
+            operation="operation1"
+            portType="ns1:portType1"
+            variable="outputVar">
+            
+            <documentation>
+                The Reply activity returns a message from the process to the  partner which initiated the communication.
+            </documentation>
+        </reply>
+    </sequence>
+</process>

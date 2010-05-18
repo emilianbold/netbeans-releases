@@ -39,16 +39,24 @@
 package org.netbeans.modules.nativeexecution.api;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import junit.framework.Test;
+import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.openide.util.Exceptions;
 
 public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
@@ -79,6 +87,69 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         doTestSetExecutable(getTestExecutionEnvironment());
     }
 
+    public void testListenersLocal() throws Exception {
+        doTestListeners(ExecutionEnvironmentFactory.getLocal());
+    }
+
+    @ForAllEnvironments(section = "remote.platforms")
+    public void testListeners() throws Exception {
+        doTestListeners(getTestExecutionEnvironment());
+    }
+
+    private void doTestListeners(ExecutionEnvironment env) {
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable("echo");
+        final Counters counters = new Counters();
+        final AtomicInteger result = new AtomicInteger();
+        final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
+
+        npb.addNativeProcessListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                State state = ((NativeProcessChangeEvent) e).state;
+                counters.getCounter(state.name()).incrementAndGet();
+
+                if (state == State.FINISHED) {
+                    result.set(processRef.get().exitValue());
+                }
+
+                switch (state) {
+                    case STARTING:
+                        assertEquals(0, counters.getCounter(State.RUNNING.name()).get());
+                        assertEquals(0, counters.getCounter(State.FINISHED.name()).get());
+                        assertEquals(0, counters.getCounter(State.CANCELLED.name()).get());
+                        assertEquals(0, counters.getCounter(State.ERROR.name()).get());
+                        break;
+                    case RUNNING:
+                        assertEquals(1, counters.getCounter(State.STARTING.name()).get());
+                        assertEquals(0, counters.getCounter(State.FINISHED.name()).get());
+                        assertEquals(0, counters.getCounter(State.CANCELLED.name()).get());
+                        assertEquals(0, counters.getCounter(State.ERROR.name()).get());
+                        break;
+                    case FINISHED:
+                        assertEquals(1, counters.getCounter(State.STARTING.name()).get());
+                        assertEquals(1, counters.getCounter(State.RUNNING.name()).get());
+                        assertEquals(0, counters.getCounter(State.CANCELLED.name()).get());
+                        assertEquals(0, counters.getCounter(State.ERROR.name()).get());
+                        break;
+                }
+
+            }
+        });
+
+        try {
+            NativeProcess process = npb.call();
+            processRef.set(process);
+            int exitCode = process.waitFor();
+            assertTrue(exitCode == result.get());
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     public void testSetCommandLineLocal() throws Exception {
         doTestSetCommandLine(ExecutionEnvironmentFactory.getLocal());
     }
@@ -98,11 +169,11 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
         npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         npb.setCommandLine("rm -rf \"" + testDir + "\"");
-        assertEquals("rm -rf \"" + testDir + "\"", 0,  npb.call().waitFor());
+        assertEquals("rm -rf \"" + testDir + "\"", 0, npb.call().waitFor());
 
         npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         npb.setCommandLine("mkdir \"" + testDir + "\""); // NOI18N
-        assertEquals("mkdir \"" + testDir + "\"", 0,  npb.call().waitFor());
+        assertEquals("mkdir \"" + testDir + "\"", 0, npb.call().waitFor());
 
         if (execEnv.isLocal() && hostinfo.getOS().getFamily() == HostInfo.OSFamily.WINDOWS) {
             String realDir = WindowsSupport.getInstance().convertToWindowsPath(testDir);
@@ -197,7 +268,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         assertTrue("\"copied ls\" not found in ls output", found);
     }
 
-    private String findComand(String command){
+    private String findComand(String command) {
         ArrayList<String> list = new ArrayList<String>();
         String path = System.getenv("PATH"); // NOI18N
         if (path != null) {

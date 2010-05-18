@@ -47,6 +47,25 @@ made subject to such option by the copyright holder.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="ClassLoader.findLibrary">
+        <api name="modules"/>
+        <summary>Documented the new native library lookup mechanism</summary>
+        <version major="7" minor="17"/>
+        <date day="14" month="5" year="2010"/>
+        <author login="pnejedly"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                You can now distribute native libraries into architecture
+                and OS specific directories under <samp>modules/lib</samp>
+                as documented in the <a href="@TOP@/org/openide/modules/doc-files/api.html#jni">documentation</a>.
+                The functionality is actually provided by the
+                org.netbeans.bootstrap module as of version 2.33, which will be
+                part of NetBeans 6.9 release.
+            </p>
+        </description>
+        <issue number="186000"/>
+    </change>
     <change id="ModuleInstall-no-extern">
         <api name="modules"/>
         <summary>Simplified <code>ModuleInstall</code> lifecycle</summary>

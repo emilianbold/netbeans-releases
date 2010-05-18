@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:smtp="http://schemas.sun.com/jbi/wsdl-extensions/smtp/" targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/smtp/">
+    <xs:import namespace="http://schemas.xmlsoap.org/wsdl/" schemaLocation="wsdl.xsd"/>
+
+    <!-- Extensibility Element for the WSDL Binding -->
+    <xs:element name="binding" type="smtp:tBinding">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_binding</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tBinding">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+                <xs:sequence>
+                    <xs:element ref="smtp:proxy" minOccurs="0" />
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="proxy" type="smtp:tProxy">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_proxy</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tProxy">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+                <xs:attribute name="host" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_host</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="port" type="xs:int" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_port</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="userName" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_userName</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="password" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_password</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+
+
+    <!-- Extensibility Element for the WSDL Operation -->
+    <xs:element name="operation" type="smtp:tOperation">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_operation</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tOperation">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- Extensibility Element for the WSDL Operation Input -->
+    <xs:element name="input" type="smtp:tInput">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_input</xs:documentation>
+	<xs:appinfo>
+                <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                    <prop:Property attributeName="message" propertyOrder="1" >
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    
+                    <prop:Property attributeName="subject" propertyOrder="2" >
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="from"  propertyOrder="3">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="charset" propertyOrder="4">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="to" propertyOrder="5">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    <prop:Property attributeName="cc"  propertyOrder="6">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                    
+                    <prop:Property attributeName="bcc" propertyOrder="7">
+                        <prop:BuiltInCustomizer>
+                            <prop:SimpleCustomizer name="PartChooser"/>
+                        </prop:BuiltInCustomizer>
+                    </prop:Property>
+                </prop:ElementProperties>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tInput">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+                <xs:sequence>
+                    <xs:element ref="smtp:attachment" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+                <xs:attribute name="message" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_message</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="subject" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_subject</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="from" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_from</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="charset" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_charset</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="use" type="smtp:useTypes" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_use</xs:documentation>
+                    </xs:annotation>
+		</xs:attribute>
+                <xs:attribute name="encodingStyle" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_encodingStyle</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="to" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_to</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="cc" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_cc</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="bcc" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_bcc</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:simpleType name="useTypes">
+        <xs:restriction base="xs:string">
+	    <xs:enumeration value="literal"/>
+	    <xs:enumeration value="encoded"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <!-- Extensibility Element for the WSDL Operation Output -->
+    <xs:element name="output" type="smtp:tOutput">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_output</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tOutput">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- Common message types for Input/Output Binding Elements -->
+
+    <!-- Attachment(s) definition -->
+    <xs:element name="attachment" type="smtp:tAttachment">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_attachment</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tAttachment">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+                <xs:attribute name="contentType" type="xs:string" use="required" >
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_contentType</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="name" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_name</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="content" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_content</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+            <!-- TODO: refer to part -->
+            <!-- TODO: restrict types-->
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- Extensibility Element for the WSDL Port -->
+    <xs:element name="address" type="smtp:tAddress">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_address</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tAddress">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+		<xs:attribute name="location" type="xs:string" use="required">
+		    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_location</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="smtpserver" type="xs:string" use="optional">
+		    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_smtpserver</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="smtpport" type="xs:int" use="optional">
+		    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_smtpport</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="username" type="xs:string" use="optional">
+		    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_username</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="password" type="xs:string" use="optional">
+		    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_password</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="useSSL" type="xs:boolean" use="optional">
+		    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_useSSL</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+</xs:schema>

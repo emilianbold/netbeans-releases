@@ -40,118 +40,117 @@
  */
 package org.netbeans.modules.terminal;
 
-import org.netbeans.lib.terminalemulator.support.TermOptions;
-import org.netbeans.lib.terminalemulator.support.TermOptionsPanel;
 import java.util.prefs.Preferences;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 
-import org.netbeans.spi.options.AdvancedOption;
-import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
-import org.openide.util.NbBundle;
+
+import org.netbeans.spi.options.OptionsPanelController;
+
+import org.netbeans.lib.terminalemulator.support.TermOptions;
+import org.netbeans.lib.terminalemulator.support.TermOptionsPanel;
 
 /**
  * Sets up an options category under Miscellaneous.
- * Needs to be registered in mf-layer in the folder OptionsDialog/Advanced.
  */
 
-public class TermAdvancedOption extends AdvancedOption {
-    static private class MyOptionsPanelController extends OptionsPanelController {
-	private TermOptions termOptions;
-	private TermOptions clonedTermOptions;
-	private TermOptionsPanel panel;
+@OptionsPanelController.SubRegistration(
+id = "TermAdvancedOption", // NOI18N
+displayName = "#CTL_Term_options" // NOI18N
+//tooltip="#CTL_Term_options" // NOI18N
+)
+public final class TermAdvancedOption extends OptionsPanelController {
+    private TermOptions termOptions;
+    private TermOptions clonedTermOptions;
+    private TermOptionsPanel panel;
 
-	/**
-	 * Prefererences in which we store term settings.
-	 */
-	private static final Preferences prefs =
-            NbPreferences.forModule(TermAdvancedOption.class);
+    /**
+     * Preferences in which we store term settings.
+     */
+    private static final Preferences prefs =
+	NbPreferences.forModule(TermAdvancedOption.class);
 
-	private void reset() {
-	    termOptions = TermOptions.getDefault(prefs);
-	    clonedTermOptions = termOptions.makeCopy();
-	    panel.setTermOptions(clonedTermOptions);
-	    
-	}
+    private void reset() {
+	termOptions = TermOptions.getDefault(prefs);
+	clonedTermOptions = termOptions.makeCopy();
+	panel.setTermOptions(clonedTermOptions);
 
-        // implement OptionsPanelController
-        public JComponent getComponent(Lookup masterLookup) {
-	    panel = new TermOptionsPanel();
-	    return panel;
-	}
-
-        /** 
-         * Load data from model.
-         * Called after getComponent().
-         */
-
-        // implement OptionsPanelController
-        public void update() {
-	    reset();
-        }
-
-        // implement OptionsPanelController
-        public void cancel() {
-	    reset();
-        }
-
-        // implement OptionsPanelController
-        public void applyChanges()  {
-	    if (termOptions == null)
-		return;		// update wasn't called
-	    // assign will fire a property change
-	    termOptions.assign(clonedTermOptions);
-	    termOptions.storeTo(prefs);
-        }
-
-        // implement OptionsPanelController
-        public boolean isChanged() {
-	    clonedTermOptions = termOptions.makeCopy();
-            if (clonedTermOptions == null) {
-                return false;
-            } else {
-                return clonedTermOptions.isDirty();
-            }
-        }
-
-        // implement OptionsPanelController
-        public boolean isValid() {
-            // always valid
-            return true;
-        }
-
-        // implement OptionsPanelController
-        public HelpCtx getHelpCtx() {
-            return null;
-        }
-
-        // implement OptionsPanelController
-        @Override
-        public Lookup getLookup() {
-            return null;
-        }
-
-	// implement OptionsPanelController
-	public void addPropertyChangeListener(PropertyChangeListener l) {
-	}
-
-        // implement OptionsPanelController
-        public void removePropertyChangeListener(PropertyChangeListener l) {
-        }
     }
 
-    public OptionsPanelController create() {
-	return new MyOptionsPanelController();
+    // implement OptionsPanelController
+    @Override
+    public JComponent getComponent(Lookup masterLookup) {
+	panel = new TermOptionsPanel();
+	return panel;
     }
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(TermAdvancedOption.class, "CTL_Term_options");
+    /**
+     * Load data from model.
+     * Called after getComponent().
+     */
+
+    // implement OptionsPanelController
+    @Override
+    public void update() {
+	reset();
     }
 
-    public String getTooltip() {
-        return NbBundle.getMessage(TermAdvancedOption.class, "CTL_Term_options");
+    // implement OptionsPanelController
+    @Override
+    public void cancel() {
+	reset();
+    }
+
+    // implement OptionsPanelController
+    @Override
+    public void applyChanges()  {
+	if (termOptions == null)
+	    return;		// update wasn't called
+	// assign will fire a property change
+	termOptions.assign(clonedTermOptions);
+	termOptions.storeTo(prefs);
+    }
+
+    // implement OptionsPanelController
+    @Override
+    public boolean isChanged() {
+	clonedTermOptions = termOptions.makeCopy();
+	if (clonedTermOptions == null) {
+	    return false;
+	} else {
+	    return clonedTermOptions.isDirty();
+	}
+    }
+
+    // implement OptionsPanelController
+    @Override
+    public boolean isValid() {
+	// always valid
+	return true;
+    }
+
+    // implement OptionsPanelController
+    @Override
+    public HelpCtx getHelpCtx() {
+	return null;
+    }
+
+    // implement OptionsPanelController
+    @Override
+    public Lookup getLookup() {
+	return null;
+    }
+
+    // implement OptionsPanelController
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+    }
+
+    // implement OptionsPanelController
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
     }
 }

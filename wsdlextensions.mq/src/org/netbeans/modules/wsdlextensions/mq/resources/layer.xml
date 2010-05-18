@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN"
+        "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="WSDLEditor">
+        <file name="mq-ext.xsd" url="mq-ext.xsd">
+            <attr name="namespace"
+                  stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/mq/"/>
+            <attr name="prefix" stringvalue="mq"/>
+        </file>
+
+        <folder name="Binding">
+            <file name="MQBinding">
+                <attr name="xsdFileName" stringvalue="mq-ext"/>
+                <attr name="element" stringvalue="binding"/>
+                <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.wsdlextensions.mq.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/mq/resources/Start_16.png"/>
+            </file>
+        </folder>
+        <folder name="BindingOperation">
+            <file name="MQBindingOperation">
+                <attr name="xsdFileName" stringvalue="mq-ext"/>
+                <attr name="element" stringvalue="operation"/>
+                <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.wsdlextensions.mq.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/mq/resources/End_16.png"/>
+            </file>
+            <file name="MQOperationRedelivery">
+                <attr name="xsdFileName" stringvalue="mq-ext"/>
+                <attr name="element" stringvalue="redelivery"/>
+                <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.wsdlextensions.mq.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/mq/resources/End_16.png"/>
+            </file>
+        </folder>
+        <folder name="BindingOperationInput">
+            <file name="MQBody">
+                <attr name="xsdFileName" stringvalue="mq-ext"/>
+                <attr name="element" stringvalue="body"/>
+                <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.wsdlextensions.mq.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/mq/resources/onmessage16x16.png"/>
+            </file>
+            <file name="MQHeader">
+                <attr name="xsdFileName" stringvalue="mq-ext"/>
+                <attr name="element" stringvalue="header"/>
+                <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.wsdlextensions.mq.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/mq/resources/onmessage16x16.png"/>
+            </file>
+        </folder>
+        <folder name="BindingOperationOutput">
+            <file name="MQBody">
+                <attr name="xsdFileName" stringvalue="mq-ext"/>
+                <attr name="element" stringvalue="body"/>
+
+                <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.wsdlextensions.mq.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/mq/resources/onmessage16x16.png"/>
+            </file>
+            <file name="MQHeader">
+                <attr name="xsdFileName" stringvalue="mq-ext"/>
+                <attr name="element" stringvalue="header"/>
+                <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.wsdlextensions.mq.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/mq/resources/onmessage16x16.png"/>
+            </file>
+        </folder>
+        <folder name ="BindingOperationFault">
+            <file name="MQFault">
+                <attr name="xsdFileName" stringvalue="mq-ext"/>
+                <attr name="element" stringvalue="fault"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.mq.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/mq/resources/fault.png"/>
+            </file>
+        </folder>
+
+        <folder name="ServicePort">
+            <file name="MQServicePort">
+                <attr name="xsdFileName" stringvalue="mq-ext"/>
+                <attr name="element" stringvalue="address"/>
+                <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.wsdlextensions.mq.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/mq/resources/mapping16.png"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="SeeBeyondJbiComponents">
+        <!-- JBI Component must be same as jbi.xml in runtime definition -->
+        <folder name="sun-webspheremq-binding">
+            <attr name="id" stringvalue="sun-webspheremq-binding"/>
+            <attr name="description" stringvalue="MQ Binding"/>
+            <attr name="type" stringvalue="Binding"/>
+            <file name="mq.binding-1.0">
+                <attr name="namespace"
+                      stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/mq/"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="bpel-nmproperties">
+        <folder name="mq-bc">
+            <attr name="display-name" stringvalue="MQ BC"/>
+            <file name="queuemanager">
+                <attr name="nmproperty"
+                      stringvalue="org.glassfish.openesb.mq.queuemanager"/>
+                <attr name="type"
+                      stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                <attr name="display-name" stringvalue="Queue Manager"/>
+            </file>
+            <file name="queue">
+                <attr name="nmproperty"
+                      stringvalue="org.glassfish.openesb.mq.queue"/>
+                <attr name="type"
+                      stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                <attr name="display-name" stringvalue="Queue"/>
+            </file>
+            <file name="channel">
+                <attr name="nmproperty"
+                      stringvalue="org.glassfish.openesb.mq.channel"/>
+                <attr name="type"
+                      stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                <attr name="display-name" stringvalue="Channel"/>
+            </file>
+            <file name="queuemanager-host">
+                <attr name="nmproperty"
+                      stringvalue="org.glassfish.openesb.mq.queuemanagerhost"/>
+                <attr name="type"
+                      stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                <attr name="display-name" stringvalue="Host"/>
+            </file>
+            <file name="queuemanager-port">
+                <attr name="nmproperty"
+                      stringvalue="org.glassfish.openesb.mq.queuemanagerport"/>
+                <attr name="type"
+                      stringvalue="{http://www.w3.org/2001/XMLSchema}unsignedShort"/>
+                <attr name="display-name" stringvalue="Port"/>
+            </file>
+            <file name="username">
+                <attr name="nmproperty"
+                      stringvalue="org.glassfish.openesb.mq.username"/>
+                <attr name="type"
+                      stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                <attr name="display-name" stringvalue="User Name"/>
+            </file>
+            <file name="password">
+                <attr name="nmproperty"
+                      stringvalue="org.glassfish.openesb.mq.password"/>
+                <attr name="type"
+                      stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                <attr name="display-name" stringvalue="Password"/>
+            </file>
+            <file name="syncpoint">
+                <attr name="nmproperty"
+                      stringvalue="org.glassfish.openesb.mq.syncpoint"/>
+                <attr name="type"
+                      stringvalue="{http://www.w3.org/2001/XMLSchema}boolean"/>
+                <attr name="display-name" stringvalue="Syncpoint"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>
+

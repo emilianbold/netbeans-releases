@@ -384,7 +384,11 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                     try {
                         String id = attributes.getValue("name");
                         if(id != null && id.length() > 0) {
-                            int port = Integer.parseInt(attributes.getValue("port"));
+                            String portAttr = attributes.getValue("port");
+                            if (null == portAttr || portAttr.startsWith("$")) {
+                                return;
+                            }
+                            int port = Integer.parseInt(portAttr);
                             boolean secure = "true".equals(attributes.getValue("security-enabled"));
                             boolean enabled = !"false".equals(attributes.getValue("enabled"));
                             if(enabled) {

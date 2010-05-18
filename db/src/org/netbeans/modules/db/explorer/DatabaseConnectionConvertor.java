@@ -311,7 +311,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         ByteBuffer input = ByteBuffer.wrap(bytes);
         int outputLength = (int)(bytes.length * (double)decoder.maxCharsPerByte());
         if (outputLength == 0) {
-            return null; // NOI18N
+            return ""; // NOI18N
         }
         char[] chars = new char[outputLength];
         CharBuffer output = CharBuffer.wrap(chars);

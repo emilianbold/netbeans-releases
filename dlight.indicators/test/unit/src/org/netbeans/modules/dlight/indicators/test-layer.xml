@@ -110,7 +110,7 @@
         </file>
       </folder>
       <file name="TimeSeriesIndicatorConfiguration.instance">
-        <attr name="instanceCreate" methodvalue="org.netbeans.modules.dlight.indicators.impl.TimeSeriesIndicatorConfigurationFactory.create"/>
+        <attr name="instanceCreate" methodvalue="org.netbeans.modules.dlight.indicators.impl.TimeSeriesIndicatorConfigurationFactory.createTimeSeriesIndicator"/>
         <attr name="instanceOf" stringvalue="org.netbeans.modules.dlight.indicators.TimeSeriesIndicatorConfiguration"/>
         <attr name="title" stringvalue="My First I/O bytes DLight Tool"/>
         <attr name="metadata" stringvalue="DLight/iofileb.Configuration/IndicatorMetadata.instance"/>

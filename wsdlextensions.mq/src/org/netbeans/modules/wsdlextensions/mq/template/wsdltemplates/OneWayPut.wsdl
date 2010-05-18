@@ -1,0 +1,30 @@
+<definitions name="OneWayPut" targetNamespace="http://j2ee.netbeans.org/wsdl/OneWayPut"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="http://j2ee.netbeans.org/wsdl/OneWayPut"
+    xmlns:mq="http://schemas.sun.com/jbi/wsdl-extensions/mq/">
+    <types/>
+    <message name="putRequest">
+        <part name="content" type="xsd:string"/>
+    </message>
+    <portType name="OneWayPutPortType">
+        <operation name="put">
+            <input name="input" message="tns:putRequest"/>
+        </operation>
+    </portType>
+    <binding name="OneWayPutBinding" type="tns:OneWayPutPortType">
+        <mq:binding/>
+        <operation name="Put">
+            <mq:operation queueName="default" queueOpenOptions="BIND_AS_DEFAULT" transaction="NoTransaction"/>
+            <input name="input">
+                <mq:body use="literal" messageBody="content" messageType="TextMessage" syncpoint="true"/>
+            </input>
+        </operation>
+    </binding>
+    <service name="OneWayPutService">
+        <port name="OneWayPutPort" binding="tns:OneWayPutBinding">
+            <mq:address queueManagerName="QM_localhost"/>
+        </port>
+    </service>
+</definitions>

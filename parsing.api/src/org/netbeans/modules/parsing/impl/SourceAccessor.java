@@ -41,6 +41,7 @@ package org.netbeans.modules.parsing.impl;
 
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
@@ -195,4 +196,13 @@ public abstract class SourceAccessor {
     public abstract Source get (final FileObject file);
 
     public abstract int getLineStartOffset(Snapshot snapshot, int lineIdx);
+
+    public abstract Snapshot createSnapshot(
+        CharSequence        text,
+        int []              lineStartOffsets,
+        Source              source,
+        MimePath            mimePath,
+        int[][]             currentToOriginal,
+        int[][]             originalToCurrent
+    );
 }

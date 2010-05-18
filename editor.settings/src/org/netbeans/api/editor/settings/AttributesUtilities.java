@@ -151,6 +151,8 @@ public final class AttributesUtilities {
                 case 0: return SimpleAttributeSet.EMPTY;
                 case 1: return all.get(0);
                 case 2: return new Composite2(all.get(0), all.get(1));
+                case 3: return new Composite4(all.get(0), all.get(1), all.get(2), null);
+                case 4: return new Composite4(all.get(0), all.get(1), all.get(2), all.get(3));
                 default: return new BigComposite(all);
             }
         }
@@ -517,4 +519,125 @@ public final class AttributesUtilities {
             return allKeys;
         }
     } // End of Composite2 class
+
+    private static final class Composite4 implements AttributeSet, CompositeAttributeSet {
+
+        private final AttributeSet delegate0;
+        private final AttributeSet delegate1;
+        private final AttributeSet delegate2;
+        private final AttributeSet delegate3;
+
+        public Composite4(AttributeSet delegate0, AttributeSet delegate1, AttributeSet delegate2, AttributeSet delegate3) {
+            this.delegate0 = delegate0;
+            this.delegate1 = delegate1;
+            this.delegate2 = delegate2;
+            this.delegate3 = delegate3;
+        }
+
+        @Override
+        public Collection<? extends AttributeSet> getDelegates() {
+            if (delegate3 == null) {
+                return Arrays.asList(delegate0, delegate1, delegate2);
+            } else {
+                return Arrays.asList(delegate0, delegate1, delegate2, delegate3);
+            }
+        }
+
+        @Override
+        public boolean isEqual(AttributeSet attr) {
+            return containsAttributes(attr) && attr.containsAttributes(this);
+        }
+
+        @Override
+        public boolean containsAttributes(AttributeSet attributes) {
+            for(Enumeration<?> keys = attributes.getAttributeNames(); keys.hasMoreElements(); ) {
+                Object key = keys.nextElement();
+                Object value = attributes.getAttribute(key);
+
+                if (!containsAttribute(key, value)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        @Override
+        public boolean isDefined(Object key) {
+            return delegate0.isDefined(key) || delegate1.isDefined(key) || delegate2.isDefined(key) || delegate3 != null && delegate3.isDefined(key);
+        }
+
+        @Override
+        public Object getAttribute(Object key) {
+            if (key instanceof String && key.equals(ATTR_DISMANTLED_STRUCTURE)) {
+                return dismantle(this);
+            }
+            AttributeSet[] set;
+            if (delegate3 == null) {
+                set = new AttributeSet[] {delegate0, delegate1, delegate2};
+            } else {
+                set = new AttributeSet[] {delegate0, delegate1, delegate2, delegate3};
+            }
+
+            for(AttributeSet delegate : set) {
+            	AttributeSet current = delegate;
+            	while (current != null) {
+            		if (current.isDefined(key)) {
+                            return current.getAttribute(key);
+            		}
+            		current = current.getResolveParent();
+            	}
+            }
+
+            return null;
+        }
+
+        @Override
+        public AttributeSet getResolveParent() {
+            return null;
+        }
+
+        @Override
+        public Enumeration<?> getAttributeNames() {
+            return Collections.enumeration(getAllKeys());
+        }
+
+        @Override
+        public int getAttributeCount() {
+            return getAllKeys().size();
+        }
+
+        @Override
+        public AttributeSet copyAttributes() {
+            if (delegate3 == null) {
+                return createImmutable(delegate0, delegate1, delegate2);
+            } else {
+                return createImmutable(delegate0, delegate1, delegate2, delegate3);
+            }
+        }
+
+        @Override
+        public boolean containsAttribute(Object key, Object value) {
+            return delegate0.containsAttribute(key, value) || delegate1.containsAttribute(key, value) ||
+                   delegate2.containsAttribute(key, value) || delegate3 != null && delegate3.containsAttribute(key, value);
+        }
+
+        private Collection<?> getAllKeys() {
+            HashSet<Object> allKeys = new HashSet<Object>();
+            AttributeSet[] set;
+            if (delegate3 == null) {
+                set = new AttributeSet[] {delegate0, delegate1, delegate2};
+            } else {
+                set = new AttributeSet[] {delegate0, delegate1, delegate2, delegate3};
+            }
+            for(AttributeSet delegate : set) {
+                for(Enumeration<?> keys = delegate.getAttributeNames(); keys.hasMoreElements(); ) {
+                    Object key = keys.nextElement();
+                    allKeys.add(key);
+                }
+            }
+
+            return allKeys;
+        }
+    } // End of Composite4 class
 }

@@ -589,6 +589,14 @@ Microsystems, Inc. All Rights Reserved.
             External changes refresh is only performed when manual refresh is off.
             Various UI elements can also change the value of this preference setting.
         </api>
+
+        <api category="friend" group="property" name="MSG_RefreshDelay" type="export">
+            There is <code>MSG_RefreshDelay</code> key
+            in org.netbeans.core.ui.warmup.Bundle that allows applications built
+            on top of NetBeans to customized or even suppress appearance of
+            'external changes' progress. The value is amount of ms to set as
+            initial delay to the progress handle.
+        </api>
   </p>
  </answer>
 

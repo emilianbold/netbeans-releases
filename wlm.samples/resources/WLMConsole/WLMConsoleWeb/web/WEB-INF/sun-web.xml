@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sun-web-app PUBLIC
+    "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Servlet 2.5//EN"
+    "http://www.sun.com/software/appserver/dtds/sun-web-app_2_5-0.dtd">
+
+<sun-web-app>
+  <context-root>/wlm-sample</context-root>
+
+  <security-role-mapping>
+    <role-name>staff</role-name>
+    <group-name>staff</group-name>
+  </security-role-mapping>
+
+  <security-role-mapping>
+    <role-name>manager</role-name>
+    <group-name>manager</group-name>
+  </security-role-mapping>
+
+  <class-loader delegate="true"/>
+
+  <jsp-config>
+    <property name="keepgenerated" value="true"/>
+  </jsp-config>
+</sun-web-app>

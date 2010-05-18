@@ -1,0 +1,17 @@
+<soapenv:Envelope
+    xsi:schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:syn="http://localhost/SynchronousSample/SynchronousSample"
+    xmlns:syn1="http://xml.netbeans.org/schema/SynchronousSample">
+    <soapenv:Body>
+        <syn:operation1>
+            <inputType>
+                <syn1:typeA>
+                    <syn1:paramA>?string?</syn1:paramA>
+                </syn1:typeA>
+            </inputType>
+        </syn:operation1>
+    </soapenv:Body>
+</soapenv:Envelope>

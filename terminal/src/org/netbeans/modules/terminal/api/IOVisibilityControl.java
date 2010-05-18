@@ -61,6 +61,9 @@ public abstract class IOVisibilityControl {
      * If the component is not closable okToHide will not get called.
      * @param cbs
      * @return Returns true if component should be closable.
+     */
+
+    /* LATER
      * @deprecated
      * This implementation is a pull style implementation. So when
      * IOVisibility.setClosable() is called someone needs to trigger IOContainer
@@ -90,7 +93,7 @@ public abstract class IOVisibilityControl {
      * NOTE: once we switch to push style revisit
      *
      */
-    @Deprecated
+    // LATER @Deprecated
     public static boolean isClosable(IOContainer.CallBacks cbs) {
 	IOVisibilityControl iov = find(cbs);
 	if (iov != null)

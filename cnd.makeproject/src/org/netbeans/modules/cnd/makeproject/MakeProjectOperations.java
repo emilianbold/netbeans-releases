@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -54,10 +55,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-public class MakeProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
+public class MakeProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation, MoveOrRenameOperationImplementation {
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
     private MakeProject project;
@@ -192,4 +194,17 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 //	project.getReferenceHelper().fixReferences(originalPath);
     }
 
+    @Override
+    public void notifyRenaming() throws IOException {
+        LOGGER.log(Level.FINE, "notify Renaming MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
+        project.save();
+    }
+
+    @Override
+    public void notifyRenamed(String nueName) throws IOException {
+        project.setName(nueName);
+        MakeProject.InfoInterface info = (MakeProject.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
+        info.firePropertyChange(ProjectInformation.PROP_NAME);
+        info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
+    }
 }

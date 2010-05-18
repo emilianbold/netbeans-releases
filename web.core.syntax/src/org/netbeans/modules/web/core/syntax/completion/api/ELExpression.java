@@ -48,11 +48,11 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -62,6 +62,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.api.java.source.CancellableTask;
@@ -71,14 +72,15 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.UiUtils;
-import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.el.lexer.api.ELTokenId.ELTokenCategories;
 import org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects;
@@ -86,7 +88,10 @@ import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 
-/** 
+/**
+ * New instance of this class creates a snapshot of the given document at the time when created.
+ * Then the parsing works on that snapshot, so no document locking is necessary.
+ *
  * @author Petr Pisl
  * @author Marek.Fukala@Sun.COM
  * @author Tomasz.Slota@Sun.COM
@@ -127,7 +132,9 @@ public class ELExpression {
      * if EL expression is attribute value. 
      */
     private String myAttributeValue;
-    
+
+    private String snapshot;
+
     /**
      * @author ads
      * Lexer for facelet file doesn't inform you about attribute.
@@ -139,9 +146,33 @@ public class ELExpression {
     private int contextOffset = -1;
     private int myStartOffset = -1;
 
-    public ELExpression(Document doc) {
+    public ELExpression(final Document doc, final int offset) throws BadLocationException {
         this.doc = doc;
         this.replace = "";
+        this.contextOffset = offset;
+
+        //clone the document's text
+        final AtomicReference<BadLocationException> ble = new AtomicReference<BadLocationException>();
+        final AtomicReference<String> snap = new AtomicReference<String>();
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    snap.set(doc.getText(0, doc.getLength()));
+                } catch (BadLocationException ex) {
+                    ble.set(ex);
+                }
+            }
+            
+        });
+        if(ble.get() != null) {
+            throw ble.get();
+        }
+
+        this.snapshot = snap.get();
+        assert snapshot != null;
+        
     }
     
     /**
@@ -161,17 +192,6 @@ public class ELExpression {
 
     public Document getDocument() {
         return doc;
-    }
-    
-    public final int parse(final int offset) {
-        final int[] retval = new int[1];
-        ((BaseDocument)doc).render(new Runnable() {
-            public void run() {
-                retval[0] = doParse(offset);
-            }
-        });
-        myParseType = retval[0];
-        return myParseType;
     }
     
     public final int getParseType(){
@@ -393,10 +413,6 @@ public class ELExpression {
         return Character.toLowerCase(propertyName.charAt(0)) + propertyNameWithoutFL;
     }
     
-    private void setContextOffset(int offset) {
-        this.contextOffset = offset;
-    }
-    
     protected Part[] getParts(){
         return getParts(getExpression());
     }
@@ -482,14 +498,26 @@ public class ELExpression {
     
     /** Parses text before offset in the document. Doesn't parse after offset.
      *  It doesn't parse whole EL expression until ${ or #{, but just simple expression.
-     *  For example ${ 2 < bean.start }. If the offset is after bean.start, then only bean.start
+     *  For example ${ 2 &lt; bean.start }. If the offset is after bean.start, then only bean.start
      *  is parsed.
+     *
+     * Should not be called under document's lock since it may take long time - findContext() is called
+     * from within the body.
      */
-    private final int doParse(int offset) {
-        setContextOffset(offset);
 
-        BaseDocument document = (BaseDocument) doc;
-        TokenHierarchy<BaseDocument> hi = TokenHierarchy.get(document);
+    public  final int parse() {
+        String documentMimetype = NbEditorUtilities.getMimeType(doc);
+        assert documentMimetype != null;
+        Language lang = Language.find(documentMimetype);
+        if(lang == null) {
+            return NOT_EL;
+        }
+        //get the input attributes from the document and use then for the TokenHierarchy creation
+        //XXX the input attributes should be got from the document during creation of the snapshot,
+        //    moreover they are mutable, so some kind of clone should be created there instead.
+        InputAttributes inputAttrs = doc != null ? (InputAttributes)doc.getProperty(InputAttributes.class) : null;
+        TokenHierarchy<String> hi = TokenHierarchy.create(snapshot, false, lang, null, inputAttrs);
+        
         //find EL token sequence and its superordinate sequence
         TokenSequence<?> ts = hi.tokenSequence();
         TokenSequence<?> last = null;
@@ -518,7 +546,7 @@ public class ELExpression {
                 break;
             } else {
                 //not el, scan next embedded token sequence
-                ts.move(offset);
+                ts.move(contextOffset);
                 if (ts.moveNext() || ts.movePrevious()) {
                     last = ts;
                     ts = ts.embedded();
@@ -534,7 +562,7 @@ public class ELExpression {
         }
 
 
-        int diff = ts.move(offset);
+        int diff = ts.move(contextOffset);
         if (diff == 0) {
             if (!ts.movePrevious()) {
                 return EL_START;
@@ -585,7 +613,7 @@ public class ELExpression {
 
         //if we got here, that is not our case and we have to reposition the token sequence
         //back to the original position
-        diff = ts.move(offset);
+        diff = ts.move(contextOffset);
         if (diff == 0) {
             ts.movePrevious();
         } else {
@@ -619,9 +647,9 @@ public class ELExpression {
                         ts.token().id() == ELTokenId.LBRACKET)
                 {
                     replace = "";
-                } else if (ts.token().text().length() >= (offset - ts.token().offset(hi))) {
-                    if (ts.token().offset(hi) <= offset) {
-                        expression = expression.substring(0, offset - ts.token().offset(hi));
+                } else if (ts.token().text().length() >= (contextOffset - ts.token().offset(hi))) {
+                    if (ts.token().offset(hi) <= contextOffset) {
+                        expression = expression.substring(0, contextOffset - ts.token().offset(hi));
                         replace = expression;
                     } else {
                         // cc invoked within EL delimiter

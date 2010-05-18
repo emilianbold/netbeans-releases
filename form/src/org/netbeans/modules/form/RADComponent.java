@@ -46,6 +46,8 @@ import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractButton;
@@ -1252,7 +1254,7 @@ public class RADComponent {
                     }
                 }
             } catch (IntrospectionException iex) {
-                iex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, iex.getMessage(), iex);
             }
         }
 
@@ -1450,7 +1452,7 @@ public class RADComponent {
             try {
                 prop = new FakeRADProperty(this, (FakePropertyDescriptor) desc);   
             } catch (IntrospectionException ex) { // should not happen
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
 		return null;
             }             
         } else {
@@ -1515,7 +1517,7 @@ public class RADComponent {
                             }
                         }
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
             });
@@ -1554,7 +1556,7 @@ public class RADComponent {
                 nameToProperty.put("cursor", prop); // NOI18N
                 normalProps.add(prop);
             } catch (IntrospectionException ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
          // hack for buttons - add fake property for ButtonGroup
@@ -1582,7 +1584,7 @@ public class RADComponent {
                 nameToProperty.put("rowHeight", prop); // NOI18N
                 normalProps.add(prop);
             } catch (IntrospectionException ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
         
@@ -1958,7 +1960,7 @@ public class RADComponent {
             try {
                 propertyDescriptors.add(new FakePropertyDescriptor(propertyName, propertyClass));
             } catch (IntrospectionException ex) {
-                ex.printStackTrace(); // should not happen
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex); // should not happen
             }
         }
                 

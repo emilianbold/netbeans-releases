@@ -1,0 +1,35 @@
+<attributes version="1.0">
+    <fileobject name="instance">
+        <attr name="DOMAIN" stringvalue="domain1"/>
+        <attr name="HttpMonitorOn" stringvalue="true"/>
+        <attr name="HttpProxySynced" stringvalue="true"/>
+        <attr name="LOCATION" stringvalue="C:\Glassfish-v2-b54\glassfish\domains"/>
+        <attr name="PROP_INSTANCE_ID" stringvalue="glassfish"/>
+        <attr name="displayName" stringvalue="GlassFish V2 (b54)"/>
+        <attr name="httpportnumber" stringvalue="8080"/>
+        <attr name="password" stringvalue="adminadmin"/>
+        <attr name="url" stringvalue="[C:\Glassfish-v2-b54\glassfish]deployer:Sun:AppServer::localhost:4848"/>
+        <attr name="username" stringvalue="admin"/>
+    </fileobject>
+    <fileobject name="instance_1">
+        <attr name="DOMAIN" stringvalue="GFb54_PersonalDomain2"/>
+        <attr name="HttpMonitorOn" stringvalue="true"/>
+        <attr name="HttpProxySynced" stringvalue="true"/>
+        <attr name="LOCATION" stringvalue="C:\tmp"/>
+        <attr name="PROP_INSTANCE_ID" stringvalue="glassfish_1"/>
+        <attr name="displayName" stringvalue="GlassFish V2 (b54 personal domain 2)"/>
+        <attr name="httpportnumber" stringvalue="8105"/>
+        <attr name="password" stringvalue="adminadmin"/>
+        <attr name="url" stringvalue="[C:\Glassfish-v2-b54\glassfish]deployer:Sun:AppServer::localhost:4873"/>
+        <attr name="username" stringvalue="admin"/>
+    </fileobject>
+    <fileobject name="instance_2">
+        <attr name="DOMAIN" stringvalue=""/>
+        <attr name="LOCATION" stringvalue=""/>
+        <attr name="displayName" stringvalue="GlassFish V2"/>
+        <attr name="httpportnumber" stringvalue="2848"/>
+        <attr name="password" stringvalue="adminadmin"/>
+        <attr name="url" stringvalue="[C:\Glassfish-v2-b54\glassfish]deployer:Sun:AppServer::cordova.stc.com:2848"/>
+        <attr name="username" stringvalue="admin"/>
+    </fileobject>
+</attributes>

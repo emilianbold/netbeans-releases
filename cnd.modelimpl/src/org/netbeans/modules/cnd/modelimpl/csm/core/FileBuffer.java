@@ -61,10 +61,6 @@ public interface FileBuffer extends APTFileBuffer {
     
     public String getText() throws IOException;
     
-    public int getLength();
-    
-    public boolean isFileBased();
-    
     public long lastModified();
 
     public int getLineByOffset(int offset) throws IOException;

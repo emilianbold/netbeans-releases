@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html>
+
+
+
+<head>
+
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Stream Projection and Filter Operator</title>
+
+</head>
+
+
+
+<body>
+
+<h2>Using the Stream Projection and Filter Operator</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+
+
+<p>The Stream Projection and Filter operator enables you to join a stream with multiple relations and tables, 
+in order to create new events or to filter existing events based on specified conditions.</p>
+
+<p>The input to the Stream Projection and Filter operator must include one (and only one) stream. 
+The input can also include any number of relations and tables.</p>
+
+<p>The output from the Stream Projection and Filter operator is a stream.</p>
+
+<p>Configuring the Stream Projection and Filter operator resembles the process of writing a SQL SELECT statement. 
+The property editor includes a SELECT area, a FROM area, and a WHERE area. 
+The property editor also includes a tree structure that contains the input operators and their attributes.</p>
+
+<p>In the SELECT area, you populate a table with one or more attributes. 
+You can quickly add an existing attribute by selecting the attribute in the tree structure and dragging it to the Expression column. 
+You can create a new attribute by using a mathematical computation. 
+In the following example, two existing attributes are multiplied to create the new attribute.</p>
+
+<tt>total=Products.price*Products.tax</tt>
+
+<p>You can remove an attribute from the input stream by not including it in the SELECT area.</p>
+
+<p>Specifying a WHERE clause is optional.</p>
+
+<p>One of the IEP tutorials uses the Stream Projection and Filter operator to check whether 
+the price of each stock transaction is significantly different from the average price of all stock transactions during the last two minutes. 
+The operator contains the following WHERE clause:</p>
+
+<tt>
+StockTransactions.symbol=RollingAvgPrice.symbol AND<br>
+(StockTransactions.price > 1.1 * RollingAvgPrice.price OR<br>
+StockTransactions.price < 0.9 * RollingAvgPrice.price)<br>
+</tt>
+
+
+
+<p><strong>To use the Stream Projection and Filter operator:</strong></p>
+
+<ol>
+
+  <li>Drag a Stream Projection and Filter operator from the Palette to the Design view.</li>
+
+  <li>Connect the output of an operator that has stream output to the input of the Stream Projection and Filter operator.</li>
+  <li>(Optional) Connect the output of one or more operators that have relation output to the input of the Stream Projection and Filter operator.</li>
+  <li>(Optional) Connect the output of one or more operators that have table output to the input of the Stream Projection and Filter operator.</li>
+
+  <li>Double-click the Stream Projection and Filter operator. The property editor opens.</li>
+
+  <li>If you want to change the default name, then change the value in the Name field.</li>
+
+  <li>In the SELECT area, populate the table with one or more attributes.<br>
+      By default, the SELECT area contains only one attribute row. To create additional rows, click Add Attribute.<br>
+      You can drag and drop attributes from the tree structure into the Expression column. If you use this approach, then the operator name is automatically added to the FROM area.</li>
+
+  <li>In the FROM area, specify the names of one or more input operators.<br>
+      You can drag and drop operators from the tree structure into the FROM area.<br>
+      You can specify an alias for a table (for example, <tt>TableInput0 t</tt>) and then use the alias in the WHERE clause. You cannot specify an alias for a stream or a relation.<br>
+      If you specify more than one operator name, then separate the names with a comma (for example, <tt>StockTransactions,RollingAvgPrice</tt>).</li>
+
+  <li>(Optional) In the WHERE area, specify a search condition in the form of a boolean value expression.<br>
+      You can drag and drop operators and attributes from the tree structure into the WHERE area.</li>
+
+  <li>Click OK.</li>
+
+</ol>
+
+
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="relagg_propedit.html">Using the Relation Aggregator Operator</a></dd>
+<dd><a href="streaminput_prop.html">Using the Stream Input Operator</a></dd>
+<dd><a href="tableinput_propedit.html">Using the Table Input Operator</a></dd>
+<dd>&nbsp;</dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+
+
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</body>
+
+</html>

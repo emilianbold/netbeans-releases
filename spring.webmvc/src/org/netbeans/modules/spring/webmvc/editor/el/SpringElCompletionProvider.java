@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -54,56 +55,55 @@ public class SpringElCompletionProvider implements CompletionProvider{
             if (fObject != null)
                 wm = WebModule.getWebModule(fObject);
             if (wm != null){
-                SpringElExpression elExpr = new SpringElExpression(doc);
-                final ArrayList<CompletionItem> complItems = new ArrayList<CompletionItem>();
-                int elParseType = elExpr.parse(offset);
-                final int anchor = offset - elExpr.getReplace().length();
+                try {
+                    final ArrayList<CompletionItem> complItems = new ArrayList<CompletionItem>();
+                    SpringElExpression elExpr = new SpringElExpression(doc, offset);
+                    int elParseType = elExpr.parse();
+                    final int anchor = offset - elExpr.getReplace().length();
+                    switch (elParseType) {
+                        case SpringElExpression.EL_START:
+                            final String replace = elExpr.getReplace();
+                            SpringScope scope = SpringScope.getSpringScope(fObject);
+                            for (SpringConfigModel model : scope.getAllConfigModels()) {
+                                try {
+                                    final boolean[] isDone = new boolean[]{false};
+                                    model.runReadAction(new Action<SpringBeans>() {
 
-                switch (elParseType){
-                    case SpringElExpression.EL_START:
-                        final String replace = elExpr.getReplace();
-                        SpringScope scope = SpringScope.getSpringScope(fObject);
-                        for (SpringConfigModel model : scope.getAllConfigModels()) {
-                            try {
-                                final boolean[] isDone = new boolean[]{false};
-                                model.runReadAction(new Action<SpringBeans>() {
-
-                                    @Override
-                                    public void run(SpringBeans beans) {
+                                        @Override
+                                        public void run(SpringBeans beans) {
                                             for (SpringBean bean : beans.getBeans()) {
-                                               String beanName = null;
-                                               for(String name : bean.getNames()) {
+                                                String beanName = null;
+                                                for (String name : bean.getNames()) {
                                                     beanName = name;
                                                     break;
-                                               }
-                                               if (beanName == null) {
-                                                   beanName = bean.getId();
-                                               }
-                                               String className = bean.getClassName();
-                                               if ((beanName != null) && beanName.startsWith(replace)) {
-                                                   complItems.add(new SpringBeanCompletionItem(beanName, anchor, className));
-                                               }
+                                                }
+                                                if (beanName == null) {
+                                                    beanName = bean.getId();
+                                                }
+                                                String className = bean.getClassName();
+                                                if ((beanName != null) && beanName.startsWith(replace)) {
+                                                    complItems.add(new SpringBeanCompletionItem(beanName, anchor, className));
+                                                }
                                             }
-                                            isDone[0]=true;
-                                    }
-                                });
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
+                                            isDone[0] = true;
+                                        }
+                                    });
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
                             }
-
-                        }
-                        break;
-
-                    case SpringElExpression.SPRING_BEAN:
-                        List<CompletionItem> items = elExpr.getPropertyCompletionItems(
-                                elExpr.getObjectClass(), anchor);
-                        complItems.addAll(items);
-                        items = elExpr.getMethodCompletionItems(
-                                elExpr.getObjectClass(), anchor);
-                        complItems.addAll(items);
-                        break;
-                }//switch
-                resultSet.addAllItems(complItems);
+                            break;
+                        case SpringElExpression.SPRING_BEAN:
+                            List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass(), anchor);
+                            complItems.addAll(items);
+                            items = elExpr.getMethodCompletionItems(elExpr.getObjectClass(), anchor);
+                            complItems.addAll(items);
+                            break;
+                    } //switch
+                    resultSet.addAllItems(complItems);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             resultSet.finish();
         }

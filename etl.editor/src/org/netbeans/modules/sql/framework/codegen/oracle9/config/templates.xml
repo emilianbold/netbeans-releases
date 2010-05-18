@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<!-- 
+  * Contents of this template will override any existing attributes in base/config/templates.xml
+  -->
+<templates>
+    <attr attributeName="caseWhen" attributeType="java.lang.String" attributeValue="base/config/caseWhen.vm" /> 
+    <attr attributeName="join" attributeType="java.lang.String" attributeValue="base/config/join.vm" /> 
+	<attr attributeName="merge" attributeType="java.lang.String" attributeValue="oracle9/config/merge.vm" /> 
+</templates>

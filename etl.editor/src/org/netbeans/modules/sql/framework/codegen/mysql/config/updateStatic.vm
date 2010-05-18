@@ -1,0 +1,19 @@
+#set( $mappingCounter = 1)
+#set( $mappingSize = $setMappings.size() )
+#set( $indent = "    " )
+#parse("org/netbeans/modules/sql/framework/codegen/mysql/config/disableConstraints.vm")
+UPDATE $targetTable
+##
+## SET CLAUSE
+##
+SET
+#foreach($mapping in $setMappings)
+${indent}$mapping.getColumnName() = $mapping.getExpression()#if($mappingCounter < $mappingSize),#end 
+
+#set( $mappingCounter = $mappingCounter + 1)
+#end
+##
+## WHERE CLAUSE (OPTIONAL)
+##
+#if( $useWhere )$whereClause#end
+#parse("org/netbeans/modules/sql/framework/codegen/mysql/config/enableConstraints.vm")

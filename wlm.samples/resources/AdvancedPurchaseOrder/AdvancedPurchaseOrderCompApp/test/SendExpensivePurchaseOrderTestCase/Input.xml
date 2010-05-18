@@ -1,0 +1,16 @@
+<soapenv:Envelope xsi:schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ http://schemas.xmlsoap.org/soap/envelope/"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+        xmlns:po="http://jbi.com.sun/wfse/samples/adv-purchase-order/xsd">
+  <soapenv:Body>
+    <po:purchaseOrder>
+      <po:orderId>12333</po:orderId>
+      <po:purchaserName>Giana Stephen</po:purchaserName>      
+      <po:productId>Sony VAIO 7199</po:productId>
+      <po:amount>2999.00</po:amount>
+      <po:priority>6</po:priority>
+      <po:users>staff</po:users>
+    </po:purchaseOrder>
+  </soapenv:Body>
+</soapenv:Envelope>

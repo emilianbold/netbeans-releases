@@ -39,10 +39,14 @@
 
 package org.netbeans.modules.php.editor.options;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.prefs.Preferences;
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -302,7 +306,93 @@ public class CodeCompletionPanel extends JPanel {
         unqualifiedRadioButton = new JRadioButton();
         unqualifiedInfoLabel = new JLabel();
 
-        setFocusTraversalPolicy(null);
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return autoCompletionFullRadioButton;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return autoCompletionFullRadioButton;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return unqualifiedRadioButton;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  autoCompletionFullRadioButton){
+                    return autoCompletionCustomizeRadioButton;
+                }
+                if(aComponent ==  allVariablesRadioButton){
+                    return currentFileVariablesRadioButton;
+                }
+                if(aComponent ==  autoCompletionCustomizeRadioButton){
+                    return autoCompletionVariablesCheckBox;
+                }
+                if(aComponent ==  codeCompletionStaticMethodsCheckBox){
+                    return codeCompletionNonStaticMethodsCheckBox;
+                }
+                if(aComponent ==  autoCompletionVariablesCheckBox){
+                    return autoCompletionTypesCheckBox;
+                }
+                if(aComponent ==  codeCompletionNonStaticMethodsCheckBox){
+                    return allVariablesRadioButton;
+                }
+                if(aComponent ==  smartRadioButton){
+                    return fullyQualifiedRadioButton;
+                }
+                if(aComponent ==  currentFileVariablesRadioButton){
+                    return smartRadioButton;
+                }
+                if(aComponent ==  autoCompletionTypesCheckBox){
+                    return autoCompletionNamespacesCheckBox;
+                }
+                if(aComponent ==  fullyQualifiedRadioButton){
+                    return unqualifiedRadioButton;
+                }
+                if(aComponent ==  autoCompletionNamespacesCheckBox){
+                    return codeCompletionStaticMethodsCheckBox;
+                }
+                return autoCompletionFullRadioButton;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  autoCompletionCustomizeRadioButton){
+                    return autoCompletionFullRadioButton;
+                }
+                if(aComponent ==  currentFileVariablesRadioButton){
+                    return allVariablesRadioButton;
+                }
+                if(aComponent ==  autoCompletionVariablesCheckBox){
+                    return autoCompletionCustomizeRadioButton;
+                }
+                if(aComponent ==  codeCompletionNonStaticMethodsCheckBox){
+                    return codeCompletionStaticMethodsCheckBox;
+                }
+                if(aComponent ==  autoCompletionTypesCheckBox){
+                    return autoCompletionVariablesCheckBox;
+                }
+                if(aComponent ==  allVariablesRadioButton){
+                    return codeCompletionNonStaticMethodsCheckBox;
+                }
+                if(aComponent ==  fullyQualifiedRadioButton){
+                    return smartRadioButton;
+                }
+                if(aComponent ==  smartRadioButton){
+                    return currentFileVariablesRadioButton;
+                }
+                if(aComponent ==  autoCompletionNamespacesCheckBox){
+                    return autoCompletionTypesCheckBox;
+                }
+                if(aComponent ==  unqualifiedRadioButton){
+                    return fullyQualifiedRadioButton;
+                }
+                if(aComponent ==  codeCompletionStaticMethodsCheckBox){
+                    return autoCompletionNamespacesCheckBox;
+                }
+                return unqualifiedRadioButton;//end getComponentBefore
+
+            }}
+        );
 
         enableAutocompletionLabel.setLabelFor(autoCompletionFullRadioButton);
         Mnemonics.setLocalizedText(enableAutocompletionLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.enableAutocompletionLabel.text")); // NOI18N
@@ -357,7 +447,7 @@ public class CodeCompletionPanel extends JPanel {
         unqualifiedInfoLabel.setLabelFor(unqualifiedRadioButton);
 
         Mnemonics.setLocalizedText(unqualifiedInfoLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.unqualifiedInfoLabel.text"));
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(

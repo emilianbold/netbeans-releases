@@ -60,7 +60,7 @@ public class WebLink extends LinkButton {
     }
 
     public WebLink( String label, String url, boolean showBorder ) {
-        super( label, showBorder );
+        super( label, showBorder, url );
         this.url = url;
 
         getAccessibleContext().setAccessibleName(
@@ -72,7 +72,7 @@ public class WebLink extends LinkButton {
     }
 
     public WebLink( String label, String url, Color foreground, boolean showBorder ) {
-        super( label, foreground, showBorder );
+        super( label, foreground, showBorder, url );
         this.url = url;
 
         setUsageTrackingId(url);

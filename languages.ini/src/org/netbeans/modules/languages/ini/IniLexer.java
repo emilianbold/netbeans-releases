@@ -143,7 +143,7 @@ class IniLexer implements Lexer<IniTokenId> {
                 return info.tokenFactory().createToken(IniTokenId.WHITESPACE);
 
             case COMMENT:
-                readTillEndLine(input);
+                readTillEndLine(input, false);
                 state = State.WHITESPACE;
                 return info.tokenFactory().createToken(IniTokenId.COMMENT);
 
@@ -276,7 +276,15 @@ class IniLexer implements Lexer<IniTokenId> {
         return readTillEndLine(input, null);
     }
 
+    private int readTillEndLine(LexerInput input, boolean handleLongStrings) {
+        return readTillEndLine(input, handleLongStrings, null);
+    }
+
     private int readTillEndLine(LexerInput input, char... stoppers) {
+        return readTillEndLine(input, true, stoppers);
+    }
+
+    private int readTillEndLine(LexerInput input, boolean handleLongStrings, char... stoppers) {
         int ch = -1;
         int previous = -1;
         LinkedList<Character> longStringsStack = new LinkedList<Character>();
@@ -295,7 +303,7 @@ class IniLexer implements Lexer<IniTokenId> {
                 break;
             }
 
-            if (previous != ESCAPE) {
+            if (handleLongStrings && previous != ESCAPE) {
                 handleLongStrings(longStringsStack, (char) ch);
             }
         } while (!longStringsStack.isEmpty()

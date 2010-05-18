@@ -102,14 +102,9 @@ public class APTFoldingProviderTestCase extends CndBaseTestCase {
     }
     private static Comparator<CppFoldRecord> FOLD_COMPARATOR = new Comparator<CppFoldRecord>() {
 
+        @Override
         public int compare(CppFoldRecord o1, CppFoldRecord o2) {
-            int start1 = o1.getStartLine();
-            int start2 = o2.getStartLine();
-            if (start1 == start2) {
-                return o1.getStartOffset() - o2.getStartOffset();
-            } else {
-                return start1 - start2;
-            }
+            return o1.getStartOffset() - o2.getStartOffset();
         }
     };
 }

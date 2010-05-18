@@ -223,7 +223,7 @@ public class ListCompletionView extends JList {
         }
     }
 
-    public void right() {
+    public boolean right() {
         Fix f = (Fix) getSelectedValue();
         Iterable<? extends Fix> subfixes = HintsControllerImpl.getSubfixes(f);
 
@@ -234,7 +234,10 @@ public class ListCompletionView extends JList {
             p.x += r.width;
 //            p.y += r.height;
             HintsUI.getDefault().openSubList(subfixes, p);
+            return true;
         }
+
+        return false;
     }
 
     public @Override void paint(Graphics g) {
@@ -377,6 +380,10 @@ public class ListCompletionView extends JList {
         }
         
         return width;
+    }
+
+    public static int arrowSpan() {
+        return AFTER_TEXT_GAP + subMenuIcon.getIconWidth() + AFTER_RIGHT_ICON_GAP;
     }
 
     private static void renderHtml(Fix f, Graphics g, Font defaultFont, Color defaultColor,

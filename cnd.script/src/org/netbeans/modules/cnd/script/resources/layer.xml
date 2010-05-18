@@ -359,6 +359,16 @@
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit"/>
                 </file>
 
+                <file name="ShellEmbeddingProvider.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.editor.ShellEmbeddingProvider$Factory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+
+                <file name="ShellEmbeddingSyntaxHighlighter.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.editor.ShellEmbeddingHighlightContainer$LayerFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+
                 <folder name="HyperlinkProviders">
                     <file name="MakefileHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.editor.MakefileHyperlinkProvider"/>

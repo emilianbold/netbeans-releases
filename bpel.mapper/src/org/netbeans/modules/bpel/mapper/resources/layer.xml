@@ -1,0 +1,544 @@
+<?xml version="1.0"?>
+<!--
+  The contents of this file are subject to the terms of the Common Development
+  and Distribution License (the License). You may not use this file except in
+  compliance with the License.
+
+  You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+  or http://www.netbeans.org/cddl.txt.
+
+  When distributing Covered Code, include this CDDL Header Notice in each file
+  and include the License file at http://www.netbeans.org/cddl.txt.
+  If applicable, add the following below the CDDL Header, with the fields
+  enclosed by brackets [] replaced by your own identifying information:
+  "Portions Copyrighted [year] [name of copyright owner]"
+
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+  Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+    <folder name="bpelcustomfunction">
+        <file name="wrap2serviceref.xsl" url="./wrap2serviceref.xsl"/>
+    </folder>
+
+    <folder name="bpel-nmproperties">
+        <folder name="soap-http-bc">
+            <attr name="display-name" stringvalue="SOAP HTTP BC"/>
+
+            <file name="soap-header">
+                <attr name="nmproperty" stringvalue="org.glassfish.openesb.headers.soap"/>
+                <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}anyType"/>
+                <attr name="display-name" stringvalue="SOAP Header"/>
+            </file>
+
+            <folder name="soap-http-outbound">
+                <attr name="display-name" stringvalue="Outbound"/>
+
+                <file name="outbound-http-headers">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.outbound.http.headers"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Headers"/>
+                </file>
+
+                <file name="outbound-url">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.outbound.address.url"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="URL"/>
+                </file>
+
+                <file name="outbound-username">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.outbound.basicauth.username"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="User Name"/>
+                </file>
+
+                <file name="outbound-password">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.outbound.basicauth.password"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Password"/>
+                </file>
+
+                <file name="custom-outbound-properties">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.outbound.custom.properties"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Custom Properties"/>
+                </file>
+            </folder>
+
+            <folder name="soap-http-inbound">
+                <attr name="display-name" stringvalue="Inbound"/>
+
+                <file name="inbound-http-headers">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.inbound.http.headers"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="HTTP Headers"/>
+                </file>
+
+                <file name="inbound-url">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.inbound.address.url"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="URL"/>
+                </file>
+            </folder>
+        </folder> <!-- HTTP BC END -->
+        
+        <folder name="jms-bc">
+            <attr name="display-name" stringvalue="JMS BC"/>
+            
+            <folder name="jms-outbound">
+                <attr name="display-name" stringvalue="Outbound"/>
+
+                <file name="outbound-subscriptiondurability">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.subscriptiondurability"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Subscription Durability"/>
+                </file>
+                <file name="outbound-subscriptionname">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.subscriptionname"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Subscription Name"/>
+                </file>
+                <file name="outbound-xatransaction">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.xatransaction"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="XA Transaction"/>
+                </file>
+                <file name="outbound-options">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.options"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Options"/>
+                </file>
+                <file name="outbound-password">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.password"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Password"/>
+                </file>
+                <file name="outbound-connectionurl">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.connectionurl"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Connection URL"/>
+                </file>
+                <file name="outbound-username">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.username"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="User Name"/>
+                </file>
+                <file name="outbound-timeout">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.timeOut"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Timeout"/>
+                </file>
+                <file name="outbound-deliverymode">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.deliverymode"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Delivery Mode"/>
+                </file>
+
+                <file name="outbound-messageselector">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.messageselector"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Message Selector"/>
+                </file>
+
+                <file name="outbound-clientid">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.clientid"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Client ID"/>
+                </file>
+                
+                <file name="outbound-destination-type">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.destinationtype"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Destination Type"/>
+                </file>
+                
+                <file name="outbound-destination">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.destination"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Destination"/>
+                </file>
+
+                <file name="outbound-forwardasattachement">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.outbound.forwardasattachment"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Forward As Attachment"/>
+                </file>
+            </folder>
+
+            <folder name="jms-inbound">
+                <attr name="display-name" stringvalue="Inbound"/>
+
+                <file name="inbound-options">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.inbound.options"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Options"/>
+                </file>
+
+                <file name="inbound-connection-url">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.inbound.connectionurl"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Connection URL"/>
+                </file>
+
+                <file name="inbound-username">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.inbound.username"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="User Name"/>
+                </file>
+
+                <file name="inbound-messageselector">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.inbound.messageselector"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Message Selector"/>
+                </file>
+
+                <file name="inbound-destination">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.inbound.destination"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Destination"/>
+                </file>
+
+                <file name="inbound-destinationtype">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.inbound.destinationtype"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Destination Type"/>
+                </file>
+
+                <file name="inbound-forwardasattachment">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.inbound.forwardasattachment"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Forward As Attachment"/>
+                </file>
+            </folder>
+
+            <folder name="jms-common">
+                <attr name="display-name" stringvalue="General"/>
+
+                <file name="common-priority">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.priority"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Priority"/>
+                </file>
+
+                <file name="common-timetolive">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.timetolive"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Time To Live"/>
+                </file>
+                
+                <file name="common-messagetype">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.messagetype"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Message Type"/>
+                </file>
+                
+				 <file name="common-messageid">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.messageid"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Message ID"/>
+                </file>
+
+                <file name="common-correlationid">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.correlationid"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Correlation ID"/>
+                </file>
+
+                <file name="common-userproperties">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.userproperties"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="User Properties"/>
+                </file>
+
+                <file name="common-replytodestination">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.replytodestination"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Reply To Destination"/>
+                </file>
+
+                <file name="common-replytodestinationtype">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.jms.replytodestinationtype"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Reply To Destination Type"/>
+                </file>
+            </folder>
+        </folder> <!-- JMS END -->
+
+        <folder name="file-bc">
+            <attr name="display-name" stringvalue="File BC"/>
+            <folder name="file-outbound">
+                <attr name="display-name" stringvalue="Outbound"/>
+                <file name="outbound-filedirectory">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.filedirectory"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="File Directory"/>
+                </file>
+                <file name="outbound-filename">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.filename"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="File Name"/>
+                </file>
+                <file name="outbound-ondemand-read-recursive">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.ondemand.read.recursive"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Enable On-Demand Read Recursively"/>
+                </file>
+                <file name="outbound-ondemand-read-exclude-regex">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.ondemand.read.exclude.regex"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Regex For Entries Excluded"/>
+                </file>
+                <file name="outbound-datatype">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.datatype"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Data Type"/>
+                </file>
+                <file name="outbound-directoryrelativeto">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.directoryrelativeto"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Directory Relative To"/>
+                </file>
+                <file name="outbound-addeol">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.addeol"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Add EOL"/>
+                </file>
+                <file name="outbound-append">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.append"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Append"/>
+                </file>
+                <file name="outbound-appenddelimiter">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.appenddelimiter"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Append Delimiter"/>
+                </file>
+                <file name="outbound-overwriteexistingfile">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.overwriteexistingfile"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Overwrite Existing File"/>
+                </file>
+                <!-- open esb issue 1957 https://open-esb.dev.java.net/issues/show_bug.cgi?id=1957 -->
+                <file name="outbound-dir-is-relative">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.relative.path"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Directory Is Relative"/>
+                </file>
+                <file name="outbound-persist-base-dir">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.persist.base.dir"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Persistence Base Directory"/>
+                </file>
+                <file name="outbound-lock-name">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.lock.file.name"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Outbound Lock File Name"/>
+                </file>
+                <file name="outbound-lock-file-path">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.lock.file.path"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Outbound Lock File Path"/>
+                </file>
+                <file name="outbound-seq-area">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.seq.area"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Sequence Store"/>
+                </file>
+                <file name="outbound-protect-enabled">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.protect.enabled"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Protect Enabled"/>
+                </file>
+                <file name="outbound-protect-area-relative">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.protect.area.path.relative"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Protect Area Is Relative"/>
+                </file>
+                <file name="outbound-protect-area">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.protect.area"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Protect Area"/>
+                </file>
+                <file name="outbound-protected-file">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.protected.file"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Protected File"/>
+                </file>
+                <file name="outbound-stage-enabled">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.stage.enabled"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Staging Enabled"/>
+                </file>
+                <file name="outbound-stage-area-relative">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.stage.area.path.relative"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Staging Area Is Relative"/>
+                </file>
+                <file name="outbound-stage-area">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.stage.area"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Staging Area"/>
+                </file>
+                <file name="outbound-staged-file">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.outbound.staged.file"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Staged File"/>
+                </file>
+                <!-- end of -->
+            </folder>
+            <folder name="file-inbound">
+                <attr name="display-name" stringvalue="Inbound"/>
+                <file name="inbound-filedirectory">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.filedirectory"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="File Directory"/>
+                </file>
+                <file name="inbound-filename">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.filename"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="File Name"/>
+                </file>
+                <file name="inbound-ondemand-read-recursive">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.poll.recursive"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Poll Recursively Enabled"/>
+                </file>
+                <file name="inbound-ondemand-read-exclude-regex">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.poll.exclude.regex"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Regex For Entries Excluded"/>
+                </file>
+                <file name="inbound-datatype">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.datatype"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Data Type"/>
+                </file>
+                <file name="inbound-butchid">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.batchid"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Batch ID"/>
+                </file>
+                <file name="inbound-recordnumber">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.recordnumber"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Record Number"/>
+                </file>
+                <file name="inbound-lastrecord">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.lastrecord"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Last Record"/>
+                </file>
+                <file name="inbound-endpointname">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.endPointname"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Endpoint Name"/>
+                </file>
+
+                <!-- open esb issue 1957 https://open-esb.dev.java.net/issues/show_bug.cgi?id=1957 -->
+                <file name="inbound-dir-is-relative">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.relative.path"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Directory Is Relative"/>
+                </file>
+                <file name="inbound-dir-relative-to">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.path.relativeto"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Directory Relative To"/>
+                </file>
+                <file name="inbound-persist-base-dir">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.persist.base.dir"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Persistence Base Directory"/>
+                </file>
+                <file name="inbound-lock-name">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.lock.file.name"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Inbound Lock File Name"/>
+                </file>
+                <file name="inbound-lock-file-path">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.lock.file.path"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Inbound Lock File Path"/>
+                </file>
+                <file name="inbound-work-area-dir">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.work.area.dir"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Inbound Work Area Directory"/>
+                </file>
+                <file name="inbound-archive-enabled">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.archive.enabled"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Archive Enabled"/>
+                </file>
+                <file name="inbound-archive-area-relative">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.archive.area.relative"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Archive Area Is Relative"/>
+                </file>
+                <file name="inbound-archive-area">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.archive.area"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Archive Area"/>
+                </file>
+                <file name="inbound-archived-file">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.archived.file"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Archived File"/>
+                </file>
+                <file name="inbound-del-on-read">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.delete.on.read"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Delete On Read (OnDemandRead)"/>
+                </file>
+                <file name="inbound-work-area-name">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.work.area"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Inbound Work Area"/>
+                </file>
+                <file name="inbound-file-in-processing">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.file.in.processing"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="File In Processing"/>
+                </file>
+                <file name="inbound-file-in-error">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.file.inbound.file.in.error"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="File In Error"/>
+                </file>
+                <!-- end of -->
+            </folder>
+        </folder> <!-- FILE BC END -->
+        
+        <folder name="messaging-general">
+            <attr name="display-name" stringvalue="General"/>
+            <file name="messaging-general-securitysubject">
+                <attr name="nmproperty" stringvalue="javax.jbi.security.subject"/>
+                <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}anyType"/>
+                <attr name="display-name" stringvalue="Security Subject"/>
+            </file>
+            <file name="messaging-general-groupid">
+                <attr name="nmproperty" stringvalue="org.glassfish.openesb.messaging.groupid"/>
+                <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                <attr name="display-name" stringvalue="Group ID"/>
+            </file>
+            <file name="messaging-general-messageid">
+                <attr name="nmproperty" stringvalue="org.glassfish.openesb.messaging.messageid"/>
+                <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                <attr name="display-name" stringvalue="Message ID"/>
+            </file>
+            
+            <file name="messaging-general-lastrecord">
+                <attr name="nmproperty" stringvalue="org.glassfish.openesb.messaging.lastrecord"/>
+                <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                <attr name="display-name" stringvalue="Last Record"/>
+            </file>
+            <file name="messaging-general-endpointname">
+                <attr name="nmproperty" stringvalue="org.glassfish.openesb.exchange.endpointname"/>
+                <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                <attr name="display-name" stringvalue="Endpoint Name"/>
+            </file>
+         </folder>
+    </folder>
+</filesystem>

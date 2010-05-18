@@ -510,6 +510,11 @@ public final class WLStartServer extends StartServer {
                             ? new File(domainHome, STARTUP_BAT).getAbsolutePath() // NOI18N
                             : new File(domainHome, STARTUP_SH).getAbsolutePath()); // NOI18N
                 builder = builder.workingDirectory(domainHome);
+                
+                String mwHome = dm.getProductProperties().getMiddlewareHome();
+                if (mwHome != null) {
+                    builder = builder.addEnvironmentVariable("MW_HOME", mwHome); // NOI18N
+                }
 
                 builder = initBuilder(builder);
 
@@ -652,6 +657,11 @@ public final class WLStartServer extends StartServer {
                         .addArgument(username)
                         .addArgument(password)
                         .addArgument("t3://" + host + ":" + port);
+
+                String mwHome = dm.getProductProperties().getMiddlewareHome();
+                if (mwHome != null) {
+                    builder = builder.addEnvironmentVariable("MW_HOME", mwHome); // NOI18N
+                }
 
                 Process stopProcess = builder.call();
                 stopService = Executors.newFixedThreadPool(2);

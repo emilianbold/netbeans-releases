@@ -3,7 +3,7 @@ RM=rm
 CC=gcc
 
 # Include project Makefile
-include Makefile
+include Makefile ${FOO}.mk
 
 # Build Targets
 .build-conf: $(BUILD_SUBPROJECTS) dist/Debug/GNU-Solaris-x86/quote_1

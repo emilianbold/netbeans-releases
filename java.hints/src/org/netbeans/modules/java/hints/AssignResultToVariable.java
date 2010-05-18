@@ -181,6 +181,8 @@ public class AssignResultToVariable extends AbstractHint {
             return -1;
         }
 
+        if (!TO_IGNORE.contains(ts.token().id())) return offset;
+        
         do {
             JavaTokenId id = ts.token().id();
             if (TO_IGNORE.contains(id)) {

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" 
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+            http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>WLM Console</web-resource-name>
+            <url-pattern>/index.jsp</url-pattern>
+            <url-pattern>/task.jsp</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>staff</role-name>
+            <role-name>manager</role-name>
+        </auth-constraint>
+        <user-data-constraint>
+            <transport-guarantee>NONE</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <realm-name id="file"/>
+        <form-login-config>
+            <form-login-page>/login.jsp</form-login-page>
+            <form-error-page>/login-failed.jsp</form-error-page>
+        </form-login-config>
+    </login-config>
+
+    <security-role>
+        <role-name>staff</role-name>
+    </security-role>
+    <security-role>
+        <role-name>manager</role-name>
+    </security-role>
+</web-app>

@@ -85,6 +85,7 @@ public final class TextLayoutCache {
      */
     synchronized void clear() {
         paragraph2entry.clear();
+        head = tail = null;
     }
 
     /**

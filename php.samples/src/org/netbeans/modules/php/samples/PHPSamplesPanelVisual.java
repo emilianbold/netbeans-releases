@@ -49,6 +49,46 @@ public class PHPSamplesPanelVisual extends JPanel implements DocumentListener {
         createdFolderLabel = new javax.swing.JLabel();
         createdFolderTextField = new javax.swing.JTextField();
 
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return projectNameTextField;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return projectNameTextField;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return createdFolderTextField;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  projectNameTextField){
+                    return projectLocationTextField;
+                }
+                if(aComponent ==  projectLocationTextField){
+                    return browseButton;
+                }
+                if(aComponent ==  browseButton){
+                    return createdFolderTextField;
+                }
+                return projectNameTextField;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  projectLocationTextField){
+                    return projectNameTextField;
+                }
+                if(aComponent ==  browseButton){
+                    return projectLocationTextField;
+                }
+                if(aComponent ==  createdFolderTextField){
+                    return browseButton;
+                }
+                return createdFolderTextField;//end getComponentBefore
+
+            }}
+        );
+
         projectNameLabel.setLabelFor(projectNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.projectNameLabel.text")); // NOI18N
 
@@ -105,6 +145,24 @@ public class PHPSamplesPanelVisual extends JPanel implements DocumentListener {
                     .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(213, Short.MAX_VALUE))
         );
+
+        projectNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.projectNameLabel.AccessibleContext.accessibleName")); // NOI18N
+        projectNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.projectNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.projectNameTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.projectNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        projectLocationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.projectLocationLabel.AccessibleContext.accessibleName")); // NOI18N
+        projectLocationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.projectLocationLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.projectLocationTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.projectLocationTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.browseButton.AccessibleContext.accessibleName")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.browseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        createdFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.createdFolderLabel.AccessibleContext.accessibleName")); // NOI18N
+        createdFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.createdFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        createdFolderTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.createdFolderTextField.AccessibleContext.accessibleName")); // NOI18N
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.createdFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PHPSamplesPanelVisual.class, "PHPSamplesPanelVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed

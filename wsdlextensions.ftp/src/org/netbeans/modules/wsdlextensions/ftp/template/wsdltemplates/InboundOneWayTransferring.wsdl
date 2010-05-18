@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="InboundOneWayTransferring" targetNamespace="http://j2ee.netbeans.org/wsdl/BpelModule2/InboundOneWayTransferring"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://j2ee.netbeans.org/wsdl/BpelModule2/InboundOneWayTransferring" xmlns:ftp="http://schemas.sun.com/jbi/wsdl-extensions/ftp/">
+    <types/>
+    <message name="InboundOneWayTransferringOperationRequest">
+        <part name="part1" type="xsd:string"/>
+    </message>
+    <portType name="InboundOneWayTransferringPortType">
+        <operation name="InboundOneWayTransferringOperation">
+            <input name="input1" message="tns:InboundOneWayTransferringOperationRequest"/>
+        </operation>
+    </portType>
+    <binding name="InboundOneWayTransferringBinding" type="tns:InboundOneWayTransferringPortType">
+        <ftp:binding/>
+        <operation name="InboundOneWayTransferringOperation">
+            <ftp:operation/>
+            <input name="input1">
+                <ftp:transfer receiveFrom="" receiveFromHasRegexs="false" pollIntervalMillis="5000" preReceiveCommand="NONE" preReceiveLocation="" preReceiveLocationHasPatterns="false" postReceiveCommand="NONE" postReceiveLocation="" postReceiveLocationHasPatterns="false" use="literal" encodingStyle=""/>
+            </input>
+        </operation>
+    </binding>
+    <service name="InboundOneWayTransferringService">
+        <port name="#SERVICE_NAME_InboundOneWayTransferringPort" binding="tns:InboundOneWayTransferringBinding">
+            <ftp:address url="ftp://anonymous:user\@yahoo.com@localhost:21" user="" password="" dirListStyle="UNIX" useUserDefinedHeuristics="false" userDefDirListStyle="" userDefDirListHeuristics="" mode="BINARY" securedFTP="None" enableCCC="false" keyStore="" keyStorePassword="" keyAlias="" keyPassword="" trustStore="" trustStorePassword="" cmdChannelTimeout="45000" dataChannelTimeout="45000"/>
+        </port>
+    </service>
+</definitions>

@@ -1,0 +1,19 @@
+##
+## correlatedUpdate.vm
+##
+#set( $totalMappings = $mappings.size())
+#set( $mappingCounter = 1)
+#set( $indent = "    " )
+UPDATE $targetTable
+##
+## SET CLAUSE
+##
+SET
+#foreach($mapping in $mappings)
+#if( $mapping.isKeyColumn() == false )
+${indent}$mapping.getTarget().getSql() = ?#if($mappingCounter < $totalMappings), #end
+
+#end
+#set( $mappingCounter = $mappingCounter + 1)
+#end
+#if($tgtCondition != "")WHERE  $tgtCondition#end

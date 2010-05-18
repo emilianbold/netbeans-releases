@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<component_type_group name="Metadata" icon="" title="Metadata.title" description="Metadata.description">
+   <!--BasicModuleProgramming-->
+   <component_type_group name="BasicModuleProgramming" icon="" title="Metadata.BasicModuleProgramming.title" description="Metadata.BasicModuleProgramming.description">
+      <!--Group-->
+      <component_type name="Group" palette="" icon="" title="Metadata.BasicModuleProgramming.Group.title" description="Metadata.BasicModuleProgramming.Group.description" allowsChildren="true" visible="false" validator="org.netbeans.modules.tbls.model.OkValidator">
+         <property required="true" name="name" title="Metadata.BasicModuleProgramming.Group.name.title" description="Metadata.BasicModuleProgramming.Group.name.description" type="string" editor="textField" default="" renderer="string" access="read,write,map" multiple="false"/>
+      </component_type>
+      <!--Property-->
+      <component_type name="Property" palette="" icon="" title="Metadata.BasicModuleProgramming.Property.title" description="Metadata.BasicModuleProgramming.Property.description" allowsChildren="false" visible="false" validator="org.netbeans.modules.tbls.model.OkValidator">
+         <property required="true" name="name" title="Metadata.BasicModuleProgramming.Property.name.title" description="Metadata.BasicModuleProgramming.Property.name.description" type="string" editor="textField" default="" renderer="string" access="read,write,map" multiple="false"/>
+         <property required="true" name="type" title="Metadata.BasicModuleProgramming.Property.type.title" description="Metadata.BasicModuleProgramming.Property.type.description" type="string" editor="textField" default="" renderer="string" access="read,write,map" multiple="false"/>
+         <property required="true" name="direction" title="Metadata.BasicModuleProgramming.Property.direction.title" description="Metadata.BasicModuleProgramming.Property.direction.description" type="string" editor="combo_in_inout_out" default="" renderer="string" access="read,write,map" multiple="false"/>
+         <property required="true" name="required" title="Metadata.BasicModuleProgramming.Property.required.title" description="Metadata.BasicModuleProgramming.Property.required.description" type="boolean" editor="combo_boolean" default="" renderer="boolean" access="read,write,map" multiple="false"/>
+         <property required="true" name="value" title="Metadata.BasicModuleProgramming.Property.value.title" description="Metadata.BasicModuleProgramming.Property.value.description" type="string" editor="textArea" default="" renderer="string" access="read,write,map" multiple="false"/>
+      </component_type>
+   </component_type_group>
+</component_type_group>

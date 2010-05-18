@@ -143,7 +143,7 @@ public enum JspTokenId implements TokenId {
                     return LanguageEmbedding.create(ELTokenId.language(), startSkipLength, endSkipLength);
                     
                 case SCRIPTLET:
-                    return LanguageEmbedding.create(JavaTokenId.language(), 0, 0, true);
+                    return LanguageEmbedding.create(JavaTokenId.language(), 0, 0, false);
                     
                 default:
                     return null;

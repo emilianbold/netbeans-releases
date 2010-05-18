@@ -51,6 +51,7 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,10 +69,11 @@ import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
@@ -85,14 +87,15 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final String PROCESSOR_PATH = "processorPath"; //NOI18N
     private static final String APT_ENABLED = "aptEnabled"; //NOI18N
     private static final String ANNOTATION_PROCESSORS = "annotationProcessors"; //NOI18N
-    private static final Map<FileObject, APTUtils> map = new WeakHashMap<FileObject, APTUtils>();
+    private static final Map<URL, APTUtils> knownSourceRootsMap = new HashMap<URL, APTUtils>();
+    private static final Map<FileObject, Reference<APTUtils>> auxiliarySourceRootsMap = new WeakHashMap<FileObject, Reference<APTUtils>>();
     private static final Lookup HARDCODED_PROCESSORS = Lookups.forPath("Editors/text/x-java/AnnotationProcessors");
-    private final Reference<FileObject> root;
+    private final FileObject root;
     private final ClassPath processorPath;
     private final AnnotationProcessingQuery.Result aptOptions;
 
     private APTUtils(FileObject root, ClassPath preprocessorPath, AnnotationProcessingQuery.Result aptOptions) {
-        this.root = new CleaningWR(root);
+        this.root = root;
         this.processorPath = preprocessorPath;
         this.aptOptions = aptOptions;
     }
@@ -101,18 +104,71 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         if (root == null) {
             return null;
         }
-        APTUtils utils = map.get(root);
-        if (utils == null) {
-            ClassPath pp = ClassPath.getClassPath(root, JavaClassPathConstants.PROCESSOR_PATH);
-            if (pp == null) {
-                return null;
-            }
-            Result options = AnnotationProcessingQuery.getAnnotationProcessingOptions(root);
-            utils = new APTUtils(root, pp, options);
-            pp.addPropertyChangeListener(WeakListeners.propertyChange(utils, pp));
-            options.addChangeListener(WeakListeners.change(utils, options));
-            map.put(root, utils);
+
+        URL rootUrl;
+        
+        try {
+            rootUrl = root.getURL();
+        } catch (FileStateInvalidException ex) {
+            LOG.log(Level.FINE, null, ex);
+            return null;
         }
+
+        if (knownSourceRootsMap.containsKey(rootUrl)) {
+            APTUtils utils = knownSourceRootsMap.get(rootUrl);
+
+            if (utils == null) {
+                knownSourceRootsMap.put(rootUrl, utils = create(root));
+            }
+
+            return utils;
+        }
+
+        Reference<APTUtils> utilsRef = auxiliarySourceRootsMap.get(root);
+        APTUtils utils = utilsRef != null ? utilsRef.get() : null;
+
+        if (utils == null) {
+            auxiliarySourceRootsMap.put(root, new WeakReference<APTUtils>(utils = create(root)));
+        }
+
+        return utils;
+    }
+
+    public static void sourceRootRegistered(FileObject root, URL rootURL) {
+        if (   root == null
+            || knownSourceRootsMap.containsKey(rootURL)
+            //XXX hack unknown roots are also scanned (and consequently registered), but never sourceRootUnregistered(rootsRemoved):
+            || PathRegistry.getDefault().getUnknownRoots().contains(rootURL)) {
+            return;
+        }
+
+        Reference<APTUtils> utilsRef = auxiliarySourceRootsMap.remove(root);
+        APTUtils utils = utilsRef != null ? utilsRef.get() : null;
+
+        knownSourceRootsMap.put(rootURL, utils);
+    }
+
+    public static void sourceRootUnregistered(Iterable<? extends URL> roots) {
+        for (URL root : roots) {
+            knownSourceRootsMap.remove(root);
+        }
+        //XXX hack make sure we are not holding APTUtils for any unknown roots
+        //just in case something goes wrong:
+        for (URL unknown : PathRegistry.getDefault().getUnknownRoots()) {
+            knownSourceRootsMap.remove(unknown);
+        }
+    }
+
+    private static APTUtils create(FileObject root) {
+        ClassPath pp = ClassPath.getClassPath(root, JavaClassPathConstants.PROCESSOR_PATH);
+        if (pp == null) {
+            return null;
+        }
+        Result options = AnnotationProcessingQuery.getAnnotationProcessingOptions(root);
+        APTUtils utils = new APTUtils(root, pp, options);
+        pp.addPropertyChangeListener(WeakListeners.propertyChange(utils, pp));
+        options.addChangeListener(WeakListeners.change(utils, options));
+
         return utils;
     }
 
@@ -140,12 +196,12 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        verifyAttributes(root.get(), false);
+        verifyAttributes(root, false);
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        verifyAttributes(root.get(), false);
+        verifyAttributes(root, false);
     }
 
     private Collection<Processor> lookupProcessors(ClassLoader cl) {
@@ -268,17 +324,5 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         }
 
         //getResource and getResources of module classloaders do not return resources from parent's META-INF, so no need to override them
-    }
-
-    private static final class CleaningWR extends WeakReference<FileObject> implements Runnable {
-
-        public CleaningWR(FileObject root) {
-            super(root, Utilities.activeReferenceQueue());
-        }
-
-        @Override
-        public void run() {
-            map.size();
-        }
     }
 }

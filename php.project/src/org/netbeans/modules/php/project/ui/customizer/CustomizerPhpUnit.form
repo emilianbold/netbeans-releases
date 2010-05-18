@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
@@ -31,7 +31,7 @@
               <EmptySpace min="21" pref="21" max="21" attributes="0"/>
               <Component id="configurationLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="configurationTextField" pref="137" max="32767" attributes="0"/>
+              <Component id="configurationTextField" pref="170" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="configurationBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -48,7 +48,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="suiteTextField" pref="287" max="32767" attributes="0"/>
+                      <Component id="suiteTextField" pref="299" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="suiteBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -72,7 +72,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="bootstrapLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="bootstrapTextField" pref="193" max="32767" attributes="0"/>
+                      <Component id="bootstrapTextField" pref="222" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="bootstrapBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -210,6 +210,14 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="CustomizerPhpUnit.bootstrapForCreateTestsCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="CustomizerPhpUnit.bootstrapForCreateTestsCheckBox.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="CustomizerPhpUnit.bootstrapForCreateTestsCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="configurationCheckBox">
       <Properties>

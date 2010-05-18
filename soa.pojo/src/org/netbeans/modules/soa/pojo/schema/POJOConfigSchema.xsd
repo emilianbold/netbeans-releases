@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://xml.netbeans.org/schema/POJOConfig"
+            xmlns:tns="http://xml.netbeans.org/schema/POJOConfig"
+            elementFormDefault="qualified">
+
+    <xsd:element name="POJOs">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="tns:POJOProviders" minOccurs="0"/>
+                <xsd:element ref="tns:POJOConsumers" minOccurs="0"/>
+                <!-- Do not use POJO, uses POJOProviders and POJOProvider -->
+                <xsd:element ref="tns:POJO" maxOccurs="unbounded" minOccurs="0"/>
+            </xsd:sequence>
+            <xsd:attribute name="version" type="xsd:decimal"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="POJO">
+        <xsd:complexType xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            <xsd:sequence>
+                <xsd:element name="class-name" type="xsd:string"/>
+                <xsd:element name="package" type="xsd:string"/>
+                <xsd:element name="ep-name" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="update-wsdl-during-build" type="xsd:boolean" default="false"/>
+                <xsd:element name="wsdl-location" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="orig-wsdl-location-type" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="orig-wsdl-location" type="xsd:string" minOccurs="0"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="POJOProviders">
+        <xsd:complexType>
+            <xsd:sequence maxOccurs="unbounded" minOccurs="0">
+                <xsd:element ref="tns:POJOProvider"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="POJOProvider">
+        <xsd:complexType xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            <xsd:sequence>
+                <xsd:element name="class-name" type="xsd:string"/>
+                <xsd:element name="package" type="xsd:string"/>
+                <xsd:element name="ep-name" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="update-wsdl-during-build" type="xsd:boolean" default="false"/>
+                <xsd:element name="wsdl-location" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="orig-wsdl-location-type" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="orig-wsdl-location" type="xsd:string" minOccurs="0"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="POJOConsumer">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="Interface" type="xsd:QName"></xsd:element>
+                <xsd:element name="Operation" type="xsd:QName"></xsd:element>
+                <xsd:element name="InputMessageType" type="xsd:QName" minOccurs="0"></xsd:element>
+                <xsd:element name="InvokePattern" type="xsd:String"></xsd:element>
+                <xsd:element name="InvokeInputType" type="xsd:String"></xsd:element>
+                <xsd:element name="InvokeReturnType" type="xsd:String" ></xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="POJOConsumers">
+        <xsd:complexType>
+            <xsd:sequence maxOccurs="unbounded" minOccurs="0">
+                <xsd:element ref="tns:POJOConsumer"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>
+

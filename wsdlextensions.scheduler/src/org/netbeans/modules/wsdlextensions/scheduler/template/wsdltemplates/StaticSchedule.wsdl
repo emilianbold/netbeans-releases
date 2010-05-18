@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:sched="http://schemas.sun.com/jbi/wsdl-extensions/scheduler/"
+    name="#SERVICE_NAME" targetNamespace="#TARGET_NAMESPACE"
+    xmlns:tns="#TARGET_NAMESPACE">
+    <wsdl:types/>
+    <wsdl:message name="TriggerEventMessage">
+        <wsdl:part name="schedPart" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:portType name="TriggerPortType">
+        <wsdl:operation name="FireTriggerOperation">
+            <wsdl:input name="inMsg" message="tns:TriggerEventMessage"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="TriggerBinding" type="tns:TriggerPortType">
+        <sched:binding group="#SERVICE_NAME"/>
+        <wsdl:operation name="FireTriggerOperation">
+            <sched:operation mode="static"/>
+            <wsdl:input name="inMsg"/>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="TriggerService">
+        <wsdl:port name="#SERVICE_NAME_TriggerPort" binding="tns:TriggerBinding">
+            <sched:active-period starting="now" ending="never"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

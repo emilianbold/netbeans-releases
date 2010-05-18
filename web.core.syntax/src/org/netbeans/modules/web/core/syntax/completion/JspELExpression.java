@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.web.core.syntax.completion;
 
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
@@ -60,8 +61,8 @@ public class JspELExpression extends ELExpression {
 
     private JspSyntaxSupport sup;
 
-    public JspELExpression(JspSyntaxSupport sup) {
-        super(sup.getDocument());
+    public JspELExpression(JspSyntaxSupport sup, int offset) throws BadLocationException {
+        super(sup.getDocument(), offset);
         this.sup = sup;
     }
 
