@@ -338,15 +338,17 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
                     initiateComponent(event);
                 }
             }
-            if (event.getWorkunitsDone() > 0) {
-               bar.setValue(event.getWorkunitsDone());
-            }
-            bar.setString(getBarString(event.getPercentageDone(), event.getEstimatedCompletion()));
-            if (event.getDisplayName() != null) {
-                label.setText(event.getDisplayName());
-            }
-            if (event.getSource().isInSleepMode()) {
-                bar.setString(event.getMessage());
+            if (bar != null) {
+                if (event.getWorkunitsDone() > 0) {
+                   bar.setValue(event.getWorkunitsDone());
+                }
+                bar.setString(getBarString(event.getPercentageDone(), event.getEstimatedCompletion()));
+                if (event.getDisplayName() != null) {
+                    label.setText(event.getDisplayName());
+                }
+                if (event.getSource().isInSleepMode()) {
+                    bar.setString(event.getMessage());
+                }
             }
             
         } 
