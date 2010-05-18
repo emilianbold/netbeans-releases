@@ -239,6 +239,7 @@
 				<file title="SuspendedThread.gif"/>
 				<file title="template_parameter_16.png"/>
 				<file title="terminal-icon.png"/>
+				<file title="testFolder.png"/>
 				<file title="tip.gif"/>
 				<file title="tree.png"/>
 				<file title="typedef_16.png"/>
@@ -277,7 +278,6 @@
 				<file title="c_unit_runningtests.html"/>
 				<file title="CreateCppUnitTestWizardP1.html"/>
 				<file title="CreateCppUnitTestWizardP2.html"/>
-				<file title="CreateTestWizardP0.html"/>
 				<file title="CreateTestWizardP1.html"/>
 				<file title="CreateTestWizardP2.html"/>
 			</directory>
