@@ -228,6 +228,7 @@
         <tocitem text="Working with OSGi">
             <tocitem text="About OSGi Bundles" target="osgi_intro" />
             <tocitem text="Importing OSGi Bundles into a NetBeans Platform Application" target="osgi_import" />
+            <tocitem text="Running a NetBeans Platform Application as OSGi Bundles" target="osgi_pure" />
         </tocitem>
         <tocitem text="Working with Groovy">
             <tocitem text="About Working with Groovy" target="groovy_intro"/>
