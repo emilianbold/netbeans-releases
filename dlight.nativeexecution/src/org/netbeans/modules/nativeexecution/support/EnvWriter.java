@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
+import java.io.OutputStreamWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -60,12 +61,26 @@ public final class EnvWriter {
         "LC_NUMERIC", "LC_TIME", "TMPDIR", "PATH", "LD_LIBRARY_PATH", // NOI18N
         "LD_PRELOAD" // NOI18N
     };
-    private final OutputStream os;
-    private final boolean remote;
+    private final OutputStreamWriter writer;
 
     public EnvWriter(final OutputStream os, final boolean remote) {
-        this.os = os;
-        this.remote = remote;
+        OutputStreamWriter w = null;
+        
+        if (remote) {
+            try {
+                String charSet = ProcessUtils.getRemoteCharSet();
+                if (java.nio.charset.Charset.isSupported(charSet)) {
+                    w = new OutputStreamWriter(os, charSet);
+                }
+            } catch (UnsupportedEncodingException ex) {
+            }
+        }
+
+        if (w == null) {
+            w = new OutputStreamWriter(os);
+        }
+
+        this.writer = w;
     }
 
     public static byte[] getBytes(String str, boolean remote) {
@@ -80,6 +95,10 @@ public final class EnvWriter {
             }
         }
         return str.getBytes();
+    }
+
+    public EnvWriter(OutputStreamWriter writer) {
+        this.writer = writer;
     }
 
     public void write(final MacroMap env) throws IOException {
@@ -97,10 +116,11 @@ public final class EnvWriter {
                 value = env.get(name);
 
                 if (value != null && value.indexOf('"') < 0) {
-                    os.write(getBytes(name + "=\"" + value + "\" && export " + name + "\n", remote)); // NOI18N
-                    os.flush();
+                    writer.write(name + "=\"" + value + "\" && export " + name + "\n"); // NOI18N
                 }
             }
+
+            writer.flush();
         }
     }
 }
