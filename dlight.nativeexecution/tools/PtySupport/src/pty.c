@@ -21,34 +21,45 @@ static void set_noecho(int);
  * 
  */
 int main(int argc, char** argv) {
-    int verbose = 0, noecho = 0;
+    int noecho = 0;
     int master_fd = -1;
     int status;
     char *pty = NULL;
 
     pid_t pid, w;
 
-    opterr = 0;
+    int idx;
+    int nopt = 1;
 
-    int c;
-    while ((c = getopt(argc, argv, "cevp:t:")) != EOF) {
-        switch (c) {
-            case 'e': /* noecho for slave pty's line discipline */
+    for (idx = 1; idx < argc; idx++) {
+        if (argv[idx][0] == '-') {
+            if (strcmp(argv[idx], "-p") == 0) {
+                idx++;
+                if (argv[idx] == NULL || argv[idx][0] == '\0') {
+                    printf("ERROR missing pty after -p\n");
+                    exit(-1);
+                }
+                pty = argv[idx];
+                nopt += 2;
+            } else if (strcmp(argv[idx], "-e") == 0) {
                 noecho = 1;
-                break;
-            case 'v': /* verbose */
-                verbose = 1;
-                break;
-            case 'p': /*pts name*/
-                pty = optarg;
-                break;
-            case '?':
-                err_quit("unrecognized option: -%c", optopt);
+                nopt += 1;
+            } else {
+                printf("ERROR unrecognized option '%s'\n", argv[idx]);
+                exit(-1);
+            }
+        } else {
+            break;
         }
     }
 
-    if (optind >= argc) {
-        err_quit("usage: pty_start [-eiv] [-p pts_name] program [ arg ... ]");
+    argv += nopt;
+    argc -= nopt;
+    /* now argv points to the executable */
+
+    if (argc == 0) {
+        err_quit("usage: pty_start [-e] [-p pts_name] program [ arg ... ]");
+        exit(-1);
     }
 
     if (pty != NULL) {
@@ -69,8 +80,8 @@ int main(int argc, char** argv) {
             set_noecho(STDIN_FILENO);
         }
 
-        if (execvp(argv[optind], &argv[optind]) < 0) {
-            err_sys("can't execute: %s", argv[optind]);
+        if (execvp(argv[0], argv) < 0) {
+            err_sys("can't execute: %s", argv[0]);
         }
     }
 
@@ -78,11 +89,13 @@ int main(int argc, char** argv) {
 
     if (master_fd > 0) {
         loop(master_fd); /* copies stdin -> ptym, ptym -> stdout */
-        tcflush(master_fd, TCIOFLUSH);
-        tcdrain(master_fd);
     }
 
     w = waitpid(pid, &status, WUNTRACED | WCONTINUED);
+
+    if (master_fd > 0) {
+        tcdrain(master_fd);
+    }
 
     if (w != -1 && WIFEXITED(status)) {
         exit(WEXITSTATUS(status));

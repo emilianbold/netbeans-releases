@@ -63,6 +63,7 @@ public final class ExternalTerminal {
             new ConcurrentHashMap<TermEnvPair, String>();
     private final TerminalProfile profile;
     private String title = null;
+
     private static final boolean CLOSE_TERMINAL = Boolean.getBoolean("org.netbeans.modules.nativeexecution.api.util.CloseTerminal"); // NOI18N
     private String prompt = CLOSE_TERMINAL ? "NO" : loc("Terminal.DefaultPrompt.text"); // NOI18N
 
@@ -82,6 +83,10 @@ public final class ExternalTerminal {
 
     public boolean isAvailable(ExecutionEnvironment executionEnvironment) {
         return getExecutable(executionEnvironment) != null;
+    }
+
+    public String getID() {
+        return profile.getID();
     }
 
     /**

@@ -327,6 +327,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         longDescValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_LongDescValue"));
         nameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_NameValue"));
         shortDescValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_ShortDescValue"));
+        showInPluginManagerCheckbox.getAccessibleContext().setAccessibleDescription(getMessage("CustomizerDisplay.showInPluginManagerCheckbox.AccessibleContext.accessibleDescription"));
     }
     
 }

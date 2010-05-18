@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,6 +70,8 @@ public class FormatVisitor extends DefaultVisitor {
     TokenSequence<PHPTokenId> ts;
     private LinkedList<ASTNode> path;
     private int indentLevel;
+    private final int tsTokenCount;
+    private final int maxFormattingRules;
     private DocumentOptions options;
     private boolean includeWSBeforePHPDoc;
     private boolean isCurly; // whether the last visited block is curly or standard syntax.
@@ -81,13 +84,29 @@ public class FormatVisitor extends DefaultVisitor {
 	indentLevel = 0;
 	options = new DocumentOptions(document);
 	includeWSBeforePHPDoc = true;
-	formatTokens = new ArrayList<FormatToken>(ts.tokenCount() * 2);
+        tsTokenCount = ts == null ? 1 : ts.tokenCount();
+	formatTokens = new ArrayList<FormatToken>(tsTokenCount * 2);
+        maxFormattingRules = tsTokenCount * 3;
 	formatTokens.add(new FormatToken.InitToken());
         isMethodInvocationShifted = false;
     }
 
     public List<FormatToken> getFormatTokens() {
 	return formatTokens;
+    }
+
+    private void showAssertionFor185063() {
+        boolean showAssertFor185063 = false;
+        assert showAssertFor185063 = true;
+        if (showAssertFor185063) {
+            try {
+                assert false : "Too many formatting rules.\nPlease report this to help fix issue 185063.\n\n" // sNOI18N
+                        + document.getText(0, document.getLength() - 1);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        assert false;
     }
 
     @Override
@@ -97,7 +116,10 @@ public class FormatVisitor extends DefaultVisitor {
 	}
 	int indent = path.size();
 
-
+        if (formatTokens.size() > maxFormattingRules) {
+            showAssertionFor185063();
+        }
+        
 	// find comment before the node.
 	List<FormatToken> beforeTokens = new ArrayList<FormatToken>(30);
 	int indexBeforeLastComment = -1;  // remember last comment
@@ -626,6 +648,9 @@ public class FormatVisitor extends DefaultVisitor {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_PARAMETER_LIST, ts.offset() + ts.token().length()));
 		addUnbreakalbeSequence(parameters.get(i), false);
 	    }
+            if (ts.token().id() == PHPTokenId.WHITESPACE) {
+                addFormatToken(formatTokens);
+            }
 	}
         scan(node.getBody()); // scan the body of the function
     }
@@ -666,10 +691,10 @@ public class FormatVisitor extends DefaultVisitor {
 	}
 
 	while (ts.moveNext() && ts.offset() < node.getRight().getStartOffset()
-		&& ts.token().id() != PHPTokenId.PHP_TOKEN) {
+		&& ts.token().id() != PHPTokenId.PHP_TOKEN && ts.token().id() != PHPTokenId.PHP_OPERATOR) {
 	    addFormatToken(formatTokens);
 	}
-	if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
+	if (ts.token().id() == PHPTokenId.PHP_TOKEN || ts.token().id() == PHPTokenId.PHP_OPERATOR) {
 	    formatTokens.add(new FormatToken(whitespace, ts.offset()));
 	    addFormatToken(formatTokens);
 	    formatTokens.add(new FormatToken(whitespace, ts.offset() + ts.token().length()));
@@ -795,16 +820,18 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Program program) {
-	path.addFirst(program);
-	ts.move(0);
-	ts.moveNext();
-	ts.movePrevious();
-	addFormatToken(formatTokens);
-	super.visit(program);
-	while (ts.moveNext()) {
-	    addFormatToken(formatTokens);
-	}
-	path.removeFirst();
+        if (ts != null) {
+            path.addFirst(program);
+            ts.move(0);
+            ts.moveNext();
+            ts.movePrevious();
+            addFormatToken(formatTokens);
+            super.visit(program);
+            while (ts.moveNext()) {
+                addFormatToken(formatTokens);
+            }
+            path.removeFirst();
+        }
     }
 
     @Override

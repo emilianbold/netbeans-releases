@@ -225,14 +225,19 @@ public final class PythonPlatform implements Serializable, Comparable<PythonPlat
      */
     public List<FileObject> getUniqueLibraryRoots() {
         initRoots();
+
+        // Issue 186265
+        if (uniqueLibraryRoots == null) {
+            uniqueLibraryRoots = Collections.<FileObject>emptyList();
+        }
+
         return uniqueLibraryRoots;
     }
 
     public List<URL> getUrls() {
-        initRoots();
         List<URL> urls = new ArrayList<URL>();
 
-        for (FileObject root : uniqueLibraryRoots) {
+        for (FileObject root : getUniqueLibraryRoots()) {
             try {
                 urls.add(root.getURL());
             } catch (FileStateInvalidException ex) {
@@ -244,7 +249,7 @@ public final class PythonPlatform implements Serializable, Comparable<PythonPlat
     }
 
     private void initRoots() {
-        if (libraryRoots != null || uniqueLibraryRoots != null) {
+        if (uniqueLibraryRoots != null) {
             // Already initialized
             return;
         }

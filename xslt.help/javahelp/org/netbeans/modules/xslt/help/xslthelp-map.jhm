@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+                     "http://java.sun.com/products/javahelp/map_1_0.dtd">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<map version="1.0">
+	<mapID target="xslt_editor_about" url="editor/about.html"/>
+	<mapID target="xslt_editor_design_panel_about" url="editor/design/panel/about.html"/>
+	<mapID target="xslt_editor_design_panel_xpath" url="editor/design/panel/xpath.html"/>
+	<mapID target="xslt_editor_design_panel_simplemap" url="editor/design/panel/simplemap.html"/>
+	<mapID target="xslt_editor_design_about" url="editor/design/about.html"/>
+	<mapID target="xslt_editor_design_sourcetree" url="editor/design/sourcetree.html"/>
+	<mapID target="xslt_editor_design_target_about" url="editor/design/target/about.html"/>
+	<mapID target="xslt_editor_design_target_rules" url="editor/design/target/rules.html"/>
+	<mapID target="xslt_editor_design_palette_nodes" url="editor/design/palette/nodes.html"/>
+	<mapID target="xslt_editor_design_palette_about" url="editor/design/palette/about.html"/>
+	<mapID target="xslt_editor_design_palette_boolean" url="editor/design/palette/boolean.html"/>
+	<mapID target="xslt_editor_design_palette_string" url="editor/design/palette/string.html"/>
+	<mapID target="xslt_editor_design_palette_operator" url="editor/design/palette/operator.html"/>
+	<mapID target="xslt_editor_design_palette_number" url="editor/design/palette/number.html"/>
+	<mapID target="xslt_editor_xpath" url="editor/xpath.html"/>
+	<mapID target="xslt_editor_source" url="editor/source.html"/>
+	<mapID target="xslt_project_about" url="project/about.html"/>
+	<mapID target="xslt_project_build" url="project/build.html"/>
+	<mapID target="xslt_project_deploy" url="project/deploy.html"/>
+	<mapID target="xslt_project_test" url="project/test.html"/>
+	<mapID target="xslt_project_create" url="project/create.html"/>
+	<mapID target="xslt_about" url="about.html"/>
+	<mapID target="xslt_credits" url="credits.html"/>
+	<mapID target="xslt_project_addxsl" url="project/addxsl.html"/>
+	<mapID target="xslt_project_properties" url="project/properties.html"/>
+</map>

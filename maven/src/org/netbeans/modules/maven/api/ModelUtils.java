@@ -38,8 +38,13 @@
  */
 package org.netbeans.modules.maven.api;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
@@ -88,13 +93,15 @@ public final class ModelUtils {
             final String classifier, final boolean acceptNull)
     {
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            private static final String BUNDLE_TYPE = "bundle"; //NOI18N
+            @Override
             public void performOperation(POMModel model) {
                 Dependency dep = checkModelDependency(model, group, artifact, true);
                 dep.setVersion(version);
                 if (acceptNull || scope != null) {
                     dep.setScope(scope);
                 }
-                if (acceptNull || type != null) {
+                if (acceptNull || (type != null && !BUNDLE_TYPE.equals(type))) {
                     dep.setType(type);
                 }
                 if (acceptNull || classifier != null) {
@@ -324,6 +331,109 @@ public final class ModelUtils {
         }
 
         return result;
+    }
+
+    private static Pattern DEFAULT = Pattern.compile("(.+)[/]{1}(.+)[/]{1}(.+)[/]{1}(.+)\\.pom"); //NOI18N
+    private static Pattern LEGACY = Pattern.compile("(.+)[/]{1}poms[/]{1}([a-zA-Z0-9_]+[a-zA-Z\\-_]+)[\\-]{1}([0-9]{1}.+)\\.pom"); //NOI18N
+
+    /** Returns a library descriptor corresponding to the given library,
+     * or null if not recognized successfully.
+     *
+     * @param pom library to check
+     * @param knownRepositories repositories to match against
+     * @return LibraryDescriptor corresponding to the library with respect to the
+     * known repositories, or null if the pom URL format is not recognized.
+     */
+    public static LibraryDescriptor checkLibrary(URL pom, Set<String> knownRepositories) {
+        String path = pom.getPath();
+        Matcher match = LEGACY.matcher(path);
+        boolean def = false;
+        if (!match.matches()) {
+            match = DEFAULT.matcher(path);
+            def = true;
+        }
+        if (match.matches()) {
+            String classifier = pom.getRef(); // may be null;
+            String repoType = def ? "default" : "legacy"; //NOI18N
+            String repoRoot = pom.getProtocol() + "://" + pom.getHost() + (pom.getPort() != -1 ? (":" + pom.getPort()) : ""); //NOI18N
+            String groupId = match.group(1);
+            String artifactId = match.group(2);
+            String version = match.group(3);
+            for (String repoString : knownRepositories) {
+                try {
+                    URL repo = new URL(repoString);
+                    String root = repo.getProtocol() + "://" + repo.getHost() + (repo.getPort() != -1 ? (":" + repo.getPort()) : ""); //NOI18N
+                    if (root.equals(repoRoot) && groupId.startsWith(repo.getPath())) {
+                        repoRoot = repoRoot + repo.getPath();
+                        groupId = groupId.substring(repo.getPath().length());
+                        break;
+                    }
+                } catch (MalformedURLException ex) {
+                    // ignore
+                }
+            }
+            if (groupId.startsWith("/")) { //NOI18N
+                groupId = groupId.substring(1);
+            }
+            //sort of hack, these are the most probable root paths.
+            if (groupId.startsWith("maven/")) {//NOI18N
+                repoRoot = repoRoot + "/maven";//NOI18N
+                groupId = groupId.substring("maven/".length());//NOI18N
+            }
+            if (groupId.startsWith("maven2/")) {//NOI18N
+                repoRoot = repoRoot + "/maven2";//NOI18N
+                groupId = groupId.substring("maven2/".length());//NOI18N
+            }
+            if (groupId.startsWith("mirror/eclipse/rt/eclipselink/maven.repo/")) {//NOI18N
+                repoRoot = repoRoot + "/mirror/eclipse/rt/eclipselink/maven.repo";//NOI18N
+                groupId = groupId.substring("mirror/eclipse/rt/eclipselink/maven.repo/".length());//NOI18N
+            }
+            groupId = groupId.replace('/', '.'); //NOI18N
+            return new LibraryDescriptor(repoType, repoRoot, groupId, artifactId, version, classifier);
+        }
+        return null;
+    }
+
+    public static class LibraryDescriptor {
+        private String repoType /* default/legacy */, repoRoot, groupId, artifactId,
+                version, classifier /* optional, not part of path, but url's ref */;
+
+        LibraryDescriptor(String repoType, String repoRoot, String groupId, String artifactId, String version, String classifier) {
+            this.repoType = repoType;
+            this.repoRoot = repoRoot;
+            this.groupId = groupId;
+            this.artifactId = artifactId;
+            this.version = version;
+            this.classifier = classifier;
+        }
+
+        public String getArtifactId() {
+            return artifactId;
+        }
+
+        /** May return null. */
+        public String getClassifier() {
+            return classifier;
+        }
+
+        public String getGroupId() {
+            return groupId;
+        }
+
+        public String getRepoRoot() {
+            return repoRoot;
+        }
+
+        public String getRepoType() {
+            return repoType;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        
+
     }
 
 }

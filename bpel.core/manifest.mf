@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Specification-Version: 6.5.1
+OpenIDE-Module: org.netbeans.modules.bpel.core/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/bpel/core/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/modules/bpel/core/resources/layer.xml
+Main-Class: org.netbeans.modules.bpel.core.compatibility.converter.ConverterObsoleteBPELExtensions
+Name: org/netbeans/modules/bpel/core/BPELDataLoader.class
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
+OpenIDE-Module-Class: Loader
+Class-Path: ../../ide12/modules/org-netbeans-api-xml.jar ../../platform11/modules/org-openide-nodes.jar ../../platform11/lib/org-openide-util.jar

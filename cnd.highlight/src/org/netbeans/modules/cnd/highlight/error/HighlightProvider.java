@@ -73,7 +73,7 @@ public class HighlightProvider  {
     
     /** for test purposes only! */
     public interface Hook {
-        void highlightingDone(String absoluteFileName);
+        void highlightingDone(String absoluteFileName, List<ErrorDescription> descriptions);
     }
     
     private Hook hook;
@@ -99,10 +99,6 @@ public class HighlightProvider  {
         assert doc!=null || file==null;
         if (doc instanceof BaseDocument){
             addAnnotations((BaseDocument)doc, file, dao, interrupter);
-            Hook theHook = this.hook;
-            if( theHook != null ) {
-                theHook.highlightingDone(file.getAbsolutePath().toString());
-            }
         }
     }
     
@@ -177,7 +173,10 @@ public class HighlightProvider  {
             }
         }
         CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
-        
+        Hook theHook = this.hook;
+        if( theHook != null ) {
+            theHook.highlightingDone(file.getAbsolutePath().toString(), descriptions);
+        }
     }
     
     private static PositionBounds createPositionBounds(DataObject dao, int start, int end) {

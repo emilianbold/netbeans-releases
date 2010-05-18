@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<process targetNamespace="MyNamespace"
+xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+xmlns:nb="http://nobpel.ns"
+xmlns:outer="http://outer"
+xmlns:ws="webserv">
+
+	<nb:nobpel/>
+	
+	<documentation>d1</documentation>
+<nb:nobpel/>
+
+	<documentation>d2</documentation>
+	
+		<nb:nobpel/>
+<extensions>
+	<extension namespace="ns1"/>
+	
+	<nb:nobpel/>
+		<extension namespace="ns2"/>
+</extensions>
+	
+	<import namespace="ns1"/>
+	
+		<nb:nobpel/>
+		
+			<import namespace="ns2"/>
+	
+<import namespace="ns1"/><nb:nobpel/>
+	<partnerLinks>
+		<partnerLink name="pl1" xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"/>
+		<partnerLink xmlns:otherns="http://nobpel.ns"/>
+	</partnerLinks>
+
+<nb:nobpel/>
+
+	<variables>
+		<nb:insidevariables/>
+		<variable name="v1" messageType="ws:part" type="xsd:boolean"/>
+	<nb:nobpel/>
+		<variable name="v2" element="outer:complex"/>
+	
+<nb:nobpel/>
+	</variables>
+	
+<nb:nobpel/>
+	<correlationSets>
+		<correlationSet properties="ws:prop1 outer:prop2" name="correlation"/>
+		<correlationSet properties="outer:prop1"/>
+		<correlationSet name="c1"/>
+	</correlationSets>
+
+	<nb:nobpel/>
+	<faultHandlers>
+		<nb:insidefaultHandler/>
+
+		<catch faultVariable="fv1">
+		</catch>
+<nb:nobpel/>
+
+		<catch faultVariable="fv2">
+		</catch>
+
+	<nb:nobpel/>
+		<catch faultVariable="fv3">
+		</catch>
+
+		<nb:nobpel/>
+
+		<catchAll>
+			<nb:insidecatchAll/>
+		</catchAll>
+
+	<nb:nobpel/>
+
+	</faultHandlers>
+
+
+<nb:nobpel/>
+	<eventHandlers>
+		<nb:insideeventHandlers/>
+	</eventHandlers>
+	
+	<nb:nobpel/>
+
+	<sequence xmlns:ns1="ns1" xmlns:ns3="http://nobpel.ns">
+		<nb:nobpel/>
+		<flow>
+			<links>
+				<link name="l1"/>
+				<link name="l2"/>
+				<link name="l3"/>
+			</links>
+		<assign xmlns:inner="inner">
+		<nb:nobpel/>
+			<target linkName="l1">
+			</target>
+
+			<nb:nobpel/>
+			<target linkName="l2">
+			</target>
+<nb:nobpel/>
+
+			<target linkName="l3">
+			</target>
+
+	<nb:nobpel/>
+
+			<source linkName="l2">
+			</source>
+		<nb:nobpel/>
+			<source linkName="l1">
+			</source>
+
+		<nb:nobpel/>
+			<source linkName="l3">
+			</source>
+
+			<nb:nobpel/>
+				<copy>
+					<from part="p1"/>
+					<to query="q1"/>
+				</copy>
+		<nb:nobpel/>
+
+			<copy>
+				<from part="p2"/>
+				<to/>
+			</copy>
+
+	<nb:nobpel/>
+
+		<copy>
+			<from part="p3"/>
+			<to/>
+		</copy>
+		<nb:nobpel/>
+
+		</assign>
+		<empty name="Empty5"/>
+		</flow>
+	<nb:insidesequence/>
+		<switch>
+			<otherwise> 
+
+				<notbpel/>
+
+				<notbpel/>
+			</otherwise>
+		</switch>
+
+		<flow>
+			<links>
+				<link/>
+			</links>
+			<scope>
+			<empty/>
+		</scope>
+		</flow>
+	</sequence>
+
+<nb:nobpel/>
+
+</process>
+

@@ -75,6 +75,9 @@ public class AccidentalAssignmentCustomizer extends javax.swing.JPanel {
         cbIncludeWhile = new javax.swing.JCheckBox();
         chkTopLvlStmtOnly = new javax.swing.JCheckBox();
 
+        setFocusTraversalPolicy(null);
+
+        cbIncludeWhile.setMnemonic('n');
         cbIncludeWhile.setText(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.includeWhileCB.text")); // NOI18N
         cbIncludeWhile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -82,6 +85,7 @@ public class AccidentalAssignmentCustomizer extends javax.swing.JPanel {
             }
         });
 
+        chkTopLvlStmtOnly.setMnemonic('I');
         chkTopLvlStmtOnly.setText(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.chkTopLvlStmtOnly.text")); // NOI18N
         chkTopLvlStmtOnly.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -98,7 +102,7 @@ public class AccidentalAssignmentCustomizer extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(chkTopLvlStmtOnly)
                     .addComponent(cbIncludeWhile))
-                .addContainerGap(72, Short.MAX_VALUE))
+                .addContainerGap(101, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -109,6 +113,14 @@ public class AccidentalAssignmentCustomizer extends javax.swing.JPanel {
                 .addComponent(cbIncludeWhile)
                 .addContainerGap(238, Short.MAX_VALUE))
         );
+
+        cbIncludeWhile.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.cbIncludeWhile.AccessibleContext.accessibleName")); // NOI18N
+        cbIncludeWhile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.cbIncludeWhile.AccessibleContext.accessibleDescription")); // NOI18N
+        chkTopLvlStmtOnly.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.chkTopLvlStmtOnly.AccessibleContext.accessibleName")); // NOI18N
+        chkTopLvlStmtOnly.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.chkTopLvlStmtOnly.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AccidentalAssignmentCustomizer.class, "AccidentalAssignmentCustomizer.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbIncludeWhileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbIncludeWhileActionPerformed

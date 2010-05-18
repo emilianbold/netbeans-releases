@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Creating Application Variables for WSDL Attributes</title>
+</head>
+<body>
+<h2>Creating Application Variables for WSDL Attributes</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The binding component Application Variables property allows you to define a 
+  list of name:value pairs for a given stated type. The application variable name 
+  can be used as a token for a WSDL extensibility element attribute in a corresponding 
+  binding. For example, if you were defining an application variable for the <tt>hostname</tt> 
+  as FOO, then the WSDL attribute would be <tt>${FOO}</tt>. In the Application 
+  Variables property you would enter a String value of <tt>FOO</tt> for the name, 
+  and the desired attribute as the value. When you deploy an application that 
+  uses application variables, any variable that is referenced in the application's 
+  WSDL is loaded automatically. </p>
+<p>The Application Variables configuration property offers four variable types:</p>
+<ul>
+  <li><strong>String</strong>: specifies a string value, such as a path or directory.</li>
+  <li><strong>Number</strong>: specifies a number value.</li>
+  <li><strong>Boolean</strong>: specifies a Boolean value. The VALUE field provides 
+    a checkbox (checked = true).</li>
+  <li><strong>Password</strong>: specifies a password value. The password is masked 
+    and displays only asterisks.</li>
+</ul>
+<p><strong>Using Application Variables for password protection</strong></p>
+<p>To protect passwords that would otherwise appear as clear text in your WSDL 
+  file, you can enter a Password application variable as a token. In the following 
+  example, a password application variable is created that uses the name SECRET 
+  and the password PROTECT.</p>
+  
+<ol>
+  <li>From the Binding Components directory, under Servers &gt; GlassFish V2 &gt; 
+    JBI in the Servers window, select the sun-http-binding. The sun-http-binding 
+    Properties appear in the Properties window.</li>
+  <li>Click-on the Application Variables property ellipsis (...) button. The Application 
+    Variables editor appears.</li>
+  <li>Click Add, select Password as your variable type, and click OK. A new row 
+    is added to the Application Variables editor.</li>
+  <li>Enter SECRET as the Name, and enter PROTECT as the Value. Because this is 
+    a password type, the characters of your password are displayed as asterisks.</li>
+  <li>Use the application variable name ${SECRET} as your WSDL password attribute, 
+    using the dollar sign and curley braces as shown.</li>
+</ol>
+<p>Variables also allow greater flexibility for your WSDL files. For example, 
+  you can use the same WSDL for different operating systems by using application 
+  variables to specify system specific information. These values can then be changed 
+  from the binding component runtime properties as needed, for any specific system.</p>
+<p>&nbsp;</p>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+  <dd><a href="caps_jbi_node.html" title="JBI Node (Under Services/Servers)">JBI 
+    Node (Under Services/Servers)</a></dd>
+  <dd><a href="app-configuration.html" title="Dynamically Configuring Endpoint Connection Properties">Application 
+    Configurations Property </a></dd>
+</dl>
+<hr>
+<small>
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

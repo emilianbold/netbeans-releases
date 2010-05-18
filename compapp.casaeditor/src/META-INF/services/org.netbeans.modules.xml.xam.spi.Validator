@@ -1,0 +1,2 @@
+org.netbeans.modules.compapp.casaeditor.model.casa.validator.CasaSemanticValidator
+org.netbeans.modules.compapp.casaeditor.model.casa.validator.CasaXsdBasedValidator

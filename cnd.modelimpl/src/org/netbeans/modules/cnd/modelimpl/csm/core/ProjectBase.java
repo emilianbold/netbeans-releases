@@ -1705,6 +1705,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return res;
     }
 
+    /*package*/final int getFileContainerSize() {
+        return getFileContainer().getSize();
+    }
+    
     private CsmFile findFileByPath(CharSequence absolutePath) {
         File file = new File(absolutePath.toString());
         APTPreprocHandler preprocHandler = null;
@@ -1772,6 +1776,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             impl = getFile(file, treatSymlinkAsSeparateFile);
             if (impl == null) {
                 preprocHandler = (preprocHandler == null) ? getPreprocHandler(file) : preprocHandler;
+//                initial = (initial == null) ? preprocHandler.getState() : initial;
                 impl = new FileImpl(ModelSupport.getFileBuffer(file), this, fileType, nativeFileItem);
                 if (nativeFileItem != null) {
                     putNativeFileItem(impl.getUID(), nativeFileItem);

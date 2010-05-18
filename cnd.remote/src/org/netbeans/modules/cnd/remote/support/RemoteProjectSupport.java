@@ -102,6 +102,9 @@ public class RemoteProjectSupport {
         sourceFilesAndDirs.add(baseDir);
 
         MakeConfigurationDescriptor mcs = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+        if (mcs == null) {
+            return new File[0];
+        }
         for(String soorceRoot : mcs.getSourceRoots()) {
             String path = CndPathUtilitities.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
             File file = new File(path); // or canonical?

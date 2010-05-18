@@ -66,6 +66,7 @@ void loop(int master_fd) {
 }
 
 #else
+
 void loop(int master_fd) {
     ssize_t n;
     char buf[BUFSIZ];
@@ -86,10 +87,6 @@ void loop(int master_fd) {
         if (poll_result == -1) {
             printf("ERROR: poll failed\n");
             exit(1);
-        }
-
-        if (fds[0].revents & POLLHUP || fds[1].revents & POLLHUP) {
-            break;
         }
 
         if (fds[0].revents & POLLIN) {
@@ -123,6 +120,11 @@ void loop(int master_fd) {
                 exit(1);
             }
         }
+
+        if (fds[1].revents & POLLHUP) {
+            break;
+        }
+
     }
 }
 #endif

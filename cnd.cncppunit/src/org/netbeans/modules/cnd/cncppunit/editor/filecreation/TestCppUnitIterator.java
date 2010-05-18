@@ -85,6 +85,7 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
         SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         targetChooserDescriptorPanel = new NewTestCppUnitPanel(project, groups, null,
                 (String) wiz.getProperty(CND_UNITTEST_DEFAULT_NAME));
+        wiz.putProperty(CND_UNITTEST_KIND, CND_UNITTEST_KIND_CPPUNIT);
     }
 
     @Override

@@ -655,7 +655,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                 return true;
             }
         } catch (InstanceRemovedException ex) {
-            LOG.log(Level.WARNING, "Server Instance was removed", ex); //NOI18N
+            LOG.log(Level.INFO, "Server Instance was removed", ex); //NOI18N
         }
         return false;
     }
@@ -695,13 +695,6 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                 boolean isJSF = Util.containsClass(Arrays.asList(cp), JSFUtils.FACES_EXCEPTION);
                 boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
                 boolean isJSF20 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
-
-                //XXX: 182282: disable bundled lib in WebLogic.
-                if (isWebLogic(serverInstanceID)) {
-                    isJSF = false;
-                    isJSF12 = false;
-                    isJSF20 = false;
-                }
 
                 String libName = null; //NOI18N
                 if (isJSF20) {

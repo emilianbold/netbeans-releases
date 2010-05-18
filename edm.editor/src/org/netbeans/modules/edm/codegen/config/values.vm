@@ -1,0 +1,9 @@
+#set( $totalColumns = $sColumnIdentifiers.size())
+#set( $columnCounter = 1)
+VALUES (
+#foreach( $sColumn in $sColumnIdentifiers )
+    $sColumn.getAliasName()#if($columnCounter < $totalColumns), #end
+
+#set( $columnCounter = $columnCounter+ 1)
+#end
+)

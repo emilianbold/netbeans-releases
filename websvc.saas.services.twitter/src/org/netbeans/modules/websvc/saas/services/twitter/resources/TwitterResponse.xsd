@@ -63,7 +63,7 @@
     <xsd:element name="direct_message" type="directMessageType"/>
     <xsd:element name="user" type="userType"/>
     <xsd:element name="authorized" type="xsd:boolean"/>
-    <xsd:element name="nil-classes">
+    <xsd:element name="nilclasses">
         <xsd:complexType>
             <xsd:attribute name="type" type="xsd:string"/>
         </xsd:complexType>

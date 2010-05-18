@@ -109,7 +109,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     @Override
     public boolean canWrite(File file) {
-         LOG.log(Level.FINE, "canWrite {0}", file);
+        LOG.log(Level.FINE, "canWrite {0}", file);
         if (Utils.canWrite(file)) {
             return true;
         }
@@ -239,12 +239,16 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     @Override
     public void fileFolderCreated(FileEvent fe) {
         LOG.log(Level.FINE, "fileFolderCreated {0}", fe.getFile());
-        fileDataCreated(fe);
+        fileCreated(fe);
     }
 
     @Override
     public void fileDataCreated(FileEvent fe) {
         LOG.log(Level.FINE, "fileDataCreated {0}", fe.getFile());
+        fileCreated(fe);
+    }
+
+    private void fileCreated(FileEvent fe) {
         FileObject fo = fe.getFile();
         FileEx fileEx = new FileEx(fo.getParent(), fo.getNameExt(), fo.isFolder());
         DelegatingInterceptor interceptor = filesBeingCreated.remove(fileEx);
@@ -258,7 +262,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         removeFromDeletedFiles(fe.getFile());
         if(interceptor == null) {
             interceptor = getInterceptor(fe, "afterCreate");                    // NOI18N
-        }   
+        }
         interceptor.afterCreate();
     }
 
@@ -269,15 +273,19 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     @Override
     public IOHandler getMoveHandler(File from, File to) {
         LOG.log(Level.FINE, "getMoveHandler {0}, {1}", new Object[] {from, to});
-        DelegatingInterceptor dic = getInterceptor(from, to, "beforeMove", "doMove"); // NOI18N
-        return dic.beforeMove() ? dic : null;
+        return getMoveHandlerIntern(from, to);
     }
 
     @Override
     public IOHandler getRenameHandler(File from, String newName) {
         LOG.log(Level.FINE, "getRenameHandler {0}, {1}", new Object[] {from, newName});
         File to = new File(from.getParentFile(), newName);
-        return getMoveHandler(from, to);
+        return getMoveHandlerIntern(from, to);
+    }
+
+    private IOHandler getMoveHandlerIntern(File from, File to) {
+        DelegatingInterceptor dic = getInterceptor(from, to, "beforeMove", "doMove"); // NOI18N
+        return dic.beforeMove() ? dic : null;
     }
 
     @Override

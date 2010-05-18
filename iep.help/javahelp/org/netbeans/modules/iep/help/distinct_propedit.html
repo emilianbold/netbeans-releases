@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Distinct Operator Property Editor </title>
+</head>
+<body>
+<h2>Using the Distinct Operator Property Editor </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Distinct operator retains records input from a relation that are unique. If duplicate records exist, they will not be sent out from the Distinct operator. All attributes of records must match to be filtered with the Distinct operators.</p>
+<p> You typically use the Distinct operator in conjunction with a relation output from another operator. The Distinct operator does not forward duplicate records from  input to it. Typical operators whose input the Distinct operator uses include:</p>
+<ul>
+  <li> Attribute-Based Window operator</li>
+  <li> Partitioned Window operator</li>
+  <li> Time Based Window operator</li>
+  <li> Tuple-Based Window operator</li>
+  <li>Relation Map operator</li>
+  <li>Relation Aggregator operator </li>
+</ul>
+<p><strong>To create a Distinct operator:</strong></p>
+<ol>
+  <li>Drag a Distinct operator from the Palette to the Design view.</li>
+  <li>As needed, connect the input of the new Distinct component to an operator that has Relation output.</li>
+  <li>Double-click the Distinct component. The property editor opens. Notice that the component has inherited the schema of its input relation.
+  <li>As needed, configure the following property: Name.</li>
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="intersect_propedit.html">Using the Intersect Operator Property Editor </a></dd>
+<dd><a href="minus_propedit.html">Using the Minus Operator Property Editor</a></dd>
+<dd><a href="union_propedit.html">Using the Union Operator Property Editor</a></dd>
+<dd><a href="unionall_propedit.html">Using the Union All Operator Property Editor </a></dd>
+<dd>&nbsp;</dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

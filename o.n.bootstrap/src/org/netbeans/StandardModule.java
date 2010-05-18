@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -73,6 +73,7 @@ import java.util.zip.ZipEntry;
 import org.netbeans.Module.PackageExport;
 import org.netbeans.LocaleVariants.FileWithSuffix;
 import org.openide.modules.Dependency;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -674,7 +675,7 @@ final class StandardModule extends Module {
     /** Class loader to load a single module.
      * Auto-localizing, multi-parented, permission-granting, the works.
      */
-    private class OneModuleClassLoader extends JarClassLoader implements Util.ModuleProvider {
+    class OneModuleClassLoader extends JarClassLoader implements Util.ModuleProvider {
         private int rc;
         /** Create a new loader for a module.
          * @param classp the List of all module jars of code directories;
@@ -700,15 +701,27 @@ final class StandardModule extends Module {
             return getAllPermission();
         }
         
-        /** look for JNI libraries also in modules/bin/ */
+        /**
+         * Look up a native library as described in modules documentation.
+         * @see http://bits.netbeans.org/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/api.html#jni
+         */
         protected @Override String findLibrary(String libname) {
+            InstalledFileLocator ifl = InstalledFileLocator.getDefault();
+            String arch = System.getProperty("os.arch"); // NOI18N
+            String system = System.getProperty("os.name").toLowerCase(); // NOI18N
             String mapped = System.mapLibraryName(libname);
-            File lib = new File(new File(jar.getParentFile(), "lib"), mapped); // NOI18N
-            if (lib.isFile()) {
-                return lib.getAbsolutePath();
-            } else {
-                return null;
-            }
+            File lib;
+
+            lib = ifl.locate("modules/lib/" + mapped, getCodeNameBase(), false); // NOI18N
+            if (lib != null) return lib.getAbsolutePath();
+
+            lib = ifl.locate("modules/lib/" + arch + "/" + mapped, getCodeNameBase(), false); // NOI18N
+            if (lib != null) return lib.getAbsolutePath();
+
+            lib = ifl.locate("modules/lib/" + arch + "/" + system + "/" + mapped, getCodeNameBase(), false); // NOI18N
+            if (lib != null) return lib.getAbsolutePath();
+
+            return null;
         }
 
         protected @Override boolean shouldDelegateResource(String pkg, ClassLoader parent) {

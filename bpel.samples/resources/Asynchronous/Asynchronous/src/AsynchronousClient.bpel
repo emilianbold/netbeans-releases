@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+  * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
+    may be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<process name="AsynchronousClient" 
+         targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousClient"
+         xmlns:partnerNS="http://enterprise.netbeans.org/bpel/Asynchronous"
+         xmlns:wsdlNS="http://enterprise.netbeans.org/bpel/AsynchronousClient"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+         xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor2"
+         xmlns:sxat="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Attachment"
+         xmlns:sxeh="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"
+         xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable">
+    
+    <documentation>
+        The AsynchronousClient BPEL process represents a client interacting with Asynchronous process. This process is used for testing the Asynchronous process as it requires a client that is capable of receiving an asynchronous callback. From this process the Asynchronous process will receive incoming data and to this process it will return the result.
+    </documentation>
+
+    <import namespace="http://enterprise.netbeans.org/bpel/Asynchronous" 
+            location="Asynchronous.wsdl" 
+            importType="http://schemas.xmlsoap.org/wsdl/"/>
+
+    <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousClient" 
+            location="AsynchronousClient.wsdl" 
+            importType="http://schemas.xmlsoap.org/wsdl/"/>
+
+    <partnerLinks>
+        <partnerLink
+            name="partnerLinkA" 
+            partnerLinkType="wsdlNS:AsynchronousClientPartnerLinkType" 
+            myRole="AsynchronousClientProvider"/>
+
+        <partnerLink
+            name="partnerLinkB" 
+            partnerLinkType="partnerNS:AsyncPartnerLinkType" 
+            myRole="serviceRequestor"
+            partnerRole="serviceProvider">
+            
+            <documentation>
+                This partner link defines interaction between the AsynchronousClient process and it's partner (Asynchronous process in this case). The Client process sends a message to Asynchronous process and then asynchronously receives a message from it. The partnerlink has two operations defined, a partner can receive a message from the AsynchronousClient process and call the process.
+            </documentation>
+        </partnerLink>         
+    </partnerLinks>
+    
+    <variables>
+        <variable name="inputVar" messageType="wsdlNS:requestMessageClient"/>
+        <variable name="outputVar" messageType="wsdlNS:responseMessageClient"/>
+        <variable name="partnerInputVar" messageType="partnerNS:requestMessage"/>
+        <variable name="partnerOutputVar" messageType="partnerNS:responseMessage"/>
+    </variables>
+    
+    <correlationSets>
+        <documentation>
+            BPEL runtime uses correlation sets to route messages to the right process instance. Correlation set is made up of one or more property values. Properties in turn are defined in a WSDL file and get their value through property aliases (also defined in WSDL). Property aliases are the rules that tell the BPEL runtime how to map data from a message into a property value.
+        </documentation>
+        
+        <correlationSet name="correlator" properties="wsdlNS:correlatorProp"/>
+    </correlationSets>
+
+    <sequence>
+        <receive 
+            name="start"
+            partnerLink="partnerLinkA"
+            portType="wsdlNS:MyPortTypeClient"
+            operation="operationA"
+            variable="inputVar"
+            createInstance="yes">
+            <correlations>
+                <correlation set="correlator" initiate="yes">
+                    <documentation>
+                        Correlation set is initiated with the values of the properties found in the message.
+                    </documentation>
+                </correlation>
+            </correlations>
+        </receive>
+        
+        <assign name="assign1">
+            <copy>
+                <from variable="inputVar" part="inputType"/>
+                <to variable="partnerInputVar" part="inputType"/>
+            </copy>
+        </assign>
+        
+        <invoke
+            name="invokepartner"  
+            partnerLink="partnerLinkB"
+            portType="partnerNS:MyPortType" 
+            operation="asyncOperation"
+            inputVariable="partnerInputVar">
+
+            <documentation>
+                The process sends a message to the partner (Asynchronous process will receive it).
+            </documentation>
+        </invoke>
+        
+        <receive 
+            name="receiveCallback"
+            partnerLink="partnerLinkB"
+            portType="partnerNS:MyCallbackPortType"
+            operation="onResult"
+            variable="partnerOutputVar"
+            createInstance="no">
+
+            <documentation>
+                The process receives a response from the partner.
+            </documentation>
+            
+            <correlations>
+                <correlation set="correlator"/>
+            </correlations>
+        </receive>
+        
+        <assign name="assign2">
+            <copy>
+                <from variable="partnerOutputVar" part="resultType"/>
+                <to variable="outputVar" part="resultType"/>
+            </copy>
+        </assign>
+        
+        <reply
+            name="end"  
+            partnerLink="partnerLinkA"
+            portType="wsdlNS:MyPortTypeClient" 
+            operation="operationA"
+            variable="outputVar"/>
+    </sequence>
+</process>
