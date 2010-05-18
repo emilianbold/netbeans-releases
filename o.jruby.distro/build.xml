@@ -74,7 +74,7 @@
             </fileset>
         </delete>
         <!-- Extract the resulting .tar.gz file into our cluster -->
-        <untar compression="gzip" dest="${cluster}" src="${unpatched_source}/jruby-${jruby_src_version}/jruby-bin-${jruby_src_version}.tar.gz" />
+        <untar compression="gzip" dest="${cluster}" src="${unpatched_source}/jruby-${jruby_src_version}/dist/jruby-bin-${jruby_src_version}.tar.gz" />
     </target>
 
     <target name="release" depends="init,jruby.distro.init" unless="jruby.distro.build.uptodate">
