@@ -19,10 +19,18 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>com.sun.tools.debugger.dbx</friend>
+                <friend>com.sun.tools.debugger.dbxgui</friend>
+                <friend>com.sun.tools.debugger.gdb</friend>
+                <friend>com.sun.tools.swdev.toolscommon.base</friend>
+                <friend>org.netbeans.modules.dlight.nativeexecution</friend>
+                <friend>org.netbeans.modules.terminal</friend>
+                <friend>org.netbeans.nativeexecution.terminal</friend>
+                <friend>org.netbeans.terminal.example</friend>
                 <package>org.netbeans.lib.terminalemulator</package>
                 <package>org.netbeans.lib.terminalemulator.support</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
