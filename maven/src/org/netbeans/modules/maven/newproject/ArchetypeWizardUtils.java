@@ -102,6 +102,7 @@ public class ArchetypeWizardUtils {
     static final String OSGIDEPENDENCIES = "osgi.dependencies";
     
     private static final String USER_DIR_PROP = "user.dir"; //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ArchetypeWizardUtils.class);
 
     /**
      * No instances, utility class.
@@ -502,7 +503,7 @@ public class ArchetypeWizardUtils {
                     }
                 }
                 //see #163529 for reasoning
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         watch.downloadDependencyAndJavadocSource();

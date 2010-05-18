@@ -543,11 +543,13 @@ class LuceneIndex extends Index implements Evictable {
     ///</editor-fold>
 
     private void _hit() {
-        try {
-            final URL url = this.refCacheRoot.toURI().toURL();
-            IndexCacheFactory.getDefault().getCache().put(url, this);
-        } catch (MalformedURLException e) {
-            Exceptions.printStackTrace(e);
+        if (!useMemoryCache) {
+            try {
+                final URL url = this.refCacheRoot.toURI().toURL();
+                IndexCacheFactory.getDefault().getCache().put(url, this);
+            } catch (MalformedURLException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
     }
 

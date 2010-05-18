@@ -17,71 +17,37 @@
     <h2>
        Creating a C/C++ Unit Test
     </h2>
-    <p>
-       ***this will need to be updated when c unit test implementation complete
-    </p>
+    
     <p>
        <small><a href="#seealso">See Also</a></small>
     </p>
     <p>
-       The C/C++ Unit test feature enables you to create compilable test programs for use as stubs
-      or templates for your unit tests. You can create unit tests for single functions and entire
+      The C/C++ Unit test feature enables you to create test programs for use as 
+      templates for your unit tests. You can create unit tests for single functions and entire
       source files, as well as empty test files to be used with sources you create later.
     </p>
+    <p>The IDE creates a Test Files logical folder when you create a project. For managed
+        projects that were created with a previous version of the IDE, a Test Files folder
+        is created when you add tests through the IDE. In both cases, the test files are
+    physically stored in a <tt>tests</tt> directory, separate from the project's source files.</p>
+    <p>For projects from existing sources: </p>
+    
     <p>
-       <b>Notes:</b>
+       <b>To create a test for a single source file:</b>
     </p>
     <ul>
       <li>
-        Generated tests are distinguished by ***appending <tt>Test</tt> to the tested classes'
-        names (e.g. <tt><i>MyClass</i>Test.java</tt>).
+          Right-click the file in the Projects window or in the editor window and choose Create Tests &gt; New <i>test type</i>
+        to open the Tests wizard.
       </li>
       <li>
-        To create a test, the project must have a Test Files directory for the tests. The IDE
-        creates a Test Files directory by default when you create a project. If no test directory
-        exists in your project or you want to specify a different directory for your test, you can
-        <a href="#specify">specify a test directory in the project properties dialog</a>.
+        Select the functions you want to test and click Next.
       </li>
+      <li>Type the name of the test and the filename of the test source.</li>
+      <li>Click Finish.</li>
+      <li>Edit the test source file for your project.</li>
     </ul>
-    <p>
-       <b>To create a test for a single function:</b>
-    </p>
-    <ul>
-      <li>
-        Right-click the function in the editor window and choose ***Tools &gt; Create JUnit Tests
-        (Ctrl-Shift-U) to open the Create Tests dialog box.
-      </li>
-      <li>
-        Select the desired code generation options and click OK.
-      </li>
-    </ul>
-    <p>
-       <b>To create a ***test suite:</b>
-    </p>
-    <ol>
-      <li>
-        Right-click the package node containing the source files for which you want to generate the
-        test suite in the Projects window and choose Tools &gt; Create JUnit Tests (Ctrl-Shift-U)
-        from the popup menu.
-      </li>
-      <li>
-        Select the Generate Test Suites checkbox.
-      </li>
-      <li>
-        Select the desired code generation options and click OK. 
-        <p>
-           The IDE generates test classes for all enclosed classes and stores them in the project's
-          Test Packages node. If any of the test classes already exist, those classes are updated.
-          By default the IDE includes all the test classes as part of the generated test suite.
-        </p>
-      </li>
-    </ol>
-    <ul class="note">
-      <li>
-        You can also create test suites by using the New File wizard and selecting Test Suite in
-        the the JUnit category.
-      </li>
-    </ul>
+   
     <p>
        <b>To create an empty test:</b>
     </p>
@@ -90,45 +56,16 @@
         Choose File &gt; New File from the main menu.
       </li>
       <li>
-        In the New File wizard, select JUnit in the Categories pane and JUnit Test in the File
-        Types pane. Click Next.
+        In the New File wizard, select C/C++ Tests in the Categories pane and the type of unit
+        test you want in the File Types pane. Click Next.
       </li>
       <li>
-        Specify the test class name, folder and package.
+        Specify the test name, folder, and test source filename and extension.
       </li>
       <li>
-        Select the desired code generation options and click Finish.
+        Click Finish.
       </li>
     </ol>
-    <p>
-       <a name="specify"></a>
-    </p>
-    <p>
-       <b>To specify a test directory:</b>
-    </p>
-    <ol>
-      <li>
-        Right-click the project node in the Projects window and choose Properties.
-      </li>
-      <li>
-        In the Properties window, select Sources in the Categories pane.
-      </li>
-      <li>
-        Define the properties of the test packages folder in the Test Package Folders list. You can
-        add or remove the folders that are used for test packages and modify the names of the test
-        packages folder as it appears in the Projects window. Click Close. 
-        <p>
-           <b>Your project must have a Test Files folder to generate unit tests.</b>
-        </p>
-      </li>
-    </ol>
-    <ul class="note">
-      <li>
-        If the test packages folder for your project is missing or unavailable, you can create a
-        new folder in your project and then designate the new folder as the test packages folder in
-        the project's Properties window.
-      </li>
-    </ul>
     <dl>
       <dt>
          <a name="seealso">See Also</a>

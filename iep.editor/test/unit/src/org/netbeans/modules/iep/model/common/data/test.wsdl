@@ -1,0 +1,132 @@
+<definitions targetNamespace="test_iep"
+             xmlns:tns="test_iep"
+             xmlns:typens="test_iep"
+             xmlns:defns="test_iep"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:file="http://schemas.sun.com/jbi/wsdl-extensions/file/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/">
+<types>
+    <xsd:schema targetNamespace="test_iep" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <xsd:element name="StreamInput0_MsgObj">
+            <xsd:complexType>
+                <xsd:sequence>
+                    <xsd:element name="SYMBOL" type="xsd:string"/>
+                    <xsd:element name="PRICE" type="xsd:int"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="StreamInput0Batch_MsgObj">
+            <xsd:complexType>
+                <xsd:sequence>
+                    <xsd:element name="StreamInput0_MsgObj" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                    <xsd:element name="SYMBOL" type="xsd:string"/>
+                    <xsd:element name="PRICE" type="xsd:int"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="StreamOutput0_MsgObj">
+            <xsd:complexType>
+                <xsd:sequence>
+                   <xsd:element name="SYMBOL" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+</types>
+
+<message name="StreamInput0_Msg">
+    <part name="input" element="typens:StreamInput0_MsgObj"/>
+</message>
+<message name="StreamInput0Batch_Msg">
+    <part name="input" element="typens:StreamInput0Batch_MsgObj"/>
+</message>
+<message name="StreamOutput0_Msg">
+    <part name="output" element="typens:StreamOutput0_MsgObj"/>
+</message>
+
+<portType name="InputPt">
+    <operation name="StreamInput0">
+        <input message="tns:StreamInput0_Msg"/>
+    </operation>
+    <operation name="StreamInput0Batch">
+        <input message="tns:StreamInput0Batch_Msg"/>
+    </operation>
+</portType>
+<portType name="OutputPt_StreamOutput0">
+    <operation name="StreamOutput0">
+        <input message="tns:StreamOutput0_Msg"/>
+    </operation>
+</portType>
+
+<plnk:partnerLinkType name="InputPlt" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+    <plnk:role name = "InputRn" portType="tns:InputPt"/>
+</plnk:partnerLinkType>
+<plnk:partnerLinkType name="OutputPlt_StreamOutput0" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+    <plnk:role name = "OutputRn_StreamOutput0" portType="tns:OutputPt_StreamOutput0"/>
+</plnk:partnerLinkType>
+<!-- input binding -->
+<binding name="InputBinding" type="defns:InputPt">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="StreamInput0">
+        <soap:operation soapAction="StreamInput0"/>
+        <input>
+            <soap:body use="literal"/>
+        </input>
+    </operation>
+    <operation name="StreamInput0Batch">
+        <soap:operation soapAction="StreamInput0Batch"/>
+        <input>
+            <soap:body use="literal"/>
+        </input>
+    </operation>
+</binding>
+<!-- input service -->
+<service name="InputService">
+    <port name="InputPort" binding="tns:InputBinding">
+        <soap:address location="http://localhost:12100/service/test_iep"/>
+    </port>
+</service>
+
+<!-- http output binding and service
+<binding name="OutputBinding_StreamOutput0" type="defns:OutputPt_StreamOutput0">
+    <operation name="StreamOutput0">
+        <soap:operation soapAction="StreamOutput0"/>
+        <input>
+            <soap:body use="literal"/>
+        </input>
+    </operation>
+</binding>
+<service name="OutputService_StreamOutput0">
+    <port name="OutputPort_StreamOutput0" binding="tns:OutputBinding_StreamOutput0">
+        <soap:address location="http://localhost:12100/service/test_iep_StreamOutput0_callee"/>
+    </port>
+</service>
+ end of http output binding and service -->
+
+<!-- file output binding and service -->
+<binding name="OutputBinding_StreamOutput0" type="defns:OutputPt_StreamOutput0">
+    <file:binding/>
+    <operation name="StreamOutput0">
+        <file:operation/>
+        <input>
+            <file:message fileName="StreamOutput0.txt"
+                    fileNameIsPattern="false"
+                    addEOL="false"
+                    multipleRecordsPerFile="true"
+                    use="literal"/>
+        </input>
+    </operation>
+</binding>
+<service name="OutputService_StreamOutput0">
+    <port name="OutputPort_StreamOutput0" binding="tns:OutputBinding_StreamOutput0">
+        <file:address fileDirectory="C:/temp/test_iep"/>
+    </port>
+</service>
+<!-- end of file output binding and service -->
+</definitions>

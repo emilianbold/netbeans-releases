@@ -43,6 +43,7 @@ package org.netbeans.lib.editor.util.random;
 
 import java.awt.event.ActionEvent;
 import java.util.Random;
+import java.util.concurrent.Callable;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -95,6 +96,13 @@ public class EditorPaneTesting {
         final RandomTestContainer validContainer = container;
         JEditorPane pane = getEditorPane(container);
         if (pane == null) {
+            if (kit != null) {
+                // Preload actions and other stuff
+                if (kit instanceof Callable) {
+                    ((Callable)kit).call();
+                }
+                kit.getActions();
+            }
             SwingUtilities.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {

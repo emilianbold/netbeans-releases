@@ -1,0 +1,16 @@
+# optional, name of HTTP listener to bind to, defaults to "default-listener"
+http-listener-name=default-listener
+
+# required, path to this resource
+path=
+
+# optional, HTTP verb to access the resource, defaults to GET
+method=GET
+
+# optional, acceptable MIME types for request payload, defaults to "application/json", "application/xml"
+consume-types=[ "application/json", "application/xml" ]
+
+# optional, all possible MIME types of response payload, defaults to "application/json", "application/xml"
+produce-types=[ "application/json", "application/xml" ]
+
+forward-as-attachment=false

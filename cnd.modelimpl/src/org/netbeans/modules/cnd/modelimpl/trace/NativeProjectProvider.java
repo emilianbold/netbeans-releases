@@ -297,7 +297,7 @@ public final class NativeProjectProvider {
         }
 
         @Override
-        public void runOnCodeModelReadiness(NamedRunnable task) {
+        public void runOnProjectReadiness(NamedRunnable task) {
             task.run();
         }
 

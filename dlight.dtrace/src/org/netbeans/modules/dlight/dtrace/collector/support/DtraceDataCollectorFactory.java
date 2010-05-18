@@ -34,13 +34,13 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
-import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccessor;
-import org.netbeans.modules.dlight.spi.collector.DataCollector;
+import org.netbeans.modules.dlight.dtrace.collector.impl.DTDCConfigurationAccessor;;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorFactory;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProviderFactory;
 import org.openide.util.lookup.ServiceProvider;
@@ -62,10 +62,12 @@ public final class DtraceDataCollectorFactory
     public DtraceDataCollectorFactory() {
     }
 
+    @Override
     public String getID() {
         return DTDCConfigurationAccessor.getDefault().getID();
     }
 
+    @Override
     public synchronized DtraceDataCollector create(DTDCConfiguration configuration) {
         if (DTDCConfigurationAccessor.getDefault().isStandalone(configuration)) {
             return new DtraceDataCollector(false, configuration);
@@ -79,6 +81,7 @@ public final class DtraceDataCollectorFactory
         }
     }
 
+    @Override
     public synchronized void reset() {
         mergedDtraceCollector = null;
     }

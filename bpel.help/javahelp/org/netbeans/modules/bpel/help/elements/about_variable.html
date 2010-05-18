@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>About Variables in the BPEL Designer </title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<style type="text/css">
+<!--
+.style1 {color: #CC0000}
+-->
+</style>
+</head>
+<body>
+<h2>About Variables in the BPEL Designer  </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Variables in BPEL programming function just as they do in other programming languages: they hold temporary values, form parts of expressions, or are passed 
+as parameters to external partners. Normally, you need a variable for every message sent to or received from a partner service. The BPEL Designer supports the following types of variables: </p>
+<ul>
+  <li><b>WSDL Message type</b>.     These variables correspond to web service message types that are defined  in WSDL files imported by the process. In a BPEL file (<tt>.bpel</tt>), these variables  must specify a value for the <tt>messageType</tt> attribute. Message  type variables are used to hold data in interactions between the  process and its partner services.  </li>
+  <li>  <b>XML Schema type</b>. These variables correspond to <i>simple</i> or <i>complex</i> XML Schema data types.   The XML schema types themselves are defined in  XML Schema files (<tt>.xsd</tt>) or in WSDL files that are imported into the process. In a BPEL file, variables of this type must specify a value for the <tt>type</tt> attribute. </li>
+  <li><b>XML Schema element</b>.     These variables correspond to XML Schema elements.The XML schema  elements themselves are defined in  XML Schema files (<tt>.xsd</tt>) or in WSDL files that are imported into the process. In a BPEL file, variables of this type must specify a value for the <tt>element</tt> attribute.</li>
+  <li><b>Built-in type</b>. Variables of this type are standard simple types defined in the XML Schema specification. </li>
+</ul>
+<h3>Global and Local Variables </h3>
+<p> The variables defined at the Process root are global variables which  have global visibility throughout the entire process. However, the variables  defined within a particular Scope are visible only  inside that Scope and all nested Scopes. These variables are called  local variables. A variable defined for an inner Scope element can hide  an upper defined variable of the same name. </p>
+<p>The name of a variable must be unique among all variables defined within the same Scope.</p>
+<h3><b>Using Variables</b></h3>
+<p>Follow these basic steps to use variables:</p>
+<ul>
+  <li><a href="create_variable.html" title="Creating Variables">Define a variable</a> for the Process or for a Scope element. </li>
+  <li>Select the variable to serve as an input or output variable for specific elements.  For example, Message Type variables can be used for <a href="invoke.html">Invoke</a>, <a href="receive.html">Receive</a>, and <a href="reply.html">Reply</a> activities.</li>
+</ul>
+<h3><b>Copying </b>Variable Data and Creating Expressions </h3>
+You can copy data from one variable to another variable using the BPEL Mapper. See <a href="../mapper/mapper_mappings.html" title="Creating BPEL Mappings">Creating BPEL Mappings</a> for details about copying data.
+<p>Using the BPEL Mapper you can also create an XPath 1.0 expression for a business process element that requires this expression.</p>
+<h3>Refactoring</h3>
+<p>The BPEL Designer automatically synchronizes the names of defined variables and their usages. For example, when you rename a variable, all its usages are adjusted automatically to reflect the new name, including the usage of this variable name inside XPath expressions. See <a href="../design/refactoring.html" title="Refactoring in BPEL Processes">Refactoring in BPEL Processes</a> for details about the refactoring rules in the BPEL Designer.</p>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="create_variable.html" title="Creating Variables">Creating Variables</a></dd>
+<dd><a href="../mapper/about_mapper.html" title="About the BPEL Mapper">About the BPEL Mapper</a></dd>
+<dd><a href="../windows_editors/nav_bpelview.html" title="BPEL Designer Navigator: BPEL Logical View">BPEL Designer Navigator: BPEL Logical View</a></dd> 
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

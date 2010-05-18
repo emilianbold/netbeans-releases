@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="ApprovePurchase_TM_BPEL" targetNamespace="http://jbi.com.sun/wfse/wsdl/WorkflowApp2/ApprovePurchase_TM_BPEL"
+    xmlns:ns1="urn:WS/types"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:po="http://wlmse.sample1/po" xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype" xmlns:tns="http://jbi.com.sun/wfse/wsdl/WorkflowApp2/ApprovePurchase_TM_BPEL" xmlns:ns="http://wlmse.sample/po">
+    
+    <!-- Type definitions -->
+    <types>
+        <xsd:schema targetNamespace="http://jbi.com.sun/wfse/wsdl/WorkflowApp2/ApprovePurchase_TM_BPEL">
+            <xsd:import schemaLocation="PurchaseOrder.xsd" namespace="http://wlmse.sample/po"/>
+        </xsd:schema>
+    </types> 
+    <message name="TaskInput">
+        <part name="part1" element="ns:purchaseOrder"/>
+    </message>
+    <message name="TaskOutput">
+        <part name="part1" element="ns:orderReply"/>
+    </message>        
+    <portType name="ApprovePurchasePT">
+        <operation name="ApprovePurchase">
+            <input name="ApprovePurchaseInput" message="tns:TaskInput"/>
+            <output name="ApprovePurchaseOutput" message="tns:TaskOutput"/>
+        </operation>
+    </portType>
+    
+    <binding name="ApprovePurchaseBinding" type="tns:ApprovePurchasePT">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <operation name="ApprovePurchase">
+            <soap:operation soapAction="ApprovePurchase"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+           
+        </operation>
+    </binding>
+    <service name="TaskApprovePurchaseService">
+        <port name="TaskApprovePurchasePort" binding="tns:ApprovePurchaseBinding">
+            <soap:address location="http://localhost:18181/wfse/TaskApprovePurchase"/>
+        </port>
+    </service>      
+    <plink:partnerLinkType name="ApprovePurchaseLT">
+        <plink:role name="ApprovePurchase_Server" portType="tns:ApprovePurchasePT"/>
+    </plink:partnerLinkType>
+</definitions>

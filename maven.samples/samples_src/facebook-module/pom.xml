@@ -22,7 +22,7 @@
             </snapshots>
         </repository>
 
-        <repository>
+        <!--<repository>
             <id>netbeans.snapshot</id>
             <name>repository hosting netbeans.org api snapshot artifacts</name>
             <url>http://bits.netbeans.org/netbeans/trunk/maven-snapshot</url>
@@ -46,7 +46,7 @@
             <releases>
                 <enabled>false</enabled>
             </releases>
-        </repository>
+        </repository>-->
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -65,47 +65,47 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util</artifactId>
-            <version>SNAPSHOT</version>
+            <version>RELEASE69-BETA</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-windows</artifactId>
-            <version>SNAPSHOT</version>
+            <version>RELEASE69-BETA</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-util-lookup</artifactId>
-            <version>SNAPSHOT</version>
+            <version>RELEASE69-BETA</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-awt</artifactId>
-            <version>SNAPSHOT</version>
+            <version>RELEASE69-BETA</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-websvc-restlib</artifactId>
             <version>SNAPSHOT</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <artifactId>org-netbeans-api-progress</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>SNAPSHOT</version>
+            <version>RELEASE69-BETA</version>
         </dependency>
         <dependency>
             <artifactId>org-netbeans-modules-settings</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>SNAPSHOT</version>
+            <version>RELEASE69-BETA</version>
         </dependency>
         <dependency>
             <artifactId>org-openide-dialogs</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>SNAPSHOT</version>
+            <version>RELEASE69-BETA</version>
         </dependency>
         <dependency>
             <artifactId>org-openide-filesystems</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <version>SNAPSHOT</version>
+            <version>RELEASE69-BETA</version>
         </dependency>
     </dependencies>
     <build>
@@ -113,7 +113,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
-                <version>3.2-SNAPSHOT</version>
+                <version>3.2</version>
                 <extensions>true</extensions>
                 <configuration>
                     <descriptor>src/main/nbm/module.xml</descriptor>
@@ -128,7 +128,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.2-SNAPSHOT</version>
+                <version>2.2</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>

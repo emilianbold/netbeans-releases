@@ -71,7 +71,7 @@ public class LayerHandleTest extends LayerTestBase {
         assertTrue("now it is saved", layerXML.getSize() > initialSize);
         String xml =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
+                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.2//EN\" \"http://www.netbeans.org/dtds/filesystem-1_2.dtd\">\n" +
                 "<filesystem>\n" +
                 "    <file name=\"bar\"/>\n" +
                 "    <file name=\"foo\"/>\n" +
@@ -89,7 +89,7 @@ public class LayerHandleTest extends LayerTestBase {
         FileObject layerXML = handle.getLayerFile();
         String xml =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
+                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.2//EN\" \"http://www.netbeans.org/dtds/filesystem-1_2.dtd\">\n" +
                 "<filesystem>\n" +
                 "    <file name=\"foo\"/>\n" +
                 "</filesystem>\n";
@@ -97,7 +97,7 @@ public class LayerHandleTest extends LayerTestBase {
         foo.setAttribute("a", Boolean.TRUE);
         xml =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
+                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.2//EN\" \"http://www.netbeans.org/dtds/filesystem-1_2.dtd\">\n" +
                 "<filesystem>\n" +
                 "    <file name=\"foo\">\n" +
                 "        <attr name=\"a\" boolvalue=\"true\"/>\n" +

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.Enumeration;
 import java.util.List;
 import java_cup.runtime.Symbol;
 import java.io.File;
@@ -54,8 +55,10 @@ import org.netbeans.modules.php.editor.lexer.PHPLexerUtils;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.ASTPHP5Parser;
 import org.netbeans.modules.php.editor.parser.ASTPHP5Scanner;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -97,6 +100,61 @@ public class FormatVisitorTest extends PHPTestBase {
 
     public void testClass03()  throws Exception {
         executeTest("testfiles/formatting/blankLines/Class03.php");
+    }
+
+    public void testFunctionDeclaration()  throws Exception {
+        executeTest("testfiles/formatting/spaces/spaceWithinMethodDecl01.php");
+    }
+
+
+    /**
+     * This is "manual" test, when you need format more php files. 
+     *
+     */
+    public void xtestSizeOfFormatTokens() throws Exception {
+        FileObject dataDir = FileUtil.toFileObject(new File("/space/php-frameworks"));
+        Enumeration<? extends FileObject> folders = dataDir.getFolders(true);
+        int files = 0;
+        int maxFormatTokens = 0;
+        while (folders.hasMoreElements()) {
+            FileObject folder = folders.nextElement();
+            FileObject[] children = folder.getChildren();
+            for (int i = 0; i < children.length; i++) {
+                FileObject child = children[i];
+                if (!child.isFolder() && "php".equals(child.getExt())) {
+                    BaseDocument doc = getDocument(child);
+                    String content = PHPLexerUtils.getFileContent(FileUtil.toFile(child));
+                    TokenSequence<?> ts = PHPLexerUtils.seqForText(content, PHPTokenId.language());
+                    System.out.println(child.getPath());
+                    System.out.print("TS: " + ts.tokenCount());
+                    FormatVisitor formatVisitor = new FormatVisitor(doc);
+                    ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(content));
+                    ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
+                    Symbol root = parser.parse();
+//                    System.out.println(child.getPath());
+                    ASTNode node = (ASTNode)root.value;
+                    try {
+                        formatVisitor.scan(node);
+                    }
+                    catch (StackOverflowError soe) {
+                        System.out.println("!!!!!! StackOverflowError");
+                    }
+                    List<FormatToken> formatTokens = formatVisitor.getFormatTokens();
+//                    System.out.println("Token Sequence has " + ts.tokenCount()
+//                            + "items, Format Tokens has " + formatTokens.size()
+//                            + " File: " + child.getPath());
+//
+                    System.out.println("-> FT: " + formatTokens.size()
+                            + " => "  + ((float)formatTokens.size() / ts.tokenCount()));
+                    files ++;
+                    if (maxFormatTokens < formatTokens.size()) {
+                        maxFormatTokens = formatTokens.size();
+                    }
+                }
+            }
+        }
+        System.out.println("tested: " + files + " files");
+        System.out.println("Max format tokens: " + maxFormatTokens);
     }
 
     void executeTest(String fileName) throws Exception {

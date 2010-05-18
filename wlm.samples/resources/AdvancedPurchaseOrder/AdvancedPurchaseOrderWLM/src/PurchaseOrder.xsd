@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema targetNamespace="http://jbi.com.sun/wfse/samples/adv-purchase-order/xsd"
+        xmlns="http://jbi.com.sun/wfse/samples/adv-purchase-order/xsd"
+        xmlns:tns="http://jbi.com.sun/wfse/samples/adv-purchase-order/xsd"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified">
+
+    <xsd:element name="purchaseOrder" type="PurchaseOrderType"/>
+
+    <xsd:element name="orderReply" type="OrderReplyType"/>
+
+    <xsd:complexType name="PurchaseOrderType">
+        <xsd:sequence>
+            <xsd:element name="orderId" type="xsd:string"/>
+            <xsd:element name="purchaserName" type="xsd:string"/>
+            <xsd:element name="productId" type="xsd:string"/>
+            <xsd:element name="amount"  type="xsd:decimal"/>
+            <xsd:element name="users" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="priority" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:simpleType name="ApprovalResult">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="Approved"/>
+            <xsd:enumeration value="Rejected"/>
+            <!-- and so on ... -->
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="OrderReplyType">
+        <xsd:sequence>
+            <xsd:element name="orderId" type="xsd:string"/>
+            <xsd:element name="approveResult" type="ApprovalResult"/>
+            <xsd:element name="replyDate"  type="xsd:date"/>
+            <xsd:element name="description"  type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

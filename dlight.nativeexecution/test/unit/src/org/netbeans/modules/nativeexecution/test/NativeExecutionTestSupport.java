@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -126,13 +127,12 @@ public class NativeExecutionTestSupport {
         return defaultTestExecutionEnvironment;
     }
 
-    public static ExecutionEnvironment getTestExecutionEnvironment(String mspec) throws IOException {
-        ExecutionEnvironment result = null;
+    private interface UsetrInfoProcessor {
+        /** @return true to proceed, false to cancel */
+        boolean processLine(String spec, ExecutionEnvironment env, char[] passwd);
+    }
 
-        if (mspec == null) {
-            return null;
-        }
-
+    private static void processTestUserInfo(UsetrInfoProcessor processor) throws IOException {
         String rcFileName = System.getProperty("cnd.remote.testuserinfo.rcfile"); // NOI18N
         File userInfoFile = null;
 
@@ -147,7 +147,7 @@ public class NativeExecutionTestSupport {
         }
 
         if (userInfoFile == null || ! userInfoFile.exists()) {
-            return null;
+            return;
         }
 
         BufferedReader rcReader = new BufferedReader(new FileReader(userInfoFile));
@@ -168,35 +168,72 @@ public class NativeExecutionTestSupport {
                 continue;
             }
 
-            if (mspec.equals(spec)) {
-                m = pwdPattern.matcher(loginInfo);
-                String remoteHKey = null;
+            m = pwdPattern.matcher(loginInfo);
+            String remoteHKey = null;
 
-                if (m.matches()) {
-                    passwd = m.group(2).toCharArray();
-                    remoteHKey = m.group(1) + "@" + m.group(3); // NOI18N                    
-                } else {
-                    remoteHKey = loginInfo;
-                }
+            if (m.matches()) {
+                passwd = m.group(2).toCharArray();
+                remoteHKey = m.group(1) + "@" + m.group(3); // NOI18N
+            } else {
+                remoteHKey = loginInfo;
+            }
 
-                result = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
+            ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(remoteHKey);
+            if (!processor.processLine(spec, env, passwd)) {
                 break;
             }
         }
+    }
 
-        if (result != null) {
-            if (passwd != null) {
-                PasswordManager.getInstance().storePassword(result, passwd, false);
+    public static ExecutionEnvironment getTestExecutionEnvironment(final String mspec) throws IOException {
+        if (mspec == null) {
+            return null;
+        }
+        final AtomicReference<ExecutionEnvironment> result = new AtomicReference<ExecutionEnvironment>();
+        final AtomicReference<char[]> passwd = new AtomicReference<char[]>();
+        processTestUserInfo(new UsetrInfoProcessor() {
+            @Override
+            public boolean processLine(String spec, ExecutionEnvironment e, char[] p) {
+                if (mspec.equals(spec)) {
+                    result.set(e);
+                    passwd.set(p);
+                    return false;
+                }
+                return true;
+            }
+        });
+        if (result.get() != null) {
+            if (passwd.get() != null) {
+                PasswordManager.getInstance().storePassword(result.get(), passwd.get(), false);
             }
         }
 
-        spec2env.put(mspec, result);
-        env2spec.put(result, mspec);
-        return result;
+        spec2env.put(mspec, result.get());
+        env2spec.put(result.get(), mspec);
+        return result.get();
     }
 
+    public static char[] getTestPassword(final ExecutionEnvironment env) throws IOException {
+        if (env == null) {
+            return null;
+        }
+        final AtomicReference<char[]> passwd = new AtomicReference<char[]>();
+        processTestUserInfo(new UsetrInfoProcessor() {
+            @Override
+            public boolean processLine(String spec, ExecutionEnvironment e, char[] p) {
+                if (env.equals(e)) {
+                    passwd.set(p);
+                    return false;
+                }
+                return true;
+            }
+        });
+        return passwd.get();
+    }
+
+
     /**
-     * Gets an MSpec string, which was used for getting the given environent
+     * Gets an MSpec string, which was used for getting the given environment
      * (i.e. it's an inverse of getTestExecutionEnvironment(String))
      */
     public static String getMspec(ExecutionEnvironment execEnv) {

@@ -41,14 +41,10 @@ package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 
-import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -70,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="code_maturity", suppressWarnings="UseOfSystemOutOrSystemErr")
+@Hint(category="code_maturity", enabled = false, suppressWarnings="UseOfSystemOutOrSystemErr")
 public class SystemOut {
 
     @TriggerPatterns ({

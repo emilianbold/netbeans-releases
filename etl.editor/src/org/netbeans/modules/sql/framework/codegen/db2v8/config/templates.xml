@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<!-- 
+  * Contents of this template will override any existing attributes in base/config/templates.xml
+  -->
+<templates>
+	<attr attributeName="insert" attributeType="java.lang.String" attributeValue="db2v8/config/insert.vm" />
+	<attr attributeName="insertSelect" attributeType="java.lang.String" attributeValue="db2v8/config/insertSelect.vm" />	
+	<attr attributeName="merge" attributeType="java.lang.String" attributeValue="db2v8/config/merge.vm" />
+	<attr attributeName="truncate" attributeType="java.lang.String" attributeValue="db2v8/config/truncate.vm" />
+	<attr attributeName="update" attributeType="java.lang.String" attributeValue="db2v8/config/update.vm" />
+</templates>

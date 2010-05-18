@@ -306,9 +306,8 @@ public class SOAPComponentValidatorTest extends TestCase {
     
     public void testSOAPOperationMissingBody() throws Exception {
         HashSet<String> expectedErrors = new HashSet<String>();
-        expectedErrors.add(mMessages.getString("SOAPBodyValidator.Atleast_one_body_Required"));
         
-        String relativePath = "extensions/soap/validation/resources/invalid/SOAPOperationMissingBody.wsdl";
+        String relativePath = "extensions/soap/validation/resources/valid/SOAPOperationMissingBody.wsdl";
         validate(relativePath, expectedErrors);
     }
     

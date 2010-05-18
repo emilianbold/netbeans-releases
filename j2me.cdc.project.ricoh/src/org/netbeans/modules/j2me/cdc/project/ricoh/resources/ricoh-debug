@@ -16,7 +16,6 @@
                 <sleep seconds="5"/>
                 <property name="jpda.port" value="8000"/>
                 <property name="debug.period" value="3000"/>
-                <property name="debug.timeout" value="30000"/>
                 <antcall target="nbdebug" inheritall="true" inheritrefs="true"/>
             </sequential>
         </parallel>

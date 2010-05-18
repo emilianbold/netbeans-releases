@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--this is the etl wsdl template file -->
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:slnk="http://schemas.xmlsoap.org/ws/2002/07/service-link/"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:tns="http://com.sun.jbi/etl/etlengine"
+	xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="etl"
+	targetNamespace="http://com.sun.jbi/etl/etlengine">
+	<types>
+		<xsd:schema elementFormDefault="qualified"
+			targetNamespace="http://com.sun.jbi/etl/etlengine">
+			<xsd:element name="inputItem">
+				<xsd:complexType>
+					<xsd:sequence>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="outputItem">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="status" type="xsd:string" />
+						<xsd:element name="startTime" type="xsd:string" />
+						<xsd:element name="endTime" type="xsd:string" />
+						<xsd:element name="rowsInserted" type="xsd:integer" />
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+
+		</xsd:schema>
+	</types>
+	<message name="input">
+		<part name="part" element="tns:inputItem"/>
+	</message>
+	<message name="output">
+		<part name="part" element="tns:outputItem"/>
+	</message>
+	<portType name="etlPortType">
+		<operation name="execute">
+			<input message="tns:input" name="inputMsg" />
+			<output message="tns:output" name="outputMsg" />
+		</operation>
+	</portType>
+	<binding name="Binding" type="tns:etlPortType">
+		<soap:binding style="document"
+			transport="http://schemas.xmlsoap.org/soap/http" />
+		<operation name="execute">
+			<soap:operation soapAction="execute" />
+			<input name="inputMsg">
+				<soap:body use="literal" />
+			</input>
+			<output name="outputMsg">
+				<soap:body use="literal" />
+			</output>
+		</operation>
+	</binding>
+	<service name="etlService">
+		<port name="etlPort" binding="tns:Binding">
+			<soap:address location="http://localhost:12033/etlengine" />
+		</port>
+	</service>
+	<plink:partnerLinkType name="etlPartnerLinkType">
+        <plink:role name="myrole" portType="tns:etlPortType"/>
+    </plink:partnerLinkType>
+	
+</definitions>

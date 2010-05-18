@@ -92,8 +92,8 @@ import org.openide.util.ImageUtilities;
         if (!action.isEnabled()) {
             String baseName = super.getHtmlDisplayName();
             baseName = baseName != null ? baseName : getDisplayName();
-            return "<font color='!controlShadow'>" + baseName; // NOI18N
-            }
+            return "<font color='!controlShadow'>" + baseName.replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
+        }
         return super.getHtmlDisplayName();
     }
 

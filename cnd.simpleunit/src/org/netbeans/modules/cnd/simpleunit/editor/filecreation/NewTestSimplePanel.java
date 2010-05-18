@@ -50,6 +50,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,6 +77,11 @@ public class NewTestSimplePanel extends CndPanel {
             gui.addChangeListener(this);
         }
         return gui;
+    }
+
+    @Override
+    public HelpCtx getHelp() {
+        return new HelpCtx("CreateTestWizardP2");
     }
 
     @Override

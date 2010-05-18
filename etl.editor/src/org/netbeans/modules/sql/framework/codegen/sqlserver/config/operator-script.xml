@@ -1,0 +1,42 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+<!-- 
+	Definition for Operators that are supported by SeeBeyond SQL Builder
+-->
+<operator-script>
+	<operators>
+		<operator name="varconcat" dbspecificname="+" script="[$str]+" type="string" >
+			<arg name="str" type="varchar" />
+			<output type="varchar"/>
+		</operator>
+
+		<operator name="substring" dbspecificname="SUBSTRING" script="SUBSTRING($str, $pos1, $pos2)" type="string" arg2Use="str" >
+			<arg name="str" type="varchar" />
+			<arg name="pos1" type="numeric" range="unsigned" />
+			<arg name="pos2" type="numeric" range="unsigned" />
+			<output type="varchar"/>
+		</operator>
+                
+		<operator name="mod" dbspecificname="%" script="($dividend % $divisor)" type="numeric" >
+			<arg name="dividend" type="numeric" />
+			<arg name="divisor" type="numeric" />
+			<output type="numeric"/>
+		</operator>
+
+		<operator name="now" dbspecificname="GETDATE()" script="GETDATE()" type="timestamp">
+			<output type="timestamp" />
+		</operator>
+		
+				
+		<operator name="length" dbspecificname="LEN" script="LEN($str)" type="string" >
+			<arg name="str" type="varchar" />
+			<output type="numeric"/>
+		</operator>
+		
+                <operator name="trim" dbspecificname="TRIM" script="trim($str1)" type="string" arg2Use="str1">
+                    <arg name="str1" type="varchar" />
+                    <output type="varchar"/>
+                </operator>
+		
+		
+	</operators>
+</operator-script>

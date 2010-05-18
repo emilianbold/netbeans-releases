@@ -146,6 +146,7 @@ public final class TransferFilesChooserVisual extends JPanel {
         Mnemonics.setLocalizedText(warningLabel, "DUMMY");
         GroupLayout outerPanelLayout = new GroupLayout(outerPanel);
         outerPanel.setLayout(outerPanelLayout);
+
         outerPanelLayout.setHorizontalGroup(
             outerPanelLayout.createParallelGroup(Alignment.LEADING)
             .addGroup(outerPanelLayout.createSequentialGroup()
@@ -164,8 +165,15 @@ public final class TransferFilesChooserVisual extends JPanel {
                     .addComponent(warningLabel)))
         );
 
+        innerPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TransferFilesChooserVisual.class, "TransferFilesChooserVisual.innerPanel.AccessibleContext.accessibleName")); // NOI18N
+        innerPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TransferFilesChooserVisual.class, "TransferFilesChooserVisual.innerPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        selectedFilesInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TransferFilesChooserVisual.class, "TransferFilesChooserVisual.selectedFilesInfoLabel.AccessibleContext.accessibleName")); // NOI18N
+        selectedFilesInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TransferFilesChooserVisual.class, "TransferFilesChooserVisual.selectedFilesInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        warningLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TransferFilesChooserVisual.class, "TransferFilesChooserVisual.warningLabel.AccessibleContext.accessibleName")); // NOI18N
+        warningLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TransferFilesChooserVisual.class, "TransferFilesChooserVisual.warningLabel.AccessibleContext.accessibleDescription")); // NOI18N
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -183,6 +191,13 @@ public final class TransferFilesChooserVisual extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(outerPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        selectFilesLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TransferFilesChooserVisual.class, "TransferFilesChooserVisual.selectFilesLabel.AccessibleContext.accessibleName")); // NOI18N
+        selectFilesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TransferFilesChooserVisual.class, "TransferFilesChooserVisual.selectFilesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        outerPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TransferFilesChooserVisual.class, "TransferFilesChooserVisual.outerPanel.AccessibleContext.accessibleName")); // NOI18N
+        outerPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TransferFilesChooserVisual.class, "TransferFilesChooserVisual.outerPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(TransferFilesChooserVisual.class, "TransferFilesChooserVisual.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TransferFilesChooserVisual.class, "TransferFilesChooserVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 

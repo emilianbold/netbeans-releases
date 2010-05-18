@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Creating Intelligent Event Processing Module Projects</title>
+</head>
+
+<body>
+
+<h2>Creating Intelligent Event Processing Module Projects</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>You create a new Intelligent Event Processing Module project in the NetBeans IDE. You then add one or more event processors to the project.</p>
+
+
+
+<p><strong>To create an Intelligent Event Processing Module project:</strong></p>
+
+<ol>
+
+  <li>From the IDE's main menu, choose File > New Project.<br>The New Project wizard opens.</li>
+  <li>In the Categories list, select the SOA node.</li>
+  <li>In the Projects list, select the Intelligent Event Processing Module node.</li>
+  <li>Click Next.</li>
+  <li>(Optional) In the Project Name field, change the default project name.</li>
+  <li>Click Finish.<br>
+      The new IEP Module project appears in the Projects window. You can now add one or more event processors to the project.</li>
+
+</ol>
+
+<p><strong>To add an event processor to the project:</strong></p>
+
+<ol>
+
+  <li>Right-click the Processor Files node and choose New > Intelligent Event Processor.
+  <li>(Optional) In the File Name field, change the default file name.</li>
+  <li>Click Finish.<br>
+      The event processor is added. The IEP Editor opens in Design view. You can now define the event processing logic by adding and configuring IEP operators.</li>
+
+</ol>
+
+
+
+<h3>Event Processor Naming</h3>
+
+<p>When you add an event processor, be aware that IEP does not allow the deployment of two event processors with the same name. 
+For example, assume that you have two Composite Application projects.
+The first Composite Application project includes an IEP Module project that has an event processor called <tt>test.iep</tt>. 
+The second Composite Application project includes an IEP Module project that has an event processor called <tt>test.iep</tt>.
+You deploy the first Composite Application project, and then try to deploy the second Composite Application project. 
+The second deployment will not succeed.</p>
+
+<p>One workaround is to assign unique names to the event processors.</p>
+
+<p>Another workaround is to create a unique folder hierarchy in each IEP Module project. 
+For example, you could add a folder called <tt>MyFolder1</tt> to the IEP Module project in the first Composite Application project 
+and a folder called <tt>MyFolder2</tt> to the IEP Module project in the second Composite Application project. 
+Then you can add event processors with the same name to these folders.</p>
+
+
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dt>&nbsp;</dt>
+<dd><a href="dragdrop.html">Adding IEP Operators to an Event Process</a></dd>
+<dd><a href="usingprop.html">Configuring IEP Operators</a></dd>
+<dd><a href="editprojects.html">Validating Event Processes</a></dd>
+<dd><a href="wsdlcreate.html">Understanding WSDL Creation</a></dd>
+<dd><a href="deployiep.html">Deploying a Composite Application that Contains an IEP Module Project</a></dd>
+<dt>&nbsp;</dt>
+</dl>
+
+<hr>
+
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

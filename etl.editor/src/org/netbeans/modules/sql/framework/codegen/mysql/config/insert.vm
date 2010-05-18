@@ -1,0 +1,3 @@
+#parse("org/netbeans/modules/sql/framework/codegen/mysql/config/disableConstraints.vm")
+#parse("org/netbeans/modules/sql/framework/codegen/mysql/config/insertStmt.vm") 
+#parse("org/netbeans/modules/sql/framework/codegen/mysql/config/enableConstraints.vm")

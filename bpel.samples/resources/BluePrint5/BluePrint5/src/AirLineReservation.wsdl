@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+  * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
+    may be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<definitions targetNamespace="http://localhost/BluePrint5/AirLineReservation"
+             name="AirLineReservation"
+             xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/varprop"
+             xmlns:tns="http://localhost/BluePrint5/AirLineReservation"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:ns="http://ReservationSystem.org/xsd/reserve"
+             xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:res="http://localhost/BluePrint5/Reservation">
+    <import location="Reservation.wsdl" namespace="http://localhost/BluePrint5/Reservation"/>
+    
+    <types>
+        <xsd:schema targetNamespace="http://localhost/BluePrint5/AirLineReservation">
+            <xsd:import schemaLocation="reservation.xsd" namespace="http://ReservationSystem.org/xsd/reserve"/>
+        </xsd:schema>
+    </types>
+    
+    <message name="AirlineReservation">
+        <part name="reserveAirlinePart" element="ns:reserve"></part>
+    </message>
+    
+    <message name="AirlineReservationStatus">
+        <part name="status" element="ns:reserveStatus"></part>
+    </message>
+    
+    <portType name="AirlineReservationPortType">
+        <operation name="reserveAirline">
+            <input name="reserveMesg" message="tns:AirlineReservation"></input>
+        </operation>
+    </portType>
+    
+    <portType name="AirlineStatusPortType">
+        <operation name="sendAirlineStatus">
+            <input name="statusMesg" message="tns:AirlineReservationStatus"></input>
+        </operation>
+    </portType>
+    
+    <binding name="AirlineReservationBinding" type="tns:AirlineReservationPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="reserveAirline">
+            <soap:operation style="document"/>
+            <input name="reserveMesg">
+                <soap:body parts="reserveAirlinePart" use="literal"/>
+            </input>
+        </operation>
+    </binding>
+    
+    <binding name="AirlineReservationStatusBinding"
+             type="tns:AirlineStatusPortType">
+        <soap:binding style="document"
+                      transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="sendAirlineStatus">
+            <soap:operation style="document"/>
+            <input name="statusMesg">
+                <soap:body parts="status" use="literal"/>
+            </input>
+        </operation>
+    </binding>
+
+    <service name="AirlineService">
+        <port name="AirlineServicePort"
+              binding="tns:AirlineReservationBinding">
+            <soap:address location="http://localhost:18181/wsdl/AirlineService/ServiceLocation"/>
+        </port>
+    </service>
+    
+    <service name="AirlineStatusService">
+        <port name="AirlineStatusServicePort"
+              binding="tns:AirlineReservationStatusBinding">
+            <soap:address location="http://localhost:18181/wsdl/AirlineStatusService/ServiceLocation"/>
+        </port>
+    </service>
+    
+    <plink:partnerLinkType name="AirlineReservationPLinkType">
+        <plink:role portType="tns:AirlineReservationPortType"
+                    name="reservingRole"></plink:role>
+    </plink:partnerLinkType>
+    
+    <plink:partnerLinkType name="AirLineReservStatusPLinkType">
+        <plink:role portType="tns:AirlineStatusPortType"
+                    name="statusReceivingRole"></plink:role>
+    </plink:partnerLinkType>
+    
+    <bpws:propertyAlias part="status"
+                        propertyName="res:reservationID"
+                        messageType="tns:AirlineReservationStatus">
+        <bpws:query>/ns:reserveStatus/ns:reservationID</bpws:query>
+    </bpws:propertyAlias>
+    
+    <bpws:property name="air" type="ns:reserveType"/>
+    
+    <bpws:propertyAlias propertyName="tns:air" 
+                        messageType="tns:AirlineReservation" 
+                        part="reserveAirlinePart"/>
+</definitions>

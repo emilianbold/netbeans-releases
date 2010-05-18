@@ -164,7 +164,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */
     void setContext(VCSContext ctx) {
         context = ctx;
-        //reScheduleRefresh(0);
+        if (EventQueue.isDispatchThread()) {
+            syncTable.setTableModel(new SyncFileNode[0]);
+        }
     }
     
     public ExplorerManager getExplorerManager() {

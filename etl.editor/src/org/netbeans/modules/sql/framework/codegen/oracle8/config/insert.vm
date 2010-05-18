@@ -1,0 +1,3 @@
+#parse("org/netbeans/modules/sql/framework/codegen/oracle8/config/disableConstraints.vm")
+#parse("org/netbeans/modules/sql/framework/codegen/oracle8/config/insertStmt.vm") 
+#parse("org/netbeans/modules/sql/framework/codegen/oracle8/config/enableConstraints.vm")

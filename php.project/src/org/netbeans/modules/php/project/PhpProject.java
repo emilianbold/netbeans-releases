@@ -758,14 +758,7 @@ public final class PhpProject implements Project {
             }
 
             // log usage
-            StringBuilder buffer = new StringBuilder(200);
-            for (PhpFrameworkProvider provider : frameworkProviders) {
-                if (buffer.length() > 0) {
-                    buffer.append("|"); // NOI18N
-                }
-                buffer.append(provider.getName());
-            }
-            PhpProjectUtils.logUsage(PhpProject.class, "USG_PROJECT_OPEN_PHP", Arrays.asList(buffer.toString())); // NOI18N
+            PhpProjectUtils.logUsage(PhpProject.class, "USG_PROJECT_OPEN_PHP", Arrays.asList(PhpProjectUtils.getFrameworksForUsage(frameworkProviders))); // NOI18N
         }
 
         @Override

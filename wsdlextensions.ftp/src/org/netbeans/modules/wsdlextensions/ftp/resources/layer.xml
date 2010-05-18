@@ -1,0 +1,831 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC '-//NetBeans//DTD Filesystem 1.0//EN' 'http://www.netbeans.org/dtds/filesystem-1_0.dtd'>
+
+<filesystem>
+    <folder name="WSDLEditor">
+        <file name="ftp_ext.xsd" url="ftp_ext.xsd">
+            <attr name="prefix" stringvalue="ftp" />
+        </file>
+        
+        <folder name ="Binding">
+            <file name="FTPBinding">
+                <attr name="xsdFileName" stringvalue="ftp_ext" />
+                <attr name="element" stringvalue="binding" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/throw16.png" /> 
+            </file>
+        </folder>
+     
+        <folder name ="BindingOperation">
+            <file name="FTPBindingOperation">
+                <attr name="xsdFileName" stringvalue="ftp_ext" />
+                <attr name="element" stringvalue="operation" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onalarm16x16.png" /> 
+            </file>
+        </folder>
+			
+        <folder name ="BindingOperationInput">
+            <file name="FTPBindingTransfer">
+                <attr name="xsdFileName" stringvalue="ftp_ext" />
+                <attr name="element" stringvalue="transfer" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file>
+            <file name="FTPBindingMessage">
+                <attr name="xsdFileName" stringvalue="ftp_ext" />
+                <attr name="element" stringvalue="message" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file>
+        </folder>	        
+	      
+        <folder name ="BindingOperationOutput">
+            <file name="FTPBindingTransfer">
+                <attr name="xsdFileName" stringvalue="ftp_ext" />
+                <attr name="element" stringvalue="transfer" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/scope16x16.png" /> 
+            </file>
+            <file name="FTPBindingMessage">
+                <attr name="xsdFileName" stringvalue="ftp_ext" />
+                <attr name="element" stringvalue="message" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file>
+	</folder>	        
+
+        <folder name ="ServicePort">
+            <file name="FTPServicePort" >
+                <attr name="xsdFileName" stringvalue="ftp_ext" />
+                <attr name="element" stringvalue="address" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/while16x16.png" /> 
+            </file>
+        </folder>	        
+    </folder>
+  
+    <folder name="SeeBeyondJbiComponents">
+        <!-- JBI Component -->
+        <folder name="sun-ftp-binding">
+            <attr name="id" stringvalue="sun-ftp-binding"/>
+            <attr name="description" stringvalue="FTP Binding"/>
+            <attr name="type" stringvalue="Binding"/>
+            <file name="ftp.binding-1.0">
+                <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/ftp/"/>
+            </file>
+        </folder>
+     </folder>  
+
+    <folder name="bpel-nmproperties">
+        <folder name="ftp-bc">
+            <attr name="display-name" stringvalue="FTP BC"/>
+            <folder name="ftp-outbound">
+                <attr name="display-name" stringvalue="Outbound"/>
+                <file name="enable-dynamic-endpoint">
+                    <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.use.dynamic.endpoint"/>
+                    <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                    <attr name="display-name" stringvalue="Enable Dynamic Endpoint"/>
+                </file>
+                <folder name="ftp-connect">
+                    <attr name="display-name" stringvalue="FTP"/>
+                    <file name="outbound-host">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.host"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="FTP Host (or IP)"/>
+                    </file>
+                    <file name="outbound-port">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.port"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="FTP Port"/>
+                    </file>
+                    <file name="outbound-user">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.user"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="User Login"/>
+                    </file>
+                    <file name="outbound-password">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.password"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Login Password"/>
+                    </file>
+                    <file name="outbound-dir-list-style">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.dir.list.style"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Directory List Style"/>
+                    </file>
+                    <file name="outbound-transfer-mode">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.mode"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Transfer Mode"/>
+                    </file>
+                </folder>
+                <folder name="ftp-ssl">
+                    <attr name="display-name" stringvalue="SSL"/>
+                    <file name="outbound-sec-ftp-type">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.secure.type"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Secured FTP Type"/>
+                    </file>
+                    <file name="outbound-enable-CCC">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.enable.ccc"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Enable CCC"/>
+                    </file>
+                    <file name="outbound-key-store-loc">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.keystore.location"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Key Store Location"/>
+                    </file>
+                    <file name="outbound-key-store-passwd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.keystore.password"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Key Store Password"/>
+                    </file>
+                    <file name="outbound-trust-store-loc">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.truststore.location"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Trust Store Location"/>
+                    </file>
+                    <file name="outbound-trust-store-passwd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.truststore.password"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Trust Store Password"/>
+                    </file>
+                    <file name="outbound-key-alias">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.key.alias"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Key Alias"/>
+                    </file>
+                    <file name="outbound-kay-alias-passwd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.key.alias.password"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Key Password"/>
+                    </file>
+                </folder>
+                <folder name="ftp-advanced">
+                    <attr name="display-name" stringvalue="Advanced"/>
+                    <file name="outbound-use-ud-dir-list">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.use.user.dir.list.style"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Use User Defined Directory List Style"/>
+                    </file>
+                    <file name="outbound-ud-dir-list-name">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.user.dir.style.name"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="User Defined Directory List Style Name"/>
+                    </file>
+                    <file name="outbound-ud-dir-list-cfg">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.user.dir.style.config"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="User Defined Directory List Style Configuration File Location"/>
+                    </file>
+                    <file name="outbound-control-ch-encoding">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.control.channel.encoding"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Control Channel Encoding"/>
+                    </file>
+                    <file name="outbound-control-ch-timeout">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.control.channel.timeout"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Control Channel Timeout"/>
+                    </file>
+                    <file name="outbound-data-ch-timeout">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.data.channel.timeout"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Data Channel Timeout"/>
+                    </file>
+                </folder>
+                <folder name="ftp-messaging">
+                    <attr name="display-name" stringvalue="Messaging"/>
+                    <file name="outbound-msg-repo">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.repository"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Message Repository"/>
+                    </file>
+                    <file name="outbound-msg-name">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.name"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Message Name"/>
+                    </file>
+                    <file name="outbound-msg-prefix">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.prefix"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Message Prefix"/>
+                    </file>
+                    <file name="outbound-msg-correlate">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.req.resp.correlate"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Message Correlate Enabled"/>
+                    </file>
+                    <file name="outbound-msg-get-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.get.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for FTP Get"/>
+                    </file>
+                    <file name="outbound-msg-get-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.get.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for FTP Get"/>
+                    </file>
+                    <file name="outbound-msg-put-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.put.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for FTP Put"/>
+                    </file>
+                    <file name="outbound-msg-put-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.put.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for FTP Put"/>
+                    </file>
+
+                    <file name="outbound-msg-pre-get-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.pre.get.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for PRE FTP Get Operation"/>
+                    </file>
+                    <file name="outbound-msg-pre-get-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.pre.get.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for PRE FTP Get Operation"/>
+                    </file>
+                    <file name="outbound-msg-post-get-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.post.get.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for POST FTP Get Operation"/>
+                    </file>
+                    <file name="outbound-msg-post-get-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.post.get.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for POST FTP Get Operation"/>
+                    </file>
+
+                    <file name="outbound-msg-pre-put-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.pre.put.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for PRE FTP Put Operation"/>
+                    </file>
+                    <file name="outbound-msg-pre-put-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.pre.put.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for PRE FTP Put Operation"/>
+                    </file>
+                    <file name="outbound-msg-post-put-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.post.put.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for POST FTP Put Operation"/>
+                    </file>
+                    <file name="outbound-msg-post-put-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.post.put.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for POST FTP Put Operation"/>
+                    </file>
+                </folder>
+                <folder name="ftp-transferring">
+                    <attr name="display-name" stringvalue="Transferring"/>
+                    <file name="outbound-trans-send-to">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.destination"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Transfer Destination (SendTo)"/>
+                    </file>
+                    <file name="outbound-trans-append">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.append"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Append To Destination"/>
+                    </file>
+                    <file name="outbound-trans-dest-is-patt">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.dest.is.pattern"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Destination Is Pattern"/>
+                    </file>
+                    <file name="outbound-trans-pre-send-cmd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.send.cmd"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Pre Send Command"/>
+                    </file>
+                    <file name="outbound-trans-pre-send-loc">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.send.location"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Pre Send Location"/>
+                    </file>
+                    <file name="outbound-trans-pre-send-has-patt">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.send.location.has.pattern"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Pre Send Location Has Pattern"/>
+                    </file>
+                    <file name="outbound-trans-post-send-cmd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.send.cmd"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Post Send Command"/>
+                    </file>
+                    <file name="outbound-trans-post-send-loc">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.send.location"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Post Send Location"/>
+                    </file>
+                    <file name="outbound-trans-post-send-loc-has-patt">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.send.location.has.pattern"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Post Send Location Has Pattern"/>
+                    </file>
+                    <file name="outbound-trans-recv-from">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.source"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Transfer Source (ReceiveFrom)"/>
+                    </file>
+                    <file name="outbound-trans-recv-from-is-regex">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.src.is.regex"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Transfer Source Is Regular Expression"/>
+                    </file>
+                    <file name="outbound-trans-pre-recv-cmd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.recv.cmd"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Pre Receive Command"/>
+                    </file>
+                    <file name="outbound-trans-pre-recv-loc">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.recv.location"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Pre Receive Location"/>
+                    </file>
+                    <file name="outbound-trans-pre-recv-loc-has-patt">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.recv.location.has.pattern"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Pre Recieve Location Has Pattern"/>
+                    </file>
+                    <file name="outbound-trans-post-recv-cmd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.recv.cmd"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Post Receive Command"/>
+                    </file>
+                    <file name="outbound-trans-post-recv-loc">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.recv.location"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Post Receive Location"/>
+                    </file>
+                    <file name="outbound-trans-post-recv-loc-has-patt">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.recv.location.has.pattern"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Post Recieve Location Has Pattern"/>
+                    </file>
+                    <file name="outbound-trans-req-resp-correlate">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.req.resp.correlate"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Request Response Transfer Correlate Enabled"/>
+                    </file>
+                    <file name="outbound-trans-get-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.get.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for FTP Get"/>
+                    </file>
+                    <file name="outbound-trans-get-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.get.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for FTP Get"/>
+                    </file>
+                    <file name="outbound-trans-put-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.put.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for FTP Put"/>
+                    </file>
+                    <file name="outbound-trans-put-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.put.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for FTP Put"/>
+                    </file>
+
+                    <file name="outbound-trans-pre-get-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.recv.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for PRE FTP Get Operation"/>
+                    </file>
+                    <file name="outbound-trans-pre-get-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.recv.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for PRE FTP Get Operation"/>
+                    </file>
+                    <file name="outbound-trans-post-get-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.recv.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for POST FTP Get Operation"/>
+                    </file>
+                    <file name="outbound-trans-post-get-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.recv.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for POST FTP Get Operation"/>
+                    </file>
+
+                    <file name="outbound-trans-pre-put-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.send.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for PRE FTP Put Operation"/>
+                    </file>
+                    <file name="outbound-trans-pre-put-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.send.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for PRE FTP Put Operation"/>
+                    </file>
+                    <file name="outbound-trans-post-put-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.send.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for POST FTP Put Operation"/>
+                    </file>
+                    <file name="outbound-trans-post-put-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.send.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for POST FTP Put Operation"/>
+                    </file>
+                </folder>
+            </folder>
+
+            <folder name="ftp-inbound">
+                <attr name="display-name" stringvalue="Inbound"/>
+                <folder name="ftp-connect">
+                    <attr name="display-name" stringvalue="FTP"/>
+                    <file name="inbound-host">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.host"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="FTP Host (or IP)"/>
+                    </file>
+                    <file name="inbound-port">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.port"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="FTP Port"/>
+                    </file>
+                    <file name="inbound-user">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.user"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="User Login"/>
+                    </file>
+                    <file name="inbound-password">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.password"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Login Password"/>
+                    </file>
+                    <file name="inbound-dir-list-style">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.dir.list.style"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Directory List Style"/>
+                    </file>
+                    <file name="inbound-transfer-mode">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.mode"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Transfer Mode"/>
+                    </file>
+                </folder>
+                <folder name="ftp-ssl">
+                    <attr name="display-name" stringvalue="SSL"/>
+                    <file name="inbound-sec-ftp-type">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.secure.type"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Secured FTP Type"/>
+                    </file>
+                    <file name="inbound-enable-CCC">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.enable.ccc"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Enable CCC"/>
+                    </file>
+                    <file name="inbound-key-store-loc">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.keystore.location"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Key Store Location"/>
+                    </file>
+                    <file name="inbound-key-store-passwd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.keystore.password"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Key Store Password"/>
+                    </file>
+                    <file name="inbound-trust-store-loc">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.truststore.location"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Trust Store Location"/>
+                    </file>
+                    <file name="inbound-trust-store-passwd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.truststore.password"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Trust Store Password"/>
+                    </file>
+                    <file name="inbound-key-alias">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.key.alias"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Key Alias"/>
+                    </file>
+                    <file name="inbound-kay-alias-passwd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.key.alias.password"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Key Password"/>
+                    </file>
+                </folder>
+                <folder name="ftp-advanced">
+                    <attr name="display-name" stringvalue="Advanced"/>
+                    <file name="inbound-use-ud-dir-list">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.use.user.dir.list.style"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Use User Defined Directory List Style"/>
+                    </file>
+                    <file name="inbound-ud-dir-list-name">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.user.dir.style.name"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="User Defined Directory List Style Name"/>
+                    </file>
+                    <file name="inbound-ud-dir-list-cfg">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.user.dir.style.config"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="User Defined Directory List Style Configuration File Location"/>
+                    </file>
+                    <file name="inbound-control-ch-encoding">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.control.channel.encoding"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Control Channel Encoding"/>
+                    </file>
+                    <file name="inbound-control-ch-timeout">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.control.channel.timeout"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Control Channel Timeout"/>
+                    </file>
+                    <file name="inbound-data-ch-timeout">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.data.channel.timeout"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Data Channel Timeout"/>
+                    </file>
+                </folder>
+                <folder name="ftp-messaging">
+                    <attr name="display-name" stringvalue="Messaging"/>
+                    <file name="inbound-msg-repo">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.repository"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Message Repository"/>
+                    </file>
+                    <file name="inbound-msg-name">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.name"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Message Name"/>
+                    </file>
+                    <file name="inbound-msg-prefix">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.prefix"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Message Prefix"/>
+                    </file>
+                    <file name="inbound-msg-correlate">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.req.resp.correlate"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Message Correlate Enabled"/>
+                    </file>
+                    <!-- extra -->
+                    <file name="inbound-msg-get-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.get.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for FTP Get"/>
+                    </file>
+                    <file name="inbound-msg-get-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.get.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for FTP Get"/>
+                    </file>
+                    <file name="inbound-msg-put-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.put.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for FTP Put"/>
+                    </file>
+                    <file name="inbound-msg-put-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.put.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for FTP Put"/>
+                    </file>
+
+                    <file name="inbound-msg-pre-get-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.pre.get.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for PRE FTP Get Operation"/>
+                    </file>
+                    <file name="inbound-msg-pre-get-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.pre.get.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for PRE FTP Get Operation"/>
+                    </file>
+                    <file name="inbound-msg-post-get-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.post.get.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for POST FTP Get Operation"/>
+                    </file>
+                    <file name="inbound-msg-post-get-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.post.get.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for POST FTP Get Operation"/>
+                    </file>
+
+                    <file name="inbound-msg-pre-put-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.pre.put.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for PRE FTP Put Operation"/>
+                    </file>
+                    <file name="inbound-msg-pre-put-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.pre.put.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for PRE FTP Put Operation"/>
+                    </file>
+                    <file name="inbound-msg-post-put-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.post.put.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for POST FTP Put Operation"/>
+                    </file>
+                    <file name="inbound-msg-post-put-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.msg.post.put.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for POST FTP Put Operation"/>
+                    </file>
+                    <!-- end of extra -->
+                </folder>
+                <folder name="ftp-transferring">
+                    <attr name="display-name" stringvalue="Transferring"/>
+                    <file name="inbound-trans-send-to">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.destination"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Transfer Destination (SendTo)"/>
+                    </file>
+                    <file name="inbound-trans-append">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.append"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Append To Destination"/>
+                    </file>
+                    <file name="inbound-trans-dest-is-patt">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.dest.is.pattern"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Destination Is Pattern"/>
+                    </file>
+                    <file name="inbound-trans-pre-send-cmd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.send.cmd"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Pre Send Command"/>
+                    </file>
+                    <file name="inbound-trans-pre-send-loc">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.send.location"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Pre Send Location"/>
+                    </file>
+                    <file name="inbound-trans-pre-send-has-patt">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.send.location.has.pattern"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Pre Send Location Has Pattern"/>
+                    </file>
+                    <file name="inbound-trans-post-send-cmd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.send.cmd"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Post Send Command"/>
+                    </file>
+                    <file name="inbound-trans-post-send-loc">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.send.location"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Post Send Location"/>
+                    </file>
+                    <file name="inbound-trans-post-send-loc-has-patt">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.send.location.has.pattern"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Post Send Location Has Pattern"/>
+                    </file>
+                    <file name="inbound-trans-recv-from">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.source"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Transfer Source (ReceiveFrom)"/>
+                    </file>
+                    <file name="inbound-trans-recv-from-is-regex">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.src.is.regex"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Transfer Source Is Regular Expression"/>
+                    </file>
+                    <file name="inbound-trans-pre-recv-cmd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.recv.cmd"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Pre Receive Command"/>
+                    </file>
+                    <file name="inbound-trans-pre-recv-loc">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.recv.location"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Pre Receive Location"/>
+                    </file>
+                    <file name="inbound-trans-pre-recv-loc-has-patt">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.recv.location.has.pattern"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Pre Recieve Location Has Pattern"/>
+                    </file>
+                    <file name="inbound-trans-post-recv-cmd">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.recv.cmd"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Post Receive Command"/>
+                    </file>
+                    <file name="inbound-trans-post-recv-loc">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.recv.location"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Post Receive Location"/>
+                    </file>
+                    <file name="inbound-trans-post-recv-loc-has-patt">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.recv.location.has.pattern"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Post Recieve Location Has Pattern"/>
+                    </file>
+                    <file name="inbound-trans-req-resp-correlate">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.req.resp.correlate"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Request Response Transfer Correlate Enabled"/>
+                    </file>
+
+                    <file name="inbound-trans-get-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.get.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for FTP Get"/>
+                    </file>
+                    <file name="inbound-trans-get-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.get.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for FTP Get"/>
+                    </file>
+                    <file name="inbound-trans-put-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.put.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for FTP Put"/>
+                    </file>
+                    <file name="inbound-trans-put-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.put.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for FTP Put"/>
+                    </file>
+
+                    <file name="inbound-trans-pre-get-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.recv.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for PRE FTP Get Operation"/>
+                    </file>
+                    <file name="inbound-trans-pre-get-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.recv.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for PRE FTP Get Operation"/>
+                    </file>
+                    <file name="inbound-trans-post-get-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.recv.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for POST FTP Get Operation"/>
+                    </file>
+                    <file name="inbound-trans-post-get-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.recv.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for POST FTP Get Operation"/>
+                    </file>
+
+                    <file name="inbound-trans-pre-put-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.send.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for PRE FTP Put Operation"/>
+                    </file>
+                    <file name="inbound-trans-pre-put-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.pre.send.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for PRE FTP Put Operation"/>
+                    </file>
+                    <file name="inbound-trans-post-put-dir">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.send.dir"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved Directory for POST FTP Put Operation"/>
+                    </file>
+                    <file name="inbound-trans-post-put-file">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ftp.transfer.post.send.file"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Resolved File for POST FTP Put Operation"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder> <!-- FTP BC END -->
+    </folder>
+</filesystem>

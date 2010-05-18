@@ -98,7 +98,7 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
 
     @Override
     public void write(SortedMap<String, Boolean> selItems) {
-        Map<Integer, String> exportIns = InstructionsConverter.computeExportInstructions(selItems);
+        Map<Integer, String> exportIns = InstructionsConverter.computeExportInstructions(selItems, project);
         final POMModel pomModel = handle.getPOMModel();
         
         Build build = pomModel.getProject().getBuild();

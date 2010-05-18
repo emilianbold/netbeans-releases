@@ -284,14 +284,16 @@ public class ProjectUtilities {
                 // next action -> expand && select main class in package view
                 final ProjectTab ptLogical = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
                 final ProjectTab ptPhysical = ProjectTab.findDefault(ProjectTab.ID_PHYSICAL);
-                // invoke later, Mutex.EVENT.writeAccess isn't suffice to 
-                // select && expand if the focus is outside ProjectTab
-                SwingUtilities.invokeLater (new Runnable () {
-                    @Override
-                    public void run () {
-                        boolean success = ptLogical.selectNode (newDo.getPrimaryFile ());
-                        if (!success) {
-                            ptPhysical.selectNode (newDo.getPrimaryFile ());
+                ProjectTab.RP.post(new Runnable() {
+                    public @Override void run() {
+                        ProjectTab tab = ptLogical;
+                        Node n = tab.findNode(newDo.getPrimaryFile());
+                        if (n == null) {
+                            tab = ptPhysical;
+                            n = tab.findNode(newDo.getPrimaryFile());
+                        }
+                        if (n != null) {
+                            tab.selectNode(n);
                         }
                     }
                 });

@@ -1,0 +1,17 @@
+<soapenv:Envelope xsi:schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ http://schemas.xmlsoap.org/soap/envelope/"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+        xmlns:po="http://jbi.com.sun/wfse/samples/purchase-order/xsd">
+
+  <soapenv:Body>
+    <po:purchaseOrder>
+      <po:orderId>34315</po:orderId>
+      <po:purchaserName>Gage Chang</po:purchaserName>
+      <po:productId>Kindle</po:productId>
+      <po:amount>299.00</po:amount>
+      <po:priority>5</po:priority>
+      <po:users>staff</po:users>
+    </po:purchaseOrder>
+  </soapenv:Body>
+</soapenv:Envelope>

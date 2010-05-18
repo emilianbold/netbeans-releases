@@ -407,42 +407,58 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                 ResolveDeclarationItem declaration = resolvedDeclarations.get(si);
                 if (declaration != null) {
                     //the css code is inlined in a tag with ID/CLASS attribute already defined
-                    DeclarationItem resolvedDeclaration = declaration.getResolvedTarget();
-                    FileObject file = resolvedDeclaration.getSource();
-                    Entry entry = resolvedDeclaration.getDeclaration().entry();
-
                     if (selectorType == SelectorType.ID) {
-                        //In case of id selector, just add the code to the refered selector body and remove the inlined style
+                        DeclarationItem resolvedDeclaration = declaration.getResolvedTarget();
 
-                        //get the selector's body range { ... }
-                        OffsetRange docBodyRange = entry.getDocumentBodyRange();
-                        if (docBodyRange == null) {
-                            //cannot refactor this inlined style
-                            continue;
+                        if(resolvedDeclaration == null) {
+                            //no declaration of the selector found in the project,
+                            //we need to generate  a new one.
+                             List<String> lines = new ArrayList<String>();
+                            lines.add(""); //empty line = will add new line
+                            lines.add(new StringBuilder().append('.').append(si.getTagsId()).append('{').toString()); //NOI18N
+                            appendConvertedInlinedCodeLines(lines, si);
+                            lines.add("}"); //NOI18N
+
+                            //if prefix is set indent the content by one level
+                            String idSelectorText = formatCssCode(context.getDocument(), baseIndent, prefix == null ? 0 : 1, lines.toArray(new String[]{}));
+                            generatedSelectorsSection.append(idSelectorText);
+
+                            atLeastOneRefactorToDefaultLocation = true;
+
+                        } else {
+                            FileObject file = resolvedDeclaration.getSource();
+                            Entry entry = resolvedDeclaration.getDeclaration().entry();
+                            //In case of id selector, just add the code to the refered selector body and remove the inlined style
+
+                            //get the selector's body range { ... }
+                            OffsetRange docBodyRange = entry.getDocumentBodyRange();
+                            if (docBodyRange == null) {
+                                //cannot refactor this inlined style
+                                continue;
+                            }
+
+                            //where to put the moved code
+                            int appendOffset = docBodyRange.getStart();
+
+                            //get the indentation from the selector's line indent + base indent
+                            int prevLineIndent = getPreviousLineIndent(resolvedDeclaration.getDocument(), appendOffset);
+                            List<String> lines = new LinkedList<String>();
+                            lines.add(""); //empty line = will add new line
+                            appendConvertedInlinedCodeLines(lines, si);
+
+                            String addedCode = formatCssCode(context.getDocument(), prevLineIndent, 0, lines.toArray(new String[]{}));
+
+                            //append the code to the existing selector
+                            CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
+                            Difference appendDiff = new Difference(Difference.Kind.INSERT,
+                                    editor.createPositionRef(appendOffset, Bias.Forward),
+                                    editor.createPositionRef(appendOffset, Bias.Backward),
+                                    null,
+                                    addedCode,
+                                    NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_AppendCssCodeToExistingSelector")); //NOI18N
+
+                            modifications.addDifferences(file, Collections.singletonList(appendDiff));
                         }
-
-                        //where to put the moved code
-                        int appendOffset = docBodyRange.getStart();
-
-                        //get the indentation from the selector's line indent + base indent
-                        int prevLineIndent = getPreviousLineIndent(resolvedDeclaration.getDocument(), appendOffset);
-                        List<String> lines = new LinkedList<String>();
-                        lines.add(""); //empty line = will add new line
-                        appendConvertedInlinedCodeLines(lines, si);
-
-                        String addedCode = formatCssCode(context.getDocument(), prevLineIndent, 0, lines.toArray(new String[]{}));
-
-                        //append the code to the existing selector
-                        CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
-                        Difference appendDiff = new Difference(Difference.Kind.INSERT,
-                                editor.createPositionRef(appendOffset, Bias.Forward),
-                                editor.createPositionRef(appendOffset, Bias.Backward),
-                                null,
-                                addedCode,
-                                NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_AppendCssCodeToExistingSelector")); //NOI18N
-
-                        modifications.addDifferences(file, Collections.singletonList(appendDiff));
-
                         //remove the inlined code
                         int deleteFrom = si.getAttributeStartOffset();
                         int deleteTo = si.getRange().getEnd() + (si.isValueQuoted() ? 1 : 0);

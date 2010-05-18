@@ -139,6 +139,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
                 selectTask.schedule (200);
             }
         });
+        lCategories.setSelectedIndex(0);
         tfFont.setEditable (false);
         bFont.addActionListener (this);
         bFont.setMargin (new Insets (0, 0, 0, 0));

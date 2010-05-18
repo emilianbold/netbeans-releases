@@ -1,0 +1,10 @@
+org.netbeans.modules.bpel.validation.custom.Validator
+org.netbeans.modules.bpel.validation.property.Validator
+org.netbeans.modules.bpel.validation.reference.Validator
+org.netbeans.modules.bpel.validation.runtime.Validator
+org.netbeans.modules.bpel.validation.schema.Validator
+org.netbeans.modules.bpel.validation.statics.Validator
+org.netbeans.modules.bpel.validation.variable.Validator
+org.netbeans.modules.bpel.validation.wsdl.Validator
+org.netbeans.modules.bpel.validation.xpath.Validator
+org.netbeans.modules.bpel.validation.compatibility.Validator

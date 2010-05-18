@@ -366,10 +366,12 @@ public class Term extends JComponent implements Accessible {
 
     private class BaseTermStream extends TermStream {
 
+	@Override
         public void flush() {
             repaint(true);
         }
 
+	@Override
         public void putChar(char c) {
             /*
              * echoes a character unto the screen
@@ -389,6 +391,7 @@ public class Term extends JComponent implements Accessible {
         // repaint(c == '\n');
         }
 
+	@Override
         public void putChars(char buf[], int offset, int count) {
             ckEventDispatchThread();
             // OLD NPE-x synchronized (Term.this)
@@ -401,10 +404,12 @@ public class Term extends JComponent implements Accessible {
             possibly_repaint(true);
         }
 
+	@Override
         public void sendChar(char c) {
             fireChar(c);
         }
 
+	@Override
         public void sendChars(char buf[], int offset, int count) {
             fireChars(buf, offset, count);
         }
@@ -457,6 +462,7 @@ public class Term extends JComponent implements Accessible {
     public static final int DEBUG_OUTPUT = 1 << 3;
     public static final int DEBUG_WRAP = 1 << 4;
     public static final int DEBUG_MARGINS = 1 << 5;
+    public static final int DEBUG_KEYPASS = 1 << 6;
     private int debug_gutter_width = 0;
 
     public void setDebugFlags(int flags) {
@@ -474,6 +480,10 @@ public class Term extends JComponent implements Accessible {
 
     private boolean debugWrap() {
         return (debug & DEBUG_WRAP) == DEBUG_WRAP;
+    }
+
+    private boolean debugKeypass() {
+        return (debug & DEBUG_KEYPASS) == DEBUG_KEYPASS;
     }
 
     private boolean debugMargins() {
@@ -729,6 +739,7 @@ public class Term extends JComponent implements Accessible {
 
         visitLines(begin, end, false, new LineVisitor() {
 
+	    @Override
             public boolean visit(Line l, int row, int bcol, int ecol) {
                 // buf.append(l.charArray(), bcol, ecol-bcol+1);
                 l.accumulateInto(bcol, ecol, aBuf);
@@ -771,15 +782,16 @@ public class Term extends JComponent implements Accessible {
     public void setKeyStrokeSet(HashSet keystroke_set) {
         this.keystroke_set = keystroke_set;
 
-    /* DEBUG
-    System.out.println("-----------------------------------------");//NOI18N
-    java.util.Iterator i = keystroke_set.iterator();
-    while (i.hasNext()) {
-    KeyStroke ks = (KeyStroke) i.next();
-    System.out.println("--- " + ks);	// NOI18N
+	if (debugKeypass()) {
+	    System.out.println("---- setKeyStrokeSet --------------------");//NOI18N
+	    java.util.Iterator i = keystroke_set.iterator();
+	    while (i.hasNext()) {
+		KeyStroke ks = (KeyStroke) i.next();
+		System.out.println("--- " + ks);	// NOI18N
+	    }
+	}
     }
-     */
-    }
+
     private HashSet keystroke_set = new HashSet();
     // attempted partial fix for IZ 17337
     // 'keystroke_set' is a collection of KeyStrokes in the form:
@@ -809,11 +821,11 @@ public class Term extends JComponent implements Accessible {
 
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
 
-        /* DEBUG
-        System.out.println("Term.maybeConsume(" + e + ")");	// NOI18N
-        System.out.println("\tKS = " + ks);	// NOI18N
-        System.out.println("\tcontained = " + keystroke_set.contains(ks));	// NOI18N
-         */
+	if (debugKeypass()) {
+	    System.out.println("Term.maybeConsume(" + e + ")");	// NOI18N
+	    System.out.println("\tKS = " + ks);	// NOI18N
+	    System.out.println("\tcontained = " + keystroke_set.contains(ks));	// NOI18N
+	}
 
         if (keystroke_set == null || !keystroke_set.contains(ks)) {
             e.consume();
@@ -853,6 +865,7 @@ public class Term extends JComponent implements Accessible {
             Coord begin = null;
             Coord end = null;
 
+	    @Override
             public boolean visit(Line l, int brow, int bcol, int ecol) {
 
                 if (l.isWrapped()) {
@@ -916,6 +929,7 @@ public class Term extends JComponent implements Accessible {
             Coord begin = null;
             Coord end = null;
 
+	    @Override
             public boolean visit(Line l, int brow, int bcol, int ecol) {
 
                 boolean line_is_continuation = false;
@@ -1241,6 +1255,7 @@ public class Term extends JComponent implements Accessible {
 
         visitLines(begin, end, false, new LineVisitor() {
 
+	    @Override
             public boolean visit(Line l, int brow, int bcol, int ecol) {
                 l.setCharacterAttribute(bcol, ecol, value, on);
                 return true;
@@ -1624,6 +1639,7 @@ public class Term extends JComponent implements Accessible {
 
         vscroll_bar.addAdjustmentListener(new AdjustmentListener() {
 
+	    @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
                 JScrollBar sb = (JScrollBar) e.getAdjustable();
                 switch (e.getAdjustmentType()) {
@@ -1670,6 +1686,7 @@ public class Term extends JComponent implements Accessible {
 
         hscroll_bar.addAdjustmentListener(new AdjustmentListener() {
 
+	    @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
                 JScrollBar sb = (JScrollBar) e.getAdjustable();
                 switch (e.getAdjustmentType()) {
@@ -1744,6 +1761,7 @@ public class Term extends JComponent implements Accessible {
                 hscrollReset(c);
             }
 
+	    @Override
             public void keyTyped(KeyEvent e) {
 
                 char c = e.getKeyChar();
@@ -1757,6 +1775,7 @@ public class Term extends JComponent implements Accessible {
                 charTyped(c, e);
             }
 
+	    @Override
             public void keyPressed(KeyEvent e) {
                 /* DEBUG
                 System.out.println("keyPressed " + e); // NOI18N
@@ -1818,6 +1837,7 @@ public class Term extends JComponent implements Accessible {
                 passOn = maybeConsume(e);
             }
 
+	    @Override
             public void keyReleased(KeyEvent e) {
                 /* DEBUG
                 System.out.println("keyReleased"); // NOI18N
@@ -1835,6 +1855,7 @@ public class Term extends JComponent implements Accessible {
 
         screen.addMouseMotionListener(new MouseMotionListener() {
 
+	    @Override
             public void mouseDragged(MouseEvent e) {
                 /* DEBUG
                 System.out.println("mouseDragged"); // NOI18N
@@ -1872,6 +1893,7 @@ public class Term extends JComponent implements Accessible {
                 scroll_to(scroll_direction, e);
             }
 
+	    @Override
             public void mouseMoved(MouseEvent e) {
                 /* DEBUG
                 Point p = (Point) e.getPoint().clone();
@@ -1893,6 +1915,7 @@ public class Term extends JComponent implements Accessible {
 
         screen.addMouseListener(new MouseListener() {
 
+	    @Override
             public void mouseClicked(MouseEvent e) {
                 BCoord bcoord = toBufCoords(toViewCoord(e.getPoint()));
 
@@ -1913,6 +1936,7 @@ public class Term extends JComponent implements Accessible {
                 }
             }
 
+	    @Override
             public void mousePressed(MouseEvent e) {
                 /* DEBUG
                 System.out.println("mousePressed "+e.getModifiers()); // NOI18N
@@ -1956,6 +1980,7 @@ public class Term extends JComponent implements Accessible {
                 }
             }
 
+	    @Override
             public void mouseReleased(MouseEvent e) {
                 /* DEBUG
                 System.out.println("mouseReleased"); // NOI18N
@@ -1985,6 +2010,7 @@ public class Term extends JComponent implements Accessible {
             /*
              * Implement follow-mouse focus
              */
+	    @Override
             public void mouseEntered(MouseEvent e) {
                 /* DEBUG
                 System.out.println("mouseEntered"); // NOI18N
@@ -1994,6 +2020,7 @@ public class Term extends JComponent implements Accessible {
                 }
             }
 
+	    @Override
             public void mouseExited(MouseEvent e) {
                 /* DEBUG
                 System.out.println("mouseExited"); // NOI18N
@@ -2003,6 +2030,7 @@ public class Term extends JComponent implements Accessible {
 
         screen.addFocusListener(new FocusListener() {
 
+	    @Override
             public void focusGained(FocusEvent e) {
                 /* DEBUG
                 System.out.println("Focus gained >>>>>>>>>>>>>>>>>>>>>>>"); // NOI18N
@@ -2011,6 +2039,7 @@ public class Term extends JComponent implements Accessible {
                 repaint(false);
             }
 
+	    @Override
             public void focusLost(FocusEvent e) {
                 /* DEBUG
                 Component o = e.getOppositeComponent();
@@ -3192,10 +3221,11 @@ public class Term extends JComponent implements Accessible {
      */
     private class OpsImpl implements Ops {
 
+	@Override
         public void op_pause() {
 
             // This yields slighlty more reasonable results.
-            Thread.currentThread().yield();
+            Thread.yield();
 
         /*
 
@@ -3211,6 +3241,7 @@ public class Term extends JComponent implements Accessible {
          */
         }
 
+	@Override
         public void op_char(char c) {
             if (debugOps()) {
                 System.out.println("op_char('" + c + "') = " + (int) c); // NOI18N
@@ -3263,6 +3294,7 @@ public class Term extends JComponent implements Accessible {
          * map G1 into GL (~ switch to graphic font)
          * No-op for now.
          */
+	@Override
         public void op_as() {
         }
 
@@ -3270,9 +3302,11 @@ public class Term extends JComponent implements Accessible {
          * map G0 into GL (~ switch to normal font)
          * No-op for now.
          */
+	@Override
         public void op_ae() {
         }
 
+	@Override
         public void op_attr(int attr) {
             if (debugOps()) {
                 System.out.println("op_attr(" + attr + ")"); // NOI18N
@@ -3280,6 +3314,7 @@ public class Term extends JComponent implements Accessible {
             setAttribute(attr);
         }
 
+	@Override
         public void op_bel() {
             // ring the bell
             if (debugOps()) {
@@ -3287,6 +3322,7 @@ public class Term extends JComponent implements Accessible {
             }            // SHOULD implement
         }
 
+	@Override
         public void op_back_space() {
             // back-space
             if (debugOps()) {
@@ -3339,6 +3375,7 @@ public class Term extends JComponent implements Accessible {
             }
         }
 
+	@Override
         public void op_line_feed() {
             // NL line feed ctrl-J
             // move cursor down one line and if goes past the screen
@@ -3372,6 +3409,7 @@ public class Term extends JComponent implements Accessible {
         // repaint(false);
         }
 
+	@Override
         public void op_tab() {
             // TAB/HT
             // SHOULD do something better with tabs near the end of the line
@@ -3399,6 +3437,7 @@ public class Term extends JComponent implements Accessible {
             }
         }
 
+	@Override
         public void op_carriage_return() {
             if (debugOps()) {
                 System.out.println("op_carriage_return"); // NOI18N
@@ -3407,6 +3446,7 @@ public class Term extends JComponent implements Accessible {
             cursor_line().setAboutToWrap(false);
         }
 
+	@Override
         public void op_al(int count) {
             // add new blank line
             if (debugOps()) {
@@ -3443,6 +3483,7 @@ public class Term extends JComponent implements Accessible {
             }
         }
 
+	@Override
         public void op_bc(int count) {
             // back cursor/column
             if (debugOps()) {
@@ -3457,6 +3498,7 @@ public class Term extends JComponent implements Accessible {
             cursor_line().setAboutToWrap(false);
         }
 
+	@Override
         public void op_cm(int row, int col) {
             // cursor motion row and col come in as 1-origin)
             if (debugOps()) {
@@ -3486,6 +3528,7 @@ public class Term extends JComponent implements Accessible {
         // Maybe SHOULD setAboutToWrap(true) if on last column?
         }
 
+	@Override
         public void op_cl() {
             // clear screen and home cursor
             if (debugOps()) {
@@ -3497,6 +3540,7 @@ public class Term extends JComponent implements Accessible {
             st.cursor.col = 0;
         }
 
+	@Override
         public void op_ce() {
             // clear to end of line
             if (debugOps()) {
@@ -3518,6 +3562,7 @@ public class Term extends JComponent implements Accessible {
             }
         }
 
+	@Override
         public void op_cd() {
             // clear to end of screen
             if (debugOps()) {
@@ -3541,6 +3586,7 @@ public class Term extends JComponent implements Accessible {
             }
         }
 
+	@Override
         public void op_dc(int count) {
             // delete character
             if (debugOps()) {
@@ -3555,6 +3601,7 @@ public class Term extends JComponent implements Accessible {
             }
         }
 
+	@Override
         public void op_dl(int count) {
             // delete line
             // and scroll everything under it up
@@ -3594,6 +3641,7 @@ public class Term extends JComponent implements Accessible {
             }
         }
 
+	@Override
         public void op_do(int count) {
             // down count lines
             // SHOULD add a mode: {scroll, warp, stay} for cases where
@@ -3621,6 +3669,7 @@ public class Term extends JComponent implements Accessible {
             cursor_line().setAboutToWrap(old_atw);
         }
 
+	@Override
         public void op_ho() {
             // cursor home (upper left of the screen)
             if (debugOps()) {
@@ -3631,6 +3680,7 @@ public class Term extends JComponent implements Accessible {
             st.cursor.col = 0;
         }
 
+	@Override
         public void op_ic(int count) {
             // insert character
             if (debugOps()) {
@@ -3644,6 +3694,7 @@ public class Term extends JComponent implements Accessible {
         // SHOULD worry about line wrapping
         }
 
+	@Override
         public void op_nd(int count) {
             // cursor right (non-destructive space)
             if (debugOps()) {
@@ -3663,6 +3714,7 @@ public class Term extends JComponent implements Accessible {
             st.cursor.col = vc;
         }
 
+	@Override
         public void op_up(int count) {
             // cursor up
             if (debugOps()) {
@@ -3687,6 +3739,7 @@ public class Term extends JComponent implements Accessible {
             cursor_line().setAboutToWrap(old_atw);
         }
 
+	@Override
         public void op_sc() {
             // save cursor position
             if (debugOps()) {
@@ -3696,6 +3749,7 @@ public class Term extends JComponent implements Accessible {
         // SHOULD defeat repaint?
         }
 
+	@Override
         public void op_rc() {
             // restore saved cursor position
             if (debugOps()) {
@@ -3704,6 +3758,7 @@ public class Term extends JComponent implements Accessible {
             st.restoreCursor();
         }
 
+	@Override
         public void op_glyph(int glyph, int rendition) {
             if (debugOps()) {
                 System.out.println("op_glyph(glyph " + glyph + // NOI18N
@@ -3712,32 +3767,38 @@ public class Term extends JComponent implements Accessible {
             setGlyph(glyph, rendition);
         }
 
+	@Override
         public void op_reverse(boolean reverse_video) {
             setReverseVideo(reverse_video);
         }
 
+	@Override
         public void op_cursor_visible(boolean visible) {
             setCursorVisible(visible);
         }
 
+	@Override
         public void op_icon_name(String iconName) {
             if (debugOps()) {
                 System.out.println("op_icon_name(" + iconName + ")"); // NOI18N
             }
         }
 
+	@Override
         public void op_win_title(String winTitle) {
             if (debugOps()) {
                 System.out.println("op_win_title(" + winTitle + ")"); // NOI18N
             }
         }
 
+	@Override
         public void op_cwd(String currentWorkingDirectory) {
             if (debugOps()) {
                 System.out.println("op_cwd(" + currentWorkingDirectory + ")"); // NOI18N
             }
         }
 
+	@Override
         public void op_margin(int from, int to) {
 
             if (debugOps()) {
@@ -3770,6 +3831,7 @@ public class Term extends JComponent implements Accessible {
         }
         long last_time = System.currentTimeMillis();
 
+	@Override
         public void op_time(boolean repaint) {
             long time = System.currentTimeMillis();
             long elapsed = time - last_time;
@@ -3809,18 +3871,22 @@ public class Term extends JComponent implements Accessible {
         // TMP setRefreshEnabled(repaint);
         }
 
+	@Override
         public void op_hyperlink(String url, String text) {
             hyperlink(url, text);
         }
 
+	@Override
         public int op_get_width() {
             return horizontally_scrollable ? buf.totalCols() : buf.visibleCols();
         }
 
+	@Override
         public int op_get_column() {
             return st.cursor.col;
         }
 
+	@Override
         public void op_soft_reset() {
             st.overstrike = true;
             top_margin = 0;		// 0 means default (see topMargin())
@@ -3829,6 +3895,7 @@ public class Term extends JComponent implements Accessible {
             repaint(false);
         }
 
+	@Override
         public void op_full_reset() {
             op_soft_reset();
             op_cl();	// clear screen, home cursor
@@ -3836,6 +3903,7 @@ public class Term extends JComponent implements Accessible {
             repaint(false);
         }
 
+	@Override
         public void op_set_mode(int mode) {
             switch (mode) {
                 case 4:		// insert mode
@@ -3849,6 +3917,7 @@ public class Term extends JComponent implements Accessible {
             }
         }
 
+	@Override
         public void op_reset_mode(int mode) {
             switch (mode) {
                 case 4:		// replace mode
@@ -3862,6 +3931,7 @@ public class Term extends JComponent implements Accessible {
             }
         }
 
+	@Override
         public void op_status_report(int code) {
             switch (code) {
                 case 5:
@@ -5313,6 +5383,7 @@ public class Term extends JComponent implements Accessible {
             this.scrollbar = scrollbar;
         }
 
+	@Override
         public void mouseWheelMoved(MouseWheelEvent e) {
             int totalScrollAmount = e.getUnitsToScroll() * scrollbar.getUnitIncrement();
             scrollbar.setValue(scrollbar.getValue() + totalScrollAmount);

@@ -105,6 +105,28 @@ public class ConnectionErrMessage extends javax.swing.JPanel {
         messageTextLabel = new javax.swing.JLabel();
         link = HyperlinkPane.create();
 
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return link;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return link;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return link;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                return link;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                return link;//end getComponentBefore
+
+            }}
+        );
+
         messageTextLabel.setText(message);
 
         link.setEditable(false);
@@ -133,6 +155,12 @@ public class ConnectionErrMessage extends javax.swing.JPanel {
                 .add(link, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        messageTextLabel.getAccessibleContext().setAccessibleDescription("Error Message");
+        link.getAccessibleContext().setAccessibleName("Error Message");
+
+        getAccessibleContext().setAccessibleName("Error Message Form");
+        getAccessibleContext().setAccessibleDescription("Error Message Form");
     }// </editor-fold>//GEN-END:initComponents
 
     private static class HyperlinkPane extends JEditorPane implements HyperlinkListener {

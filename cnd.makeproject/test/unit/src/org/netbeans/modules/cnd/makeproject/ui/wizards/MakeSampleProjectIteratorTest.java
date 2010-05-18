@@ -295,11 +295,11 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             @Override
             public void linePrinted(String line) {
                 if(line != null) {
-                    if (line.startsWith(successLine)) {
+                    if (line.trim().startsWith(successLine)) {
                         build_rc.set(0);
                         done.countDown();
                     }
-                    else if (line.startsWith(failureLine)) {
+                    else if (line.trim().startsWith(failureLine)) {
                         // message is:
                         // BUILD FAILED (exit value 1, total time: 326ms)
                         int rc = -1;

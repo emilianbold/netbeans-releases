@@ -69,6 +69,8 @@ import org.openide.util.RequestProcessor;
  * @author Michal Mocnak
  */
 public class HudsonManagerImpl {
+
+    private static final RequestProcessor RP = new RequestProcessor(HudsonManagerImpl.class);
     
     /** The only instance of the hudson manager implementation in the system */
     private static HudsonManagerImpl defaultInstance;
@@ -77,7 +79,7 @@ public class HudsonManagerImpl {
     private final List<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
     private PropertyChangeListener projectsListener;
     private Map<Project, HudsonInstanceImpl> projectInstances = new HashMap<Project, HudsonInstanceImpl>();
-    private final RequestProcessor.Task checkOpenProjects = RequestProcessor.getDefault().create(new Runnable() {
+    private final RequestProcessor.Task checkOpenProjects = RP.create(new Runnable() {
         public @Override void run() {
             checkOpenProjects();
         }
@@ -222,7 +224,7 @@ public class HudsonManagerImpl {
     }
 
     private void init() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 try {
                     try {

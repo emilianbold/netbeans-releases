@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="ApprovePurchase_BPEL" 
+             targetNamespace="http://jbi.com.sun/wfse/samples/adv-purchase-order/wsdl"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:tns="http://jbi.com.sun/wfse/samples/adv-purchase-order/wsdl"
+             xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+             xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/varprop"
+             xmlns:po="http://jbi.com.sun/wfse/samples/adv-purchase-order/xsd">
+
+    <types>
+        <xsd:schema targetNamespace="ApprovePurchase_BPEL">
+            <xsd:import schemaLocation="PurchaseOrder.xsd"
+                        namespace="http://jbi.com.sun/wfse/samples/adv-purchase-order/xsd"/>
+        </xsd:schema>
+    </types>
+
+    <message name="OrderInput">
+        <part name="OrderInfo" element="po:purchaseOrder"/>
+    </message>
+    <message name="OrderOutput">
+        <part name="ApprovalInfo" element="po:orderReply"/>
+    </message>
+
+    <portType name="purcharseOrderPT">
+        <operation name="receivePurchaseOrder">
+            <input name="orderInput" message="tns:OrderInput"/>
+            <output name="orderOutput" message="tns:OrderOutput"/>
+        </operation>
+    </portType>
+
+    <binding name="purchaseOrderBinding" type="tns:purcharseOrderPT">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+
+        <operation name="receivePurchaseOrder">
+            <soap:operation style="document" soapAction="receivePurchaseOrder"/>
+
+            <input name="orderInput">
+                <soap:body parts="OrderInfo" use="literal"/>
+            </input><output name="orderOutput">
+                <soap:body parts="ApprovalInfo" use="literal"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="purchaseOrderService">
+        <port name="purchaseOrderPort" binding="tns:purchaseOrderBinding">
+            <soap:address location="http://localhost:12100/wfse/samples/adv-purchase-order"/>
+        </port>
+    </service>
+
+    <plink:partnerLinkType name="purchasingLT">
+        <plink:role name="purchaseOrderService" portType="tns:purcharseOrderPT"/>
+    </plink:partnerLinkType>
+
+    <bpws:property name="orderId" type="xsd:string"/>
+
+    <bpws:propertyAlias propertyName="tns:orderId" messageType="tns:OrderInput"
+                        part="OrderInfo">
+        <bpws:query>/po:purchaseOrder/po:orderId</bpws:query>
+    </bpws:propertyAlias>
+
+    <bpws:propertyAlias propertyName="tns:orderId" messageType="tns:OrderOutput"
+                        part="ApprovalInfo">
+        <bpws:query>/po:orderReply/po:orderId</bpws:query>
+    </bpws:propertyAlias>
+</definitions>

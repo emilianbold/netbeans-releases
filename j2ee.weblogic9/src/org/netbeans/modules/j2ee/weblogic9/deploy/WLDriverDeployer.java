@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.weblogic9.deploy;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -83,6 +84,14 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
     private static final Logger LOGGER = Logger.getLogger(WLDriverDeployer.class.getName());
 
     private final WLDeploymentManager manager;
+
+    private static final FileFilter CLASSPATH_FILTER = new FileFilter() {
+
+        @Override
+        public boolean accept(File pathname) {
+            return pathname.isDirectory() || pathname.getName().endsWith(".jar"); // NOI18N
+        }
+    };
 
     public WLDriverDeployer(WLDeploymentManager manager) {
         this.manager = manager;
@@ -191,14 +200,14 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
         List<File> cp = new ArrayList<File>();
         File domainLib = WLPluginProperties.getDomainLibDirectory(manager);
         if (domainLib != null) {
-            File[] files = domainLib.listFiles();
+            File[] files = domainLib.listFiles(CLASSPATH_FILTER);
             if (files != null) {
                 cp.addAll(Arrays.asList(files));
             }
         }
         File serverLib = WLPluginProperties.getServerLibDirectory(manager);
         if (serverLib != null) {
-            File[] files = serverLib.listFiles();
+            File[] files = serverLib.listFiles(CLASSPATH_FILTER);
             if (files != null) {
                 cp.addAll(Arrays.asList(files));
             }

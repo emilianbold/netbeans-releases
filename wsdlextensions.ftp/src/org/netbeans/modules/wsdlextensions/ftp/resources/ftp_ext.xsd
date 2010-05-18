@@ -1,0 +1,718 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<!-- 
+schema for FTP BC extensibility element
+--> 
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:ftp="http://schemas.sun.com/jbi/wsdl-extensions/ftp/"
+    targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/ftp/" >
+
+    <xs:import namespace = "http://schemas.xmlsoap.org/wsdl/" schemaLocation="wsdl.xsd"/>
+    
+    <xs:element name="binding" type="ftp:tBinding" >
+        <xs:annotation>
+            <xs:documentation>DESC_Element_binding</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:complexType name="tBinding" >
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement" >
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="operation" type="ftp:tOperation" >
+        <xs:annotation>
+            <xs:documentation>DESC_Element_operation</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:complexType name="tOperation" >
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement" >
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="transfer" type="ftp:tTargetSpec">
+                <xs:annotation>
+                    <xs:documentation>DESC_Element_transfer</xs:documentation>
+                  <xs:appinfo>
+                    <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                        <prop:PropertyGroup name="Sender" groupOrder="1" />
+                        <prop:PropertyGroup name="Receiver" groupOrder="2" />
+                        <prop:PropertyGroup name="TransferEncoding" groupOrder="3" />
+                        <prop:PropertyGroup name="TransferMessage" groupOrder="4" />
+                        <prop:PropertyGroup name="TransferCorrelate" groupOrder="5" />
+                        <prop:Property attributeName="sendTo" groupName="Sender" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="append" groupName="Sender" propertyOrder="2">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="sendToHasPatterns" groupName="Sender" propertyOrder="3">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="preSendCommand" groupName="Sender" propertyOrder="4">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="preSendLocation" groupName="Sender" propertyOrder="5">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="preSendLocationHasPatterns" groupName="Sender" propertyOrder="6">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="postSendCommand" groupName="Sender" propertyOrder="7">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="postSendLocation" groupName="Sender" propertyOrder="8">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="postSendLocationHasPatterns" groupName="Sender" propertyOrder="9">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <!--prop:Property attributeName="senderUsePassive" groupName="Sender" propertyOrder="10">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property-->
+                        <prop:Property attributeName="receiveFrom" groupName="Receiver" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="receiveFromHasRegexs" groupName="Receiver" propertyOrder="2">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="pollIntervalMillis" groupName="Receiver" propertyOrder="3">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="preReceiveCommand" groupName="Receiver" propertyOrder="4">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="preReceiveLocation" groupName="Receiver" propertyOrder="5">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="preReceiveLocationHasPatterns" groupName="Receiver" propertyOrder="6">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="postReceiveCommand" groupName="Receiver" propertyOrder="7">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="postReceiveLocation" groupName="Receiver" propertyOrder="8">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="postReceiveLocationHasPatterns" groupName="Receiver" propertyOrder="9">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <!--prop:Property attributeName="receiverUsePassive" groupName="Receiver" propertyOrder="10">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property-->
+                        <prop:Property attributeName="use" groupName="TransferEncoding" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="encodingStyle" groupName="TransferEncoding" propertyOrder="2">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="part" groupName="TransferMessage" propertyOrder="1">
+                            <prop:BuiltInCustomizer>
+                                <prop:SimpleCustomizer name="PartChooser"/>
+                            </prop:BuiltInCustomizer>
+                        </prop:Property>
+                        <prop:Property attributeName="characterEncoding" groupName="TransferMessage" propertyOrder="2">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="fileType" groupName="TransferMessage" propertyOrder="3">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="forwardAsAttachment" groupName="TransferMessage" propertyOrder="4">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="messageCorrelate" groupName="TransferCorrelate" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                    </prop:ElementProperties>
+                </xs:appinfo>	      	      
+            </xs:annotation>
+    </xs:element>
+
+    <xs:element name="message" type="ftp:tMessage">
+                <xs:annotation>
+                    <xs:documentation>DESC_Element_message</xs:documentation>
+                  <xs:appinfo>
+                    <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                        <prop:PropertyGroup name="MessagingConfig" groupOrder="1" />
+                        <prop:PropertyGroup name="MessageEncoding" groupOrder="2" />
+                        <prop:PropertyGroup name="MessageMessage" groupOrder="3" />
+                        <prop:PropertyGroup name="MessageCorrelate" groupOrder="4" />
+                        <prop:Property attributeName="messageRepository" groupName="MessagingConfig" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="messageName" groupName="MessagingConfig" propertyOrder="2">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="messageNamePrefixIB" groupName="MessagingConfig" propertyOrder="3">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="messageNamePrefixOB" groupName="MessagingConfig" propertyOrder="4">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="pollIntervalMillis" groupName="MessagingConfig" propertyOrder="5">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="archive" groupName="MessagingConfig" propertyOrder="6">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="protect" groupName="MessagingConfig" propertyOrder="7">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="stage" groupName="MessagingConfig" propertyOrder="8">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="use" groupName="MessageEncoding" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="encodingStyle" groupName="MessageEncoding" propertyOrder="2">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="part" groupName="MessageMessage" propertyOrder="1">
+                            <prop:BuiltInCustomizer>
+                                <prop:SimpleCustomizer name="PartChooser"/>
+                            </prop:BuiltInCustomizer>
+                        </prop:Property>
+                        <prop:Property attributeName="characterEncoding" groupName="MessageMessage" propertyOrder="2">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="fileType" groupName="MessageMessage" propertyOrder="3">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="forwardAsAttachment" groupName="MessageMessage" propertyOrder="4">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="messageCorrelate" groupName="MessageCorrelate" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                    </prop:ElementProperties>
+                </xs:appinfo>	      	      
+            </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="tTargetSpec">
+	<xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+		<xs:attribute name="sendTo" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_sendTo</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="append" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_append</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="sendToHasPatterns" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_sendToHasPatterns</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="receiveFrom" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_receiveFrom</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="receiveFromHasRegexs" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_receiveFromHasRegexs</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="pollIntervalMillis" type="xs:int" use="optional" default="5000">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_pollIntervalMillis</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="preSendCommand" type="ftp:tPreCmds" use="optional" default="NONE">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_preSendCommand</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="preSendLocation" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_preSendLocation</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="preSendLocationHasPatterns" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_preSendLocationHasPatterns</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="postSendCommand" type="ftp:tPostCmds4Put" use="optional" default="NONE">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_postSendCommand</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="postSendLocation" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_postSendLocation</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="postSendLocationHasPatterns" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_postSendLocationHasPatterns</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="preReceiveCommand" type="ftp:tPreCmds" use="optional" default="NONE">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_preReceiveCommand</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="preReceiveLocation" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_preReceiveLocation</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="preReceiveLocationHasPatterns" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_preReceiveLocationHasPatterns</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="postReceiveCommand" type="ftp:tPostCmds4Get" use="optional" default="NONE">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_postReceiveCommand</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="postReceiveLocation" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_postReceiveLocation</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="postReceiveLocationHasPatterns" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_postReceiveLocationHasPatterns</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="use" type="ftp:tUseTypes" use="required">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_use</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="encodingStyle" type="xs:anyURI" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_encodingStyle</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="part" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_part</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="characterEncoding" type="xs:string" use="optional">
+                        <xs:annotation>
+                                <xs:documentation>DESC_Attribute_characterEncoding</xs:documentation>
+                        </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="fileType" type="ftp:fileType" use="optional">
+                        <xs:annotation>
+                                <xs:documentation>DESC_Attribute_fileType</xs:documentation>
+                        </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="forwardAsAttachment" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_ForwardAsAttachment</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <!--xs:attribute name="enableNMProperties" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_EnableNMProps</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute-->
+                <xs:attribute name="messageCorrelate" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_messageCorrelate</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+	</xs:complexContent>
+    </xs:complexType>
+
+    <!-- out-of-box message transfer operations that 
+    assume default values for the convenience of the 
+    user
+    -->
+    <xs:complexType name="tMessage">
+	<xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+		<xs:attribute name="messageRepository" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_Message_messageRepository</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="messageName" type="xs:string" use="optional" default="">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_Message_messageName</xs:documentation>
+                </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="messageNamePrefixIB" type="xs:string" use="optional" default="">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_Message_messageNamePrefixIB</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="messageNamePrefixOB" type="xs:string" use="optional" default="">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_Message_messageNamePrefixOB</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="pollIntervalMillis" type="xs:int" use="optional" default="5000">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_Message_pollIntervalMillis</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="archive" type="xs:boolean" use="optional" default="true">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_Message_archive</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="protect" type="xs:boolean" use="optional" default="true">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_Message_protect</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="stage" type="xs:boolean" use="optional" default="true">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_Message_stage</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="use" type="ftp:tUseTypes" use="required">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_Message_use</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+		<xs:attribute name="encodingStyle" type="xs:anyURI" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_Message_encodingStyle</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="part" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_Message_part</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="characterEncoding" type="xs:string" use="optional">
+                        <xs:annotation>
+                                <xs:documentation>DESC_Attribute_characterEncoding</xs:documentation>
+                        </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="fileType" type="ftp:fileType" use="optional">
+                        <xs:annotation>
+                                <xs:documentation>DESC_Attribute_fileType</xs:documentation>
+                        </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="forwardAsAttachment" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_ForwardAsAttachment</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <!--xs:attribute name="enableNMProperties" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_EnableNMProps</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute-->
+                <xs:attribute name="messageCorrelate" type="xs:boolean" use="optional" default="true">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_Message_messageCorrelate</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+	</xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="address" type="ftp:tAddress">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_address</xs:documentation>
+                  <xs:appinfo>
+                    <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
+                        <prop:PropertyGroup name="ConnectionSettings" groupOrder="1" />
+                        <prop:PropertyGroup name="DirectoryListingStyle" groupOrder="2" />
+                        <prop:PropertyGroup name="SecuritySettings" groupOrder="3" />
+                        <prop:PropertyGroup name="TransportSettings" groupOrder="4" />
+                        <prop:PropertyGroup name="PersistenceSettings" groupOrder="5" />
+                        <prop:Property attributeName="url" groupName="ConnectionSettings" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="user" groupName="ConnectionSettings" propertyOrder="2">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="password" groupName="ConnectionSettings" propertyOrder="3">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="dirListStyle" groupName="DirectoryListingStyle" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="useUserDefinedHeuristics" groupName="DirectoryListingStyle" propertyOrder="2">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="userDefDirListStyle" groupName="DirectoryListingStyle" propertyOrder="3">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="userDefDirListHeuristics" groupName="DirectoryListingStyle" propertyOrder="4">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="securedFTP" groupName="SecuritySettings" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="enableCCC" groupName="SecuritySettings" propertyOrder="2">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="keyStore" groupName="SecuritySettings" propertyOrder="3">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="keyStorePassword" groupName="SecuritySettings" propertyOrder="4">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="keyAlias" groupName="SecuritySettings" propertyOrder="5">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="keyPassword" groupName="SecuritySettings" propertyOrder="6">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="trustStore" groupName="SecuritySettings" propertyOrder="7">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="trustStorePassword" groupName="SecuritySettings" propertyOrder="8">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="mode" groupName="TransportSettings" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="controlChannelEncoding" groupName="TransportSettings" propertyOrder="2">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="cmdChannelTimeout" groupName="TransportSettings" propertyOrder="3">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="dataChannelTimeout" groupName="TransportSettings" propertyOrder="4">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                        <prop:Property attributeName="baseLocation" groupName="PersistenceSettings" propertyOrder="1">
+                            <prop:SchemaCustomizer/>
+                        </prop:Property>
+                    </prop:ElementProperties>
+                </xs:appinfo>	      	      
+	</xs:annotation>
+    </xs:element>
+
+    <!--
+    for FTP BC endpoint information
+    -->
+    <xs:complexType name="tAddress">
+       <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement">
+                <xs:attribute name="url" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_url</xs:documentation>
+                    </xs:annotation>
+		</xs:attribute>
+                <xs:attribute name="user" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_user</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="password" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_password</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="dirListStyle" type="ftp:tDirListingStyles" use="optional" default="UNIX">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_dirListStyle</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="useUserDefinedHeuristics" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_useUserDefinedHeuristics</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="userDefDirListStyle" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_userDefDirListStyle</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="userDefDirListHeuristics" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_userDefDirListHeuristics</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="mode" type="ftp:tTransferModes" use="optional" default="BINARY">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_mode</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="securedFTP" type="ftp:tSecuredFTPType" use="optional" default="None">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_securedFTP</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="enableCCC" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_enableCCC</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="keyStore" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_keyStore</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="keyStorePassword" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_keyStorePassword</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="keyAlias" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_keyAlias</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="keyPassword" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_keyPassword</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="trustStore" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_trustStore</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="trustStorePassword" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_trustStorePassword</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="controlChannelEncoding" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_controlChannelEncoding</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="cmdChannelTimeout" type="xs:integer" use="optional" default="45000">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_cmdChannelTimeout</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="dataChannelTimeout" type="xs:integer" use="optional" default="45000">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_dataChannelTimeout</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="baseLocation" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>DESC_Attribute_persistenceBaseLocation</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+	</xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="tUseTypes">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="literal"/>
+            <xs:enumeration value="encoded"/>
+	</xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tTransferModes">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ASCII"/>
+            <xs:enumeration value="BINARY"/>
+            <xs:enumeration value="EBCDIC"/>
+	</xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tSecuredFTPType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="None"/>
+            <xs:enumeration value="ExplicitSSL"/>
+            <xs:enumeration value="ImplicitSSL"/>
+	</xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tPreCmds">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="NONE"/>
+            <xs:enumeration value="COPY"/>
+            <xs:enumeration value="RENAME"/>
+	</xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="tPostCmds4Get">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="NONE"/>
+            <xs:enumeration value="DELETE"/>
+            <xs:enumeration value="RENAME"/>
+	</xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tPostCmds4Put">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="NONE"/>
+            <xs:enumeration value="RENAME"/>
+	</xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="tDirListingStyles">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="UNIX"/>
+            <xs:enumeration value="AS400"/>
+            <xs:enumeration value="AS400-UNIX"/>
+            <xs:enumeration value="HCLFTPD 6.0.1.3"/>
+            <xs:enumeration value="HCLFTPD 5.1"/>
+            <xs:enumeration value="HP NonStop/Tandem"/>
+            <xs:enumeration value="MPE"/>
+            <xs:enumeration value="MSFTPD 2.0"/>
+            <xs:enumeration value="MSP PDS (Fujitsu)"/>
+            <xs:enumeration value="MSP PS (Fujitsu)"/>
+            <xs:enumeration value="MVS GDG"/>
+            <xs:enumeration value="MVS PDS"/>
+            <xs:enumeration value="MVS Sequential"/>
+            <xs:enumeration value="Netware 4.11"/>
+            <xs:enumeration value="NT 3.5"/>
+            <xs:enumeration value="NT 4.0"/>
+            <xs:enumeration value="UNIX (EUC-JP)"/>
+            <xs:enumeration value="UNIX (SJIS)"/>
+            <xs:enumeration value="VM/ESA"/>
+            <xs:enumeration value="VMS"/>
+            <xs:enumeration value="VOS3 PDS (Hitachi)"/>
+            <xs:enumeration value="VOS3 PS (Hitachi)"/>
+            <xs:enumeration value="VOSK (Hitachi)"/>
+	</xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="fileType">
+            <xs:restriction base="xs:string">
+                    <xs:enumeration value="text">
+                            <xs:annotation>
+                                    <xs:documentation>Signifies a character based file type</xs:documentation>
+                            </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="binary">
+                            <xs:annotation>
+                                    <xs:documentation>Signifies a binary data based file type</xs:documentation>
+                            </xs:annotation>
+                    </xs:enumeration>
+            </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

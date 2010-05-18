@@ -52,25 +52,24 @@ public class ModelTest extends ModelTestBase {
         super(testName);
     }
 
-    /*public void testOccurencesBasicFileScope() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
-        FileScope topScope = model.getFileScope();
-        assertFalse(topScope.getElements().isEmpty());
-        FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"myfnc"));
-        assertNotNull(fncScope);
-        model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
-        Occurence underCaret = underCaret(
-                model,prepareTestFile("testfiles/model/basicFileScope.php"), fncScope.getOffset());
-        assertNotNull(underCaret);
-        assertEquals(PhpKind.FUNCTION, underCaret.getDeclaration().getPhpKind());
-        assertEquals(fncScope.getName(), underCaret.getDeclaration().getName());
-        
-        FileScope topScope2 = ModelUtils.getFileScope(underCaret.getDeclaration());
-        assertNotNull(ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),underCaret.getDeclaration().getName())));
+//    public void testOccurencesBasicFileScope() throws Exception {
+//        Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
+//        FileScope topScope = model.getFileScope();
+//        assertFalse(topScope.getElements().isEmpty());
+//        FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"myfnc"));
+//        assertNotNull(fncScope);
+//        model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
+//        Occurence underCaret = underCaret(
+//                model,prepareTestFile("testfiles/model/basicFileScope.php"), fncScope.getOffset());
+//        assertNotNull(underCaret);
+//        for (PhpElement phpElement : underCaret.getAllDeclarations()) {
+//            assertEquals(PhpElementKind.FUNCTION, phpElement.getPhpElementKind());
+//            assertEquals(fncScope.getName(), phpElement.getName());
+//        }
+//        Collection<Occurence> allOccurences = underCaret.getAllOccurences();
+//        assertEquals(3, allOccurences.size());
+//    }
 
-        Collection<Occurence> allOccurences = underCaret.getAllOccurences();
-        assertEquals(3, allOccurences.size());
-    }
 
     public void testVarsForBasicFileScope() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
@@ -156,7 +155,7 @@ public class ModelTest extends ModelTestBase {
 
         for (ModelElement elm : elements) {
             assertTrue(elm instanceof ModelElement);
-            switch (elm.getPhpKind()) {
+            switch (elm.getPhpElementKind()) {
                 case CLASS:
                     assertTrue(elm.getName().startsWith("cls"));
                     assertTrue(elm instanceof Scope);
@@ -240,14 +239,13 @@ public class ModelTest extends ModelTestBase {
         assertSame(ModelUtils.getFirst(myClass.getSuperClasses()), mySuperClass);
 
         assertEquals("MC", ModelUtils.getCamelCaseName(myClass));
-        assertNotNull(ModelUtils.getFirst(myClass.findDeclaredMethods("statmeth")));
-        assertNotNull(ModelUtils.getFirst(myClass.findDeclaredMethods("statmeth", PhpModifiers.STATIC)));
-        assertNotNull(ModelUtils.getFirst(myClass.findDeclaredMethods("statmeth", PhpModifiers.PUBLIC)));
-        assertNotNull(ModelUtils.getFirst(myClass.findDeclaredMethods(QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, "StAtMeT",
-                PhpModifiers.PUBLIC, PhpModifiers.STATIC)));
-        assertNull(ModelUtils.getFirst(myClass.findDeclaredMethods("statmeth", PhpModifiers.PRIVATE)));
+        final MethodScope statmeth = ModelUtils.getFirst(myClass.getDeclaredMethods(), "statmeth");
+        assertNotNull(statmeth);
+        assertTrue(statmeth.getPhpModifiers().isStatic());
+        assertTrue(statmeth.getPhpModifiers().isPublic());
+        assertFalse(statmeth.getPhpModifiers().isPrivate());
 
-        MethodScope method = ModelUtils.getFirst(myClass.findDeclaredMethods("meth", PhpModifiers.PUBLIC));
+        MethodScope method = ModelUtils.getFirst(myClass.getDeclaredMethods(), "meth");
         assertNotNull(method);
         //TODO: fix it
         //assertEquals(2, method.getReturnTypes().size());
@@ -258,8 +256,9 @@ public class ModelTest extends ModelTestBase {
 
         assertSame(method.getInScope(), myClass);
         //fields
-        FieldElement fieldElement = ModelUtils.getFirst(myClass.findDeclaredFields("$myFld", PhpModifiers.PUBLIC));
+        FieldElement fieldElement = ModelUtils.getFirst(myClass.getDeclaredFields(), "$myFld");
         assertNotNull(fieldElement);
+        assertTrue(fieldElement.getPhpModifiers().isPublic());
 
         //ifaces
         assertNotNull(ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredInterfaces(program),"MyIFace")));
@@ -313,5 +312,5 @@ public class ModelTest extends ModelTestBase {
         assertEquals("MyCls", otherComplexType.getName());
         TypeScope foreign2Type = ModelUtils.getFirst(foreign2.getTypes(last.getOffset()));
         assertNull(foreign2Type);
-    }*/
+    }
 }

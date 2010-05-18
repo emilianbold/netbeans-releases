@@ -241,7 +241,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
             private boolean isSuccessLine(String line) {
                 for (String successLine : SUCCESS_PREFIXES) {
-                    if (line.startsWith(successLine)) {
+                    if (line.trim().startsWith(successLine)) {
                         return true;
                     }
                 }
@@ -250,7 +250,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
             private boolean isFailureLine(String line) {
                 for (String errorLine : ERROR_PREFIXES) {
-                    if (line.startsWith(errorLine)) {
+                    if (line.trim().startsWith(errorLine)) {
                         return true;
                     }
                 }

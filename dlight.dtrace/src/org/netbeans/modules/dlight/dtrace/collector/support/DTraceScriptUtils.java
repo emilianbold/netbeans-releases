@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
@@ -45,7 +45,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import org.netbeans.modules.dlight.util.Util;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Exceptions;
 
 /**
  * @author Alexey Vladykin
@@ -66,12 +76,16 @@ public final class DTraceScriptUtils {
         }
     }
 
-    public static File mergeScripts(Map<String, URL> scripts) throws IOException {
+public static File mergeScripts(Map<String, URL> scripts, boolean fixStarttime) throws IOException {
         File result = File.createTempFile("dlight", ".d"); // NOI18N
         result.deleteOnExit();
+
+        boolean beginContext = false;
+
         BufferedWriter w = new BufferedWriter(new FileWriter(result));
         try {
-            w.write("#!/usr/sbin/dtrace -ZCqs\n"); // NOI18N
+            w.write("#!/usr/sbin/dtrace -wZCqs\n"); // NOI18N
+            w.write("BEGIN{system(\"prun %d\", $1);}\n"); // NOI18N
             for (Map.Entry<String, URL> entry : scripts.entrySet()) {
                 String prefix = entry.getKey();
                 URL url = entry.getValue();
@@ -80,11 +94,25 @@ public final class DTraceScriptUtils {
                     String replacement = "$1" + prefix; // NOI18N
                     for (String line = r.readLine(); line != null; line = r.readLine()) {
                         if (!line.startsWith("#!")) { // NOI18N
-                            w.write(line.replaceAll("(print[af]\\(\")", replacement)); // NOI18N
+                            line = line.replaceAll("(print[af]\\(\")", replacement); // NOI18N
+                            if (fixStarttime) {
+                                if (!beginContext && line.trim().startsWith("BEGIN")) { // NOI18N
+                                    beginContext = true;
+                                }
+
+                                if (beginContext) {
+                                    line = line.replaceAll("=.*timestamp", "= \\$2"); // NOI18N
+                                    if (line.trim().endsWith("}")) { // NOI18N
+                                        beginContext = false;
+                                    }
+                                }
+                            }
+                            w.write(line); // NOI18N
                             w.write('\n'); // NOI18N
                         }
                     }
                     w.write('\n'); // NOI18N
+                    w.write("proc:::exit/pid==$1/{exit(0);}\n"); // NOI18N
                 } finally {
                     r.close();
                 }
@@ -93,5 +121,33 @@ public final class DTraceScriptUtils {
             w.close();
         }
         return result;
+    }
+
+    public static String uploadScript(ExecutionEnvironment execEnv, File scriptFile) {
+        String scriptPath = null;
+        if (execEnv.isLocal()) {
+            // No need to copy file on localhost -
+            // just ensure execution permissions...
+            scriptPath = scriptFile.getAbsolutePath();
+            Util.setExecutionPermissions(Arrays.asList(scriptPath));
+        } else {
+            String briefName = scriptFile.getName();
+            try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                scriptPath = hostInfo.getTempDir() + "/" + briefName; // NOI18N
+                Future<Integer> copyResult = CommonTasksSupport.uploadFile(
+                        scriptFile.getAbsolutePath(), execEnv, scriptPath, 0777, null);
+                copyResult.get();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return scriptPath;
     }
 }

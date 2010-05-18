@@ -1,0 +1,79 @@
+<body>
+	<inputXForm xmlns="http://www.w3.org/1999/xhtml" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:xforms="http://www.w3.org/2002/xforms">
+		<xforms:group>
+			<p>
+				<b>
+					<i>Purchase Order</i>
+				</b>
+			</p>
+			<p/>
+			<table border="1">
+				<tr>
+					<td>Order Id</td>
+					<td>
+						<xforms:output xmlns:chiba="http://chiba.sourceforge.net/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:po="http://wlmse.sample/po" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" incremental="true" model="inputModel" ref="po:orderId"/>
+					</td>
+				</tr>
+				<tr>
+					<td>Purchaser Name</td>
+					<td>
+						<xforms:output xmlns:chiba="http://chiba.sourceforge.net/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:po="http://wlmse.sample/po" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" incremental="true" model="inputModel" ref="po:purchaserName"/>
+					</td>
+				</tr>
+				<tr>
+					<td>Product Id</td>
+					<td>
+						<xforms:output xmlns:chiba="http://chiba.sourceforge.net/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:po="http://wlmse.sample/po" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" incremental="true" model="inputModel" ref="po:productId"/>
+					</td>
+				</tr>
+				<tr>
+					<td>Amount</td>
+					<td>
+						<xforms:output xmlns:chiba="http://chiba.sourceforge.net/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:po="http://wlmse.sample/po" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" incremental="true" model="inputModel" ref="po:amount"/>
+					</td>
+				</tr>
+			</table>
+		</xforms:group>
+	</inputXForm>
+	<outputXForm xmlns="http://www.w3.org/1999/xhtml" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:html="http://www.w3.org/1999/xhtml" xmlns:xforms="http://www.w3.org/2002/xforms">
+		<xforms:group>
+			<p>
+				<b>
+					<i>Order Reply</i>
+				</b>
+			</p>
+			<p/>
+			<table border="1">
+				<tr>
+					<td>Approve Result</td>
+					<td>
+						<xforms:select1 xmlns:chiba="http://chiba.sourceforge.net/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:po="http://wlmse.sample/po" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="select1_0" incremental="true" model="outputModel" ref="po:approveResult" xforms:appearance="full">
+							<xforms:item id="item_0">
+								<xforms:label id="label_2">Approved</xforms:label>
+								<xforms:value id="value_0">Approved</xforms:value>
+							</xforms:item>
+							<xforms:item id="item_1">
+								<xforms:label id="label_3">Rejected</xforms:label>
+								<xforms:value id="value_1">Rejected</xforms:value>
+							</xforms:item>
+						</xforms:select1>
+					</td>
+				</tr>
+				<tr>
+					<td>Description</td>
+					<td>
+						<xforms:textarea xmlns:chiba="http://chiba.sourceforge.net/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:po="http://wlmse.sample/po" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" incremental="true" model="outputModel" ref="po:description"/>
+					</td>
+				</tr>
+			</table>
+		</xforms:group>
+		<p/>
+		<xforms:submit xmlns:chiba="http://chiba.sourceforge.net/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:po="http://wlmse.sample/po" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="submit_0" submission="default-submission">
+			<xforms:label id="label_5">Submit</xforms:label>
+			<xforms:action ev:event="DOMActivate">
+				<xforms:setvalue model="outputMode" ref="instance('output')/po:approveDate" value="local-date()"/>
+				<xforms:setvalue model="outputMode" ref="instance('output')/po:orderId" value="instance('input')/po:orderId"/>
+			</xforms:action>
+		</xforms:submit>
+	</outputXForm>
+</body>

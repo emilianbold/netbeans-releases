@@ -154,7 +154,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                         if (!(inMacroParams || inDeadCode)) {
                             copyInterval(inDoc, ((endOffset > docTokenStartOffset) ? docTokenStartOffset : endOffset) - tt.currentIn.start, tt, expandedData);
                         }
-                        tt.appendInterval(endOffset - tt.currentIn.start, 0, false);
+                        tt.appendInterval(endOffset - tt.currentIn.start, 0);
                         break;
                     }
                     if (docTokenEndOffset <= fileToken.getOffset() || !APTUtils.isMacroExpandedToken(fileToken)) {
@@ -162,18 +162,18 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                             if (!(inMacroParams || inDeadCode)) {
                                 copyInterval(inDoc, docTokenStartOffset - tt.currentIn.start, tt, expandedData);
                             } else {
-                                tt.appendInterval(docTokenStartOffset - tt.currentIn.start, 0, false);
+                                tt.appendInterval(docTokenStartOffset - tt.currentIn.start, 0);
                             }
                             expandIcludeToken(docTS, inDoc, file, tt, expandedData);
                         } else if (docTokenEndOffset <= fileToken.getOffset()) {
                             if (inMacroParams || inDeadCode) {
                                 // skip token in dead code
-                                tt.appendInterval(docTokenEndOffset - tt.currentIn.start, 0, false);
+                                tt.appendInterval(docTokenEndOffset - tt.currentIn.start, 0);
                                 continue;
                             } else {
                                 // copy tokens befor dead token and skip this token
                                 copyInterval(inDoc, docTokenStartOffset - tt.currentIn.start, tt, expandedData);
-                                tt.appendInterval(docTokenEndOffset - tt.currentIn.start, 0, false);
+                                tt.appendInterval(docTokenEndOffset - tt.currentIn.start, 0);
                                 inDeadCode = true;
                                 continue;
                             }
@@ -319,7 +319,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         if (tt != null) {
             int startIndex = tt.findInIntervalIndex(offset);
             if (0 <= startIndex && startIndex < tt.intervals.size()) {
-                if (tt.intervals.get(startIndex).inInterval.end == offset && startIndex < tt.intervals.size() - 1) {
+                if (tt.intervals.get(startIndex).getInInterval().end == offset && startIndex < tt.intervals.size() - 1) {
                     // use next
                     startIndex++;
                 }
@@ -328,13 +328,13 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                 // back to start of macro expansion
                 for (int i = startIndex; i >= 0; i--) {
                     IntervalCorrespondence ic = tt.intervals.get(i);
-                    if (ic.macro) {
-                        span[0] = ic.inInterval.start;
-                        span[1] = ic.inInterval.end;
+                    if (ic.isMacro()) {
+                        span[0] = ic.getInInterval().start;
+                        span[1] = ic.getInInterval().end;
                         foundMacroExpansion = true;
                         macroIndex = i;
                         break;
-                    } else if (ic.outInterval.length() != 0) {
+                    } else if (ic.getOutInterval().length() != 0) {
                         // we are out of macro expansion
                         return span;
                     }
@@ -343,9 +343,9 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                     // forward to the end of macro expansion
                     for (int i = macroIndex + 1; i < tt.intervals.size(); i++) {
                         IntervalCorrespondence ic = tt.intervals.get(i);
-                        if (ic.outInterval.length() == 0) {
+                        if (ic.getOutInterval().length() == 0) {
                             // we are in macro expansion
-                            span[1] = ic.inInterval.end;
+                            span[1] = ic.getInInterval().end;
                         } else {
                             return span;
                         }
@@ -363,18 +363,18 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
             int startIndex = tt.findInIntervalIndex(offset);
             if (0 <= startIndex && startIndex < tt.intervals.size()) {
-                if (tt.intervals.get(startIndex).inInterval.end == offset && startIndex < tt.intervals.size() - 1) {
+                if (tt.intervals.get(startIndex).getInInterval().end == offset && startIndex < tt.intervals.size() - 1) {
                     // use next
                     startIndex++;
                 }
                 // back to start of macro expansion
                 for (int i = startIndex; i >= 0; i--) {
                     IntervalCorrespondence ic = tt.intervals.get(i);
-                    if (ic.macro) {
-                        if (ic.paramsToExpansion != null) {
-                            for (Interval in : ic.paramsToExpansion.keySet()) {
+                    if (ic.isMacro()) {
+                        if (ic.getParamsToExpansion() != null) {
+                            for (Interval in : ic.getParamsToExpansion().keySet()) {
                                 if (in.contains(offset)) {
-                                    List<Interval> intervals = ic.paramsToExpansion.get(in);
+                                    List<Interval> intervals = ic.getParamsToExpansion().get(in);
                                     int usages[][] = new int[intervals.size()][2];
                                     for (int j = 0; j < usages.length; j++) {
                                         usages[j][0] = intervals.get(j).start;
@@ -385,7 +385,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                             }
                         }
                         break;
-                    } else if (ic.outInterval.length() != 0) {
+                    } else if (ic.getOutInterval().length() != 0) {
                         // we are out of macro expansion
                         return null;
                     }
@@ -459,35 +459,35 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
         for(int i = startIndex; i < size; i++) {
             IntervalCorrespondence ic = tt.intervals.get(i);
-            if (ic.inInterval.start >= endOffset) {
+            if (ic.getInInterval().start >= endOffset) {
                 break;
             }
-            if (ic.inInterval.end <= startOffset) {
+            if (ic.getInInterval().end <= startOffset) {
                 continue;
             }
-            int startShift = startOffset - ic.inInterval.start;
+            int startShift = startOffset - ic.getInInterval().start;
             if (startShift < 0) {
                 startShift = 0;
             }
-            if (startShift >= ic.outInterval.length()) {
+            if (startShift >= ic.getOutInterval().length()) {
                 continue;
             }
             int endShift = startShift + (endOffset - startOffset);
-            if(endOffset >= ic.inInterval.end) {
-                endShift = ic.outInterval.length();
+            if(endOffset >= ic.getInInterval().end) {
+                endShift = ic.getOutInterval().length();
             }
-            if (endShift > ic.outInterval.length()) {
-                endShift = ic.outInterval.length();
+            if (endShift > ic.getOutInterval().length()) {
+                endShift = ic.getOutInterval().length();
             }
             if (endShift - startShift != 0) {
-                if (ic.macro) {
-                    if(startShift == 0 && endShift == ic.outInterval.length()) {
+                if (ic.isMacro()) {
+                    if(startShift == 0 && endShift == ic.getOutInterval().length()) {
                         sb.append(ic.getMacroExpansion());
                     } else {
                         sb.append(ic.getMacroExpansion().toString().substring(startShift, endShift));
                     }
-                } else if (ic.outInterval.length() != 0) {
-                    sb.append(getDocumentText(doc, ic.inInterval.start + startShift, endShift - startShift));
+                } else if (ic.getOutInterval().length() != 0) {
+                    sb.append(getDocumentText(doc, ic.getInInterval().start + startShift, endShift - startShift));
                 }
             } 
         }
@@ -544,7 +544,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                         if (!(inMacroParams || inDeadCode)) {
                             copyInterval(doc, ((endOffset > docTokenStartOffset) ? docTokenStartOffset : endOffset) - tt.currentIn.start, tt, null);
                         }
-                        tt.appendInterval(endOffset - tt.currentIn.start, 0, false);
+                        tt.appendInterval(endOffset - tt.currentIn.start, 0);
                         break;
                     }
                     if (docTokenEndOffset <= fileToken.getOffset() || !APTUtils.isMacroExpandedToken(fileToken)) {
@@ -552,18 +552,18 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                             if (!(inMacroParams || inDeadCode)) {
                                 copyInterval(doc, docTokenStartOffset - tt.currentIn.start, tt, null);
                             } else {
-                                tt.appendInterval(docTokenStartOffset - tt.currentIn.start, 0, false);
+                                tt.appendInterval(docTokenStartOffset - tt.currentIn.start, 0);
                             }
                             expandIcludeToken(docTS, doc, file, tt, null);
                         } else if (docTokenEndOffset <= fileToken.getOffset()) {
                             if (inMacroParams || inDeadCode) {
                                 // skip token in dead code
-                                tt.appendInterval(docTokenEndOffset - tt.currentIn.start, 0, false);
+                                tt.appendInterval(docTokenEndOffset - tt.currentIn.start, 0);
                                 continue;
                             } else {
                                 // copy tokens befor dead token and skip this token
                                 copyInterval(doc, docTokenStartOffset - tt.currentIn.start, tt, null);
-                                tt.appendInterval(docTokenEndOffset - tt.currentIn.start, 0, false);
+                                tt.appendInterval(docTokenEndOffset - tt.currentIn.start, 0);
                                 inDeadCode = true;
                                 continue;
                             }
@@ -696,7 +696,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
         copyInterval(inDoc, incNameStartOffset - incStartOffset, tt, expandedData);
         int expandedLength = addString(includeName, expandedData);
-        tt.appendInterval(incNameEndOffset - incNameStartOffset, expandedLength, false);
+        tt.appendInterval(incNameEndOffset - incNameStartOffset, expandedLength);
     }
 
     private String getIncludeName(CsmFile file, int offset) {
@@ -743,8 +743,8 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     private void initGuardedBlocks(Document doc, TransformationTable tt) {
         if (doc instanceof StyledDocument) {
             for (IntervalCorrespondence ic : tt.intervals) {
-                if (ic.macro) {
-                    NbDocument.markGuarded((StyledDocument) doc, ic.outInterval.start, ic.outInterval.length());
+                if (ic.isMacro()) {
+                    NbDocument.markGuarded((StyledDocument) doc, ic.getOutInterval().start, ic.getOutInterval().length());
                 }
             }
         }
@@ -753,7 +753,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     private int calcExpansionNumber(TransformationTable tt) {
         int expansionsNumber = 0;
         for (IntervalCorrespondence ic : tt.intervals) {
-            if (ic.macro) {
+            if (ic.isMacro()) {
                 expansionsNumber++;
             }
         }
@@ -776,7 +776,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     private void copyInterval(Document inDoc, int length, TransformationTable tt, StringBuilder expandedString) {
         if (length != 0) {
             addString(getDocumentText(inDoc, tt.currentIn.start, length), expandedString);
-            tt.appendInterval(length, length, false);
+            tt.appendInterval(length, length);
         }
     }
 
@@ -891,16 +891,12 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
     private static class Interval {
 
-        public int start;
-        public int end;
+        private final int start;
+        private int end;
 
         public Interval(int start) {
             this.start = start;
             this.end = start;
-        }
-
-        public void setStart(int start) {
-            this.start = start;
         }
 
         public void setEnd(int end) {
@@ -952,38 +948,109 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
     }
 
-    private static class IntervalCorrespondence {
+    private abstract static class IntervalCorrespondence {
 
-        public Interval inInterval;
-        public Interval outInterval;
-        boolean macro;
-        private CharSequence macroExpansion;
-        private Map<Interval, List<Interval>> paramsToExpansion;
+        private final Interval inInterval;
+        private final Interval outInterval;
 
-        public IntervalCorrespondence(Interval in, Interval out, boolean macro) {
-            this(in, out, macro, null, null);
-        }
-
-        public IntervalCorrespondence(Interval in, Interval out, boolean macro, CharSequence macroExpansion, Map<Interval, List<Interval>> paramsToExpansion) {
+        public IntervalCorrespondence(Interval in, Interval out) {
             this.inInterval = in;
             this.outInterval = out;
-            this.macro = macro;
-            this.macroExpansion = macroExpansion;
-            this.paramsToExpansion = paramsToExpansion;
         }
 
         /**
          * @return the macroExpansion
          */
         public CharSequence getMacroExpansion() {
-            return macroExpansion;
+            return null;
+        }
+
+        /**
+         * @return the inInterval
+         */
+        public Interval getInInterval() {
+            return inInterval;
+        }
+
+        /**
+         * @return the outInterval
+         */
+        public Interval getOutInterval() {
+            return outInterval;
+        }
+
+        /**
+         * @return the macro
+         */
+        public abstract boolean isMacro();
+
+        /**
+         * @return the paramsToExpansion
+         */
+        public Map<Interval, List<Interval>> getParamsToExpansion() {
+            return null;
         }
 
         @Override
         public String toString() {
-            return "IN:"+inInterval + " OUT:"+outInterval; // NOI18N
+            return "IN:"+getInInterval() + " OUT:"+getOutInterval(); // NOI18N
+        }
+
+}
+
+    private static class IntervalCorrespondenceSimple extends IntervalCorrespondence {
+        private IntervalCorrespondenceSimple(Interval in, Interval out){
+            super(in, out);
+        }
+
+        @Override
+        public boolean isMacro() {
+            return false;
         }
     }
+
+    private static class IntervalCorrespondenceMacro extends IntervalCorrespondence {
+        private final boolean macro;
+        private final CharSequence macroExpansion;
+        private final Map<Interval, List<Interval>> paramsToExpansion;
+
+        private IntervalCorrespondenceMacro(Interval in, Interval out, boolean macro, CharSequence macroExpansion, Map<Interval, List<Interval>> paramsToExpansion){
+            super(in, out);
+            this.macro = macro;
+            this.macroExpansion = macroExpansion;
+            this.paramsToExpansion = paramsToExpansion;
+        }
+
+        @Override
+        public CharSequence getMacroExpansion() {
+            return macroExpansion;
+        }
+
+        @Override
+        public boolean isMacro() {
+            return macro;
+        }
+
+        @Override
+        public Map<Interval, List<Interval>> getParamsToExpansion() {
+            return paramsToExpansion;
+        }
+    }
+
+    private static IntervalCorrespondence createIntervalCorrespondence(Interval interval) {
+        return new IntervalCorrespondenceSimple(interval, interval);
+    }
+
+    private static IntervalCorrespondence createIntervalCorrespondence(Interval in, Interval out, boolean macro, CharSequence macroExpansion, Map<Interval, List<Interval>> paramsToExpansion)  {
+        if (!macro && macroExpansion == null && paramsToExpansion == null) {
+            return new IntervalCorrespondenceSimple(in, out);
+        }
+        if (paramsToExpansion != null && paramsToExpansion.isEmpty()) {
+            paramsToExpansion = Collections.<Interval, List<Interval>>emptyMap();
+        }
+        return new IntervalCorrespondenceMacro(in, out, macro, macroExpansion, paramsToExpansion);
+    }
+
 
     private static class TransformationTable {
 
@@ -1015,8 +1082,8 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             currentOut = new Interval(start);
         }
 
-        public void appendInterval(int inLength, int outLength, boolean macro) {
-            appendInterval(inLength, outLength, macro, null, null);
+        public void appendInterval(int inLength, int outLength) {
+            appendInterval(inLength, outLength, false, null, null);
         }
 
         public void appendInterval(int inLength, int outLength, boolean macro, String macroExpansion, Map<Interval, List<Interval>> paramsToExpansion) {
@@ -1030,7 +1097,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             }
             currentIn.setLength(inLength);
             currentOut.setLength(outLength);
-            intervals.add(new IntervalCorrespondence(currentIn, currentOut, macro, cs, paramsToExpansion));
+            intervals.add(createIntervalCorrespondence(currentIn, currentOut, macro, cs, paramsToExpansion));
             setInStart(currentIn.end);
             setOutStart(currentOut.end);
         }
@@ -1039,25 +1106,25 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             if (intervals.isEmpty()) {
                 return inOffset;
             }
-            if (intervals.get(0).inInterval.start > inOffset) {
-                int shift = intervals.get(0).inInterval.start - inOffset;
-                return intervals.get(0).outInterval.start - shift;
+            if (intervals.get(0).getInInterval().start > inOffset) {
+                int shift = intervals.get(0).getInInterval().start - inOffset;
+                return intervals.get(0).getOutInterval().start - shift;
             }
 
             IntervalCorrespondence lastMacro = null;
             for (IntervalCorrespondence ic : intervals) {
-                if (ic.outInterval.length() != 0) {
+                if (ic.getOutInterval().length() != 0) {
                     lastMacro = null;
                 }
-                if (ic.macro) {
+                if (ic.isMacro()) {
                     lastMacro = ic;
                 }
-                if (ic.inInterval.contains(inOffset)) {
-                    if(ic.outInterval.length() == 0 && lastMacro != null) {
-                        for (Interval i : lastMacro.paramsToExpansion.keySet()) {
+                if (ic.getInInterval().contains(inOffset)) {
+                    if(ic.getOutInterval().length() == 0 && lastMacro != null) {
+                        for (Interval i : lastMacro.getParamsToExpansion().keySet()) {
                             if(i.contains(inOffset)) {
                                 int shift = inOffset - i.start;
-                                Interval j = lastMacro.paramsToExpansion.get(i).get(0);
+                                Interval j = lastMacro.getParamsToExpansion().get(i).get(0);
                                 if (shift >= j.length() || shift >= j.length()) {
                                     return j.end;
                                 } else {
@@ -1067,35 +1134,35 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                             }
                         }
                     }
-                    int shift = inOffset - ic.inInterval.start;
-                    if (shift >= ic.inInterval.length() || shift >= ic.outInterval.length()) {
-                        return ic.outInterval.end;
+                    int shift = inOffset - ic.getInInterval().start;
+                    if (shift >= ic.getInInterval().length() || shift >= ic.getOutInterval().length()) {
+                        return ic.getOutInterval().end;
                     } else {
-                        if(ic.macro) {
-                            return ic.outInterval.start;
+                        if(ic.isMacro()) {
+                            return ic.getOutInterval().start;
                         } else {
-                            return ic.outInterval.start + shift;
+                            return ic.getOutInterval().start + shift;
                         }
                     }
                 }
             }
-            int shift = inOffset - intervals.get(intervals.size() - 1).inInterval.end;
-            return intervals.get(intervals.size() - 1).outInterval.end + shift;
+            int shift = inOffset - intervals.get(intervals.size() - 1).getInInterval().end;
+            return intervals.get(intervals.size() - 1).getOutInterval().end + shift;
         }
 
         public int getInOffset(int outOffset) {
             if (intervals.isEmpty()) {
                 return outOffset;
             }
-            if (intervals.get(0).outInterval.start > outOffset) {
-                int shift = intervals.get(0).outInterval.start - outOffset;
-                return intervals.get(0).inInterval.start - shift;
+            if (intervals.get(0).getOutInterval().start > outOffset) {
+                int shift = intervals.get(0).getOutInterval().start - outOffset;
+                return intervals.get(0).getInInterval().start - shift;
             }
             for (IntervalCorrespondence ic : intervals) {
-                if (ic.outInterval.contains(outOffset)) {
-                    if(ic.macro) {
-                        for (Interval i : ic.paramsToExpansion.keySet()) {
-                            for (Interval j : ic.paramsToExpansion.get(i)) {
+                if (ic.getOutInterval().contains(outOffset)) {
+                    if(ic.isMacro()) {
+                        for (Interval i : ic.getParamsToExpansion().keySet()) {
+                            for (Interval j : ic.getParamsToExpansion().get(i)) {
                                 if(j.contains(outOffset)) {
                                     int shift = outOffset - j.start;
                                     if (shift >= i.length() || shift >= j.length()) {
@@ -1107,20 +1174,20 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                             }
                         }
                     }
-                    int shift = outOffset - ic.outInterval.start;
-                    if (shift >= ic.outInterval.length() || shift >= ic.inInterval.length()) {
-                        return ic.inInterval.end;
+                    int shift = outOffset - ic.getOutInterval().start;
+                    if (shift >= ic.getOutInterval().length() || shift >= ic.getInInterval().length()) {
+                        return ic.getInInterval().end;
                     } else {
-                        if(ic.macro) {
-                            return ic.inInterval.start;
+                        if(ic.isMacro()) {
+                            return ic.getInInterval().start;
                         } else {
-                            return ic.inInterval.start + shift;
+                            return ic.getInInterval().start + shift;
                         }
                     }
                 }
             }
-            int shift = outOffset - intervals.get(intervals.size() - 1).outInterval.end;
-            return intervals.get(intervals.size() - 1).inInterval.end + shift;
+            int shift = outOffset - intervals.get(intervals.size() - 1).getOutInterval().end;
+            return intervals.get(intervals.size() - 1).getInInterval().end + shift;
         }
 
         public int getNextMacroExpansionStartOffset(int outOffset) {
@@ -1128,11 +1195,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                 return outOffset;
             }
             for (IntervalCorrespondence ic : intervals) {
-                if (ic.outInterval.start <= outOffset) {
+                if (ic.getOutInterval().start <= outOffset) {
                     continue;
                 }
-                if (ic.macro) {
-                    return ic.outInterval.start;
+                if (ic.isMacro()) {
+                    return ic.getOutInterval().start;
                 }
             }
             return outOffset;
@@ -1144,25 +1211,25 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             }
             int result = outOffset;
             for (IntervalCorrespondence ic : intervals) {
-                if (ic.outInterval.end >= outOffset) {
+                if (ic.getOutInterval().end >= outOffset) {
                     return result;
                 }
-                if (ic.macro) {
-                    result = ic.outInterval.start;
+                if (ic.isMacro()) {
+                    result = ic.getOutInterval().start;
                 }
             }
             return outOffset;
         }
 
         public int findInIntervalIndex(int offset) {
-            return Collections.binarySearch(intervals, new IntervalCorrespondence(new Interval(offset, offset), new Interval(offset, offset), false),
+            return Collections.binarySearch(intervals, createIntervalCorrespondence(new Interval(offset, offset)),
                     new Comparator<IntervalCorrespondence>() {
 
                         public int compare(IntervalCorrespondence o1, IntervalCorrespondence o2) {
-                            if (o1.inInterval.end < o2.inInterval.start) {
+                            if (o1.getInInterval().end < o2.getInInterval().start) {
                                 return -1;
                             }
-                            if (o1.inInterval.start > o2.inInterval.end) {
+                            if (o1.getInInterval().start > o2.getInInterval().end) {
                                 return 1;
                             }
                             return 0;
@@ -1174,7 +1241,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         public String toString() {
             StringBuilder sb = new StringBuilder(""); // NOI18N
             for (IntervalCorrespondence ic : intervals) {
-                sb.append("[" + ic.inInterval.start + "," +  ic.inInterval.end + "] => [" + ic.outInterval.start + "," + ic.outInterval.end + "]\n"); // NOI18N
+                sb.append("[" + ic.getInInterval().start + "," +  ic.getInInterval().end + "] => [" + ic.getOutInterval().start + "," + ic.getOutInterval().end + "]\n"); // NOI18N
             }
             return sb.toString();
         }

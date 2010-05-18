@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SOAP-ENV:Body>
+    <sendPurchaseOrderResponse xmlns="">
+      <purchaseOrder>
+        <purchaseOrder xmlns="http://manufacturing.org/xsd/purchase">
+          <orderId>00012343</orderId>
+          <customerId>9876</customerId>
+          <orderDescription>OrderVal_Any_Description</orderDescription>
+          <price>49.98</price>
+        </purchaseOrder>
+      </purchaseOrder>
+    </sendPurchaseOrderResponse>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

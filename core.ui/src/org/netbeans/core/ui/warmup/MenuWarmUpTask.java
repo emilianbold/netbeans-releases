@@ -198,7 +198,8 @@ public final class MenuWarmUpTask implements Runnable {
             }
             final ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh"), this, null);
             if (!LOG.isLoggable(Level.FINE)) {
-                h.setInitialDelay(10000);
+                int delay = Integer.parseInt(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_RefreshDelay"));
+                h.setInitialDelay(delay);
             }
             h.start();
             Runnable run = null;

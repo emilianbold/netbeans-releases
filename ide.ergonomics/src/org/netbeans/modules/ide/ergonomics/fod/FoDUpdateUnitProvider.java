@@ -194,27 +194,12 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
     }
 
     private boolean isIDECluster(ModuleInfo mi) {
-        return isModuleFrom(mi, "ide"); // NOI18N
+        return FeatureManager.isModuleFrom(mi, "ide"); // NOI18N
     }
     private boolean isPlatformCluster(ModuleInfo mi) {
         if ("org.netbeans.modules.ide.branding.kit".equals(mi.getCodeName())) { // NOI18N
             return true;
         }
-        return isModuleFrom(mi, "platform"); // NOI18N
-    }
-
-    private static boolean isModuleFrom(ModuleInfo mi, String prefix) {
-        File f;
-        if (mi instanceof Module) {
-            f = ((Module)mi).getJarFile();
-        } else {
-            return false;
-        }
-        if (f.getParentFile().getName().equals("modules")) { // NOI18N
-            if (f.getParentFile().getParentFile().getName().startsWith(prefix)) {
-                return true;
-            }
-        }
-        return false;
+        return FeatureManager.isModuleFrom(mi, "platform"); // NOI18N
     }
 }

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.html.editor.refactoring;
 
+import org.netbeans.modules.web.common.refactoring.RenameRefactoringUI;
 import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
@@ -77,6 +78,7 @@ public class HtmlActionsImplementationProvider extends ActionsImplementationProv
             "image/gif", "image/jpeg", "image/png", "image/bmp"}); //NOI18N
 
     @Override
+    //file rename
     public boolean canRename(Lookup lookup) {
 	Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
 	//we are able to rename only one node selection [at least for now ;-) ]
@@ -97,12 +99,13 @@ public class HtmlActionsImplementationProvider extends ActionsImplementationProv
     }
 
     @Override
+    //file rename
     public void doRename(Lookup selectedNodes) {
 	Collection<? extends Node> nodes = selectedNodes.lookupAll(Node.class);
         assert nodes.size() == 1;
         Node node = nodes.iterator().next();
         FileObject file = getFileObjectFromNode(node);
-        UI.openRefactoringUI(new HtmlRenameRefactoringUI(file));
+        UI.openRefactoringUI(new RenameRefactoringUI(file));
     }
 
 

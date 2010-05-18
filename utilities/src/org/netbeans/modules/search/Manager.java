@@ -515,7 +515,8 @@ final class Manager {
                     startCleaning((CleanTask)pTasks[i]);
                 }
             }else{
-                assert false; //only 4 task types described above can be here
+                //only 4 task types described above can be here
+                assert false : "Unexpected task: " + pTasks[i]; // #184603
             }
         }
     }

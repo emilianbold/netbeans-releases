@@ -159,6 +159,11 @@ public class GapDocumentView extends GapBoxView {
     private final boolean hideBottomPadding;
 
     /**
+     * Cached viewport instance or null.
+     */
+    private JViewport viewport;
+
+    /**
      * Construct a view intended to cover the whole document.
      *
      * @param elem the element of the model to represent.
@@ -193,14 +198,17 @@ public class GapDocumentView extends GapBoxView {
         if (!hideBottomPadding && (axis == View.Y_AXIS)) {
             // Add an extra span to avoid typing at the bottom of the screen
             // by adding virtual height
-            Container c = getContainer();
-            if (c != null) {
-                JViewport viewport = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, c);
-                if (viewport != null) {
-                    int viewportHeight = viewport.getExtentSize().height;
-                    span += viewportHeight / 3;
+            if (viewport == null) {
+                Container c = getContainer();
+                if (c != null) {
+                    viewport = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, c);
                 }
             }
+            if (viewport != null) {
+                int viewportHeight = viewport.getExtentSize().height;
+                span += viewportHeight / 3;
+            }
+
         }
         return span;
     }

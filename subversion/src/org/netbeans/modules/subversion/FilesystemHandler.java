@@ -357,6 +357,10 @@ class FilesystemHandler extends VCSInterceptor {
             return new Runnable() {
                 @Override
                 public void run() {
+                    if (!SvnClientFactory.isClientAvailable()) {
+                        Subversion.LOG.fine(" skipping ProvidedExtensions.Refresh due to missing client"); //NOI18N
+                        return;
+                    }
                     if (!SvnUtils.isManaged(file)) {
                         return;
                     }

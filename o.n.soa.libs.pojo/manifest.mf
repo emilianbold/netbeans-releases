@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module: org.netbeans.soa.libs.pojo
+OpenIDE-Module-Layer: org/netbeans/soa/libs/pojose/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/soa/libs/pojose/Bundle.properties

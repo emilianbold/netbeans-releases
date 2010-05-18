@@ -132,7 +132,7 @@ class GetStarted extends JPanel implements Constants {
             JPanel panel = new JPanel( new GridBagLayout() );
             panel.setOpaque(false);
             ActionButton lb = new ActionButton( action, Utils.getUrlString( dob ),
-                    Utils.getColor( COLOR_HEADER ), true );
+                    Utils.getColor( COLOR_HEADER ), true, dob.getPrimaryFile().getPath() );
             panel.add( lb, new GridBagConstraints(1,0,1,3,1.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
             lb.setFont( GET_STARTED_FONT );
             

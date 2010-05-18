@@ -1160,7 +1160,7 @@ public class HgCommand {
             throw new HgException(ex.getMessage());
         } catch (HgException e) {
             Mercurial.LOG.log(Level.WARNING, "command: {0}", HgUtils.replaceHttpPassword(command)); // NOI18N
-            Mercurial.LOG.log(Level.INFO, null, e); // NOI18N
+            Mercurial.LOG.log(e instanceof HgException.HgCommandCanceledException ? Level.FINE : Level.INFO, null, e); // NOI18N
             throw new HgException(e.getMessage());
         } finally {
             Utils.deleteRecursively(tempFolder);
@@ -2207,7 +2207,7 @@ public class HgCommand {
         try {
             list = exec(command);
         } catch (HgException ex) {
-            Mercurial.LOG.log(Level.INFO, null, ex);
+            Mercurial.LOG.log(ex instanceof HgException.HgCommandCanceledException ? Level.FINE : Level.INFO, null, ex);
             list = Collections.<String>emptyList();
         }
         String id = "-1"; //NOI18N

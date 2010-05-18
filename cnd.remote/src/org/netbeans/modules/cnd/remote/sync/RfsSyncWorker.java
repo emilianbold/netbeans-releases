@@ -63,6 +63,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -203,7 +204,7 @@ import org.openide.util.RequestProcessor;
 
         env2add.put("LD_PRELOAD", preload); // NOI18N
         String ldLibPathVar = "LD_LIBRARY_PATH"; // NOI18N
-        String oldLdLibPath = RemoteUtil.getEnv(executionEnvironment, ldLibPathVar);
+        String oldLdLibPath = MacroMap.forExecEnv(executionEnvironment).get(ldLibPathVar);
         if (oldLdLibPath != null) {
             ldLibraryPath += ":" + oldLdLibPath; // NOI18N
         }

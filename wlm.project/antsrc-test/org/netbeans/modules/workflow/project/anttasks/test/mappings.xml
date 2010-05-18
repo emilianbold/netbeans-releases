@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 sp1 U (http://www.altova.com) by Mei Wu (SeeBeyond Technology Corp.) -->
+<mp:DefaultValues xmlns:mp="http://jbi.com.sun/wfse/project/mappings">
+	<mp:mapping path="po:orderId" value="instance('input')/po:orderId"/>
+	<mp:mapping path="po:approveDate" value="local-date()"/>
+</mp:DefaultValues>

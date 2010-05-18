@@ -177,7 +177,7 @@ public class CndUtils {
         if (isDebugMode()) {
             File normFile = CndFileUtils.normalizeFile(file);
             if (!file.equals(normFile)) {
-                assertTrueInConsole(false, "Parameter file was not " + "normalized. Was " + file + " instead of " + normFile); // NOI18N
+                assertTrueInConsole(false, "Parameter file was not normalized. Was " + file + " instead of " + normFile); // NOI18N
             }
         }
     }

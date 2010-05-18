@@ -51,7 +51,7 @@ import org.netbeans.lib.richexecution.program.Command;
 import org.netbeans.lib.richexecution.program.Program;
 import org.netbeans.lib.richexecution.Pty.Mode;
 import org.netbeans.lib.richexecution.program.Shell;
-import org.netbeans.lib.termsupport.TermExecutor;
+// OLD import org.netbeans.lib.terminalemulator.support.TermExecutor;
 
 /**
  *

@@ -55,6 +55,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -96,6 +97,11 @@ public class NewTestCppUnitPanel extends CndPanel {
             });
         }
         super.stateChanged(e);
+    }
+
+    @Override
+    public HelpCtx getHelp() {
+        return new HelpCtx("CreateCppUnitTestWizardP2");
     }
 
     @Override

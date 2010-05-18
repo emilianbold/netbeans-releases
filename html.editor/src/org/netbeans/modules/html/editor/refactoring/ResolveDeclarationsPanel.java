@@ -63,6 +63,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
+import org.openide.util.NbBundle;
 
 /**
  * The class is based on a modified copy of
@@ -123,62 +124,72 @@ public class ResolveDeclarationsPanel extends javax.swing.JPanel {
 
     private JComboBox createComboBox(ResolveDeclarationItem resolveDeclarationItem, Font font, FocusListener listener) {
         List<DeclarationItem> declarations = resolveDeclarationItem.getPossibleDeclarations();
-        String[] choices = new String[declarations.size()];
-        for (int i = 0; i < choices.length; i++) {
-            DeclarationItem item = declarations.get(i);
-            StringBuilder b = new StringBuilder();
-            b.append(item.getSource().getNameExt());
-            int line = item.getDeclaration().entry().getLineOffset();
-            if (line != -1) {
-                b.append(':');
-                b.append(line);
-            }
-            String lineText = item.getDeclaration().entry().getLineText().toString();
-            if(lineText != null) {
-                b.append(" (");
-                b.append(lineText.trim());
-                b.append(')');
-            }
-            choices[i] = b.toString();
-        }
+        if(declarations.isEmpty()) {
+            //there's no definitions for the selector declaration in the project
+            //show just some empty combo with a warning message
+            JComboBox combo = new JComboBox(new String[]{NbBundle.getMessage(ResolveDeclarationItem.class, "MSG_No_Selector_Definion")}); //NOI18N
+            combo.setEnabled(false);
+            return combo;
 
-        JComboBox combo = new JComboBox(choices);
-//        combo.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_Combo_ACSD")); //NOI18N
-//        combo.getAccessibleContext().setAccessibleName(getBundleString("FixDupImportStmts_Combo_Name_ACSD")); //NOI18N
-        combo.setOpaque(false);
-        combo.setFont(font);
-        combo.addFocusListener(listener);
-
-        combo.addItemListener(new ItemListener() {
-
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if(e.getStateChange() == ItemEvent.SELECTED) {
-                    //set the choosen combobox item to the corresponding ResolveDeclarationItem
-                    JComboBox source = (JComboBox)e.getSource();
-                    //get corresponding RDI
-                    int sourceComboIndex = combos.indexOf(source);
-                    ResolveDeclarationItem resolveDeclarationItem = items.get(sourceComboIndex);
-                    //and set the selected DeclarationItem according to the selected combo's selected item index
-                    int selectedTargetIndex = source.getSelectedIndex();
-                    DeclarationItem selectedItem = resolveDeclarationItem.getPossibleDeclarations().get(selectedTargetIndex);
-                    //set the choosed declaration item to the model
-                    resolveDeclarationItem.resolve(selectedItem);
+        } else {
+            //there are options
+            String[] choices = new String[declarations.size()];
+            for (int i = 0; i < choices.length; i++) {
+                DeclarationItem item = declarations.get(i);
+                StringBuilder b = new StringBuilder();
+                b.append(item.getSource().getNameExt());
+                int line = item.getDeclaration().entry().getLineOffset();
+                if (line != -1) {
+                    b.append(':');
+                    b.append(line);
                 }
+                String lineText = item.getDeclaration().entry().getLineText().toString();
+                if(lineText != null) {
+                    b.append(" (");
+                    b.append(lineText.trim());
+                    b.append(')');
+                }
+                choices[i] = b.toString();
             }
-        });
 
-        combo.setEnabled(choices.length > 1);
-        //select first item
-        combo.setSelectedIndex(0);
-        //unfortunatelly this won't fire the itemStateChanged event, se we need to
-        //set the default resolved item manually
-        resolveDeclarationItem.resolve(resolveDeclarationItem.getPossibleDeclarations().get(0));
+            JComboBox combo = new JComboBox(choices);
+    //        combo.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_Combo_ACSD")); //NOI18N
+    //        combo.getAccessibleContext().setAccessibleName(getBundleString("FixDupImportStmts_Combo_Name_ACSD")); //NOI18N
+            combo.setOpaque(false);
+            combo.setFont(font);
+            combo.addFocusListener(listener);
 
-        InputMap inputMap = combo.getInputMap(JComboBox.WHEN_FOCUSED);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "showPopup"); //NOI18N
-        combo.getActionMap().put("showPopup", new TogglePopupAction()); //NOI18N
-        return combo;
+            combo.addItemListener(new ItemListener() {
+
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    if(e.getStateChange() == ItemEvent.SELECTED) {
+                        //set the choosen combobox item to the corresponding ResolveDeclarationItem
+                        JComboBox source = (JComboBox)e.getSource();
+                        //get corresponding RDI
+                        int sourceComboIndex = combos.indexOf(source);
+                        ResolveDeclarationItem resolveDeclarationItem = items.get(sourceComboIndex);
+                        //and set the selected DeclarationItem according to the selected combo's selected item index
+                        int selectedTargetIndex = source.getSelectedIndex();
+                        DeclarationItem selectedItem = resolveDeclarationItem.getPossibleDeclarations().get(selectedTargetIndex);
+                        //set the choosed declaration item to the model
+                        resolveDeclarationItem.resolve(selectedItem);
+                    }
+                }
+            });
+
+            combo.setEnabled(choices.length > 1);
+            //select first item
+            combo.setSelectedIndex(0);
+            //unfortunatelly this won't fire the itemStateChanged event, se we need to
+            //set the default resolved item manually
+            resolveDeclarationItem.resolve(resolveDeclarationItem.getPossibleDeclarations().get(0));
+
+            InputMap inputMap = combo.getInputMap(JComboBox.WHEN_FOCUSED);
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "showPopup"); //NOI18N
+            combo.getActionMap().put("showPopup", new TogglePopupAction()); //NOI18N
+            return combo;
+        }
     }
 
     private int getRowHeight() {

@@ -70,7 +70,6 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula
  */
 final class SourcePathImplementation implements ClassPathImplementation, PropertyChangeListener {
-    static final String INCLUDES = "**"; // NOI18N
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private final PhpProject project;
@@ -143,7 +142,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         support.firePropertyChange(PROP_RESOURCES, null, null);
     }
 
-    // compute ant pattern
     String computeExcludes(File root) {
         StringBuilder buffer = new StringBuilder(100);
         for (File file : project.getIgnoredFiles()) {
@@ -151,7 +149,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             if (isUnderneath(relPath)) {
                 String pattern = relPath;
                 if (file.isDirectory()) {
-                    pattern += "/**"; // NOI18N
+                    pattern += "/"; // NOI18N
                 }
                 if (buffer.length() > 0) {
                     buffer.append(","); // NOI18N
@@ -178,7 +176,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                 assert test.isDirectory();
                 String relPath = PropertyUtils.relativizeFile(root, test);
                 if (isUnderneath(relPath)) {
-                    String pattern = relPath + "/**"; // NOI18N
+                    String pattern = relPath + "/"; // NOI18N
                     if (buffer.length() > 0) {
                         buffer.append(","); // NOI18N
                     }
@@ -219,7 +217,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             if (matcher == null) {
                 File rootFile = new File(URI.create(root.toExternalForm()));
                 matcher = new PathMatcher(
-                        INCLUDES,
+                        null,
                         computeExcludes(rootFile),
                         rootFile);
             }

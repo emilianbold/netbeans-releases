@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<process name="AprovePurchaseOrder"
+         targetNamespace="http://jbi.com.sun/wfse/samples/adv-purchase-order/bpel"
+         xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+         xmlns:bpws="http://schemas.xmlsoap.org/ws/2004/03/business-process/"
+         xmlns:cur="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/XPathFunctions"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor2"
+         xmlns:sxat="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Attachment"
+         xmlns:sxeh="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"
+         xmlns:po="http://jbi.com.sun/wfse/samples/adv-purchase-order/xsd"
+         xmlns:powsdl="http://jbi.com.sun/wfse/samples/adv-purchase-order/wsdl">
+
+    <import location="ApprovePurchase_TM_BPEL.wsdl"
+            importType="http://schemas.xmlsoap.org/wsdl/"
+            namespace="http://jbi.com.sun/wfse/samples/adv-purchase-order/wsdl"/>
+    <import location="ApprovePurchase.wsdl"
+            importType="http://schemas.xmlsoap.org/wsdl/"
+            namespace="http://jbi.com.sun/wfse/samples/adv-purchase-order/wsdl"/>
+
+    <partnerLinks>
+        <partnerLink name="approveOrder" 
+                     partnerLinkType="powsdl:ApprovePurchaseLT"
+                     partnerRole="ApprovePurchase_Server"/>
+        <partnerLink name="purchasing" 
+                     partnerLinkType="powsdl:purchasingLT"
+                     myRole="purchaseOrderService"/>
+    </partnerLinks>
+
+    <variables>
+        <variable name="ApprovePurchaseOutput" messageType="powsdl:TaskOutput"/>
+        <variable name="ApprovePurchaseInput" messageType="powsdl:TaskInput"/>
+        <variable name="purchaseOrderOutput" messageType="powsdl:OrderOutput"/>
+        <variable name="purchaseOrderInput" messageType="powsdl:OrderInput"/>
+    </variables>
+
+    <sequence>
+        <receive name="ReceivePO"
+                 createInstance="yes"
+                 partnerLink="purchasing"
+                 operation="receivePurchaseOrder"
+                 portType="powsdl:purcharseOrderPT"
+                 variable="purchaseOrderInput"/>
+        <if name="If1">
+            <condition> ( $purchaseOrderInput.OrderInfo/po:amount &gt; 200 ) </condition>
+            <sequence name="Sequence1">
+                <assign name="Assign1">
+                    <copy>
+                        <from variable="purchaseOrderInput" part="OrderInfo"/>
+                        <to variable="ApprovePurchaseInput" part="part1"/>
+                    </copy>
+                </assign>
+                <invoke name="InvokeApproveOrder" 
+                        partnerLink="approveOrder"
+                        operation="ApprovePurchase"
+                        portType="powsdl:ApprovePurchasePT"
+                        inputVariable="ApprovePurchaseInput"
+                        outputVariable="ApprovePurchaseOutput"/>
+                <if name="If2">
+                    <condition> ( $ApprovePurchaseOutput.part1/po:approveResult = 'Approved' ) </condition>
+                    <assign name="AssignToReply">
+                        <copy>
+                            <from variable="ApprovePurchaseOutput" part="part1"/>
+                            <to variable="purchaseOrderOutput" part="ApprovalInfo"/>
+                        </copy>
+                    </assign>
+                    <else>
+                        <assign name="Assign3">
+                            <copy>
+                                <from variable="ApprovePurchaseOutput" part="part1"/>
+                                <to variable="purchaseOrderOutput" part="ApprovalInfo"/>
+                            </copy>
+                        </assign>
+                    </else>
+                </if>
+            </sequence>
+            <else>
+                <assign name="Assign2">
+                    <copy>
+                        <from>$purchaseOrderInput.OrderInfo/po:orderId</from>
+                        <to>$purchaseOrderOutput.ApprovalInfo/po:orderId</to>
+                    </copy>
+                    <copy>
+                        <from>
+                            <literal>Approved</literal>
+                        </from>
+                        <to>$purchaseOrderOutput.ApprovalInfo/po:approveResult</to>
+                    </copy>
+                    <copy>
+                        <from>cur:current-date()</from>
+                        <to>$purchaseOrderOutput.ApprovalInfo/po:replyDate</to>
+                    </copy>
+                    <copy>
+                        <from>
+                            <literal>you order is aproved by automated process</literal>
+                        </from>
+                        <to>$purchaseOrderOutput.ApprovalInfo/po:description</to>
+                    </copy>
+                </assign>
+            </else>
+        </if>
+        <reply name="ReplyPo" 
+               partnerLink="purchasing"
+               operation="receivePurchaseOrder"
+               portType="powsdl:purcharseOrderPT"
+               variable="purchaseOrderOutput"/>
+    </sequence>
+
+</process>
+

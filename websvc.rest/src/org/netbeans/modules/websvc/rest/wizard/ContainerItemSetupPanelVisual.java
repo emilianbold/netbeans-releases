@@ -101,8 +101,51 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
                 fireChange();
             }
         });
+        classTextField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                compareClassNames();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                compareClassNames();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                compareClassNames();
+            }
+        });
+        containerTextField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                compareClassNames();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                compareClassNames();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                compareClassNames();
+            }
+        });
+
         medaTypeComboBox.setModel(new DefaultComboBoxModel(GenericResourceBean.getSupportedMimeTypes()));
     }
+
+        private void compareClassNames() {
+            String className = classTextField.getText().trim();
+            String containerClassName = containerTextField.getText().trim();
+            if (className.equals(containerClassName)) {
+                fireChange();
+            }
+        }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -444,7 +487,6 @@ private void containerTextFieldActionPerformed(java.awt.event.ActionEvent evt) {
 private void containerClassNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_containerClassNameChanged
     containerClassNameOveridden = true;
     fireChange();
-    
 }//GEN-LAST:event_containerClassNameChanged
 
 private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_representationClassChanged
@@ -547,7 +589,10 @@ private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRS
         } else if (resourceName.length() == 0 || ! Utilities.isJavaIdentifier(resourceName)) {
             AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourceName");
             return false;
-        } else if (className.length() == 0 || ! Utilities.isJavaIdentifier(className)) {
+        } else if (className.equals(containerName)) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_ClassNameEqualsContainerClassName");
+            return false;
+        }  else if (className.length() == 0 || ! Utilities.isJavaIdentifier(className)) {
             AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourceClassName");
             return false;
         } else if (containerName.length() == 0 || ! Utilities.isJavaIdentifier(containerName)) {

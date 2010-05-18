@@ -38,36 +38,31 @@
  */
 package org.netbeans.modules.web.core.syntax.gsf;
 
-import java.util.Collections;
-import java.util.List;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-
+import org.netbeans.modules.web.core.syntax.parser.JspSyntaxParser;
 
 /**
- * just fake class, we need the parser and the StructureScanner to enable 
- * navigator of embedded languages
+ * A very simple JSP parser.
  *
  * @author marek
  */
 public class JspGSFParser extends Parser {
 
-    private Result fakeResult;
+    private Result result;
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        fakeResult = new JspFakeParserResult(snapshot);
+        result = new JspParserResult(snapshot, JspSyntaxParser.parse(snapshot));
     }
 
     @Override
     public Result getResult(Task task) throws ParseException {
-        return fakeResult;
+        return result;
     }
 
     @Override
@@ -84,23 +79,5 @@ public class JspGSFParser extends Parser {
     public void removeChangeListener(ChangeListener changeListener) {
         //do nothing
     }
-
-    private static class JspFakeParserResult extends ParserResult {
-
-        public JspFakeParserResult(Snapshot s) {
-            super(s);
-        }
-
-        @Override
-        public List<? extends Error> getDiagnostics() {
-            return Collections.EMPTY_LIST;
-        }
-
-        @Override
-        protected void invalidate() {
-            //do nothing
-        }
-
-    }
-
+    
 }

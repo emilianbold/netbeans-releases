@@ -1,0 +1,14 @@
+#set( $indent = "    " )
+ORGANIZATION (
+${indent}LOADTYPE='REMOTE'
+${indent}DBLINK='${linkName}'
+#if( $remoteName != "" )${indent}REMOTETABLE='${remoteName}'
+#end
+#if( $catalogName != "" )${indent}CATALOG='${catalogName}'
+#end
+#if( $schemaName != "" )${indent}SCHEMA='${schemaName}'
+#end
+#if( $orderBy != "" )${indent}ORDERBY='${orderBy}'
+#end
+#if( $where != "" )${indent}WHERE='${where}'
+)

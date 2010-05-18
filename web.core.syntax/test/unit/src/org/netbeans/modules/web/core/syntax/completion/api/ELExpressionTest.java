@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.web.core.syntax.completion.api;
 
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
@@ -61,35 +62,35 @@ public class ELExpressionTest extends TestBase {
         NbTestCase.assertEquals("i", ELExpression.getPropertyName("getI", 3));
     }
 
-    public void testParseElFunction() {
+    public void testParseElFunction() throws BadLocationException {
         Document doc = createDocument("${f:continue}");
         //                             012345678
-        ELExpression expr = new ELExpression(doc);
-        int type = expr.parse(8);
+        ELExpression expr = new ELExpression(doc,8);
+        int type = expr.parse();
 
         assertEquals(ELExpression.EL_START, type);
         assertEquals("f:cont", expr.getReplace());
 
         doc = createDocument("${f:cont}");
         //                    012345678
-        expr = new ELExpression(doc);
-        type = expr.parse(8);
+        expr = new ELExpression(doc,8);
+        type = expr.parse();
 
         assertEquals(ELExpression.EL_START, type);
         assertEquals("f:cont", expr.getReplace());
 
         doc = createDocument("${f:cont}");
         //                    012345678
-        expr = new ELExpression(doc);
-        type = expr.parse(4);
+        expr = new ELExpression(doc,4);
+        type = expr.parse();
 
         assertEquals(ELExpression.EL_START, type);
         assertEquals("f:", expr.getReplace());
 
         doc = createDocument("${f:}");
         //                    012345678
-        expr = new ELExpression(doc);
-        type = expr.parse(4);
+        expr = new ELExpression(doc,4);
+        type = expr.parse();
 
         assertEquals(ELExpression.EL_START, type);
         assertEquals("f:", expr.getReplace());

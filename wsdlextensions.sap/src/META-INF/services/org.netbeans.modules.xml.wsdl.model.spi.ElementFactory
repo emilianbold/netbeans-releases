@@ -1,0 +1,7 @@
+org.netbeans.modules.wsdlextensions.sap.impl.SAPElementFactoryProvider$BindingFactory
+org.netbeans.modules.wsdlextensions.sap.impl.SAPElementFactoryProvider$AddressFactory
+org.netbeans.modules.wsdlextensions.sap.impl.SAPElementFactoryProvider$AddressClientFactory
+org.netbeans.modules.wsdlextensions.sap.impl.SAPElementFactoryProvider$AddressServerFactory
+org.netbeans.modules.wsdlextensions.sap.impl.SAPElementFactoryProvider$FmOperationFactory
+org.netbeans.modules.wsdlextensions.sap.impl.SAPElementFactoryProvider$IDocOperationFactory
+org.netbeans.modules.wsdlextensions.sap.impl.SAPElementFactoryProvider$MessageFactory

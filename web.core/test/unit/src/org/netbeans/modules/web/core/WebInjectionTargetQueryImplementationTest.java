@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.web.core;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import java.io.File;
 import java.io.IOException;
 import javax.lang.model.element.TypeElement;

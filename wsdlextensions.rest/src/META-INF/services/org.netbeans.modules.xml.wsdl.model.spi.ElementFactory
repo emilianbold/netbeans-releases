@@ -1,0 +1,3 @@
+org.netbeans.modules.wsdlextensions.rest.impl.RESTElementFactoryProvider$AddressFactory
+org.netbeans.modules.wsdlextensions.rest.impl.RESTElementFactoryProvider$BindingFactory
+org.netbeans.modules.wsdlextensions.rest.impl.RESTElementFactoryProvider$OperationFactory

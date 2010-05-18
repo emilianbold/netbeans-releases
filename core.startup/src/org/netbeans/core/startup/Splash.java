@@ -492,6 +492,9 @@ public final class Splash implements Stamps.Updater {
         }
     
         public void increment(int steps) {
+            if (steps <= 0) {
+                return;
+            }
             progress += steps;
             if (progress > maxSteps) {
                 progress = maxSteps;

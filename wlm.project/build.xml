@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="wlm.project" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.netbeans.modules.wlm.project.</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="chiba-extra" depends="release"> 
+        <mkdir dir="build/chibaclasses"/>
+        <javac srcdir="chiba_src" destdir="build/chibaclasses" source="1.5" debug="true" deprecation="true">            
+            <classpath>
+                <pathelement location="${netbeans.dest.dir}/java/ant/lib/ant.jar"/>
+                <pathelement location="${netbeans.dest.dir}/xml/modules/ext/jxpath/jxpath1.1.jar"/>
+                <pathelement location="${netbeans.dest.dir}/ide/modules/ext/xerces-2.8.0.jar"/>
+                <pathelement location="${cluster}/modules/ext/wlm/log4j-1.2.13.jar"/>
+            </classpath>
+        </javac> 
+        
+        <jar jarfile="${cluster}/modules/ext/wlm/chiba-1.0.0.jar" compress="false">
+            <fileset dir="build/chibaclasses"/>
+        </jar>
+        
+    </target>
+    <target name="ant-extra" depends="chiba-extra">
+        <echo>called netbeans-extra</echo>
+        <mkdir dir="build/antclasses"/>
+        <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true">
+            <classpath>
+                <path refid="cp"/>
+                <pathelement location="${cluster}/${module.jar}"/>
+                <pathelement location="${cluster}/modules/ext/wlm/chiba-1.0.0.jar" />
+                <pathelement location="${cluster}/modules/ext/wlm/log4j-1.2.13.jar"/>
+                <pathelement location="${cluster}/modules/ext/wlm/wfse_def-1.0.0.jar"/>
+                <pathelement location="${netbeans.dest.dir}/ide/modules/ext/xerces-2.8.0.jar"/>
+                <pathelement location="${netbeans.dest.dir}/ide/modules/org-netbeans-modules-editor-lib.jar"/>
+                <pathelement location="${netbeans.dest.dir}/ide/modules/org-netbeans-modules-xml-retriever.jar"/>
+                <pathelement location="${netbeans.dest.dir}/ide/modules/org-netbeans-modules-xml-text.jar"/>
+                <pathelement location="${netbeans.dest.dir}/ide/modules/org-netbeans-modules-xml-xdm.jar"/>
+                <pathelement location="${netbeans.dest.dir}/java/ant/lib/ant.jar"/>
+                <pathelement location="${netbeans.dest.dir}/soa/modules/org-netbeans-modules-wlm-model.jar" />
+                <pathelement location="${netbeans.dest.dir}/soa/modules/ext/xmlbeans-2.1.0/xbean.jar" />
+                <pathelement location="${netbeans.dest.dir}/soa/modules/ext/xmlbeans-2.1.0/xbean_xpath.jar" />
+                <pathelement location="${netbeans.dest.dir}/soa/modules/ext/xmlbeans-2.1.0/resolver.jar" />
+                <pathelement location="${netbeans.dest.dir}/soa/modules/ext/xmlbeans-2.1.0/jsr173_1.0_api.jar" />
+                <pathelement location="${netbeans.dest.dir}/soa/modules/ext/xmlbeans-2.1.0/xmlpublic.jar" />
+                <pathelement location="${netbeans.dest.dir}/soa/modules/ext/wsdl4j-1.5.2/wsdl4j.jar" />
+                <pathelement location="${netbeans.dest.dir}/soa/modules/ext/wsdl4j-1.5.2/qname.jar" />
+                <pathelement location="${netbeans.dest.dir}/xml/modules/ext/jxpath/jxpath1.1.jar"/>
+            </classpath>
+        </javac>
+<!--
+    <mkdir dir="${cluster}/modules/ext/workflow"/>
+--> 
+
+    <mkdir dir="${cluster}/ant/nblib/"/>
+        <jar jarfile="${cluster}/ant/nblib/org-netbeans-modules-wlm-project.jar" compress="false">
+            <fileset dir="build/antclasses"/>
+           <fileset dir="antsrc">
+                <filename name="**/*.properties"/>
+            </fileset>            
+        <fileset dir="antsrc">
+          <include name="**/*.xml"/>
+        </fileset>              
+           <fileset dir="build/classes">
+                <filename name="**/TaskStaticTemplate.wsdl"/>
+            </fileset>            
+        <fileset dir="antsrc">
+          <include name="**/*.xsl"/>
+        </fileset>              
+        </jar>
+        
+        
+    <jar jarfile="${cluster}/modules/ext/wlm/anttask.jar" compress="false">
+            <fileset dir="build/antclasses"/>
+            <fileset dir="antsrc">
+                <filename name="**/*.properties"/>
+            </fileset>
+        <fileset dir="antsrc">
+          <include name="**/*.xml"/>
+        </fileset>       
+        <fileset dir="antsrc">
+          <include name="**/*.xsl"/>
+        </fileset>          
+        </jar>
+    </target>
+    
+    
+    <target name="netbeans-extra" depends="copy-libs, ant-extra">
+    </target>
+    
+    <target name="copy-libs" >
+      <mkdir dir="${cluster}/modules/ext/wlm"/>
+        <copy todir="${cluster}/modules/ext/wlm">
+            <fileset dir="external" />
+        </copy>
+     <!--   <copy todir="${cluster}/modules/ext/wlm">
+            <fileset dir="${netbeans.dest.dir}/ide/modules/ext">
+                <filename name="xerces-2.8.0.jar"/>
+            </fileset>
+        </copy>        -->
+     </target>  
+     
+
+     <target name="init-test-cp">
+        <path id="generate.jbi">
+            <pathelement path="${netbeans.home}/../ide/modules/org-netbeans-modules-xml-xam.jar"/>
+            <pathelement path="${netbeans.home}/../ide/modules/org-netbeans-modules-xml-schema-model.jar"/>
+            <pathelement path="${netbeans.home}/../ide/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+            <pathelement path="${netbeans.home}/../ide/modules/ext/xerces-2.8.0.jar"/>
+            <pathelement path="${netbeans.home}/../ide/modules/org-netbeans-modules-xml-retriever.jar"/>
+            <pathelement path="${netbeans.home}/../ide/modules/org-netbeans-modules-projectapi.jar"/>
+            <pathelement path="${netbeans.home}/../ide/modules/org-netbeans-modules-editor-lib.jar"/>
+            <pathelement path="${netbeans.home}/../ide/modules/org-netbeans-modules-xml-text.jar"/>
+            <pathelement path="${netbeans.home}/../ide/modules/org-netbeans-modules-editor.jar"/>
+            <pathelement path="${netbeans.home}/../ide/modules/org-netbeans-modules-editor-util.jar"/>
+            <pathelement path="${netbeans.home}/../ide/modules/org-netbeans-modules-editor-lib2.jar"/>
+            <pathelement path="${netbeans.home}/../ide/modules/org-netbeans-api-xml.jar"/>
+            <pathelement path="${netbeans.home}/../java/ant/lib/ant.jar"/>
+            <pathelement path="${netbeans.home}/../platform/core/org-openide-filesystems.jar"/>
+            <pathelement path="${netbeans.home}/../platform/lib/org-openide-util.jar"/>
+            <pathelement path="${netbeans.home}/../platform/modules/org-openide-loaders.jar"/>
+            <pathelement path="${netbeans.home}/../platform/modules/org-netbeans-modules-masterfs.jar"/>
+            <pathelement path="${netbeans.home}/../platform/modules/org-openide-nodes.jar"/>
+            <pathelement path="${netbeans.home}/../platform/modules/org-netbeans-modules-editor-mimelookup.jar"/>
+            <pathelement path="${netbeans.home}/../platform/modules/org-openide-options.jar"/>
+            <pathelement path="${netbeans.home}/../platform/modules/org-openide-text.jar"/>
+            <pathelement path="${netbeans.home}/../platform/modules/org-openide-windows.jar"/>
+            <pathelement path="${netbeans.home}/../platform/modules/org-openide-dialogs.jar"/>
+            <pathelement path="${netbeans.home}/../platform/modules/org-openide-awt.jar"/>
+            <pathelement path="${netbeans.home}/../platform/modules/org-netbeans-modules-queries.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/org-netbeans-modules-wlm-project.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/ext/wlm/anttask.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/ext/wlm/workflowmodel-1.0.0.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/ext/wlm/wfse_def.jar-1.0.0.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/ext/wsdl4j-1.5.2/wsdl4j.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/ext/wsdl4j-1.5.2/qname.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/ext/xmlbeans-2.1.0/xbean.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/ext/xmlbeans-2.1.0/xbean_xpath.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/ext/xmlbeans-2.1.0/resolver.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/ext/xmlbeans-2.1.0/jsr173_1.0_api.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/ext/xmlbeans-2.1.0/xmlpublic.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/ext/wlm/chiba-1.0.0.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/ext/wlm/log4j-1.2.13.jar"/>
+            <pathelement path="${netbeans.home}/../soa/modules/org-netbeans-modules-wlm-model.jar"/>
+            <pathelement path="${netbeans.home}/../xml/modules/ext/jxpath/jxpath1.1.jar"/>
+         </path>
+     </target>
+     <target name="test-xform-build" depends="ant-extra, init-test-cp">
+         <java classname="org.netbeans.modules.wlm.project.anttasks.IDEXFormGenerationTask">
+            <classpath refid="generate.jbi"/> 
+         </java>
+     </target>
+     
+     <target name="test-jbi-build" depends="ant-extra, init-test-cp">
+         <java classname="org.netbeans.modules.wlm.project.anttasks.GenerateAsaArtifacts">
+            <classpath refid="generate.jbi"/> 
+         </java>
+     </target>     
+
+</project>

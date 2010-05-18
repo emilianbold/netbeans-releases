@@ -44,6 +44,7 @@ package org.netbeans.modules.web.jsf.editor.completion;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -62,6 +63,7 @@ import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -121,10 +123,10 @@ public class JsfElCompletionProvider implements CompletionProvider {
                 FileObject fObject = NbEditorUtilities.getFileObject(doc);
                 WebModule wm = fObject != null ? WebModule.getWebModule(fObject) : null;
                 if (wm != null) {
-                    final JsfElExpression elExpr = new JsfElExpression(wm, doc);
                     final ArrayList<CompletionItem> complItems = new ArrayList<CompletionItem>();
 
-                    int elParseType = elExpr.parse(offset);
+                    final JsfElExpression elExpr = new JsfElExpression(wm, doc, offset);
+                    int elParseType = elExpr.parse();
                     final int anchor = offset - elExpr.getReplace().length();
 
                     switch (elParseType) {
@@ -191,6 +193,8 @@ public class JsfElCompletionProvider implements CompletionProvider {
                     resultSet.addAllItems(complItems);
                 }
 
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
             } finally {
                 resultSet.finish();
             }

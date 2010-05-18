@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
+                     "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+
+<toc version="2.0">
+	<tocitem text="SOA Development">
+		<tocitem text="Composite Applications">
+			<tocitem text="Working with Composite Application Projects">
+				<tocitem text="About Composite Application Projects" target="org.netbeans.modules.compapp.projects.jbi.ui.JbiLogicalViewProvider" />
+				<tocitem text="Creating Composite Application Projects" target="caps_basics_create" />
+				<tocitem text="Adding JBI Modules to Composite Application Projects" target="caps_basics_add_jbi" />
+				<tocitem text="Deploying Composite Application Projects" target="caps_basics_deploy" />
+                                <tocitem text="Working with Java EE Modules in a Composite Application">
+                                    <tocitem text="Java EE Module Options" target="javaee-module-options" />
+                                    <tocitem text="Verifying Server Resources for Java EE Modules" target="verify-server-resources" />
+                                    <tocitem text="Disabling or Enabling Endpoint Deployment in a JBI Module" target="javaee-deployment-settings" />
+                                </tocitem>
+			</tocitem>
+			<tocitem text="Working With the CASA Editor">
+				<tocitem text="About the CASA Editor" target="casaeditor_about-casa" />
+				<tocitem text="Opening the CASA Editor" target="casaeditor_opening" />
+				<tocitem text="Building a Composite Application" target="casaeditor_building" />
+				<tocitem text="About the Design View" target="casaeditor_designview" />
+				<tocitem text="Adding and Configuring WSDL Ports" target="casaeditor_editing-binding" />
+				<tocitem text="Connecting to External Services" target="casaeditor_editing-service-units" />
+				<tocitem text="Connecting Composite Application Components" target="casaeditor-connections" />
+				<tocitem text="Viewing and Editing the Composite Application in the Navigator Window" target="casaeditor_navigation" />
+				<tocitem text="Reverting to the Default Configuration" target="casaeditor_clean-configuration" />
+				<tocitem text="Configuring Binding Component Endpoints">
+					<tocitem text="Creating Endpoint Configuration Extensions" target="casaeditor_config-extension" />
+					<tocitem text="Disabling and Enabling Endpoints in an Application" target="casaeditor_disable-endpoint" />
+				</tocitem>
+			</tocitem>
+			<tocitem text="Testing JBI Projects">
+				<tocitem text="Testing a JBI Project: Overview" target="caps_jbi_tester" />
+				<tocitem text="Adding/Binding a Test Case" target="caps_jbi_tester_adding_test" />
+				<tocitem text="Setting the Test Properties" target="caps_jbi_tester_setting_props" />
+				<tocitem text="Customizing Test Input" target="caps_jbi_tester_customizing_input" />
+				<tocitem text="Running the Tester" target="caps_jbi_tester_running_tester" />
+			</tocitem>
+			<tocitem text="Java Business Integration (JBI)">
+				<tocitem text="JBI Basics" target="caps_basics_jbi" />
+				<tocitem text="JBI Nodes: Runtime Functionality" target="caps_jbi_runtime_function" />
+				<tocitem text="Configuring Binding Components">
+					<tocitem text="About Binding Component Properties" target="jbinode_bc-properties" />
+					<tocitem text="Dynamically Configuring Endpoint Connection Properties" target="jbinode_app-configuration" />
+					<tocitem text="Creating Application Variables for WSDL Attributes" target="jbinode_app-variables" />
+				</tocitem>
+			</tocitem>
+		</tocitem>
+	</tocitem>
+</toc>

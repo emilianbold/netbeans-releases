@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved. 
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Logging and Alerting</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Logging and Alerting </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The  Sun BPEL Service Engine provides you with the ability to trace the message or expression values during the process execution. The Logging and Alerting feature make use of standart WS-BPEL extension mechanism. Logging and alerting are supported for almost all BPEL activities. </p>
+<p>The IDE provides you with the ability to define logging and alerting for the process activities. Logging is used to write specified expression values or partner links endpoint reference information to the server log. Alerting allows you to receive an alert with this  information. After you set the logging or alerting conditions and the BPEL process is executed, specified expression values are written to the server log file or an alert is sent to the user, depending on the log level. </p>
+<p>Logging and alerting is defined in the Logging mapper. The Logging mappert is available as a tab from the Design or Source view of the BPEL Process.  The Logging mapper consists of the following components:</p>
+<ul>
+  <li><b>Source tree pane.</b> The source tree pane is placed on the left and contains a tree component that provides access to a business process's data variables and partner links. Here a user can choose the variable to be traced. </li>
+  <li><b>Menu Bar.</b> The menu bar provides the operators, necessary elements, and XPath functions  used to create the mappings. 
+  The functions usage is very similar to the one in the <a href="../mapper/mapper_functions.html">BPEL Mapper</a>. 
+  <li><b>Mapping pane.</b> The mapping pane contains a canvas for creating the mappings.
+    When you select a function from the menu bar, a function box appears in the mapping pane.
+    If the function accepts any arguments, then the left side of the function box has one connector for each argument. 
+    If an argument is optional, then a question mark appears after the argument name. 
+  The right side of the function box has one connector for the result.  
+  <li><b>Destination tree pane. </b> The destination tree pane is placed on the right and enables the user to choose when the log record will be made and the level of logging. 
+  </ul>
+<h3>Defining Logging </h3>
+<p>When defining logging for an activity you can trace the value of the following components  : </p>
+<ul>
+  <li>Variable</li>
+  <li>Part</li>
+  <li>Expression</li>
+</ul>
+<p>In the  mappings you can use  one or more <a href="../mapper/mapper_functions.html">XPath functions</a> from the menu bar. </p>
+<p><strong>To log the variable value:</strong></p>
+<ol>
+  <li>On the diagram, select an activity. The logging will be performed in connection with the activity execution.</li>
+  <li>Go  to the Logging tab of the BPEL Editor. The Logging mapper opens. 
+  <br>
+  You can also open the Logging mapper by right clicking the activity and choosing Go To > Logging (Alt-L). </li>
+  <li>In the source tree pane, expand the variables tree until the variable to be traced is visible.</li>
+  <li>In the destination tree pane expand the activity node. The nodes designating the moment of logging become visible. </li>
+  <li>Choose when the logging entry should be made and expand the appropriate node:
+    <ul>
+      <li><strong>LOG_onStart</strong>. The variable value is written to the log when the activity starts. </li>
+      <li><strong>LOG_onComplete</strong>. The variable value is written to the log  when the activity execution is complete. </li>
+    </ul>
+  </li>
+  <li>Define the level of logging. Drag the connection from the variable to be traced to the appropriate node in the destination tree pane. The following levels of logging are available:
+    <ul>
+      <li><strong>Severe</strong></li>
+      <li><strong>Warning</strong></li>
+      <li><strong>Info</strong></li>
+      <li><strong>Config</strong></li>
+      <li><strong>Fine</strong></li>
+      <li><strong>Finer</strong></li>
+      <li><strong>Finest</strong></li>
+    </ul>
+          <p>In the Design view a small icon appears next to the activity  with logging defined on it. By clicking the icon you can switch to the Logging mapper. </p>
+  </li>
+</ol>
+
+<p>The entry to the log will be made only if the  log level  defined for the variable corresponds to the log level specified for the BPEL SE on the application server. </p>
+<p><strong>To set the log level for the BPEL SE:</strong></p>
+<p>To specify the log level for the BPEL SE, the application server Admin Console is used. </p>
+<ul>
+  <li>In the Services window, expand the Servers node. Ensure that the GlassFish application server is running. It has to have a green arrow badge next to it. If the server is not running, right click the server name and choose Start from the context menu. </li>
+  <li>Open the Admin Console in your browser. To do this, follow the steps:
+    <ul>
+      <li>Right click  GlassFish V2 application server node, and choose Properties from the context menu. The Servers window opens. On the Servers pane, GlassFish V2 should be selected. </li>
+      <li>On the  Connection tab, copy the contents of the Location field (by default it is <tt>localhost:4848</tt>).</li>
+      <li>Paste the string to the browser and press Enter. The Sun Java System Application Server Admin Console opens in the browser window.</li>
+    </ul>
+  </li>
+  <li>Log in to the Admin Console using  your username and password. By default, the username is <tt>admin</tt> and the password is <tt>adminadmin</tt>. </li>
+  <li>On the left pane under the JBI node choose Components &gt; sun-bpel-engine. The BPEL service engine properties page opens.</li>
+  <li>On the BPEL service engine properties page,  select the Loggers tab. On the Loggers tab you can specify log levels for the individual loggers.</li>
+  <li>Choose the appropriate log level for the sun-bpel-engine from the drop down list.  </li>
+</ul>
+<p>If logging is defined for a process activity, and the log level specified for it corresponds to the log level set for the BPEL SE, after you perform a test run of the process, the selected variable value will be written to the server log file.</p>
+<p><strong>Note:</strong> The project should be deployed to the application server.  </p>
+<p><strong>To view the log file:</strong></p>
+<ul>
+  <li>In the Services window, under the Servers node, right click  GlassFish V2 application server node and choose View Server log from the context menu. TheGlassFish server log opens in the Output window. The activity message value will be included in the log, you can use Search to find it. Note, that some overhead information is hidden. </li>
+  <li>You can also open the log in a text editor and see the full information. Navigate to <em>&lt;application server installation directory&gt;</em>/domains/domain1/log/ and open the <tt>server.log</tt> file with the text editor. The information provided in the log includes the following points, divided with the vertical bar:</li>
+  <li>Date and time of the entry</li>
+  <li>Log level </li>
+  <li> Manager type (for logging this is Trace Manager)</li>
+  <li>Thread</li>
+  <li>The message value  </li>
+  <p>Here is the sample of the log entry : </p>
+  <p><tt>[#|2008-03-25T09:26:18.796+0300|INFO|sun-appserver9.1|com.sun.jbi.engine.bpel.core.bpel.trace.BPELTraceManager|_ThreadID=26;_ThreadName=BPELSEInOutThread8;|&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;jbi:message xmlns:msgns=&quot;http://localhost/SynchronousSample/SynchronousSample&quot; name=&quot;input1&quot; type=&quot;msgns:requestMessage&quot; version=&quot;1.0&quot; xmlns:jbi=&quot;http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper&quot;&gt;&lt;jbi:part&gt;&lt;syn:typeA xmlns:syn=&quot;http://xml.netbeans.org/schema/SynchronousSample&quot;&gt;<br>
+  &lt;syn:paramA&gt;Hello World&lt;/syn:paramA&gt;<br>
+  &lt;/syn:typeA&gt;&lt;/jbi:part&gt;&lt;/jbi:message&gt;|#]</tt>
+    </li>
+  </p>
+  <h3>Defining Alerting </h3>
+  <p>Alerting is defined in a way similar to logging. </p>
+  <p>When the alerting should be performed and the alerting level for the activity is defined in the Logging mapper. </p>
+  <p>The way of alerting (e-mail or other) and the alerting level for the BPEL SE is defined on the Sun Java System Application Server Admin Console.</p>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_start.html" title="Starting and Stopping a Server">Starting and Stopping a Server</a></dd>
+<dd><a href="../test_run/test_run.html" title="Performing Test Runs of BPEL Processes">Performing Test Runs of BPEL Processes</a></dd>
+<dd><a href="../debug/about.html" title="About Debugging BPEL Processes">About Debugging BPEL Processes </a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

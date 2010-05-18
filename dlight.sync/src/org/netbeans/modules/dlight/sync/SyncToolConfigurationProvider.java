@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.sync;
 
 import java.awt.Color;
+import java.beans.FeatureDescriptor;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,6 +128,9 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         toolConfiguration.setLongName(TOOL_DESCRIPTION);
         toolConfiguration.setDescription(loc("SyncTool.ToolDescription.Details"));//NOI18N
         toolConfiguration.setIcon("org/netbeans/modules/dlight/sync/resources/threads.png");//NOI18N
+        FeatureDescriptor descriptor = new FeatureDescriptor();
+        descriptor.setValue(DTDCConfiguration.DSCRIPT_TOOL_PROPERTY, getScriptUrl());
+        toolConfiguration.setFeatureDescriptor(descriptor);
         List<DataCollectorConfiguration> dcConfigurations = initDataCollectorConfigurations();
         for (DataCollectorConfiguration dc : dcConfigurations) {
             toolConfiguration.addDataCollectorConfiguration(dc);
@@ -141,14 +145,16 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         return toolConfiguration;
     }
 
+    private URL getScriptUrl() {
+        return getClass().getResource("resources/sync.d"); // NOI18N
+    }
+
     private List<DataCollectorConfiguration> initDataCollectorConfigurations() {
         List<DataCollectorConfiguration> result = new ArrayList<DataCollectorConfiguration>();
         result.add(new SunStudioDCConfiguration(CollectedInfo.SYNCHRONIZATION));
         result.add(new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.SYNC));
-        URL scriptUrl = getClass().getResource("resources/sync.d"); // NOI18N
-
         DTDCConfiguration dataCollectorConfiguration =
-            new DTDCConfiguration(scriptUrl, Arrays.asList(rawTableMetadata));
+            new DTDCConfiguration(getScriptUrl(), Arrays.asList(rawTableMetadata));
 
         dataCollectorConfiguration.setStackSupportEnabled(true);
         dataCollectorConfiguration.setIndicatorFiringFactor(1);

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<ConnectionTemplate>
+	<connectiondef name="ORACLEADAPTER"	
+		driverName="oracle.jdbc.OracleDriver" 
+		dbName="Oracle" 
+		dbUrl="jdbc:oracle:thin:@{HostName}:{HostPort}:{DatabaseName}" 
+		userName="etlpoc" 
+		password="06C82080000000">
+	</connectiondef>     
+
+	<connectiondef name="SQLSERVERADAPTER"	
+        driverName="com.SeeBeyond.sqlserver.jdbc.sqlserver.SQLServerDriver"
+		dbName="SqlServer" 
+		dbUrl="jdbc:SeeBeyond:sqlserver://{HostName}:{HostPort};DatabaseName={DatabaseName}" 
+		userName="etlpoc" 
+		password="06C82080000000">
+	</connectiondef>
+	
+	<connectiondef name="DB2ADAPTER"   
+        driverName="com.SeeBeyond.db2.jdbc.db2.DB2Driver"
+		dbName="DB2" 
+		dbUrl="jdbc:SeeBeyond:db2://{HostName}:{HostPort};{ParamList}" 
+		userName="etlpoc" 
+		password="06C82080000000">
+	</connectiondef>
+	
+	<connectiondef name="SYBASEADAPTER"
+      driverName="com.SeeBeyond.sybase.jdbc.sybase.SybaseDriver"
+		dbName="Sybase"  
+		dbUrl="jdbc:SeeBeyond:sybase://{HostName}:{HostPort};DatabaseName={DatabaseName}" 
+		userName="etlpoc" 
+		password="06C82080000000">
+	</connectiondef>
+	
+	<connectiondef name="STCDBADAPTER" 
+		       driverName="org.axiondb.jdbc.AxionDriver" 
+		       dbName="Internal" 
+		       dbUrl="jdbc:axiondb:{DatabaseName}:{MetadataDir}"
+		       userName="sa" 
+		       password="02C820">
+	</connectiondef>
+
+	<connectiondef name="AXIONMEMORYDB" 
+		       driverName="org.axiondb.jdbc.AxionDriver" 
+		       dbName="Internal" 
+		       dbUrl="jdbc:axiondb:{DatabaseName}"
+		       userName="sa" 
+		       password="02C820">
+	</connectiondef>
+	
+	<connectiondef name="DB2CONNECTADAPTER"	
+			driverName="COM.ibm.db2.jdbc.app.DB2Driver" 
+			dbName="DB2" 
+			dbUrl="jdbc:db2:{DatabaseName}" 
+			userName="empty" 
+			password="06C82080000000">
+	</connectiondef>
+	
+	<connectiondef name="DB2CONNECTADAPTER_TYPE4"	
+			driverName="com.ibm.db2.jcc.DB2Driver" 
+			dbName="DB2" 
+			dbUrl="jdbc:db2://{HostName}:{HostPort}/{DatabaseName}" 
+			userName="empty" 
+			password="06C82080000000">
+	</connectiondef>	
+</ConnectionTemplate>

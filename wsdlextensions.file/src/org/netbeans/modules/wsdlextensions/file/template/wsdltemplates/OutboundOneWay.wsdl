@@ -1,0 +1,29 @@
+<definitions name="dummy" targetNamespace="dummy"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:tns="dummy" 
+    xmlns:file="http://schemas.sun.com/jbi/wsdl-extensions/file/">
+    <types/>
+    <message name="WriteInputMessage">
+    </message>    
+    <portType name="FileOutboundPortType">
+        <operation name="write">
+            <input name="input1" message="tns:WriteInputMessage"/>
+        </operation>
+    </portType>
+    <binding name="FileOutboundBinding" type="tns:FileOutboundPortType">
+        <file:binding/>
+        <operation name="write">
+            <file:operation verb="write"/>
+            <input name="input1">
+                <file:message fileName="output.xml"/>
+            </input>
+        </operation>
+    </binding>
+    <service name="FileOutboundService">
+        <port name="#SERVICE_NAME_OutboundPort" binding="tns:FileOutboundBinding">
+            <file:address fileDirectory="Default System Temp Dir"/>
+        </port>
+    </service>
+</definitions>

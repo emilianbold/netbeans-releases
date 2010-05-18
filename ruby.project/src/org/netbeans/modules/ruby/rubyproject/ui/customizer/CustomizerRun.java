@@ -347,7 +347,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelVMOptionsExample.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_CustomizeRun_Run_VM_Options_Example")); // NOI18N
         rakeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.rakeLabel.AccessibleContext.accessibleDescription")); // NOI18N
         rakeTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.rakeTextField.AccessibleContext.accessibleName")); // NOI18N
+        rakeTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.rakeTextField.AccessibleContext.accessibleDescription")); // NOI18N
         jrubyPropsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jrubyPropsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        jrubyPropsText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jrubyPropsText.AccessibleContext.accessibleName")); // NOI18N
+        jrubyPropsText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.jrubyPropsText.AccessibleContext.accessibleDescription")); // NOI18N
 
         rubyPlatformLabel.setLabelFor(platforms);
         org.openide.awt.Mnemonics.setLocalizedText(rubyPlatformLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RubyPlatformLabel")); // NOI18N

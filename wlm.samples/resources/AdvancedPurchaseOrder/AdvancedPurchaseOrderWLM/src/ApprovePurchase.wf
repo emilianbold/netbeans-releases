@@ -1,0 +1,74 @@
+<task name="ApprovePurchase"
+        targetNamespace="http://jbi.com.sun/wfse/samples/adv-purchase-order/wf"
+        portType="powsdl:ApprovePurchasePT"
+        operation="ApprovePurchase"
+        xmlns="http://jbi.com.sun/wfse"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:cur="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/XPathFunctions"
+        xmlns:powsdl="http://jbi.com.sun/wfse/samples/adv-purchase-order/wsdl"
+        xmlns:poemail="http://j2ee.netbeans.org/wsdl/EmailNotificationHandler"
+        xmlns:po="http://jbi.com.sun/wfse/samples/adv-purchase-order/xsd"
+        xmlns:wlmfn="http://jbi.com.sun/wfse/xpath-functions">
+
+    <import location="ApprovePurchase_TM_BPEL.wsdl" 
+            namespace="http://jbi.com.sun/wfse/samples/adv-purchase-order/wsdl"/>
+    <import location="EmailNotificationHandler.wsdl" 
+            namespace="http://j2ee.netbeans.org/wsdl/EmailNotificationHandler"/>
+
+    <title>concat(' Purchase Order for ', $TaskInput.part1/po:purchaserName)</title>
+    <priority>$TaskInput.part1/po:priority</priority>
+    <init>
+        <variable-init>
+            <copy>
+                <from>'Approved'</from>
+                <to>$TaskOutput.part1/po:approveResult</to>
+            </copy>
+        </variable-init>
+    </init>
+    <assignment>
+        <group>$TaskInput.part1/po:users</group>
+    </assignment>
+    <escalation>
+        <duration>'P0Y0M0DT0H3M0S'</duration>
+        <assignment>
+            <user>'enter_manager_name_here'</user>
+        </assignment>
+    </escalation>
+    <notification name="notifyManager">
+        <email portType="poemail:NotificationHandlerPortType" operation="NotificationHandlerOperation">
+            <address>'enter_manager@email-here.com'</address>
+        </email>
+        <message>
+            <subject>'The approve purchase order task has been completed'</subject>
+            <body>concat(concat(' Purchase Order for ', $TaskInput.part1/po:purchaserName), ' has been completed.')</body>
+        </message>
+    </notification>
+    <notification name="notifyUsers">
+        <email portType="poemail:NotificationHandlerPortType" operation="NotificationHandlerOperation">
+            <address>'enter_user@email_here.com'</address>
+        </email>
+        <message>
+            <subject>'There is a new task of approve purchase order assigned to you'</subject>
+            <body>concat('The task can be found at : http://localhost:8080/wlm/task.jsp?id=', wlmfn:get-task-id())</body>
+        </message>
+    </notification>
+    <action name="Task_Complete" type="Completed">
+        <localNotification reference="notifyManager"/>
+        <changeVariables>
+            <copy>
+                  <from>cur:current-dateTime()</from>
+                  <to>$TaskOutput.part1/po:replyDate</to>
+            </copy>
+            <copy>
+                <from>$TaskInput.part1/po:orderId</from>
+                <to>$TaskOutput.part1/po:orderId</to>
+            </copy>
+        </changeVariables>
+    </action>
+    <action name="Task_Assigned" type="Assigned">
+        <localNotification reference="notifyUsers"/>
+    </action>
+</task>
+
+
+

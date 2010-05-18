@@ -42,7 +42,6 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.Dialog;
-import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -54,7 +53,6 @@ import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.ui.NoMainProjectWarning;
@@ -69,6 +67,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /** Invokes command on the main project.
@@ -80,6 +79,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
     private String command;
     private ProjectActionPerformer performer;
     private String name;
+    private static final RequestProcessor RP = new RequestProcessor(MainProjectAction.class);
 
     public MainProjectAction(ProjectActionPerformer performer, String name, Icon icon) {
         this( null, performer, name, icon );
@@ -89,16 +89,17 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
         this( command, null, name, icon );
     }
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public MainProjectAction(String command, ProjectActionPerformer performer, String name, Icon icon) {
 
-        super(icon, null, new Class[] { Project.class, DataObject.class });
+        super(icon, null, new Class<?>[] {Project.class, DataObject.class});
         this.command = command;
         this.performer = performer;
         this.name = name;
 
         String presenterName = "";
         if (name != null) {
-            presenterName = MessageFormat.format(name, new Object[] { -1 });
+            presenterName = MessageFormat.format(name, -1);
         }
         setDisplayName(presenterName);
         if ( icon != null ) {
@@ -121,8 +122,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
 
 
 
-    public void actionPerformed(Lookup context) {
-
+    public @Override void actionPerformed(Lookup context) {
         // first try to find main project
         Project p = OpenProjectList.getDefault().getMainProject();
 
@@ -175,18 +175,16 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
 
     // Implementation of PropertyChangeListener --------------------------------
 
-    public void propertyChange( PropertyChangeEvent evt ) {
-        if ( evt.getPropertyName() == OpenProjectList.PROPERTY_MAIN_PROJECT ||
-             evt.getPropertyName() == OpenProjectList.PROPERTY_OPEN_PROJECTS ) {
-            Mutex.EVENT.readAccess(new Runnable() {
-                public void run() {
-                    refreshView(null);
-                }
-            });
+    public @Override void propertyChange( PropertyChangeEvent evt ) {
+        if (OpenProjectList.PROPERTY_MAIN_PROJECT.equals(evt.getPropertyName()) ||
+            OpenProjectList.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+            refreshView(null);
         }
     }
 
-    private void refreshView(Lookup context) {
+    private void refreshView(final Lookup context) {
+        RP.post(new Runnable() {
+            public @Override void run() {
 
         Project p = OpenProjectList.getDefault().getMainProject();
         Lookup theContext = context;
@@ -210,27 +208,35 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
             }
         }
 
+        Project mainProject = OpenProjectList.getDefault().getMainProject();
+
+        final String presenterName = getPresenterName(name, mainProject, p);
+        final boolean enabled;
+
         if ( command == null ) {
-            enable( performer.enable( p ) );
+            enabled = performer.enable(p);
         }
         else {
             if ( p == null ) {
-                enable(false);
+                enabled = false;
             }
             else if ( ActionsUtil.commandSupported ( p, command, Lookup.EMPTY ) ) {
-                enable(true);
+                enabled = true;
             }
             else {
-                enable( false );
+                enabled = false;
             }
         }
 
-        Project mainProject = OpenProjectList.getDefault().getMainProject();
-
-        String presenterName = getPresenterName(name, mainProject, p);
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public @Override void run() {
         putValue("menuText", presenterName);
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
-
+        setEnabled(enabled);
+            }
+        });
+            }
+        });
     }
 
     private String getPresenterName(String name, Project mPrj, Project cPrj) {
@@ -251,18 +257,6 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
         return toReturn;
     }
 
-    private void enable(final boolean enable) {
-        if (!EventQueue.isDispatchThread()) {
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    setEnabled(enable);
-                }
-            });
-        } else {
-            setEnabled(enable);
-        }
-    }
-
     private boolean showNoMainProjectWarning(Project[] projects, String action) {
         boolean canceled;
         final JButton okButton = new JButton (NbBundle.getMessage (NoMainProjectWarning.class, "LBL_NoMainClassWarning_ChooseMainProject_OK")); // NOI18N
@@ -277,7 +271,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
         };
 
         panel.addChangeListener (new ChangeListener () {
-           public void stateChanged (ChangeEvent e) {
+           public @Override void stateChanged (ChangeEvent e) {
                if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
                    // click button and the finish dialog with selected class
                    if (panel.getSelectedProject () != null) {

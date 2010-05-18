@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -56,6 +56,7 @@ import org.openide.util.RequestProcessor;
  * @author Rob
  */
 public class RefreshAction extends BaseAction {
+    private static final RequestProcessor RP = new RequestProcessor(RefreshAction.class);
     @Override
     public String getName() {
         return NbBundle.getMessage (RefreshAction.class, "Refresh"); // NOI18N
@@ -66,6 +67,7 @@ public class RefreshAction extends BaseAction {
         return new HelpCtx(RefreshAction.class);
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
 
@@ -82,14 +84,16 @@ public class RefreshAction extends BaseAction {
             return;
         }
         final BaseNode baseNode = activatedNodes[0].getLookup().lookup(BaseNode.class);
-        RequestProcessor.getDefault().post(
+        RP.post(
             new Runnable() {
+                @Override
                 public void run() {
                     MetadataModel model = baseNode.getLookup().lookup(DatabaseConnection.class).getMetadataModel();
                     if (model != null) {
                         try {
                             model.runReadAction(
                                 new Action<Metadata>() {
+                                    @Override
                                     public void run(Metadata metaData) {
                                         metaData.refresh();
                                     }

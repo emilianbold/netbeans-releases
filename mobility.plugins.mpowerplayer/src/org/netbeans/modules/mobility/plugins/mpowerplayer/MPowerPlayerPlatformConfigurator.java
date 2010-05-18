@@ -75,7 +75,7 @@ public final class MPowerPlayerPlatformConfigurator implements CustomCLDCPlatfor
     
     private Properties apiSettings;
     private List<CLDCPlatformDescriptor.Device> devices;
-
+    //FIXME SOUT shoud be replaced with LOGS
     private List<CLDCPlatformDescriptor.Profile> createAPISettings() {
         String allProperties = apiSettings.getProperty(CONFIGURATIONS) + "," + apiSettings.getProperty(PROFILES) + "," + apiSettings.getProperty(OPTIONAL); //NOI18N
         StringTokenizer propertiesTokenizer = new StringTokenizer(allProperties, ","); //NOI18N 
@@ -136,10 +136,12 @@ public final class MPowerPlayerPlatformConfigurator implements CustomCLDCPlatfor
             return false;
         }
         if (folderCheck == null) {
-            throw new IllegalArgumentException("Null folder platform check");
-        } //NOI18N
-        if (file.isDirectory()) {
-            if (file.listFiles(new JarFilenameFilter()).length == 4 && file.listFiles(new PlatformFileFilter()).length == 1) {
+            throw new IllegalArgumentException("Null folder platform check"); //NOI18N
+        } 
+        if (file != null && file.isDirectory()) {
+            File[] files = file.listFiles(new JarFilenameFilter());
+            File[] platformFiles =  file.listFiles(new PlatformFileFilter());
+            if (files != null &&  platformFiles != null && files.length == 4 && platformFiles.length == 1) {
                 File preverifier = new File(file.getPath() + folderCheck);
                 if (preverifier.exists()) {
                     return true;

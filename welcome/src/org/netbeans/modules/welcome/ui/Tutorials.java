@@ -117,7 +117,7 @@ class Tutorials extends JPanel implements Constants {
             JPanel panel = new JPanel( new GridBagLayout() );
             panel.setOpaque(false);
             ActionButton lb = new ActionButton( action, Utils.getUrlString( dob ),
-                    Utils.getColor( COLOR_HEADER ), false );
+                    Utils.getColor( COLOR_HEADER ), false, dob.getPrimaryFile().getPath() );
             panel.add( lb, new GridBagConstraints(1,0,1,3,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
             lb.setFont( BUTTON_FONT );
             

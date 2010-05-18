@@ -504,7 +504,7 @@ public class ProjectTab extends TopComponent
 
     // Called from the SelectNodeAction
     
-    private final static RequestProcessor RP = new RequestProcessor(ProjectTab.class);
+    static final RequestProcessor RP = new RequestProcessor(ProjectTab.class);
     
     public void selectNodeAsync(FileObject object) {
         setCursor( Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) );
@@ -590,28 +590,25 @@ public class ProjectTab extends TopComponent
         objectToSelect = object;
         selectionTask.schedule(NODE_SELECTION_DELAY);
     }
-    
-    public boolean selectNode(FileObject object) {
-        // System.out.println("Selecting node " + id + " : " + object + " -AWT- " + SwingUtilities.isEventDispatchThread() );
-        
-        ProjectsRootNode root = (ProjectsRootNode)manager.getRootContext();
-        Node selectedNode = root.findNode( object );
-        if ( selectedNode != null ) {
-            try {                
-                manager.setSelectedNodes( new Node[] { selectedNode } );                
-                btv.scrollToNode(selectedNode);
-                return true;
-            }
-            catch ( PropertyVetoException e ) {
-                // Bad day node found but can't be selected
-                return false;
-            }
-        }
-        
-        return false;
+
+    Node findNode(FileObject object) {
+        return ((ProjectsRootNode) manager.getRootContext()).findNode(object);
     }
     
-    public void expandNode( Node node ) {
+    void selectNode(final Node node) {
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public @Override void run() {
+                try {
+                    manager.setSelectedNodes(new Node[] {node});
+                    btv.scrollToNode(node);
+                } catch (PropertyVetoException e) {
+                    // Bad day node found but can't be selected
+                }
+            }
+        });
+    }
+    
+    void expandNode(Node node) {
         btv.expandNode( node );
     }
     

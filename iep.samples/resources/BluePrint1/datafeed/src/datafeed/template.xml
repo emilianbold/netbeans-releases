@@ -1,0 +1,14 @@
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+                   xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance"
+                   xmlns:xsd="http://www.w3.org/1999/XMLSchema"
+                   xmlns="insiderTrade_iep">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <StockTransactions_MsgObj>
+            <symbol>${symbol}</symbol>
+            <price>${price}</price>
+            <shares>${shares}</shares>
+            <trader>${trader}</trader>
+        </StockTransactions_MsgObj>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

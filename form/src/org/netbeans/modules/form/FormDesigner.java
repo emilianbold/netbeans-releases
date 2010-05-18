@@ -282,7 +282,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                         switchLookup(list.isEmpty()); // if no form node, select data node (of FormDataObject)
                         explorerManager.setSelectedNodes(list.toArray(new Node[list.size()]));
                     } catch (PropertyVetoException ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
             });            
@@ -964,7 +964,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 // and FormDesigner)
             }
             catch (java.beans.PropertyVetoException ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
     }
@@ -1154,7 +1154,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                             context = "buttonGroup"; // NOI18N
                         }
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                     }        
                 } else if ((bean instanceof JPanel) && (getTopDesignComponent() != metacomp) && (Math.random() < 0.2)) {
                     context = "designThisContainer"; // NOI18N
@@ -1419,7 +1419,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             // and FormDesigner)
         }
         catch (java.beans.PropertyVetoException ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
     }
 
@@ -1588,7 +1588,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             editText = (String) text;
         }
         catch (Exception ex) { // should not happen
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             return;
         }
 
@@ -1633,7 +1633,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             editedProperty.setValue(new FormProperty.ValueWithEditor(textEditLayer.getEditedText(), prEd));             
         }                        
         } catch (Exception ex) { // should not happen
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
     if (handleLayer != null) {
@@ -1809,7 +1809,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             // out form's superclass, then continue form loading in EDT again.
             if (preLoadTask == null) {
                 preLoadTask = new PreLoadTask(formEditor.getFormDataObject());
-                RequestProcessor.getDefault().post(preLoadTask);
+                FormUtils.getRequestProcessor().post(preLoadTask);
 
                 EventQueue.invokeLater(new Runnable() {
                     @Override

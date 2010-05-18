@@ -286,6 +286,11 @@ public final class Source {
         final CharSequence [] text = new CharSequence [] {""}; //NOI18N
         final int [][] lineStartOffsets = new int [][] { new int [] { 0 } };
         Document doc = getDocument (false);
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.log(Level.FINER, null, new Throwable("Creating snapshot: doc=" + doc + ", file=" + fileObject)); //NOI18N
+        } else if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Creating snapshot: doc={0}, file={1}", new Object [] { doc, fileObject }); //NOI18N
+        }
         try {
             if (doc == null) {
                 // Ideally we should use CloneableEditorSupport.getEditorKit (mimeType),
@@ -418,6 +423,7 @@ public final class Source {
     // private implementation
     // ------------------------------------------------------------------------
 
+    // -J-Dorg.netbeans.modules.parsing.api.Source.level=FINE
     private static final Logger LOG = Logger.getLogger(Source.class.getName());
     private static final Map<FileObject, Reference<Source>> instances = new WeakHashMap<FileObject, Reference<Source>>();
 
@@ -686,6 +692,11 @@ public final class Source {
             } else {
                 return snapshot.getText().length();
             }
+        }
+
+        @Override
+        public Snapshot createSnapshot(CharSequence text, int[] lineStartOffsets, Source source, MimePath mimePath, int[][] currentToOriginal, int[][] originalToCurrent) {
+            return new Snapshot(text, lineStartOffsets, source, mimePath, currentToOriginal, originalToCurrent);
         }
 
     } // End of MySourceAccessor class

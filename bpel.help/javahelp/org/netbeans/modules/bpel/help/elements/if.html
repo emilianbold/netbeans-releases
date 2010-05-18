@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>If</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>If</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<!-- add to the Property Editor section -->
+<p>The If  activity supports conditional behavior of a business process 
+instance.  The If activity consists of conditional branches defined by the If and ElseIf elements, followed by an optional Else branch. The conditions on If and ElseIf  branches are evaluated in the order they appear. During execution, the first branch whose condition holds true is taken and provides the activity specified for the If activity. In other words, if there are several ElseIf branches whose conditions hold true,  only the first of them will  be executed. </p>
+<p>If none of the branches holds true, then the Else path is chosen. If the Else branch is not explicitly specified, this branch is considered to have an Empty activity. The If activity is complete when the activity of the selected branch  completes.</span></p>
+<p>Using the BPEL Designer, you add branches to the If element as follows:</p>
+<ul>
+  <li>The <tt>If</tt> branch is created automatically when you place the If element to the diagram. Insert the activity into the <tt>If</tt> branch that will be executed if the If condition holds true. </li>
+  <li>The <tt>ElseIf </tt>branch is an additional conditional branch that will be taken if the main <tt>then</tt> activity is untrue. To add the <tt>ElseIf</tt> branch, use the pop-up menu. You can add as many <tt>ElseIf</tt> as your process needs. </li>
+  <li>The <tt>Else</tt> branch is taken if none of the <span lang="EN">conditions on other branches holds true.</span><span lang="EN"> </span></li>
+</ul>
+<p><b>To use the If element</b>:</p>
+<ol>
+  <li>In the Design view, drag the If element from the Palette to the diagram.</li>
+  <li>Select the If element on the diagram. <br>
+    The 
+    Properties window shows the If properties (Ctrl-Shift-7).</li>
+  <li>(Optional) In the Properties window, enter the name for the If element.</li>
+  <li>Drag the activity that will be  executed onto the If branch. Configure the activity's properties. </li>
+  <li>Specify the condition for the If branch by using either of the following methods:</li>
+  <ul>
+    <li>In the Properties windows for the If element, click the ellipsis button (...) for the Condition property and add a condition in the text editor window.</li>
+    <li>Open the BPEL Mapper window (Window &gt; BPEL Mapper) and specify the condition using the <a href="../mapper/about_mapper.html" title="About the BPEL Mapper">BPEL Mapper</a>.</li>
+  </ul>
+  <li>Add other branches (ElseIf and Else) as described below. </li>
+</ol>
+<p><b>To add an ElseIf branch to the If element:</b></p>
+<ol>
+  <li>Right-click  the If element and choose Add ElseIf.. </li>
+  <li>Place the ElseIf activity to the target place. </li>
+  <li>Add an activity to the ElseIf that will be executed if the condition defined for this ElseIf is true. <br>
+  To define a condition, use the <a href="../mapper/about_mapper.html" title="About the BPEL Mapper">BPEL Mapper</a>.</li>
+  <li>(Optional) Add more ElseIf activities by choosing Add ElseIf and add activities to them. </li>
+</ol>
+<p><b>To add an Else branch to the If element:</b></p>
+<ul>
+  <li>Drag the activity you want to be executed on the Else branch onto the connector path marked with a slash mark. Configure the activity using the Properties window. </li>
+</ul>
+<p><b>To reorder ElseIf branches:</b></p>
+<ul>
+  <li>In the Design view, drag an ElseIf branch and drop it onto the placeholder that appears near the second ElseIf branch. </li>
+</ul>
+<ul class="note">
+<li>If you drop an ElseIf branch onto the placeholder that appears on the main If branch, the activity in the dragged ElseIf branch will be swapped with the activity in the main If branch. </li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../mapper/about_mapper.html" title="About the BPEL Mapper">About the BPEL Mapper</a></dd>
+<dd><a href="palette_struct_acts.html" title="BPEL Designer Palette: Structured Activities">BPEL Designer Palette: Structured Activities</a></dd>
+<dd><a href="../windows_editors/design_view.html" title="About the Design View of the BPEL Designer">About the Design View of the BPEL Designer</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

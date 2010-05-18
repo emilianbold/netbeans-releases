@@ -1033,6 +1033,20 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceWithinParens08.php", options);
     }
 
+    public void testSpacesWithinMethodDeclParens02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinMethodDeclParens, true);
+        options.put(FmtOptions.spaceWithinMethodCallParens, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinMethodDecl01.php", options);
+    }
+
+    public void testSpacesWithinMethodDeclParens03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinMethodDeclParens, false);
+        options.put(FmtOptions.spaceWithinMethodCallParens, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinMethodDecl02.php", options);
+    }
+
     public void testSpacesWithinTypeCastParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceWithinTypeCastParens, false);
@@ -1834,6 +1848,11 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testIssue185353_05() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue185353_05.php", options);
+    }
+
+    public void testIssue186183_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/issue186183_01.php", options);
     }
 
     private void reformatFileContents(String file) throws Exception {

@@ -77,7 +77,8 @@ public class FileBuiltQueryImpl implements FileBuiltQueryImplementation, Propert
     private static final Object NONE = "NONE"; // NOI18N
     private final Map<FileObject,Object> statuses = new WeakHashMap<FileObject,Object>();
     private FileObject srcRoot = null;
-    
+    private RequestProcessor rp = new RequestProcessor();
+
     public FileBuiltQueryImpl(AntProjectHelper helper, ProjectConfigurationsHelper confs) {
         this.helper = helper;
         confs.addPropertyChangeListener(this);
@@ -116,7 +117,7 @@ public class FileBuiltQueryImpl implements FileBuiltQueryImplementation, Propert
     
     public void propertyChange(@SuppressWarnings("unused")
 	final PropertyChangeEvent evt) {
-        RequestProcessor.getDefault().post(this);
+        rp.post(this);
     }
     
     public void run() {

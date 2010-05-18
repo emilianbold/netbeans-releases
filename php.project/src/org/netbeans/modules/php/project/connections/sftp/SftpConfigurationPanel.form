@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
@@ -50,13 +50,13 @@
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="knownHostsFileTextField" alignment="1" pref="170" max="32767" attributes="0"/>
-                          <Component id="identityFileTextField" alignment="0" pref="170" max="32767" attributes="0"/>
-                          <Component id="userTextField" alignment="0" pref="170" max="32767" attributes="2"/>
-                          <Component id="hostTextField" alignment="0" pref="170" max="32767" attributes="2"/>
-                          <Component id="timeoutTextField" alignment="0" pref="170" max="32767" attributes="0"/>
-                          <Component id="passwordTextField" alignment="1" pref="170" max="32767" attributes="0"/>
-                          <Component id="initialDirectoryTextField" alignment="1" pref="170" max="32767" attributes="2"/>
+                          <Component id="knownHostsFileTextField" alignment="1" pref="185" max="32767" attributes="0"/>
+                          <Component id="identityFileTextField" alignment="0" pref="185" max="32767" attributes="0"/>
+                          <Component id="userTextField" alignment="0" pref="185" max="32767" attributes="2"/>
+                          <Component id="hostTextField" alignment="0" pref="185" max="32767" attributes="2"/>
+                          <Component id="timeoutTextField" alignment="0" pref="185" max="32767" attributes="0"/>
+                          <Component id="passwordTextField" alignment="1" pref="185" max="32767" attributes="0"/>
+                          <Component id="initialDirectoryTextField" alignment="1" pref="185" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">

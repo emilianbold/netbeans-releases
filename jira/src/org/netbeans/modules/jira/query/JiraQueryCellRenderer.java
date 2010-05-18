@@ -92,8 +92,10 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private Component getPriorityRenderer(Object value, JLabel renderer) {
         PriorityProperty property = (PriorityProperty) value;
         Priority priority = property.getPriority();
-        Icon icon = JiraConfig.getInstance().getPriorityIcon(priority.getId());
-        renderer.setIcon(icon);
+        if(priority != null) {
+            Icon icon = JiraConfig.getInstance().getPriorityIcon(priority.getId());
+            renderer.setIcon(icon);
+        }
         return renderer;
     }
 

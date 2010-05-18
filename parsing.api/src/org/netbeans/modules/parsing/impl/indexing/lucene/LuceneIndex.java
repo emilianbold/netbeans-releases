@@ -183,11 +183,16 @@ public class LuceneIndex implements IndexImpl, Evictable {
         assert fieldName != null;
         assert value != null;
         assert kind != null;
-        
+
         return LuceneIndexManager.getDefault().readAccess(new LuceneIndexManager.Action<List<IndexDocumentImpl>>() {
             public List<IndexDocumentImpl> run() throws IOException {
                 checkPreconditions();
-
+                if (empty) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Ignoring empty index: {0}", indexFolder.getAbsolutePath());
+                    }
+                    return Collections.<IndexDocumentImpl>emptyList();
+                }
                 final IndexReader r = getReader();
                 if (r != null) {
                     // index exists
@@ -197,7 +202,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     return Collections.<IndexDocumentImpl>emptyList();
                 }
             }
-        });        
+        });
     }
 
     public void fileModified(String relativePath) {
@@ -354,6 +359,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
     private volatile IndexReader reader; //Cache, do not use this directly, use getReader
     private volatile boolean closed;
     private boolean valid;
+    private volatile boolean empty; //Volatile as there may be more readLocks in getReader and query
 
     private static final LMListener lmListener = new LMListener();
 
@@ -674,6 +680,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     out.optimize(false);
                 }
             } finally {
+                empty = false;
                 try {
                     out.close();
                 } finally {
@@ -707,6 +714,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
                     r = reader = new NoNormsReader(IndexReader.open(this.directory));
                 } catch (FileNotFoundException fnf) {
+                    empty = true;
                     LOGGER.fine(String.format("LuceneIndex[%s] does not exist.", this.toString())); //NOI18N
                     //pass - returns null
                 } catch (IOException ioe) {

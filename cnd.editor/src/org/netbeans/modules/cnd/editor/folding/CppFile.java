@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.netbeans.editor.DocumentUtilities;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
 import org.openide.text.NbDocument;
@@ -151,29 +152,32 @@ public class CppFile {
             includesFoldRecords.clear();
             List<CppFoldRecord> folds = null;
 
-            final String text[] = new String[]{null};
-            final BadLocationException exc[] = new BadLocationException[]{null};
+            final Object[] res = new Object[]{null, null};
             doc.render(new Runnable() {
-
                 @Override
                 public void run() {
                     try {
-                        text[0] = doc.getText(0, doc.getLength());
-                    } catch (BadLocationException e) {
-                        exc[0] = e;
+                        final int length = doc.getLength();
+                        char[] buf = new char[length];
+                        DocumentUtilities.copyText(doc, 0, length, buf, 0);
+                        res[0] = buf;
+
+                    } catch( BadLocationException e ) {
+                        res[1] = e;
                     }
                 }
             });
-            if (exc[0] != null) {
-                exc[0].printStackTrace();
+
+            if (res[1] != null) {
+                ((BadLocationException)res[1]).printStackTrace();
                 return false;
             }
-            if (text[0] == null) {
+            if (res[0] == null) {
                 return false;
             }
 
             String name = (String) doc.getProperty(Document.TitleProperty);
-            folds = p.parse(name, new StringReader(text[0]));
+            folds = p.parse(name, (char[])res[0]);
             if (folds == null) {
                 return false;
             }
@@ -251,44 +255,28 @@ public class CppFile {
         if (log.isLoggable(Level.FINEST)) {
             log.log(Level.FINEST, "CppFile.addNewFold: " + fold.toString());
         }
-        int startOffset = fold.getStartOffset();
-        int endOffset = fold.getEndOffset();
-        try {
-            int startLine = NbDocument.findLineNumber(doc, startOffset);
-            int endLine = NbDocument.findLineNumber(doc, endOffset);
-            if (startLine != endLine || (startOffset > endOffset + 5)) {
-                fold.setLines(startLine, endLine);
-                switch (fold.getType()) {
-                    case INITIAL_COMMENT_FOLD:
-                        if (initialCommentFoldRecord == null) {
-                            initialCommentFoldRecord = fold;
-                        }
-                        break;
-                    case INCLUDES_FOLD:
-                        includesFoldRecords.add(fold);
-                        break;
+        switch (fold.getType()) {
+            case INITIAL_COMMENT_FOLD:
+                if (initialCommentFoldRecord == null) {
+                    initialCommentFoldRecord = fold;
+                }
+                break;
+            case INCLUDES_FOLD:
+                includesFoldRecords.add(fold);
+                break;
 
-                    case CLASS_FOLD:
-                    case NAMESPACE_FOLD:
+            case CLASS_FOLD:
+            case NAMESPACE_FOLD:
 //                    classFoldRecords.add(fold);
 //                    break;
-                    case IFDEF_FOLD:
-                    case COMMENTS_FOLD:
-                    case BLOCK_COMMENT_FOLD:
-                    case CONSTRUCTOR_FOLD:
-                    case DESTRUCTOR_FOLD:
-                    case FUNCTION_FOLD:
-                        blockFoldRecords.add(fold);
-                        break;
-                }
-            } else {
-                if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "CppFile.addNewFold: Skipping fold record on line " + startLine);
-                }
-            }
-        } catch (IndexOutOfBoundsException ex) {
-            log.log(Level.FINE, "CppFile.addNewFold: fold was created for old size of document - ignored");
-        // fold was created for old size of document => skip the problem
+            case IFDEF_FOLD:
+            case COMMENTS_FOLD:
+            case BLOCK_COMMENT_FOLD:
+            case CONSTRUCTOR_FOLD:
+            case DESTRUCTOR_FOLD:
+            case FUNCTION_FOLD:
+                blockFoldRecords.add(fold);
+                break;
         }
     }
 }

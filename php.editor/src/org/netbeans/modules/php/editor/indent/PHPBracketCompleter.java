@@ -40,10 +40,12 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -72,6 +74,9 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.util.Exceptions;
 
 
@@ -1892,150 +1897,23 @@ public class PHPBracketCompleter implements KeystrokeHandler {
     }
 
     @Override
-    public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
-//        Node root = AstUtilities.getRoot(info);
-//
-//        if (root == null) {
-//            return Collections.emptyList();
-//        }
-//
-//        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
-//        if (astOffset == -1) {
-//            return Collections.emptyList();
-//        }
-//
-//        AstPath path = new AstPath(root, astOffset);
-//        List<OffsetRange> ranges = new ArrayList<OffsetRange>();
-//        
-//        /** Furthest we can go back in the buffer (in RHTML documents, this
-//         * may be limited to the surrounding &lt;% starting tag
-//         */
-//        int min = 0;
-//        int max = Integer.MAX_VALUE;
-//        int length;
-//
-//        // Check if the caret is within a comment, and if so insert a new
-//        // leaf "node" which contains the comment line and then comment block
-//        try {
-//            BaseDocument doc = (BaseDocument)info.getDocument();
-//            length = doc.getLength();
-//
-//            if (RubyUtils.isRhtmlDocument(doc)) {
-//                TokenHierarchy th = TokenHierarchy.get(doc);
-//                TokenSequence ts = th.tokenSequence();
-//                ts.move(caretOffset);
-//                if (ts.moveNext() || ts.movePrevious()) {
-//                    Token t = ts.token();
-//                    if (t.id().primaryCategory().startsWith("ruby")) { // NOI18N
-//                        min = ts.offset();
-//                        max = min+t.length();
-//                        // Try to extend with delimiters too
-//                        if (ts.movePrevious()) {
-//                            t = ts.token();
-//                            if ("ruby-delimiter".equals(t.id().primaryCategory())) { // NOI18N
-//                                min = ts.offset();
-//                                if (ts.moveNext() && ts.moveNext()) {
-//                                    t = ts.token();
-//                                    if ("ruby-delimiter".equals(t.id().primaryCategory())) { // NOI18N
-//                                        max = ts.offset()+t.length();
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//            Token<?extends PHPTokenId> token = LexUtilities.getToken(doc, caretOffset);
-//            
-//            if ((token != null) && (token.id() == PHPTokenId.PHP_LINE_COMMENT)) {
-//                // First add a range for the current line
-//                int begin = Utilities.getRowStart(doc, caretOffset);
-//                int end = Utilities.getRowEnd(doc, caretOffset);
-//
-//                if (LexUtilities.isCommentOnlyLine(doc, caretOffset)) {
-//                    ranges.add(new OffsetRange(Utilities.getRowFirstNonWhite(doc, begin), 
-//                            Utilities.getRowLastNonWhite(doc, end)+1));
-//
-//                    int lineBegin = begin;
-//                    int lineEnd = end;
-//
-//                    while (begin > 0) {
-//                        int newBegin = Utilities.getRowStart(doc, begin - 1);
-//
-//                        if ((newBegin < 0) || !LexUtilities.isCommentOnlyLine(doc, newBegin)) {
-//                            begin = Utilities.getRowFirstNonWhite(doc, begin);
-//                            break;
-//                        }
-//
-//                        begin = newBegin;
-//                    }
-//
-//                    while (true) {
-//                        int newEnd = Utilities.getRowEnd(doc, end + 1);
-//
-//                        if ((newEnd >= length) || !LexUtilities.isCommentOnlyLine(doc, newEnd)) {
-//                            end = Utilities.getRowLastNonWhite(doc, end)+1;
-//                            break;
-//                        }
-//
-//                        end = newEnd;
-//                    }
-//
-//                    if ((lineBegin > begin) || (lineEnd < end)) {
-//                        ranges.add(new OffsetRange(begin, end));
-//                    }
-//                } else {
-//                    // It's just a line comment next to some code; select the comment
-//                    TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-//                    int offset = token.offset(th);
-//                    ranges.add(new OffsetRange(offset, offset + token.length()));
-//                }
-//            } else if (token != null && token.id() == PHPTokenId.PHP_DOCUMENTATION) {
-//                // Select the whole token block
-//                TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
-//                int begin = token.offset(th);
-//                int end = begin + token.length();
-//                ranges.add(new OffsetRange(begin, end));
-//            }
-//        } catch (BadLocationException ble) {
-//            Exceptions.printStackTrace(ble);
-//            return ranges;
-//        } catch (IOException ioe) {
-//            Exceptions.printStackTrace(ioe);
-//            return ranges;
-//        }
-//
-//        Iterator<Node> it = path.leafToRoot();
-//
-//        OffsetRange previous = OffsetRange.NONE;
-//        while (it.hasNext()) {
-//            Node node = it.next();
-//
-//            // Filter out some uninteresting nodes
-//            if (node instanceof NewlineNode) {
-//                continue;
-//            }
-//
-//            OffsetRange range = AstUtilities.getRange(node);
-//            
-//            // The contains check should be unnecessary, but I end up getting
-//            // some weird positions for some JRuby AST nodes
-//            if (range.containsInclusive(astOffset) && !range.equals(previous)) {
-//                range = LexUtilities.getLexerOffsets(info, range);
-//                if (range != OffsetRange.NONE) {
-//                    if (range.getStart() < min) {
-//                        ranges.add(new OffsetRange(min, max));
-//                        ranges.add(new OffsetRange(0, length));
-//                        break;
-//                    }
-//                    ranges.add(range);
-//                    previous = range;
-//                }
-//            }
-//        }
-//
-        return Collections.<OffsetRange>emptyList();
+    public List<OffsetRange> findLogicalRanges(ParserResult info, final int caretOffset) {
+        final Set<OffsetRange> ranges = new LinkedHashSet<OffsetRange>();
+        final DefaultVisitor pathVisitor = new DefaultVisitor() {
+            @Override
+            public void scan(ASTNode node) {
+                if (node != null && node.getStartOffset() <= caretOffset && caretOffset <= node.getEndOffset()) {
+                    ranges.add(new OffsetRange(node.getStartOffset(), node.getEndOffset()));
+                    super.scan(node);
+                }
+            }
+        };
+        if (info instanceof PHPParseResult) {
+            pathVisitor.scan(((PHPParseResult) info).getProgram());
+        }
+        final ArrayList<OffsetRange> retval = new ArrayList<OffsetRange>(ranges);
+        Collections.reverse(retval);
+        return retval;
     }
 
     // UGH - this method has gotten really ugly after successive refinements based on unit tests - consider cleaning up

@@ -53,6 +53,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.editor.DocumentUtilities;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
@@ -217,6 +218,29 @@ public class FileBufferDoc extends AbstractFileBuffer {
 
     public ChangedSegment getLastChangedSegment(){
         return lastChangedSegment;
+    }
+
+    @Override
+    public char[] getCharBuffer() throws IOException {
+        final Object[] res = new Object[]{null, null};
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final int length = doc.getLength();
+                    char[] buf = new char[length];
+                    DocumentUtilities.copyText(doc, 0, length, buf, 0);
+                    res[0] = buf;
+
+                } catch( BadLocationException e ) {
+                    res[1] = e;
+                }
+            }
+        });
+        if (res[1] != null) {
+            throw convert((BadLocationException) res[1]);
+        }
+        return (char[]) res[0];
     }
     
     public static final class ChangedSegment {

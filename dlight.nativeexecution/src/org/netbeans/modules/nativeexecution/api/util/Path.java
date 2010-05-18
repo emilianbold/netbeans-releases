@@ -143,7 +143,12 @@ public final class Path {
             }
 
             for (String dir : list) {
-                file = new File(dir, cmd);
+                if (dir.equals(".")) { // NOI18N
+                    file = new File(cmd);
+                }
+                else {
+                    file = new File(dir, cmd);
+                }
                 if (file.exists() && !file.isDirectory()) {
                     return file.getAbsolutePath();
                 } else {

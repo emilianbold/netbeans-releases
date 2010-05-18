@@ -42,9 +42,8 @@
 package org.netbeans.modules.cnd.editor.parser;
 
 import org.netbeans.modules.cnd.editor.folding.CppFile;
-import org.openide.ErrorManager;
 
-public class CppFoldRecord {
+public final class CppFoldRecord {
 
     // Fold types
     public final static int INITIAL_COMMENT_FOLD = CppFile.INITIAL_COMMENT_FOLD;
@@ -58,37 +57,22 @@ public class CppFoldRecord {
     public final static int DESTRUCTOR_FOLD = CppFile.DESTRUCTOR_FOLD;
     public final static int NAMESPACE_FOLD = CppFile.NAMESPACE_FOLD;
     
-    private int type;
-    private int startLnum;
-    private int endLnum;
-    private int startOffset;
-    private int endOffset;
-
-    private static final ErrorManager log =
-		ErrorManager.getDefault().getInstance("CppFoldTracer"); // NOI18N
+    private final int type;
+    private final int startOffset;
+    private final int endOffset;
 
     public CppFoldRecord(int type, int startLnum, int startOffset, int endLnum, int endOffset)
     {
 	this.type = type;
-	this.startLnum = startLnum;
 	this.startOffset = startOffset;
-	this.endLnum = endLnum;
 	this.endOffset = endOffset;
-	log.log(toString() + " [" + Thread.currentThread().getName() + "]"); // NOI18N
     }
 
     public CppFoldRecord(int type, int startOffset, int endOffset)
     {
 	this.type = type;
-	this.startLnum = -1;
 	this.startOffset = startOffset;
-	this.endLnum = -1;
 	this.endOffset = endOffset;
-    }
-    
-    public void setLines(int start, int end) {
-        this.startLnum = start;
-        this.endLnum = end;
     }
     
     public int getType() {
@@ -101,16 +85,6 @@ public class CppFoldRecord {
 
     public int getEndOffset() {
 	return endOffset;
-    }
-
-    public int getStartLine() {
-        assert startLnum != -1;
-        return startLnum;
-    }
-    
-    public int getEndLine() {
-        assert endLnum != -1;
-        return endLnum;
     }
     
     @Override
@@ -152,7 +126,6 @@ public class CppFoldRecord {
                 break;
             default:
         }
-	return kind + " (" + startLnum + // NOI18N
-		", " + startOffset + ", " + endLnum + ", " + endOffset + ")"; // NOI18N
+	return kind + " (" + + startOffset + ", " + endOffset + ")"; // NOI18N
     }
 }

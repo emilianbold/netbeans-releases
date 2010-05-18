@@ -224,8 +224,10 @@ public class DeploymentManagerProperties {
         char[] retChars = Keyring.read(key);
         if (null == retChars || retChars.length < 1 || !GlassfishModule.PASSWORD_CONVERTED_FLAG.equals(retVal)) {
             retChars = retVal.toCharArray();
-            Keyring.save(key, retChars, "a Glassfish/SJSAS passord");
-            instanceProperties.setProperty(InstanceProperties.PASSWORD_ATTR, GlassfishModule.PASSWORD_CONVERTED_FLAG) ;
+            if (null != key) {
+                Keyring.save(key, retChars, "a Glassfish/SJSAS passord");
+                instanceProperties.setProperty(InstanceProperties.PASSWORD_ATTR, GlassfishModule.PASSWORD_CONVERTED_FLAG) ;
+            }
         } else {
             retVal = String.copyValueOf(retChars);
         }
@@ -238,6 +240,9 @@ public class DeploymentManagerProperties {
      */
     public void setPassword(java.lang.String password) {
         String key = instanceProperties.getProperty(InstanceProperties.URL_ATTR);
+        if (null == key) {
+            return;
+        }
         Keyring.save(key, password.toCharArray(), "a Glassfish/SJSAS passord");
     }
         

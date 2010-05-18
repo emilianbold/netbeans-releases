@@ -39,8 +39,12 @@
 
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.support.LogUtils;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -62,6 +66,14 @@ public class ConvertToRestAction extends CookieAction {
         if(activatedNodes.length == 1){
             Node node = activatedNodes[0];
             Service service = node.getLookup().lookup(Service.class);
+            FileObject implClass = node.getLookup().lookup(FileObject.class);
+            if (implClass == null) {
+                return false;
+            }
+            Project project = FileOwnerQuery.getOwner(implClass);
+            if (project == null || project.getLookup().lookup(RestSupport.class) == null) {
+                return false;
+            }
             if(service != null){
                 return !service.isUseProvider();
             }

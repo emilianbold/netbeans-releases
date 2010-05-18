@@ -121,7 +121,7 @@ public class FeaturesOffDemandTest extends NbTestCase implements PropertyChangeL
         }
 
         FeatureInfo info = FeatureInfo.create(
-            "testcluster",
+            "java",
             FeaturesOffDemandTest.class.getResource("FeatureInfo.xml"),
             FeaturesOffDemandTest.class.getResource("TestBundle5.properties")
         );

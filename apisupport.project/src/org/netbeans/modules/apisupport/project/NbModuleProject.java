@@ -783,13 +783,16 @@ public final class NbModuleProject implements Project {
         
         private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
+        private final String name;
         private String displayName;
         
-        Info() {}
+        Info() {
+            String cnb = getCodeNameBase();
+            name = cnb != null ? cnb : /* #70490 */getProjectDirectory().toString();
+        }
         
         public String getName() {
-            String cnb = getCodeNameBase();
-            return cnb != null ? cnb : /* #70490 */getProjectDirectory().toString();
+            return name;
         }
         
         public String getDisplayName() {

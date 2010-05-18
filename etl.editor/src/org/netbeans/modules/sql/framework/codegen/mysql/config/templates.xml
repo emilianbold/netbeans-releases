@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<!-- 
+  * Contents of this template will override any existing attributes in base/config/templates.xml
+  -->
+<templates>
+    <attr attributeName="update" attributeType="java.lang.String" attributeValue="mysql/config/update.vm" /> 
+    <attr attributeName="merge" attributeType="java.lang.String" attributeValue="mysql/config/merge.vm" /> 
+    <attr attributeName="disableConstraints" attributeType="java.lang.String" attributeValue="mysql/config/disableConstraints.vm" />
+    <attr attributeName="enableConstraints" attributeType="java.lang.String" attributeValue="mysql/config/enableConstraints.vm" />    
+    <attr attributeName="insert" attributeType="java.lang.String" attributeValue="mysql/config/insert.vm" /> 
+    <attr attributeName="insertValues" attributeType="java.lang.String" attributeValue="mysql/config/insertValues.vm" /> 
+    <attr attributeName="insertStmt" attributeType="java.lang.String" attributeValue="mysql/config/insertStmt.vm" />    
+    <attr attributeName="insertSelect" attributeType="java.lang.String" attributeValue="mysql/config/insertSelect.vm" /> 
+    <attr attributeName="updateStatic" attributeType="java.lang.String" attributeValue="mysql/config/updateStatic.vm" /> 
+</templates>

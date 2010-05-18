@@ -57,20 +57,20 @@ PLATFORM_SHORT_NAMES [5] = "Mac OS X";
 */
 
 BUNDLE_SHORT_NAMES[0] = "Java&nbsp;SE";
-//BUNDLE_SHORT_NAMES[1] = "JavaFX";
-BUNDLE_SHORT_NAMES[1] = "Java";
-BUNDLE_SHORT_NAMES[2] = "Ruby";
-BUNDLE_SHORT_NAMES[3] = "C/C++";
-BUNDLE_SHORT_NAMES[4] = "PHP";
-BUNDLE_SHORT_NAMES[5] = "";
+BUNDLE_SHORT_NAMES[1] = "JavaFX";
+BUNDLE_SHORT_NAMES[2] = "Java";
+BUNDLE_SHORT_NAMES[3] = "Ruby";
+BUNDLE_SHORT_NAMES[4] = "C/C++";
+BUNDLE_SHORT_NAMES[5] = "PHP";
+BUNDLE_SHORT_NAMES[6] = "";
 
 BUNDLE_LONG_NAMES[0] = "Java&nbsp;SE";
-//BUNDLE_LONG_NAMES[1] = "JavaFX";
-BUNDLE_LONG_NAMES[1] = "Java";
-BUNDLE_LONG_NAMES[2] = "Ruby";
-BUNDLE_LONG_NAMES[3] = "C/C++";
-BUNDLE_LONG_NAMES[4] = "PHP";
-BUNDLE_LONG_NAMES[5] = "All";
+BUNDLE_LONG_NAMES[1] = "JavaFX";
+BUNDLE_LONG_NAMES[2] = "Java";
+BUNDLE_LONG_NAMES[3] = "Ruby";
+BUNDLE_LONG_NAMES[4] = "C/C++";
+BUNDLE_LONG_NAMES[5] = "PHP";
+BUNDLE_LONG_NAMES[6] = "All";
 
 var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/68/relnotes.html";
 var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/68/install.html";

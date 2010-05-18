@@ -58,8 +58,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
@@ -76,6 +74,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
 
 
 /**
@@ -98,6 +97,9 @@ public class WLDeploymentManager implements DeploymentManager {
     private final String uri;
     private final String host;
     private final String port;
+
+    private final WLProductProperties productProperties = new WLProductProperties(this);
+
     private final WLMutableState mutableState;
 
     private final boolean disconnected;
@@ -156,6 +158,10 @@ public class WLDeploymentManager implements DeploymentManager {
 
         }
         return instanceProperties;
+    }
+
+    public WLProductProperties getProductProperties() {
+        return productProperties;
     }
 
     private synchronized ClassLoader getWLClassLoader(String uri, String serverRoot) {

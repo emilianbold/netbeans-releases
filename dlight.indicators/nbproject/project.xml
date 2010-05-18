@@ -116,6 +116,10 @@
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.toolsui</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
+                <friend>com.sun.dlight.apache</friend>
+                <friend>com.sun.dlight.php</friend>
+                <friend>com.sun.dlight.mysql</friend>
+                <friend>org.netbeans.modules.dlight.xml</friend>
                 <package>org.netbeans.modules.dlight.indicators</package>
                 <package>org.netbeans.modules.dlight.indicators.spi</package>
                 <package>org.netbeans.modules.dlight.indicators.support</package>

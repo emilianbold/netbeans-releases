@@ -57,6 +57,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -80,6 +81,7 @@ import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -149,7 +151,8 @@ public final class ProjectXMLManager {
     private Element confData;
 
     /** Creates a new instance of {@link ProjectXMLManager}. */
-    public ProjectXMLManager(final NbModuleProject project) {
+    public ProjectXMLManager(final @NonNull NbModuleProject project) {
+        Parameters.notNull("project", project);
         this.project = project;
     }
 
@@ -163,6 +166,9 @@ public final class ProjectXMLManager {
     public static ProjectXMLManager getInstance(final File projectDir) throws IOException {
         FileObject dir = FileUtil.toFileObject(projectDir);
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(dir);
+        if (p == null) {
+            throw new IOException("no project in " + projectDir);
+        }
         return new ProjectXMLManager(p);
     }
 

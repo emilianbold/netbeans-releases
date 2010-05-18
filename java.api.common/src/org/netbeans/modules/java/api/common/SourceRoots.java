@@ -55,6 +55,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -107,6 +109,8 @@ public final class SourceRoots {
      * Default label for tests node used in {@link org.netbeans.spi.project.ui.LogicalViewProvider}.
      */
     public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_test.src.dir");
+
+    private static final Logger LOG = Logger.getLogger(SourceRoots.class.getName());
 
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
@@ -505,6 +509,7 @@ public final class SourceRoots {
         private final Set<File> files = new HashSet<File>();
         private final FileChangeListener weakFilesListener = WeakListeners.create(FileChangeListener.class, this, null);
 
+        //@GuardedBy("SourceRoots.this")
         public void add(File f) {
             if (!files.contains(f)) {
                 files.add(f);
@@ -512,9 +517,15 @@ public final class SourceRoots {
             }
         }
 
+        //@GuardedBy("SourceRoots.this")
         public void removeFileListeners() {
             for(File f : files) {
-                FileUtil.removeFileChangeListener(weakFilesListener, f);
+                try {
+                    FileUtil.removeFileChangeListener(weakFilesListener, f);
+                } catch (IllegalArgumentException iae) {
+                    // log
+                    LOG.log(Level.FINE, null, iae);
+                }
             }
             files.clear();
         }

@@ -44,7 +44,6 @@ import demo.Customer;
 import demo.DiscountCode;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
@@ -345,9 +344,9 @@ public final class EditorTopComponent extends TopComponent implements LookupList
                     c.setCity(jTextField2.getText());
                     entityManager.getTransaction().commit();
                 } else {
-                    Query query = entityManager.createQuery("SELECT c FROM Customer c");
-                    List<Customer> resultList = query.getResultList();
-                    customer.setCustomerId(resultList.size() + 1);
+                    Query query = entityManager.createQuery("SELECT MAX(c.customerId) FROM Customer c");
+                    Integer newId = (Integer) query.getSingleResult() + 1;
+                    customer.setCustomerId(newId);
                     customer.setName(jTextField1.getText());
                     customer.setCity(jTextField2.getText());
                     customer.setZip("12345");

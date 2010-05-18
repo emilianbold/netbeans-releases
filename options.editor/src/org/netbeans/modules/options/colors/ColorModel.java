@@ -308,10 +308,6 @@ public final class ColorModel {
             SwingUtilities.invokeLater (new Runnable () {
                 @Override
                 public void run () {
-                    if (!mimeType.equals(currentMimeType)) {
-                        updateMimeType(mimeType);
-                    }
-                    
                     if (defaults != null) {
                         EditorSettings.getDefault().getFontColorSettings(EMPTY_MIMEPATH).setAllFontColors(
                             testProfileName,
@@ -331,6 +327,7 @@ public final class ColorModel {
                             syntaxColorings
                         );
                     }
+                    updateMimeType(mimeType);
                 }
             });
         }

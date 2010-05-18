@@ -179,14 +179,18 @@ public class ImportProject implements PropertyChangeListener {
         projectName = projectFolder.getName();
         makefileName = "Makefile-" + projectName + ".mk"; // NOI18N
         workingDir = path;
-        makefilePath = (String) wizard.getProperty("makefileName");  // NOI18N
-        if (makefilePath == null) {
-            configurePath = (String) wizard.getProperty("configureName");  // NOI18N
+        configurePath = (String) wizard.getProperty("configureName");  // NOI18N
+        if (configurePath != null) {
             configureArguments = (String) wizard.getProperty("realFlags");  // NOI18N
             runConfigure = true;
             // the best guess
-            File file = new File(path + "/Makefile"); // NOI18N
-            makefilePath = file.getAbsolutePath();
+            makefilePath = (String) wizard.getProperty("makefileName");  // NOI18N
+            if (makefilePath == null) {
+                File file = new File(path + "/Makefile"); // NOI18N
+                makefilePath = file.getAbsolutePath();
+            }
+        } else {
+            makefilePath = (String) wizard.getProperty("makefileName");  // NOI18N
         }
         runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N

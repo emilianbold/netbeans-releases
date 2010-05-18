@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Scope</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Scope</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<!-- add to the Property Editor section -->
+<p>The Scope activity is essentially a collection of child activities that can have their own local variables, fault handlers, event handlers, and correlation sets. A Scope activity provides the behavioral context for  child elements. The attributes defined for a parent Scope have local visibility inside this Scope. For example, the variables declared for a Scope are visible only inside that Scope and all nested Scopes. These variables can then be used for the child activities of this Scope. </p>
+<p><b>To use the Scope element:</b></p>
+<ol>
+  <li>In the Design view, drag the Scope element from the Palette to the diagram.</li>
+  <li>Right-click inside the Scope element and choose to add one of the following attributes: <br>
+  <ul>
+  <li><a href="about_variable.html">Variable</a></li>
+  <li><a href="add_event_handler.html">Event Handlers</a></li>
+  <li><a href="scope_add_fault_handler.html">Fault Handlers</a> </li>
+  </ul>
+  </li>
+  <li>In the Design view, place the activities into the Scope element. </li>
+  <li>Configure these activities. </li>
+  <li>(Optional) Enter the name for the Scope element in the Properties window. </li>
+</ol>
+ <ul class="note">
+  <li>Alternatively, you can add these attributes from the Navigator window. In the BPEL Logical View of the Navigator, right-click the Scope node, select Add, and choose the attribute to add.</li>
+ </ul> 
+  <ul class="note">
+  <li>You can view the local attributes, such as variables, fault handlers, and correlation sets, defined for a Scope activity by expanding the node for this Scope in the BPEL Logical View of the Navigator.</li>
+  </ul> 
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="about_variable.html" title="About Variables in the BPEL Designer">About Variables in the BPEL Designer</a></dd>
+<dd><a href="scope_add_fault_handler.html" title="Adding Fault Handlers">Adding Fault Handlers</a></dd>
+<dd><a href="palette_struct_acts.html" title="BPEL Designer Palette: Structured Activities">BPEL Designer Palette: Structured Activities</a></dd>
+<dd><a href="../windows_editors/design_view.html" title="About the Design View of the BPEL Designer">About the Design View of the BPEL Designer</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

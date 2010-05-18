@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>BPEL Designer: Adding Event Handlers</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>BPEL Designer: Adding Event Handlers </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The BPEL language provides you with the capability to handle long-time responses by using event handlers. Within an event handler element, you can specify the activities that will be invoked concurrently if the corresponding event occurs. With this approach, a BPEL process can time out and continue executing the rest of the process after the specified time or upon the arrival of the specified message. </p>
+<p>There are
+two types of events:</p>
+<ul>
+  <li>Incoming messages, which correspond to a request/response or one-way operation in WSDL. These messages are specified using the <a href="add_event_handler_onevent.html" title="Adding On Event Elements">On Event</a> elements. </li>
+  <li>Alarms, or timers, which invoke activities after the specified periods or when a deadline is reached. The times are specified using the <a href="add_event_handler_onalarm.html">On Alarm</a> elements. </li>
+</ul>
+<p>You can attach one Event Handler container to either Process or Scope elements. Inside the Event Handlers container, you can create any number of On Event or On Alarm elements configured to invoke specific actions upon the specified event. </p>
+<p><b>To add an Event Handler container to Scope or Process:</b></p>
+<ol>
+  <li>Right-click the Scope or Process element  and choose Add &gt;  Event Handlers.<br>
+  An empty container element to which you  add specific event handler activities appears.</li>
+  <li>Right-click the Event Handlers container and choose Add &gt; On Event or On Alarm. </li>
+</ol>
+<ul class="note">
+<li>An Event Handlers container must contain at least one On Event or On Alarm element. </li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="add_event_handler_onalarm.html" title="Adding On Alarm Elements">Adding On Alarm Elements</a></dd>
+<dd><a href="add_event_handler_onevent.html" title="Adding On Event Elements">Adding On Event Elements</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

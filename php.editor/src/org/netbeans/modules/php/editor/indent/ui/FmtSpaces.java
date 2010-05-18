@@ -133,6 +133,8 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
         cfgTree.setRootVisible(false);
         jScrollPane1.setViewportView(cfgTree);
+        cfgTree.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtSpaces.class, "FmtSpaces.cfgTree.AccessibleContext.accessibleName")); // NOI18N
+        cfgTree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtSpaces.class, "FmtSpaces.cfgTree.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -141,6 +143,11 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints);
+        jScrollPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtSpaces.class, "FmtSpaces.jScrollPane1.AccessibleContext.accessibleName")); // NOI18N
+        jScrollPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtSpaces.class, "FmtSpaces.jScrollPane1.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtSpaces.class, "FmtSpaces.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtSpaces.class, "FmtSpaces.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

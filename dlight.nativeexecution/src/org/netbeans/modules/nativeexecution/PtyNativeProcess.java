@@ -157,7 +157,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         while (!isInterrupted()) {
             c = is.read();
 
-            if (c == '\n') {
+            if (c < 0 || c == '\n') {
                 break;
             }
 

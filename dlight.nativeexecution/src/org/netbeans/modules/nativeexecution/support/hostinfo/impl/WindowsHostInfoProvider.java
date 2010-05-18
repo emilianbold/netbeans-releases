@@ -296,13 +296,6 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         }
 
         @Override
-        public String getEnvFile() {
-            // Windows is always local...
-            // env is the same as in jvm
-            return "/dev/null"; // NOI18N
-        }
-
-        @Override
         public Map<String, String> getEnvironment() {
             return environment;
         }

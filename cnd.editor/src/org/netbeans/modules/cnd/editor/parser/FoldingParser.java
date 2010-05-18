@@ -46,4 +46,5 @@ import java.util.List;
 
 public interface FoldingParser {
     List<CppFoldRecord> parse(String name, Reader source);
+    List<CppFoldRecord> parse(String name, char[] buf);
 }

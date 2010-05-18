@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Deploying Composite Application Projects </title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Deploying Composite Application Projects </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Before you can <a href="jbi_tester.html">test-run</a> a business process, make 
+  sure that you <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_start.html" title="Starting and Stopping a Server">start 
+  the Application Server</a>, <a href="nbdocs://org.netbeans.modules.bpel.help/org/netbeans/modules/bpel/help/test_run/build_project.html" title="Building BPEL Module Projects">build 
+  the BPEL module project</a>, and add it as a <a href="add_jbi_module.html" title="Adding JBI Modules to Composite Application Projects">JBI 
+  Module</a> to your Composite Application project. </p>
+<p><b>To deploy a Composite Application project to the JBI server:</b> </p>
+ <p>In the Projects window, right-click the Composite Application project's 
+    node and choose Deploy Project.</p>  
+<p>The Deploy action compiles the files in the Composite Application project, 
+  packages the compiled BPEL and related web service artifacts (<tt>.wsdl</tt> 
+  and <tt>.xsd</tt> files), and deploys them to the BPEL Service Engine. </p>
+<p>To verify that the project has been successfully deployed to the BPEL service 
+  engine, open the Service window, expand the JBI node, right-click the Service 
+  Assemblies node, and choose Refresh. The name of the Composite Application project 
+  for the deployed service assembly appears under the Service Assemblies node. 
+</p>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="add_jbi_module.html" title="Adding JBI Modules to Composite Application Projects">Adding JBI Modules to Composite Application Projects</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.bpel.help/org/netbeans/modules/bpel/help/test_run/about.html" title="Deploying and Performing Test Runs of BPEL Processes">Deploying and Performing Test Runs of BPEL Processes</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>
+

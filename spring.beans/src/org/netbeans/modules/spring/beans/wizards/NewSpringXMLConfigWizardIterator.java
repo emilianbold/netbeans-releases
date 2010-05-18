@@ -146,7 +146,10 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
             //Retriving Spring library version from ClassPath
             FileObject artifact = getSourceGroupArtifact(Templates.getProject(wizard),targetFolder);
             ClassPath cp = ClassPath.getClassPath(artifact, ClassPath.COMPILE);
-            FileObject resource = cp.findResource(SpringUtilities.SPRING_CLASS_NAME.replace('.', '/')+".class");    //NOI18N
+            FileObject resource = null;
+            if (cp != null) {
+                resource = cp.findResource(SpringUtilities.SPRING_CLASS_NAME.replace('.', '/')+".class");    //NOI18N
+            }
 
 
             if ( resource != null ) {

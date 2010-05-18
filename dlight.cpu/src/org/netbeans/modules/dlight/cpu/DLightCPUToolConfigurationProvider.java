@@ -39,6 +39,7 @@
 package org.netbeans.modules.dlight.cpu;
 
 import java.awt.Color;
+import java.beans.FeatureDescriptor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -89,6 +90,9 @@ public final class DLightCPUToolConfigurationProvider
         toolConfiguration.setLongName(DETAILED_TOOL_NAME);
         toolConfiguration.setDescription(loc("CPUMonitorTool.Description"));//NOI18N
         toolConfiguration.setIcon("org/netbeans/modules/dlight/cpu/resources/cpu.png"); // NOI18N
+        FeatureDescriptor descriptor = new FeatureDescriptor();
+        descriptor.setValue(DTDCConfiguration.DSCRIPT_TOOL_PROPERTY, CpuSamplingSupport.CPU_SAMPLING_SCRIPT_URL);
+        toolConfiguration.setFeatureDescriptor(descriptor);
 
         // SunStudio should collect data about most CPU-expensive functions
         // i.e. create a configuration that collects

@@ -1,0 +1,3 @@
+org.netbeans.modules.bpel.documentation.DocumentationDecorator
+org.netbeans.modules.bpel.logging.LoggingDecorator
+org.netbeans.modules.bpel.search.Decorator

@@ -63,10 +63,8 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
-import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
@@ -77,20 +75,11 @@ import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
 /**
- * @todo AFAIR there should be a generic folder refactoring support which anyone could
- * just plug into. I just copied the way how java does that. It "eats" up
- * the "java folders" (those whose have the NonRecursiveFolder instance in the Node's lookup)
- * for its own refactoring. Anyone who wants to refactor folders (including
- * the java ones) need to create a plugin for the java refactoring and create
- * a new refactoring actions for the "non-java" folders + another plugin.
- * The same situation now happens with the css refactoring actions - it "eats up"
- * all folders (except the java ones since java ref. actions are registered before
- * the Css's ones) and anyone needs to write a plugin agains css refactoring :-(
- * to be able to handle folder renames. I recon this is not the way it is supposet to work.
+ * Folder rename refactoring is enabled by the
+ * org.netbeans.modules.web.common.refactoring.FolderActionsImplementationProvider
  *
- * /2 hmm, this seems to be a temporary solution anyway since once I wanna enable
- * the html refactoring which includes the ability to handle folder renames I need a
- * better way than to code agains css... However for the time beeing lets keep it this way.
+ * The css refactoring just provides the rename plugin which handles css links possibly
+ * affected by the folder rename.
  *
  * @author marekfukala
  */
@@ -112,24 +101,6 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	Node node = nodes.iterator().next();
 	if (isCssContext(node)) {
 	    return true;
-	}
-
-	//check if the node represents a folder which may potentially contain
-	//files containg css files or embedded css in some other files (html, jsp ...)
-        //XXX We will disable all refactoring actions possibly registered
-        //behind us for folders!!!! Read my comment in the class javadoc
-	FileObject fo = getFileObjectFromNode(node);
-	if (fo != null && fo.isValid() && fo.isFolder()) {
-            //check if the folder is a part of a web-like project using the
-            //web root query
-            if(ProjectWebRootQuery.getWebRoot(fo) != null) {
-                //looks like the file is a web like project
-                try {
-                    return!fo.getFileSystem().isReadOnly();
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
 	}
 
 	return false; //we are not interested in refactoring this object/s

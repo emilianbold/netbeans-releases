@@ -89,6 +89,7 @@ public class Reformatter implements ReformatTask {
         this.doc = context.document();
     }
 
+    @Override
     public void reformat() throws BadLocationException {
         if (controller == null) {
             try {
@@ -316,7 +317,8 @@ public class Reformatter implements ReformatTask {
         shift = region.getEndOffset() - originalEndOffset;
         return;
     }
-    
+
+    @Override
     public ExtraLock reformatLock() {
         return JavacParser.MIME_TYPE.equals(source.getMimeType()) ? null : new ExtraLock() {
             public void lock() {
@@ -349,7 +351,7 @@ public class Reformatter implements ReformatTask {
         }
         return statementPath != null ? statementPath : path;
     }
-    
+
     public static class Factory implements ReformatTask.Factory {
 
         public ReformatTask createTask(Context context) {
@@ -644,7 +646,7 @@ public class Reformatter implements ReformatTask {
             int halfIndent = indent;
             switch(bracePlacement) {
                 case SAME_LINE:
-                    spaces(spaceBeforeLeftBrace ? 1 : 0);
+                    spaces(spaceBeforeLeftBrace ? 1 : 0, tokens.offset() < startOffset);
                     accept(LBRACE);
                     indent += indentSize;
                     break;
@@ -1204,7 +1206,7 @@ public class Reformatter implements ReformatTask {
             int halfIndent = indent;
             switch(bracePlacement) {
                 case SAME_LINE:
-                    spaces(spaceBeforeLeftBrace ? 1 : 0);
+                    spaces(spaceBeforeLeftBrace ? 1 : 0, tokens.offset() < startOffset);
                     if (node instanceof FakeBlock) {
                         appendToDiff("{"); //NOI18N
                         lastBlankLines = -1;
@@ -1771,7 +1773,7 @@ public class Reformatter implements ReformatTask {
             int halfIndent = indent;
             switch(bracePlacement) {
                 case SAME_LINE:
-                    spaces(spaceBeforeLeftBrace ? 1 : 0);
+                    spaces(spaceBeforeLeftBrace ? 1 : 0, tokens.offset() < startOffset);
                     accept(LBRACE);
                     if (indentCases)
                         indent += indentSize;
@@ -2038,7 +2040,7 @@ public class Reformatter implements ReformatTask {
                 switch(bracePlacement) {
                     case SAME_LINE:
                         if (type != null)
-                            spaces(spaceBeforeLeftBrace ? 1 : 0);
+                            spaces(spaceBeforeLeftBrace ? 1 : 0, tokens.offset() < startOffset);
                         accept(LBRACE);
                         indent += indentSize;
                         break;

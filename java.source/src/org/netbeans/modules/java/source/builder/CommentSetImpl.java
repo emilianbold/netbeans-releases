@@ -146,7 +146,7 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
     
     public List<Comment> getComments(RelativePosition positioning) {
         if (commentsMap.containsKey(positioning)) {
-            return Collections.unmodifiableList(commentsMap.get(positioning));
+            return commentsMap.get(positioning);
         }
         return Collections.emptyList();
     }
