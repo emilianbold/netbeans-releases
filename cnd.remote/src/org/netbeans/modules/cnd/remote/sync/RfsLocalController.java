@@ -521,7 +521,7 @@ class RfsLocalController extends NamedRunnable {
                 BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
                 try {
                     for (FileGatheringInfo info : filesToCheck) {
-                        String path = "\"" + info.file.getAbsolutePath() + "\"";
+                        String path = "\"" + info.file.getAbsolutePath() + "\""; // NOI18N
                         requestWriter.append(path);
                         requestWriter.newLine();
                     }
