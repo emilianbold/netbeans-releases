@@ -111,7 +111,6 @@ public class FileReferenceTest extends CslTestBase {
         assertNotNull(fourth);
         FileObject fifth =  getTestFile("folder/innerfolder2/fifth.txt");
         assertNotNull(fifth);
-        assertNotNull(fifth);
 
         FileObject folder = getTestFile("folder");
         assertTrue(folder.isFolder());
@@ -141,7 +140,6 @@ public class FileReferenceTest extends CslTestBase {
         assertNotNull(fourth);
         FileObject fifth =  getTestFile("folder/innerfolder2/fifth.txt");
         assertNotNull(fifth);
-        assertNotNull(fifth);
 
         FileObject folder = getTestFile("folder");
         assertTrue(folder.isFolder());
@@ -166,6 +164,33 @@ public class FileReferenceTest extends CslTestBase {
 
         modif.rename(innerfolder2, "superinner");
         assertEquals("../superinner/fifth.txt", modif.getModifiedReferencePath());
+
+    }
+
+    public void testFileReferenceModificationFolderWithDot() {
+        FileObject one = getTestFile("one.txt");
+        FileObject fourth = getTestFile("folder/inner.folder/fourth.txt");
+        assertNotNull(fourth);
+
+        FileObject folder = getTestFile("folder");
+        assertTrue(folder.isFolder());
+        FileObject innerfolder = getTestFile("folder/inner.folder");
+        assertTrue(innerfolder.isFolder());
+
+        FileReference resolved = WebUtils.resolveToReference(one, "folder/inner.folder/fourth.txt");
+        assertNotNull(resolved);
+        assertEquals("folder/inner.folder/fourth.txt", resolved.optimizedLinkPath());
+
+        FileReferenceModification modif = resolved.createModification();
+        assertEquals("folder/inner.folder/fourth.txt", modif.getModifiedReferencePath());
+        
+        //the unmodified ref. path should be the same
+        assertEquals(resolved.optimizedLinkPath(), modif.getModifiedReferencePath());
+
+        //test modify
+        modif.rename(folder, "renamed"); //should have no effect, the .. is not refactored
+
+        assertEquals("renamed/inner.folder/fourth.txt", modif.getModifiedReferencePath());
 
     }
 

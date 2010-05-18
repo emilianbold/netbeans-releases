@@ -103,6 +103,14 @@ public class WebUtilsTest extends CslTestBase {
 
     }
 
+    public void testGetRelativePathFolderWithDot() {
+        FileObject one = getTestFile("one.txt");
+        assertNotNull(one);
+        FileObject two = getTestFile("folder/inner.folder/fourth.txt");
+        assertNotNull(two);
+        assertEquals("folder/inner.folder/fourth.txt", WebUtils.getRelativePath(one, two));
+    }
+
     public void test182423() {
         FileObject one = getTestFile("one.txt");
         assertNotNull(one);
