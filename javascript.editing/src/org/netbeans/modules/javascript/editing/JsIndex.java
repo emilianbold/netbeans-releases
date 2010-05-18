@@ -40,6 +40,7 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.directory.SearchResult;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
@@ -239,7 +241,14 @@ public final class JsIndex {
         String searchUrl = null;
         if (context != null) {
             try {
-                searchUrl = context.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
+                Source source = context.getSnapshot().getSource();
+                if(source != null) {
+                    FileObject file = source.getFileObject();
+                    if(file != null) {
+                        URL fileUrl = file.getURL();
+                        searchUrl = fileUrl == null ? null : fileUrl.toExternalForm();
+                    }
+                }
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
