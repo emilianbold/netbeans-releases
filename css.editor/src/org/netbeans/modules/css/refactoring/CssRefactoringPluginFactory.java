@@ -60,7 +60,7 @@ public class CssRefactoringPluginFactory implements RefactoringPluginFactory {
 	    } else {
                 //folder refactoring
                 FileObject file = refactoring.getRefactoringSource().lookup(FileObject.class);
-                if(file.isFolder()) {
+                if(file != null && file.isFolder()) {
                     return new CssRenameRefactoringPlugin((RenameRefactoring)refactoring);
                 }
             }
