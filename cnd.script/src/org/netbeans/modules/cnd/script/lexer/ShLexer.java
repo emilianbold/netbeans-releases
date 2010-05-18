@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.script.lexer;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -526,11 +527,11 @@ class ShLexer implements Lexer<ShTokenId> {
             case '`':
             case '%':
             case '$':
-                afterSeparator = i == ';';
+                afterSeparator = i == ';' || (afterSeparator && (i == '@' || i == '+' || i == '-'));
                 return info.tokenFactory().createToken(ShTokenId.OPERATOR);
             case '\\':
                 i = input.read();
-                afterSeparator = i == '\n';
+                afterSeparator &= i == '\n';
                 return info.tokenFactory().createToken(ShTokenId.OPERATOR);
             case ' ':
             case '\n':

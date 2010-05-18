@@ -1230,4 +1230,42 @@ public class IndentTestCase extends EditorBase {
                 "#\n"
                 );
     }
+
+    public void testPreprocessorIndentTyping2() throws Exception {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.sharpAtStartLine, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.indentPreprocessorDirectives, CodeStyle.PreprocessorIndent.PREPROCESSOR_INDENT.name());
+        setLoadDocumentText(
+                "#ifdef AAA\n" +
+                "    int a;\n" +
+                "  |\n"
+                );
+        typeChar('#', true);
+        assertDocumentText("Incorrect line indent",
+                "#ifdef AAA\n" +
+                "    int a;\n" +
+                "    #\n"
+                );
+    }
+
+    public void testPreprocessorIndentTyping3() throws Exception {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.sharpAtStartLine, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.indentPreprocessorDirectives, CodeStyle.PreprocessorIndent.PREPROCESSOR_INDENT.name());
+        setLoadDocumentText(
+                "#ifdef AAA\n" +
+                "    int a;\n" +
+                "  #endi|\n"
+                );
+        typeChar('f', true);
+        assertDocumentText("Incorrect line indent",
+                "#ifdef AAA\n" +
+                "    int a;\n" +
+                "#endif\n"
+                );
+    }
 }
