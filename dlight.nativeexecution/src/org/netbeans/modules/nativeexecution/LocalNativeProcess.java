@@ -96,7 +96,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
         }
 
-        final ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-s"); // NOI18N
+        final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
 
         // Get working directory ....
         String workingDirectory = info.getWorkingDirectory(true);

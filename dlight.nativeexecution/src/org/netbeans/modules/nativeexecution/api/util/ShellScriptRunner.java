@@ -137,7 +137,7 @@ public final class ShellScriptRunner {
         }
 
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
-        pb.setExecutable("/bin/sh").setArguments("-s"); // NOI18N
+        pb.setExecutable(info.getShell()).setArguments("-s"); // NOI18N
 
         shellProcess = pb.call();
 

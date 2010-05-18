@@ -46,8 +46,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 /**
@@ -78,7 +80,8 @@ public final class ShellSession {
     private static synchronized NativeProcess startProcess(ExecutionEnvironment env) throws IOException {
         NativeProcess result;
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-        npb.setExecutable("/bin/sh").setArguments("-s"); // NOI18N
+        HostInfo info = HostInfoUtils.getHostInfo(env);
+        npb.setExecutable(info.getShell()).setArguments("-s"); // NOI18N
         npb.getEnvironment().put("LC_ALL", "C"); // NOI18N
         result = npb.call();
         sessions.put(env, result);
