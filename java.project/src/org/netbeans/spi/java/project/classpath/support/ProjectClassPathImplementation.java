@@ -152,11 +152,14 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
                             } catch (MalformedURLException ex) {
                                 foStatus = "malformed"; //NOI18N
                             }
-                            final String log = String.format("File: %s, Property value: %s, Exists: %b, FileObject: %s", //NOI18N
+                            final String log = String.format("File: %s, Property value: %s, Exists: %b, FileObject: %s, Folder: %b, Size: %d, Retry: %s", //NOI18N
                                     f.getAbsolutePath(),
                                     piece,
                                     f.exists(),
-                                    foStatus);
+                                    foStatus,
+                                    f.isDirectory(),
+                                    f.length(),
+                                    FileUtil.urlForArchiveOrDir(f).toExternalForm());
                             throw new IllegalArgumentException(log, iae);
                         }
                     } else {
