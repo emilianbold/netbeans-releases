@@ -1,7 +1,10 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 
 <!--
-*     Copyright (©) 2009 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (ï¿½) 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 *     Use is subject to license terms.
 -->
 
@@ -17,7 +20,7 @@
     <mapID target="cvs-lite_overview" url="cvsmodule/cvs-lite_overview.html" />
 
     <!-- CVS Tasks: Quick Reference -->
-    <mapID target="cvs-lite_quickref" url="cvsmodule/cvs-lite_quickref.html" />        
+    <mapID target="cvs-lite_quickref" url="cvsmodule/cvs-lite_quickref.html" />
 
     <!-- Using CVS with the IDE -->
     <mapID target="cvs-lite_using" url="cvsmodule/cvs-lite_using.html" />
