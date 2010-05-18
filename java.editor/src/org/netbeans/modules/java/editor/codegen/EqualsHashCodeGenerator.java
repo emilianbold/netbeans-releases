@@ -577,7 +577,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ENUM), "this.{VAR} != other.{VAR}");
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY_PRIMITIVE), "! java.util.Arrays.equals(this.{VAR}, other.{VAR}");
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY), "! java.util.Arrays.deepEquals(this.{VAR}, other.{VAR}");
-        EQUALS_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "equals"), "java.util.Objects.equals(this.{VAR}, other.{VAR})");
+        EQUALS_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "equals"), "! java.util.Objects.equals(this.{VAR}, other.{VAR})");
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.STRING), "(this.{VAR} == null) ? (other.{VAR} != null) : !this.{VAR}.equals(other.{VAR})");
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.OTHER), "this.{VAR} != other.{VAR} && (this.{VAR} == null || !this.{VAR}.equals(other.{VAR}))");
 
