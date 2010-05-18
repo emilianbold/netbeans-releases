@@ -142,7 +142,7 @@
 
     <!-- javadoc -->
     <target name="javadoc">
-        <ant target="do-javadoc" dir="${home}/print"/>
+        <ant target="javadoc" dir="${home}/print"/>
     </target>
 
     <!-- module -->
