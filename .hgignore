@@ -59,6 +59,7 @@ derby\.log
 ^performance/enterprise/test/unit/data/PerformanceTestData$
 ^swingapp/src/org/netbeans/modules/swingapp/resources/BasicShellApp\.zip$
 ^swingapp/src/org/netbeans/modules/swingapp/resources/CRUDShellApp\.zip$
+^iep.samples/src/org/netbeans/modules/iep/samples/resources/zip$
 ^ide/launcher/windows/netbeans\.res$
 ^ide.kit/test/qa-functional/data/lime6/
 ^ide.kit/test/whitelist/temp/
@@ -207,10 +208,12 @@ derby\.log
 ^websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/oauth$
 ^websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl$
 ^websvc.wsitmodelext/coverage$
+^wlm.samples/src/org/netbeans/modules/wlm/samples/resources/zip$
 ^xml.tax/lib/test/qa-functional/src/org/netbeans/tax/data/Delme\.xml$
 ^xml/test/qa-functional/src$
 ^xml/test/qa-lib/xml-test-lib\.jar$
 ^xml.tools/test/qa-functional/src/org/netbeans/modules/xsl/action/data/out/document\.html$
+^xslt.samples/src/org/netbeans/modules/xslt/samples/resources/zip$
 ^hibernate/test/unit/data/db-derby-10\.2\.2\.0-bin$
 \.orig\..*$
 \.chg\..*$
