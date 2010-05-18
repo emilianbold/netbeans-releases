@@ -10,7 +10,8 @@ and open the template in the editor.
     </head>
     <body>
         <?php
-        echo '';
+        /*FORMAT_START*/oci_bind_array_by_name($statement, $name, $var_array, $max_table_length)/*FORMAT_END*/
         ?>
     </body>
 </html>
+
