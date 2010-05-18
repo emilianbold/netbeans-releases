@@ -186,6 +186,8 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     private TextLayoutCache textLayoutCache;
 
+    private boolean incomingModification;
+
     private float width;
 
     private float height;
@@ -262,6 +264,8 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     private Map<?, ?> renderingHints;
 
     private int lazyChildrenBatch = LAZY_CHILDREN_MIN_BATCH;
+
+    private int lengthyAtomicEdit; // Long atomic edit being performed
 
     public DocumentView(Element elem, boolean previewOnly) {
         super(elem);
@@ -352,7 +356,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 textComponent.putClientProperty(MUTEX_CLIENT_PROPERTY, pMutex);
             }
 
-            viewUpdates = previewOnly ? null : new ViewUpdates(this);
+            viewUpdates = new ViewUpdates(this);
             textLayoutCache = new TextLayoutCache();
             textComponent.addPropertyChangeListener(this);
             if (REPAINT_LOG.isLoggable(Level.FINE)) {
@@ -392,6 +396,12 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 reinitViews();
             }
         }
+    }
+
+    @Override
+    protected void releaseChildren(boolean resetSpans) {
+        textLayoutCache.clear();
+        super.releaseChildren(resetSpans);
     }
 
     public void reinitViews() {
@@ -721,6 +731,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias) {
+        Rectangle2D.Double rect = ViewUtils.shape2Bounds(alloc);
         PriorityMutex mutex = getMutex();
         if (mutex != null) {
             mutex.lock();
@@ -728,13 +739,27 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 checkDocumentLocked();
                 checkViewsInited();
                 if (isActive()) {
-                    alloc = super.modelToViewChecked(offset, alloc, bias);
+                    return super.modelToViewChecked(offset, alloc, bias);
+                } else if (children != null) {
+                    // Not active but attempt to find at least a reasonable y
+                    // The existing line views may not be updated for a longer time
+                    // but the binary search should find something and end in finite time.
+                    int index = getViewIndexFirst(offset); // Must work without children inited
+                    if (index >= 0) {
+                        rect.y = getViewVisualOffset(index); // Must work without children inited
+                        // Let the height to possibly be set to default line height later
+                    }
                 }
             } finally {
                 mutex.unlock();
             }
         }
-        return alloc;
+        // Attempt to just return height of line since otherwise e.g. caret
+        // would have height of the whole doc which is undesirable.
+        if (defaultLineHeight > 0f) {
+            rect.height = defaultLineHeight;
+        }
+        return rect;
     }
 
     public double modelToY(int offset, Shape alloc) {
@@ -775,8 +800,34 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         return 0;
     }
 
+    void setIncomingModification(boolean incomingModification) {
+        this.incomingModification = incomingModification;
+    }
+
     boolean isActive() {
-        return textComponent != null && children != null;
+        return isUpdatable() && !incomingModification;
+    }
+
+    boolean isUpdatable() {
+        return textComponent != null && children != null && (lengthyAtomicEdit <= 0);
+    }
+
+    public void updateLengthyAtomicEdit(int delta) {
+        lengthyAtomicEdit += delta;
+        if (lengthyAtomicEdit == 0) {
+            // Release the existing children
+            PriorityMutex mutex = getMutex();
+            if (mutex != null) {
+                mutex.lock();
+                try {
+                    checkDocumentLocked();
+                    // Release all the children - they will be reinited upon a first request
+                    releaseChildren(true);
+                } finally {
+                    mutex.unlock();
+                }
+            }
+        }
     }
 
     @Override
@@ -1000,8 +1051,17 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         }
         int endOffset = getEndOffset();
         Document doc = getDocument();
-        if (endOffset != doc.getLength() + 1) {
+        int docTextLength = doc.getLength() + 1;
+        if (endOffset != docTextLength) {
             return "Invalid endOffset=" + endOffset + ", docLen=" + doc.getLength(); // NOI18N
+        }
+        // Check last paragraph's end offset (due to endOffset=startOffset+EditorView.getLength())
+        int viewCount = getViewCount();
+        if (viewCount > 0) {
+            EditorView lastView = getEditorView(viewCount - 1);
+            if (lastView.getEndOffset() != endOffset) {
+                return "lastView.endOffset=" + lastView.getEndOffset() + " != endOffset=" + endOffset; // NOI18N
+            }
         }
         return null;
     }
@@ -1025,6 +1085,13 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             }
         });
         return ret[0];
+    }
+
+    @Override
+    protected StringBuilder appendViewInfoCore(StringBuilder sb, int indent, int importantChildIndex) {
+        super.appendViewInfoCore(sb, indent, importantChildIndex);
+        sb.append("; incomingMod=").append(incomingModification);
+        return sb;
     }
 
     @Override

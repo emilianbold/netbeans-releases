@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.junit;
 import hidden.org.codehaus.plexus.util.StringUtils;
 import java.io.File;
 import java.io.InputStream;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -255,7 +256,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 }
                 String time = testcase.getAttributeValue("time");
                 if (time != null) {
-                    float fl = Float.parseFloat(time);
+                    float fl = NumberFormat.getNumberInstance().parse(time).floatValue();
                     test.setTimeMillis((long)(fl * 1000));
                 }
                 String classname = testcase.getAttributeValue("classname");
@@ -266,7 +267,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 session.addTestCase(test);
             }
             String time = testSuite.getAttributeValue("time");
-            float fl = Float.parseFloat(time);
+            float fl = NumberFormat.getNumberInstance().parse(time).floatValue();
             long timeinmilis = (long)(fl * 1000);
             Manager.getInstance().displayReport(session, session.getReport(timeinmilis));
         } catch (Exception exc) {
