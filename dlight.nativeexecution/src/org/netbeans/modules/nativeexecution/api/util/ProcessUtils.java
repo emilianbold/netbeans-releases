@@ -266,6 +266,7 @@ public final class ProcessUtils {
                 }
             }
         } catch (Throwable e) {
+            org.netbeans.modules.nativeexecution.support.Logger.getInstance().log(Level.FINE, e.getMessage(), e);
         }
 
         return pid;
@@ -341,8 +342,11 @@ public final class ProcessUtils {
             }, "o"); // NOI18N
 
             result = new ExitStatus(process.waitFor(), output.get(), error.get());
+        } catch (InterruptedException ex) {
+            result = new ExitStatus(-100, "", ex.getMessage());
         } catch (Throwable th) {
-            result = new ExitStatus(-100, "", th.getMessage());
+            org.netbeans.modules.nativeexecution.support.Logger.getInstance().log(Level.INFO, th.getMessage(), th);
+            result = new ExitStatus(-200, "", th.getMessage());
         }
 
         return result;
