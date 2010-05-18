@@ -490,7 +490,6 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
 //    }
 
     public void mouseClicked(java.awt.event.MouseEvent e) {
-        System.err.println("e.getSource()==" + e.getSource());
         if (   e.getSource() == hintListComponent.getView()
             && hintListComponent.getView().getSize().width - ListCompletionView.arrowSpan() <= e.getPoint().x) {
             if (hintListComponent.getView().right()) {
@@ -538,7 +537,6 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
     }
 
     public void mouseMoved(MouseEvent e) {
-        Thread.dumpStack();
         if (e.getSource() instanceof ListCompletionView) {
             ListCompletionView view = (ListCompletionView) e.getSource();
             int wasSelected = view.getSelectedIndex();
