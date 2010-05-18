@@ -68,7 +68,7 @@ import org.netbeans.modules.terminal.api.TerminalContainer;
 abstract class TerminalContainerCommon extends TerminalContainer implements IOContainer.Provider {
 
     private final static String PROP_ATTRIBUTES =
-	    "TerminalContainerCommonImpl.ATTRBUTES";	// NOI18N
+	    "TerminalContainerCommonImpl.ATTRIBUTES";	// NOI18N
 
     protected final TopComponent owner;
     protected final String originalName;
