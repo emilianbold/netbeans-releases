@@ -268,13 +268,8 @@ public class PackageView {
         // XXX #98573: very crude, but what else to do? Want to call changeOriginal asynchronously.
         // But this could randomly screw up tests - not just PackageViewTest, but maybe others too.
         // (org.netbeans.modules.java.freeform.ui.ViewTest does not appear to be affected.)
-        private static boolean IN_UNIT_TEST = false;
-        static {
-            try {
-                Class.forName("junit.framework.TestCase");
-                IN_UNIT_TEST = true;
-            } catch (ClassNotFoundException e) {}
-        }
+        private static boolean IN_UNIT_TEST = Boolean.getBoolean("PackageView.unitTest");   //NOI18N
+
         public void propertyChange (PropertyChangeEvent event) {
             String prop = event.getPropertyName();
             if (JavaProjectSettings.PROP_PACKAGE_VIEW_TYPE.equals(prop) || SourceGroup.PROP_CONTAINERSHIP.equals(prop)) {
