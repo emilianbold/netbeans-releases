@@ -43,6 +43,7 @@ package org.netbeans.modules.nativeexecution;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import junit.framework.Test;
@@ -90,7 +91,11 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
         _testVars(execEnv, false, true, null);
         _testVars(execEnv, false, false, null);
 
-        for (String terminalID : ExternalTerminalProvider.getSupportedTerminalIDs()) {
+        Collection<String> supportedTerminalIDs = Utilities.isWindows()
+                ? Arrays.asList("cmd.exe") // NOI18N
+                : ExternalTerminalProvider.getSupportedTerminalIDs();
+
+        for (String terminalID : supportedTerminalIDs) {
             ExternalTerminal terminal = ExternalTerminalProvider.getTerminal(execEnv, terminalID);
             if (terminal != null && terminal.isAvailable(execEnv)) {
                 terminal = terminal.setPrompt("NO");
@@ -121,14 +126,16 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
 
         System.out.println("=== START " + id);
 
+        boolean isWindows = execEnv.isLocal() && Utilities.isWindows();
+
         try {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             MacroMap env = npb.getEnvironment();
 
-            String home = env.get("HOME");
+            String home = isWindows ? env.get("USERPROFILE") : env.get("HOME");
             String path = env.get("PATH");
 
-            assertNotNull("Initially environment should be filled with user's env", home);
+            assertNotNull("Initially environment should be filled with user's home", home);
             assertNotNull("Initially environment should be filled with user's env", path);
 
             assertNull("Will use var " + nonexistentVarName + " for testing. Should not exist in initial user's env", env.get(nonexistentVarName));
@@ -153,7 +160,7 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
                 tmpFile = tmpFileFile.getAbsolutePath();
                 tmpFileFile.deleteOnExit();
 
-                if (Utilities.isWindows()) {
+                if (isWindows) {
                     tmpFile = WindowsSupport.getInstance().convertToShellPath(tmpFile);
                 }
 
@@ -191,7 +198,11 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
             assertEquals(nonexistentVarName + "=test value", line);
             line = it.next();
             System.out.println(line);
-            assertEquals("PATH=" + env.get("PATH"), line);
+            if (isWindows) {
+                assertTrue(line.startsWith("PATH=additional path"));
+            } else {
+                assertEquals("PATH=" + env.get("PATH"), line);
+            }
 
         } finally {
             System.out.println("=== DONE " + id);

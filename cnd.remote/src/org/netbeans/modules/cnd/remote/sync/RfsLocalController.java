@@ -238,7 +238,7 @@ class RfsLocalController extends NamedRunnable {
            timeStampFile = res.output.trim();
         } else {
             timeStampFile = null;
-            logger.log(Level.INFO, "Error invoking mktemp -p %s at %s; rc=%d.", remoteSyncRoot, execEnv, res.exitCode);
+            logger.log(Level.INFO, "Error invoking mktemp -p %s at %s; %s; rc=%d.", remoteSyncRoot, execEnv, res.error, res.exitCode);
         }
     }
 
@@ -521,7 +521,7 @@ class RfsLocalController extends NamedRunnable {
                 BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
                 try {
                     for (FileGatheringInfo info : filesToCheck) {
-                        String path = "\"" + info.file.getAbsolutePath() + "\"";
+                        String path = "\"" + info.file.getAbsolutePath() + "\""; // NOI18N
                         requestWriter.append(path);
                         requestWriter.newLine();
                     }

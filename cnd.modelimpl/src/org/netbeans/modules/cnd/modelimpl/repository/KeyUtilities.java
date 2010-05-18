@@ -185,6 +185,8 @@ public class KeyUtilities {
     public static int getProjectIndex(Key key) {
         if (key instanceof ProjectFileNameBasedKey) {
             return ((ProjectFileNameBasedKey) key).getUnitId();
+        } else if (key instanceof ProjectKey) {
+            return ((ProjectKey) key).getUnitId();
         }
         return -1;
     }

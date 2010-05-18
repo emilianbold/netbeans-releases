@@ -333,4 +333,5 @@
 	<mapID target="CreateTestWizardP2" url="TestingCandC++Projects/CreateTestWizardP2.html"/>
 	<mapID target="CreateCppUnitTestWizardP1" url="TestingCandC++Projects/CreateCppUnitTestWizardP1.html"/>
 	<mapID target="CreateCppUnitTestWizardP2" url="TestingCandC++Projects/CreateCppUnitTestWizardP2.html"/>
+	<mapID target="testFolder" url="images/testFolder.png"/>
 </map>
