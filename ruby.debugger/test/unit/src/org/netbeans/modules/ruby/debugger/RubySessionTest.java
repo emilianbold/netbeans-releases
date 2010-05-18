@@ -55,7 +55,12 @@ public final class RubySessionTest extends TestBase {
     public RubySessionTest(final String name) {
         super(name, true);
     }
-    
+
+    @Override
+    protected boolean runInEQ() {
+        return false;
+    }
+
     public void testLocalVariables() throws Exception {
         String[] testContent = {
             "a = 5",
