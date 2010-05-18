@@ -1,20 +1,23 @@
 <?xml version='1.0' encoding='ISO-8859-1'  ?>
 <!--
-*     Copyright © 2009 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
          "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-    
+
   <tocitem text="IDE Basics">
-    <tocitem text="Version Control and File History"> 
+    <tocitem text="Version Control and File History">
       <tocitem text="CVS">
         <tocitem text="About CVS" target="cvs-lite_about" />
-        <tocitem text="Working with CVS" target="cvs-lite_overview" /> 
-        <tocitem text="CVS Tasks: Quick Reference" target="cvs-lite_quickref" /> 
-        <tocitem text="Using CVS with the IDE" target="cvs-lite_using" /> 
+        <tocitem text="Working with CVS" target="cvs-lite_overview" />
+        <tocitem text="CVS Tasks: Quick Reference" target="cvs-lite_quickref" />
+        <tocitem text="Using CVS with the IDE" target="cvs-lite_using" />
         <tocitem text="Viewing File Status Information" target="cvs-lite_status" />
         <tocitem text="Working with Version Histories" target="cvs-lite_histories" />
         <tocitem text="Setting Up CVS" target="cvs-lite_setup" />
