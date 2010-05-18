@@ -227,6 +227,7 @@
         </tocitem>
         <tocitem text="Working with OSGi">
             <tocitem text="About OSGi Bundles" target="osgi_intro" />
+            <tocitem text="Importing OSGi Bundles into a NetBeans Platform Application" target="osgi_import" />
         </tocitem>
         <tocitem text="Working with Groovy">
             <tocitem text="About Working with Groovy" target="groovy_intro"/>

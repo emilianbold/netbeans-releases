@@ -171,6 +171,7 @@
 
 <!-- begin OSGi section -->
  <mapID target="osgi_intro" url="osgi/about-osgi.html"/>
+ <mapID target="osgi_import" url="osgi/osgi-import.html"/>
 
 
 
