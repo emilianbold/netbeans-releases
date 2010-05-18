@@ -133,7 +133,7 @@ public final class FileReference {
         }
         //add target path members
         for(FileObject file : targetPathMembersToBase()) {
-            items.put(file, file.getName());
+            items.put(file, file.getNameExt());
         }
 
         //add the target file itself

@@ -115,7 +115,7 @@ public class RubyPlatformTest extends RubyTestBase {
 
     public void testLabel() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        assertEquals("right label for build-in JRuby", "Built-in JRuby 1.4.0", jruby.getLabel());
+        assertEquals("right label for build-in JRuby", "Built-in JRuby 1.5.0", jruby.getLabel());
         assertEquals("right label for Ruby", "Ruby 0.1", setUpPlatform().getLabel());
     }
 
