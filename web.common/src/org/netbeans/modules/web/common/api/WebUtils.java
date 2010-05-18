@@ -294,7 +294,7 @@ public class WebUtils {
 
         for (int i = commonIndexInSourcePath + 1; i < targetPathFiles.size(); i++) {
             FileObject pathMember = targetPathFiles.get(i);
-            link.append(pathMember.getName());
+            link.append(pathMember.getNameExt());
             link.append('/'); //NOI18N
         }
 
