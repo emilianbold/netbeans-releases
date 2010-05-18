@@ -1,11 +1,11 @@
-Name: activerecord-jdbcpostgresql-adapter
-Version: 0.9.1
-Description: The PostgreSQL JDBC bridge for ActiveRecord
+Name: activerecord-jdbc-adapter
+Version: 0.9.6
+Description: The JDBC bridge for ActiveRecord
 License: MIT
 OSR: 6063
-Files: activerecord-jdbcpostgresql-adapter-0.9.1.gem
+Files: activerecord-jdbc-adapter-0.9.6-java.gem
 Origin: http://rubyforge.org/projects/jruby-extras
-Comment: PostgreSQL ActiveRecord-JDBC bridge
+Comment: ActiveRecord-JDBC bridge
 
 The MIT License
 
