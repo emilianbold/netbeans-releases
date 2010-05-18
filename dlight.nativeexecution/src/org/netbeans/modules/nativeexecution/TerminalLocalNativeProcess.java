@@ -42,7 +42,6 @@
 package org.netbeans.modules.nativeexecution;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,21 +51,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
@@ -116,7 +111,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
     @Override
     protected void create() throws Throwable {
         File pidFileFile = null;
-        File envFileFile = null;
         File shFileFile = null;
 
         try {
@@ -134,14 +128,12 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             final File workingDirectory = (wDir == null) ? new File(".") : new File(wDir); // NOI18N
 
             pidFileFile = File.createTempFile("dlight", "termexec", hostInfo.getTempDirFile()).getAbsoluteFile(); // NOI18N
-            envFileFile = new File(pidFileFile.getPath() + ".env"); // NOI18N
             shFileFile = new File(pidFileFile.getPath() + ".sh"); // NOI18N
             resultFile = new File(shFileFile.getPath() + ".res"); // NOI18N
 
             resultFile.deleteOnExit();
 
             String pidFile = (osFamily == OSFamily.WINDOWS) ? WindowsSupport.getInstance().convertToShellPath(pidFileFile.getPath()) : pidFileFile.getPath();
-            String envFile = pidFile + ".env"; // NOI18N
             String shFile = pidFile + ".sh"; // NOI18N
 
             FileOutputStream shfos = new FileOutputStream(shFileFile);
@@ -157,13 +149,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     scriptCharset = Charset.defaultCharset();
                 }
             }
-
-            BufferedWriter shWriter = new BufferedWriter(new OutputStreamWriter(shfos, scriptCharset));
-
-            shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
-            shWriter.write(". \"" + envFile + "\" 2>/dev/null\n"); // NOI18N
-            shWriter.write("exec " + commandLine + "\n"); // NOI18N
-            shWriter.close();
 
             final ExternalTerminalAccessor terminalInfo =
                     ExternalTerminalAccessor.getDefault();
@@ -220,6 +205,9 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 pb.environment().put("DISPLAY", display); // NOI18N
             }
 
+            OutputStreamWriter shWriter = new OutputStreamWriter(shfos, scriptCharset);
+            shWriter.write("echo $$ > \"" + pidFile + "\" || exit $?\n"); // NOI18N
+
             if (!env.isEmpty()) {
                 // TODO: FIXME (?)
                 // Do PATH normalization on Windows....
@@ -233,41 +221,16 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                     env.put("PATH", WindowsSupport.getInstance().convertToAllShellPaths(path)); // NOI18N
                 }
 
-                // Will preserve only changed env variables...
-
-                OutputStream fos = new FileOutputStream(envFileFile);
-                EnvWriter ew = new EnvWriter(fos, false);
+                EnvWriter ew = new EnvWriter(shWriter);
                 ew.write(env);
-                fos.close();
-
-                /**
-                 * IZ#176361: Sometimes when external terminal is used,
-                 * execution fails because env file is not found
-                 *
-                 * TODO: ???
-                 * What is it? FS caches? How to deal with this?
-                 */
-                int attempts = 10;
-                boolean exists = false;
-
-                while (attempts > 0) {
-                    exists = HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), shFileFile.getPath())
-                            & HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), envFileFile.getPath());
-
-                    if (exists) {
-                        break;
-                    }
-
-                    LOG.log(Level.WARNING, "env or sh file is not available yet... waiting [%d]", attempts); // NOI18N
-                    Thread.sleep(50);
-                    attempts--;
-                }
-
 
                 if (LOG.isLoggable(Level.FINEST)) {
                     env.dump(System.err);
                 }
             }
+
+            shWriter.write("exec " + commandLine + "\n"); // NOI18N
+            shWriter.close();
 
             Process terminalProcess = pb.start();
 
@@ -284,9 +247,6 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         } finally {
             if (pidFileFile != null) {
                 pidFileFile.delete();
-            }
-            if (envFileFile != null) {
-                envFileFile.delete();
             }
             if (shFileFile != null) {
                 shFileFile.delete();
