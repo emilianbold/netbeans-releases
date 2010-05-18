@@ -47,6 +47,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
+import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.LookupBasedJavaSourceTaskFactory;
 import org.netbeans.modules.java.debug.TreeNavigatorJavaSourceFactory.WrapperTask;
 import org.openide.filesystems.FileObject;
@@ -58,13 +59,18 @@ import org.openide.util.Lookup;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
 public final class ElementNavigatorJavaSourceFactory extends LookupBasedJavaSourceTaskFactory {
-    
+
     private CancellableTask<CompilationInfo> task;
-    
+
     static ElementNavigatorJavaSourceFactory getInstance() {
-        return Lookup.getDefault().lookup(ElementNavigatorJavaSourceFactory.class);
+        for (JavaSourceTaskFactory tf : Lookup.getDefault().lookupAll(JavaSourceTaskFactory.class)) {
+            if (tf instanceof ElementNavigatorJavaSourceFactory) {
+                return (ElementNavigatorJavaSourceFactory) tf;
+            }
+        }
+        return null;
     }
-    
+
     public ElementNavigatorJavaSourceFactory() {
         super(Phase.UP_TO_DATE, Priority.NORMAL);
     }
