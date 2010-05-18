@@ -1,11 +1,11 @@
-Name: activerecord-jdbc-adapter
-Version: 0.9.1
-Description: The JDBC bridge for ActiveRecord
+Name: activerecord-jdbcmysql-adapter
+Version: 0.9.6
+Description: The MySQL JDBC bridge for ActiveRecord
 License: MIT
 OSR: 6063
-Files: activerecord-jdbc-adapter-0.9.1.gem
+Files: activerecord-jdbcmysql-adapter-0.9.6-java.gem
 Origin: http://rubyforge.org/projects/jruby-extras
-Comment: ActiveRecord-JDBC bridge
+Comment: MySQL ActiveRecord-JDBC bridge
 
 The MIT License
 
