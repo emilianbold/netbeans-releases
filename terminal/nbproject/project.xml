@@ -129,6 +129,7 @@
                 <friend>com.sun.tools.debugger.gdb</friend>
                 <friend>com.sun.tools.swdev.toolscommon.base</friend>
                 <friend>org.netbeans.modules.dlight.nativeexecution</friend>
+                <friend>org.netbeans.modules.dlight.terminal</friend>
                 <friend>org.netbeans.nativeexecution.terminal</friend>
                 <friend>org.netbeans.terminal.example</friend>
                 <package>org.netbeans.modules.terminal.api</package>
