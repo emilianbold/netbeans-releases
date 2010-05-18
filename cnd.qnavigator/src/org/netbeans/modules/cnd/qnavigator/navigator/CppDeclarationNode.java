@@ -332,6 +332,15 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         }
         return null;
     }
+
+    @Override
+    public String getDisplayName() {
+        if (object instanceof CsmFile) {
+            return " "+super.getDisplayName(); // NOI18N
+        }
+        return super.getDisplayName();
+    }
+
     
     @Override
     public Image getIcon(int param) {

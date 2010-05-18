@@ -45,9 +45,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
-import javax.swing.undo.UndoManager;
 import org.netbeans.lib.editor.util.random.DocumentTesting;
 import org.netbeans.lib.editor.util.random.EditorPaneTesting;
 import org.netbeans.lib.editor.util.random.RandomTestContainer;
@@ -69,7 +67,8 @@ public class ViewHierarchyRandomTesting {
         System.setProperty("org.netbeans.editor.sync.highlights", "true");
         System.setProperty("org.netbeans.editor.linewrap.edt", "true");
 
-        RandomTestContainer container = EditorPaneTesting.initContainer(null, kit);
+        RandomTestContainer container = new RandomTestContainer();
+        EditorPaneTesting.initContainer(container, kit);
         DocumentTesting.initContainer(container);
         DocumentTesting.initUndoManager(container);
         return container;

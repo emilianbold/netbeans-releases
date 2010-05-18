@@ -89,7 +89,7 @@ public class SourcesPanel extends JPanel {
         comSourceLevel.setEditable(false);
         sourceLevel = SourceLevelQuery.getSourceLevel(project.getProjectDirectory());
         comSourceLevel.setModel(new DefaultComboBoxModel(new String[] {
-            "1.3", "1.4", "1.5", "1.6" //NOI18N
+            "1.3", "1.4", "1.5", "1.6", "1.7" //NOI18N
         }));
         
         comSourceLevel.setSelectedItem(sourceLevel);
