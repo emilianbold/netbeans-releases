@@ -43,6 +43,9 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
         
 /**
  * A test action that dump file container the given project
@@ -77,10 +80,13 @@ public class TestFileContainerAction extends TestProjectActionBase {
     
     
     private void testFileContainer(ProjectBase project) {
-        project.traceContainer(System.err);
+        InputOutput io = IOProvider.getDefault().getIO("file container for " + project.getName(), false);
+        io.select();
+        final OutputWriter out = io.getOut();
+        project.traceContainer(out);
         for(CsmProject lib : project.getLibraries()){
             if (lib instanceof ProjectBase) {
-                ((ProjectBase) lib).traceContainer(System.err);
+                ((ProjectBase) lib).traceContainer(out);
             }
         }
     }
