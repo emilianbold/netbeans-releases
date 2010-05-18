@@ -112,6 +112,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -238,6 +239,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 time = System.currentTimeMillis() - time;
                 System.err.printf("Project %s: loaded. %d ms\n", name, time);
             }
+            UIDManager.instance().clearProjectCache(key);
             if (impl.checkConsistency()) {
                 return impl;
             }
