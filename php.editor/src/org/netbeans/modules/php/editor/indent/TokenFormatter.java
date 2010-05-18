@@ -1513,6 +1513,11 @@ public class TokenFormatter {
                         || (startOffset > 0 && (startOffset - oldText.length()) == offset))) {
                     int realOffset = offset + delta;
                     if (startOffset > 0 && (startOffset - oldText.length()) == offset) {
+                        if (previousOldIndentText.length() == 0 && previousNewIndentText.length() == 0) {
+                            // probably we are at the begining of file, so keep the current possition
+                            previousOldIndentText = oldText;
+                            previousNewIndentText = newText;
+                        }
                         int indexOldTextLine = previousOldIndentText.lastIndexOf('\n');
                         int indexNewTextLine = previousNewIndentText.lastIndexOf('\n');
                         if (indexOldTextLine > -1 && indexNewTextLine > -1) {
