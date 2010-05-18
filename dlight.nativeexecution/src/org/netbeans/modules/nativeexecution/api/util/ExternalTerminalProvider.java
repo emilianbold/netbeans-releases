@@ -42,6 +42,7 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.IOException;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.support.*;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -139,7 +140,8 @@ public final class ExternalTerminalProvider {
                         }
 
                         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-                        npb.setExecutable("/bin/sh").setArguments("-c", command); // NOI18N
+                        HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                        npb.setExecutable(hostInfo.getShell()).setArguments("-c", command); // NOI18N
 
                         Process pr = npb.call();
                         int result = pr.waitFor();

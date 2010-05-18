@@ -274,6 +274,11 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         }
 
         @Override
+        public String getLoginShell() {
+            return shell;
+        }
+
+        @Override
         public String getTempDir() {
             return tmpDir;
         }

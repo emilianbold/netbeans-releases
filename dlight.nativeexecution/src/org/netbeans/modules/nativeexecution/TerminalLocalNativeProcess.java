@@ -189,7 +189,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
 
             // setup DISPLAY variable for MacOS...
             if (osFamily == OSFamily.MACOSX) {
-                ProcessBuilder pb1 = new ProcessBuilder("/bin/sh", "-c", "/bin/echo $DISPLAY"); // NOI18N
+                ProcessBuilder pb1 = new ProcessBuilder(hostInfo.getShell(), "-c", "/bin/echo $DISPLAY"); // NOI18N
                 Process p1 = pb1.start();
                 int status = p1.waitFor();
                 String display = null;

@@ -84,11 +84,10 @@ public final class HostInfoFactory {
             info.cpuFamily = CpuFamily.UNKNOWN;
         }
 
-        info.shell = initData.getProperty("SH", UNKNOWN); // NOI18N
+        info.loginShell = initData.getProperty("SH", UNKNOWN); // NOI18N
         info.tempDir = initData.getProperty("TMPDIRBASE", UNKNOWN); // NOI18N
         info.userDir = initData.getProperty("USERDIRBASE", UNKNOWN); // NOI18N
         info.cpuNum = getInt(initData, "CPUNUM", 1); // NOI18N
-        info.envFile = initData.getProperty("ENVFILE", "/dev/null"); // NOI18N
 
         if (environment == null) {
             info.environment = Collections.unmodifiableMap(Collections.<String, String>emptyMap());
@@ -138,12 +137,11 @@ public final class HostInfoFactory {
         private OS os;
         private CpuFamily cpuFamily;
         private String hostname;
-        private String shell;
+        private String loginShell;
         private String tempDir;
         private String userDir;
         private int cpuNum;
         private long clockSkew;
-        private String envFile;
         private Map<String, String> environment;
 
         @Override
@@ -172,8 +170,13 @@ public final class HostInfoFactory {
         }
 
         @Override
+        public String getLoginShell() {
+            return loginShell;
+        }
+
+        @Override
         public String getShell() {
-            return shell;
+            return "/bin/sh"; // NOI18N
         }
 
         @Override

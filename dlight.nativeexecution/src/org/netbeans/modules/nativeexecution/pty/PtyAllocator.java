@@ -101,7 +101,7 @@ public final class PtyAllocator {
                     ptyOpenUtilityPath = WindowsSupport.getInstance().convertToCygwinPath(ptyOpenUtilityPath);
                 }
 
-                ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-s"); // NOI18N
+                ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
                 Process pty = pb.start();
                 output = pty.getOutputStream();
                 input = pty.getInputStream();

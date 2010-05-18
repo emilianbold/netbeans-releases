@@ -48,14 +48,17 @@ import java.util.List;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
@@ -161,8 +164,9 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
 
                 cmd = "(" + cmd + ") | tee " + tmpFile;
             }
-
-            npb.setExecutable("/bin/sh").setArguments("-c", cmd);
+            
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+            npb.setExecutable(hostInfo.getShell()).setArguments("-c", cmd);
             npb.setUsePty(inPtyMode);
             npb.unbufferOutput(unbufferOutput);
             if (terminal != null) {
