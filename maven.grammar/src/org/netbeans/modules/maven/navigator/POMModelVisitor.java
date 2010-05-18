@@ -57,6 +57,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.maven.model.pom.Activation;
 import org.netbeans.modules.maven.model.pom.ActivationCustom;
@@ -112,6 +113,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 
@@ -121,6 +123,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POMComponentVisitor {
 
+    private static RequestProcessor RP = new RequestProcessor(POMModelVisitor.class);
     private Map<String, POMCutHolder> childs = new LinkedHashMap<String, POMCutHolder>();
     private int count = 0;
     private POMModelPanel.Configuration configuration;
@@ -1431,7 +1434,19 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         @Override
         protected void addNotify() {
             super.addNotify();
-            setKeys(rescan(new POMModelVisitor(parentHolder, configuration)));
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    final List<POMCutHolder> newKeys =
+                            rescan(new POMModelVisitor(parentHolder, configuration));
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            setKeys(newKeys);
+                        }
+                    });
+                }
+            });
             configuration.addPropertyChangeListener(this);
         }
 
@@ -1446,9 +1461,14 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         private List<POMCutHolder> rescan(POMModelVisitor visitor) {
             try {
                 Method m = POMModelVisitor.class.getMethod("visit", type); //NOI18N
-                for (Object comp : parentHolder.getCutValues()) {
+                POMModel[] models = parentHolder.getSource();
+                Object[] cuts = parentHolder.getCutValues();
+                for (int i = 0; i < parentHolder.getCutsSize(); i++) {
                     try {
-                        m.invoke(visitor, comp);
+                        // prevent deadlock 185923
+                        synchronized (models[i]) {
+                            m.invoke(visitor, cuts[i]);
+                        }
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
                     }
