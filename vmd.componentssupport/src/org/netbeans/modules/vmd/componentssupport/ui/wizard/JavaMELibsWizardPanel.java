@@ -56,7 +56,6 @@ import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardDescriptor.ValidatingPanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import sun.font.TrueTypeFont;
 
 
 /**
