@@ -110,7 +110,7 @@ made subject to such option by the copyright holder.
             <fileset dir="${cluster}">
                 <include name="ant/lib/*.jar"/>
             </fileset>
-            <mapper type="glob" from="ant${file.separator}lib${file.separator}*.jar" to="apache-*-1.8.0.jar"/>
+            <mapper type="glob" from="ant${file.separator}lib${file.separator}*.jar" to="apache-*-1.8.1.jar"/>
         </copy>
         <copy file="${cluster}/ant/nblib/bridge.jar" tofile="${dir}/org-apache-tools-ant-module-bridge.jar"/>
         <!-- XXX ought to only do this in case jnlp.sign.jars=true -->
@@ -221,7 +221,7 @@ made subject to such option by the copyright holder.
     ant -f ${here}/../java.project/build.xml -Dtest-unit-sys-prop.ignore.random.failures=true clean test-unit
     ant -f ${here}/../java.j2seproject/build.xml -Dtest-unit-sys-prop.ignore.random.failures=true clean test-unit
     ant -f ${here}/../build.xml commit-validation
-9.  Submit a patch for https://svn.apache.org/repos/asf/ant/core/trunk/xdocs/external.xml
+9.  Submit a patch for https://svn.apache.org/repos/asf/ant/core/branches/ANT_SITE/xdocs/external.xml
     mentioning that the bundled version in NB is now ${release.version}.
 10. Edit these instructions in build.xml according to anything you had to do differently.
 
