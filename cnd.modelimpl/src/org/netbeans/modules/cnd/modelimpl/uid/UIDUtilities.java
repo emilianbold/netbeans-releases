@@ -436,6 +436,7 @@ public class UIDUtilities {
             return out;
         }
 
+        @Override
         public void dispose(T obj) {
             if (obj == null) {
                 weakT = DUMMY;
@@ -447,6 +448,12 @@ public class UIDUtilities {
         public void update(T obj) {
             if (weakT.get() != obj) {
                 weakT = new WeakReference<Object>(obj);
+            }
+        }
+
+        public void clear() {
+            if (TraceFlags.USE_WEAK_MEMORY_CACHE && getKey().hasCache()) {
+                weakT = new WeakReference<Object>(null);
             }
         }
     }

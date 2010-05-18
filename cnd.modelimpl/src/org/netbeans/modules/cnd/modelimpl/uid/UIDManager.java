@@ -47,6 +47,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.CachedUID;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
@@ -108,6 +110,13 @@ public class UIDManager {
         storage.dispose();
     }
 
+    public final void clearProjectCache(Key key) {
+        int projectIndex = KeyUtilities.getProjectIndex(key);
+        synchronized (lock) {
+            storage.clearCache(projectIndex);
+        }
+    }
+
     private static final class UIDStorage {
 
         private final WeakSharedSet<CsmUID<?>>[] instances;
@@ -138,6 +147,25 @@ public class UIDManager {
         @SuppressWarnings("unchecked")
         public final <T> CsmUID<T> getSharedUID(CsmUID<T> uid) {
             return (CsmUID<T>) getDelegate(uid).putIfAbsent(uid);
+        }
+
+        private void clearCache(int projectIndex) {
+            for (int i = 0; i < instances.length; i++) {
+                if (instances[i].size() > 0) {
+                    Object[] arr = instances[i].toArray();
+                    for (Object o : arr) {
+                        if (o instanceof CachedUID<?>) {
+                            CachedUID<?> cached = (CachedUID<?>) o;
+                            if (o instanceof KeyBasedUID<?>) {
+                                Key k = ((KeyBasedUID<?>)o).getKey();
+                                if (projectIndex == KeyUtilities.getProjectIndex(k)) {
+                                    cached.clear();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public final void dispose() {
