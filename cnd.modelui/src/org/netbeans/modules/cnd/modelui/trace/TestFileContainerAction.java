@@ -80,7 +80,7 @@ public class TestFileContainerAction extends TestProjectActionBase {
     
     
     private void testFileContainer(ProjectBase project) {
-        InputOutput io = IOProvider.getDefault().getIO("file container for " + project.getName(), false);
+        InputOutput io = IOProvider.getDefault().getIO("file container for " + project.getName(), false); // NOI18N
         io.select();
         final OutputWriter out = io.getOut();
         project.traceContainer(out);
