@@ -518,6 +518,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         TreePath block = h.resolve(info);
         TreePath method = findMethod(block);
+
+        if (method == null) {
+            errorMessage.put(IntroduceKind.CREATE_METHOD, "ERR_Invalid_Selection"); // NOI18N
+            return null;
+        }
+        
         Element methodEl = info.getTrees().getElement(method);
         List<? extends StatementTree> parentStatements = CopyFinder.getStatements(block);
         List<? extends StatementTree> statementsToWrap = parentStatements.subList(statements[0], statements[1] + 1);

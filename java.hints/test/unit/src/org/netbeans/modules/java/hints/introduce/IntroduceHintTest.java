@@ -1229,6 +1229,12 @@ public class IntroduceHintTest extends NbTestCase {
                        1, 0);
     }
 
+    public void testIntroduceMethodNPE() throws Exception {
+        performErrorMessageTest("package test; public class Test { |private static class F { public static void test(int y) {for ( ; ; y++) {if (y == 0) break; else y++;}}}| }",
+                       IntroduceKind.CREATE_METHOD,
+                       "ERR_Invalid_Selection");
+    }
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         
