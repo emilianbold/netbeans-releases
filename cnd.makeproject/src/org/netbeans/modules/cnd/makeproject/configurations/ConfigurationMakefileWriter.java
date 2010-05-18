@@ -1326,6 +1326,9 @@ public class ConfigurationMakefileWriter {
             os = new FileOutputStream(outputFileName);
         } catch (Exception e) {
             // FIXUP
+            System.err.println("Cannot create FileOutputStream from " + outputFileName); // NOI18N
+            e.printStackTrace(System.err);
+            return;
         }
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
         try {
