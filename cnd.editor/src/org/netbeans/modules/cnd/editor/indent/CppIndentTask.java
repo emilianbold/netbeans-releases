@@ -199,13 +199,17 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         }
         TokenItem ppToken = moveToFirstLineImportantToken(new TokenItem(ts, false));
         if (isPreprocessorLine(ppToken)) {
-            switch (codeStyle.indentPreprocessorDirectives()){
-                case PREPROCESSOR_INDENT:
-                    return findPPIndent(ppToken);
-                case START_LINE:
-                    return 0;
-                case CODE_INDENT:
-                    break;
+            if (codeStyle.sharpAtStartLine()) {
+                return 0;
+            } else {
+                switch (codeStyle.indentPreprocessorDirectives()){
+                    case PREPROCESSOR_INDENT:
+                        return findPPIndent(ppToken);
+                    case START_LINE:
+                        return 0;
+                    case CODE_INDENT:
+                        break;
+                }
             }
         }
         return findIndent(moveToFirstLineImportantToken(token));

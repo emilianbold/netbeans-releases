@@ -46,6 +46,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 class RfsLocalController extends NamedRunnable {
 
@@ -264,7 +265,9 @@ class RfsLocalController extends NamedRunnable {
                     if (remoteDirs.length() > 0) {
                         remoteDirs.append(' ');
                     }
+                    remoteDirs.append('"');
                     remoteDirs.append(rPath);
+                    remoteDirs.append('"');
                 }
             }
         }
@@ -482,6 +485,9 @@ class RfsLocalController extends NamedRunnable {
     }
 
     private void checkLinks(final List<FileGatheringInfo> filesToFeed) {
+        if (Utilities.isWindows()) {
+            return; // this is for Unixes only
+        }
         // the counter is just in case here;
         // the real cycling check is inside checkLinks(List,List) logic
         int cnt = 0;
@@ -515,7 +521,7 @@ class RfsLocalController extends NamedRunnable {
                 BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
                 try {
                     for (FileGatheringInfo info : filesToCheck) {
-                        final String path = info.file.getAbsolutePath();                        
+                        String path = "\"" + info.file.getAbsolutePath() + "\"";
                         requestWriter.append(path);
                         requestWriter.newLine();
                     }

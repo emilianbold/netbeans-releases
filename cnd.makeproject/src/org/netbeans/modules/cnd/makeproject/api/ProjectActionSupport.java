@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -515,7 +516,7 @@ public class ProjectActionSupport {
         private boolean checkProject(ProjectActionEvent pae) {
             Project project = pae.getProject();
             if (project != null) { // paranoidal null checks are better than latent NPE :)
-                if (OpenProjects.getDefault().isProjectOpen(project)) {
+                if (CndUtils.isUnitTestMode() || OpenProjects.getDefault().isProjectOpen(project)) { // OpenProjects don't work in test mode
                     FileObject projectDirectory = project.getProjectDirectory();
                     if (projectDirectory != null) {
                         FileObject nbproject = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_FOLDER); // NOI18N

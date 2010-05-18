@@ -92,12 +92,21 @@ public class ShellEmbeddingProviderTest extends NbTestCase {
     }
 
     @Test
-    public void testEscapedLine() throws Exception {
+    public void testEscapedNewline() throws Exception {
         List<Embedding> embeddings = getShellEmbeddings("a:\n\techo a\\\n\techo b\n");
         assertEquals(1, embeddings.size());
 
         Embedding e1 = embeddings.get(0);
         assertEquals("echo a\\\n\techo b", e1.getSnapshot().getText().toString());
+    }
+
+    @Test
+    public void testNoNewline() throws Exception {
+        List<Embedding> embeddings = getShellEmbeddings("a:\n\techo a");
+        assertEquals(1, embeddings.size());
+
+        Embedding e1 = embeddings.get(0);
+        assertEquals("echo a", e1.getSnapshot().getText().toString());
     }
 
     private static List<Embedding> getShellEmbeddings(String text) throws BadLocationException {

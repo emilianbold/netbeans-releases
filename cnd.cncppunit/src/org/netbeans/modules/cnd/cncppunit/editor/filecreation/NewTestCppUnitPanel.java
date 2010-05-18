@@ -104,7 +104,7 @@ public class NewTestCppUnitPanel extends CndPanel {
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx("CreateTestWizardP2");
+        return new HelpCtx("CreateCppUnitTestWizardP2");
     }
 
     @Override

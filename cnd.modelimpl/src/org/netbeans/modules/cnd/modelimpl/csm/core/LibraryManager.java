@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
  * Artificial libraries manager.
- * Manage auto ctrated libraries (artificial libraries) for included files.
+ * Manage auto created libraries (artificial libraries) for included files.
  *
  *
  * @author Alexander Simon
@@ -134,7 +134,7 @@ public final class LibraryManager {
 
     /**
      * Find project for resolved file.
-     * Search for project in proroject, dependancies, artificial libraries.
+     * Search for project in project, dependencies, artificial libraries.
      * If search is false then method creates artificial library or returns base project.
      */
     public ProjectBase resolveFileProjectOnInclude(ProjectBase baseProject, FileImpl curFile, ResolvedPath resolvedPath) {
@@ -162,33 +162,35 @@ public final class LibraryManager {
             }
             return res;
         }
-        res = searchInProjectRootsArtificial(baseProject, getPathToFolder(folder, absPath));
-        if (res == null) {
-            if (resolvedPath.isDefaultSearchPath()) {
-                res = curFile.getProjectImpl(true);
-                if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
-                    trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject);//NOI18N
-                }
-            } else if (!baseProject.isArtificial()) {
-                res = getLibrary((ProjectImpl) baseProject, folder);
-                if (res == null) {
-                    if (CndUtils.isDebugMode()) {
-                        trace("Not created library for folder " + folder, curFile, resolvedPath, res, baseProject); //NOI18N
+        synchronized (lock) {
+            res = searchInProjectRootsArtificial(baseProject, getPathToFolder(folder, absPath));
+            if (res == null) {
+                if (resolvedPath.isDefaultSearchPath()) {
+                    res = curFile.getProjectImpl(true);
+                    if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
+                        trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject);//NOI18N
                     }
+                } else if (!baseProject.isArtificial()) {
+                    res = getLibrary((ProjectImpl) baseProject, folder);
+                    if (res == null) {
+                        if (CndUtils.isDebugMode()) {
+                            trace("Not created library for folder " + folder, curFile, resolvedPath, res, baseProject); //NOI18N
+                        }
+                        res = baseProject;
+                    }
+                    if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
+                        trace("Library for folder " + folder, curFile, resolvedPath, res, baseProject); //NOI18N
+                    }
+                } else {
                     res = baseProject;
-                }
-                if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
-                    trace("Library for folder " + folder, curFile, resolvedPath, res, baseProject); //NOI18N
+                    if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
+                        trace("Base Project", curFile, resolvedPath, res, baseProject);//NOI18N
+                    }
                 }
             } else {
-                res = baseProject;
                 if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
-                    trace("Base Project", curFile, resolvedPath, res, baseProject);//NOI18N
+                    trace("Libraries roots", curFile, resolvedPath, res, baseProject);//NOI18N
                 }
-            }
-        } else {
-            if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
-                trace("Libraries roots", curFile, resolvedPath, res, baseProject);//NOI18N
             }
         }
         return res;
@@ -294,16 +296,25 @@ public final class LibraryManager {
     private ProjectBase searchInProjectRootsArtificial(ProjectBase baseProject, List<String> folders) {
         List<CsmProject> libraries = baseProject.getLibraries();
         int size = libraries.size();
+        ProjectBase candidate = null;
         for (int i = 0; i < size; i++) {
             CsmProject prj = libraries.get(i);
             if (prj.isArtificial()) {
                 ProjectBase res = searchInProjectRoots((ProjectBase) prj, folders);
                 if (res != null) {
-                    return res;
+                    if (candidate == null) {
+                        candidate = res;
+                    } else {
+                        CharSequence path1 = ((LibProjectImpl)candidate).getPath();
+                        CharSequence path2 = ((LibProjectImpl)res).getPath();
+                        if (path2.length() > path1.length()) {
+                            candidate = res;
+                        }
+                    }
                 }
             }
         }
-        return null;
+        return candidate;
     }
 
     private LibProjectImpl getLibrary(ProjectImpl project, String folder) {
@@ -334,6 +345,7 @@ public final class LibraryManager {
                 final LibraryEntry passEntry = entry;
                 ModelImpl.instance().enqueueModelTask(new Runnable() {
 
+                    @Override
                     public void run() {
                         ListenersImpl.getImpl().fireProjectOpened((ProjectBase) passEntry.getLibrary().getObject());
                     }

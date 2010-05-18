@@ -123,7 +123,6 @@ public class ShellEmbeddingProvider extends EmbeddingProvider {
 
                 case MACRO:
                     if (inShell) {
-                        // no macro evaluation yet
                         localEmbeddings.add(snapshot.create(evaluateMacro(token.text()), MIMENames.SHELL_MIME_TYPE)); // NOI18N
                     }
                     break;
@@ -136,6 +135,11 @@ public class ShellEmbeddingProvider extends EmbeddingProvider {
                     inShell = false;
             }
         }
+
+        if (!localEmbeddings.isEmpty() && !cancelled) {
+            allEmbeddings.add(Embedding.create(localEmbeddings));
+        }
+
         return allEmbeddings;
     }
 
@@ -188,6 +192,7 @@ public class ShellEmbeddingProvider extends EmbeddingProvider {
     }
 
     private CharSequence evaluateMacro(CharSequence macro) {
+        // no real macro evaluation yet
         if (TokenUtilities.textEquals(macro, "$$")) { // NOI18N
             return "$"; // NOI18N
         } else {

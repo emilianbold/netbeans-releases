@@ -1190,7 +1190,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (isDisposing()) {
             return null;
         }
-        csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, postIncludeState == null, null, null);
+        csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
         if (postIncludeState != null) {
             // we have post include state => no need to spend time in include walkers

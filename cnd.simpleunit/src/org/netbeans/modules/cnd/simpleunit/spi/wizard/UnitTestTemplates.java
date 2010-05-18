@@ -57,7 +57,7 @@ public final class UnitTestTemplates {
 
     /**
      */
-    public static WizardDescriptor.Panel<WizardDescriptor> createFunctionsPanel(Lookup lookup) throws IllegalArgumentException {
-        return new GenerateTestChooseElementsWizardPanel();
+    public static WizardDescriptor.Panel<WizardDescriptor> createFunctionsPanel(Lookup lookup, String unitTestKind) throws IllegalArgumentException {
+        return new GenerateTestChooseElementsWizardPanel(unitTestKind);
     }
 }

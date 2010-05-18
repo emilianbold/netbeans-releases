@@ -84,9 +84,15 @@ import org.openide.util.WeakListeners;
 * @version 1.00
 */
 
-public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, DocumentListener {
+public class BaseTextUI extends BasicTextUI implements
+        PropertyChangeListener, DocumentListener, AtomicLockListener {
 
     /* package */ static final String PROP_DEFAULT_CARET_BLINK_RATE = "nbeditor-default-swing-caret-blink-rate"; //NOI18N
+
+    /**
+     * How many modifications inside atomic section is considered a lengthy operation (e.g. reformat).
+     */
+    private static final int LENGTHY_ATOMIC_EDIT_THRESHOLD = 30;
     
     /** Extended UI */
     private EditorUI editorUI;
@@ -99,6 +105,8 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
     int componentID = -1;
     
     private AbstractDocument lastDocument;
+
+    private int atomicModCount;
     
     /** Instance of the <tt>GetFocusedComponentAction</tt> */
     private static final GetFocusedComponentAction gfcAction
@@ -416,6 +424,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
                                   
             if (oldDoc != null) {
                 oldDoc.removeDocumentListener(this);
+                oldDoc.removeAtomicLockListener(this);
             }
 
             BaseDocument newDoc = (evt.getNewValue() instanceof BaseDocument)
@@ -423,6 +432,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
                                   
             if (newDoc != null) {
                 newDoc.addDocumentListener(this);
+                newDoc.addAtomicLockListener(this);
             }
         } else if ("ancestor".equals(propName)) { // NOI18N
             JTextComponent comp = (JTextComponent)evt.getSource();
@@ -440,6 +450,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
     /** Insert to document notification. */
     public void insertUpdate(DocumentEvent evt) {
         try {
+            checkLengthyAtomicEdit();
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             EditorUI eui = getEditorUI();
             int y = getYFromPos(evt.getOffset());
@@ -460,6 +471,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
     /** Remove from document notification. */
     public void removeUpdate(DocumentEvent evt) {
         try {
+            checkLengthyAtomicEdit();
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             EditorUI eui = getEditorUI();
             int y = getYFromPos(evt.getOffset());
@@ -493,6 +505,37 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
                 Utilities.annotateLoggable(ex);
             }
         }
+    }
+
+    private void checkLengthyAtomicEdit() {
+        if (++atomicModCount == LENGTHY_ATOMIC_EDIT_THRESHOLD) {
+            View rootView = getRootView(getComponent());
+            View view;
+            if (rootView != null && rootView.getViewCount() > 0 &&
+                    (view = rootView.getView(0)) instanceof org.netbeans.modules.editor.lib2.view.DocumentView)
+            {
+                ((org.netbeans.modules.editor.lib2.view.DocumentView)view).updateLengthyAtomicEdit(+1);
+            }
+        }
+    }
+
+    @Override
+    public void atomicLock(AtomicLockEvent evt) {
+        atomicModCount = 0;
+    }
+
+    @Override
+    public void atomicUnlock(AtomicLockEvent evt) {
+        if (atomicModCount >= LENGTHY_ATOMIC_EDIT_THRESHOLD) {
+            View rootView = getRootView(getComponent());
+            View view;
+            if (rootView != null && rootView.getViewCount() > 0 &&
+                    (view = rootView.getView(0)) instanceof org.netbeans.modules.editor.lib2.view.DocumentView)
+            {
+                ((org.netbeans.modules.editor.lib2.view.DocumentView)view).updateLengthyAtomicEdit(-1);
+            }
+        }
+        atomicModCount = 0;
     }
 
     
@@ -567,7 +610,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
             needsRefresh = false;
         }
     }
-    
+
     private static class GetFocusedComponentAction extends TextAction {
 
         private GetFocusedComponentAction() {

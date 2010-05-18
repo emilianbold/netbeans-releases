@@ -50,6 +50,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
+import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -94,9 +95,15 @@ class TokenBalance implements TokenHierarchyListener {
 
     public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
         synchronized (lang2handler) {
-            if (scanDone) { // Only update if the full scan was already done
-                for (LanguageHandler<?> handler : lang2handler.values()) {
-                    handler.handleEvent(evt);
+            if (evt.type() == TokenHierarchyEventType.ACTIVITY ||
+                    evt.type() == TokenHierarchyEventType.REBUILD)
+            {
+                scanDone = false;
+            } else {
+                if (scanDone) { // Only update if the full scan was already done
+                    for (LanguageHandler<?> handler : lang2handler.values()) {
+                        handler.handleEvent(evt);
+                    }
                 }
             }
         }
