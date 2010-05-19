@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
@@ -58,6 +59,7 @@ import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.Win32APISupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -66,6 +68,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     private Process process = null;
     private final CountDownLatch additionalMsgLatch = new CountDownLatch(1);
+    private boolean win1073741515added = false;
 
     public LocalNativeProcess(NativeProcessInfo info) {
         super(info);
@@ -231,17 +234,43 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
             if (exitcode == -1073741515 && Utilities.isWindows()) {
                 // This means Initialization error. May be the reason is that no required dll found
-                StringBuilder cmd = new StringBuilder();
-                for (String s : info.getCommand()) {
-                    cmd.append(s).append(' ');
-                }
+                // Several threads may be here.
+                // Must be sure that message is added only once.
+                synchronized (this) {
+                    if (!win1073741515added) {
+                        StringBuilder cmd = new StringBuilder();
+                        Iterator<String> iterator = info.getCommand().iterator();
+                        String exec;
 
-                String errorMsg = loc("LocalNativeProcess.windowsProcessStartFailed.1073741515.text", cmd.toString()); // NOI18N
-                if (info.isPtyMode()) {
-                    errorMsg = errorMsg.replaceAll("\n", "\n\r"); // NOI18N
-                }
+                        if (info.isPtyMode()) {
+                            String s = iterator.next(); // pty wrapper
+                            s = iterator.next(); // quoted executable
+                            s = s.substring(1, s.length() - 1); // remove quotes before converting
+                            // remove quotes before converting
+                            exec = WindowsSupport.getInstance().convertToWindowsPath(s);
+                        } else {
+                            exec = iterator.next();
+                        }
 
-                ((ErrorStream) getErrorStream()).addErrorMessage(errorMsg);
+                        if (exec.contains(" ")) { // NOI18N
+                            cmd.append('"').append(exec).append('"').append(' '); // NOI18N
+                        } else {
+                            cmd.append(exec).append(' ');
+                        }
+
+                        while (iterator.hasNext()) {
+                            cmd.append(iterator.next()).append(' ');
+                        }
+
+                        String errorMsg = loc("LocalNativeProcess.windowsProcessStartFailed.1073741515.text", cmd.toString()); // NOI18N
+                        if (info.isPtyMode()) {
+                            errorMsg = errorMsg.replaceAll("\n", "\n\r"); // NOI18N
+                        }
+
+                        ((ErrorStream) getErrorStream()).addErrorMessage(errorMsg);
+                        win1073741515added = true;
+                    }
+                }
             }
             return exitcode;
         } finally {
@@ -264,7 +293,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         private final InputStream orig;
         private final CountDownLatch additionalMsgLatch;
-        private transient ByteArrayInputStream additionalMsg = null;
+        private volatile ByteArrayInputStream additionalMsg = null;
 
         public ErrorStream(InputStream orig, CountDownLatch additionalMsgLatch) {
             this.orig = orig;

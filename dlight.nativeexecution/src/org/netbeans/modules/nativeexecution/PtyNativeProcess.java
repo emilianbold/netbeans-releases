@@ -124,6 +124,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
             setOutputStream(delegate.getOutputStream());
         }
 
+        setErrorStream(delegate.getErrorStream());
         tty = readTTYLine(delegate.getInputStream());
         ByteArrayInputStream bis = new ByteArrayInputStream(("" + delegate.getPID()).getBytes()); // NOI18N
         readPID(bis);
