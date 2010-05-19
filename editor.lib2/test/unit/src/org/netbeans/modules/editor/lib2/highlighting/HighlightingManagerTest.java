@@ -82,12 +82,12 @@ public class HighlightingManagerTest extends NbTestCase {
         return new NbTestSuite(HighlightingManagerTest.class) {
             public @Override void run(TestResult result) {
 // XXX: needs a way how to run each test case in a separate JVM or how to replace HighlightingManager.LINEWRAP_ENABLED
-//                System.out.println("Running tests for: org.netbeans.editor.linewrap=false");
-//                System.setProperty("org.netbeans.editor.linewrap", "false");
+//                System.out.println("Running tests for: org.netbeans.editor.linewrap=true");
+//                System.setProperty("org.netbeans.editor.linewrap", "true");
 //                super.run(result);
 
-                System.out.println("Running tests for: org.netbeans.editor.linewrap=true");
-                System.setProperty("org.netbeans.editor.linewrap", "true");
+                System.out.println("Running tests for: org.netbeans.editor.linewrap=false");
+                System.setProperty("org.netbeans.editor.linewrap", "false");
                 super.run(result);
             }
         };
