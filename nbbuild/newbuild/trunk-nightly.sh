@@ -5,7 +5,7 @@ set -x
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
-export BUILD_DESC=trunk-nightly
+export BUILD_DESC=6.9rc1
 source init.sh
 export JAVAFX_PATH=/net/smetiste.czech/space/${BASE_FOR_JAVAFX}
 
