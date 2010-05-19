@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,13 +71,10 @@ public class RemoteJarServiceProvider implements SetupProvider {
     private static final String relativePath;
     private static final String localAbsPath;
     static {
-        String path = service.getProtectionDomain().getCodeSource().getLocation().getPath();
-        if (path.indexOf('!') > 0) {
-            path = path.substring(0, path.indexOf('!')); // NOI18N
-        }
+        URL url = service.getProtectionDomain().getCodeSource().getLocation();
         URI uri = null;
         try {
-            uri = new URI(path); 
+            uri = url.toURI();
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
         }
