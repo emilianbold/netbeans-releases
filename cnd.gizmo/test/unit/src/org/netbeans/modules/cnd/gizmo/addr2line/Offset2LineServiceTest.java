@@ -50,12 +50,12 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
 import org.netbeans.modules.cnd.dwarfdump.Offset2LineService.AbstractFunctionToLine;
 import org.netbeans.modules.cnd.gizmo.RemoteJarServiceProvider;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -64,7 +64,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
  *
  * @author Alexander Simon
  */
-public class Offset2LineServiceTest extends NbTestCase {
+public class Offset2LineServiceTest extends CndBaseTestCase {
 
     public Offset2LineServiceTest() {
         super("Offset2LineServiceTest");
