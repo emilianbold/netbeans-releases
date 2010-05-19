@@ -92,10 +92,7 @@ class Commandline {
     private void destroy() throws IOException {
         canceled = true;
         if(cli != null) {
-            try { cli.getErrorStream().close(); } catch (IOException iOException) { }
-            try { cli.getInputStream().close(); } catch (IOException iOException) { }
-            try { cli.getOutputStream().close(); } catch (IOException iOException) { }            
-            cli.destroy();             
+            cli.destroy();
         }        
         Subversion.LOG.fine("cli: Process destroyed");
     }
