@@ -43,10 +43,13 @@
 package org.netbeans.modules.cnd.remote;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;
 
 /**
@@ -74,7 +77,21 @@ import org.openide.util.Utilities;
 
     @Override
     public Map<String, String> getEnv() {
-        return System.getenv();
+        Map<String, String> result = null;
+
+        if (HostInfoUtils.isHostInfoAvailable(execEnv)) {
+            try {
+                result = HostInfoUtils.getHostInfo(execEnv).getEnvironment();
+            } catch (IOException ex) {
+            } catch (CancellationException ex) {
+            }
+        }
+
+        if (result == null) {
+            result = System.getenv();
+        }
+
+        return result;
     }
 
     @Override

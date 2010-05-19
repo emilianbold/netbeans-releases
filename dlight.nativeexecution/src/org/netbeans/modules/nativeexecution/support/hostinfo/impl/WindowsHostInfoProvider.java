@@ -87,7 +87,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         private Map<String, String> environment;
 
         HostInfoImpl() {
-            Map<String, String> env = new ProcessBuilder("").environment(); // NOI18N
+            Map<String, String> env = System.getenv();
 
             // Use os.arch to detect bitness.
             // Another way is described in the following article:
