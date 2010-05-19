@@ -59,6 +59,9 @@ import org.openide.util.RequestProcessor;
  * @see GoToActionAction
  */
 public abstract class GoToViewAction extends AbstractAction {
+    /**
+     * Default offset ({@value #DEFAULT_OFFSET}) that can be used when opening a View.
+     */
     protected static final int DEFAULT_OFFSET = 0;
 
     private static final RequestProcessor RP = new RequestProcessor(GoToViewAction.class);

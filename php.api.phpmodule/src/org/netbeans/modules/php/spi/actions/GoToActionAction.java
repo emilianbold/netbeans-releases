@@ -58,6 +58,9 @@ import org.openide.util.RequestProcessor;
  * @since 1.29
  */
 public abstract class GoToActionAction extends AbstractAction {
+    /**
+     * Default offset ({@value #DEFAULT_OFFSET}) that can be used when opening an Action.
+     */
     protected static final int DEFAULT_OFFSET = 0;
 
     private static final RequestProcessor RP = new RequestProcessor(GoToActionAction.class);
