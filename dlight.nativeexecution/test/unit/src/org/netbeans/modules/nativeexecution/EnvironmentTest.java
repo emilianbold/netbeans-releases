@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -59,7 +62,6 @@ import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
@@ -157,9 +159,9 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
             String cmd = "echo " + nonexistentVarName + "=$" + nonexistentVarName + " && echo PATH=$PATH";
 
             String tmpFile = null;
-
+            File tmpFileFile = null;
             if (terminal != null) {
-                File tmpFileFile = File.createTempFile("testVars", "result");
+                tmpFileFile = File.createTempFile("testVars", "result");
                 tmpFile = tmpFileFile.getAbsolutePath();
                 tmpFileFile.deleteOnExit();
 
@@ -171,7 +173,7 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
 
                 cmd = "(" + cmd + ") | tee " + tmpFile;
             }
-            
+
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             npb.setExecutable(hostInfo.getShell()).setArguments("-c", cmd);
             npb.setUsePty(inPtyMode);
@@ -189,9 +191,20 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
                 result = ProcessUtils.readProcessOutput(p);
             } else {
                 // read result from tmpFile
-                ExitStatus status = ProcessUtils.execute(execEnv, "cat", tmpFile);
-                assertTrue(status.isOK());
-                result = Arrays.asList(status.output.split("\n"));
+
+                if (execEnv.isLocal()) {
+                    BufferedReader br = new BufferedReader(new FileReader(tmpFileFile));
+                    String s;
+                    result = new ArrayList<String>();
+
+                    while ((s = br.readLine()) != null) {
+                        result.add(s);
+                    }
+                } else {
+                    ExitStatus status = ProcessUtils.execute(execEnv, "cat", tmpFile);
+                    assertTrue(status.isOK());
+                    result = Arrays.asList(status.output.split("\n"));
+                }
             }
 
             Iterator<String> it = result.iterator();
