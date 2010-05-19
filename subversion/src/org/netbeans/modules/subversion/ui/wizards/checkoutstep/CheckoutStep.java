@@ -78,6 +78,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     
     private CheckoutPanel workdirPanel;
     private RepositoryPaths repositoryPaths;
+    private boolean invalidTarget;
 
     @Override
     public HelpCtx getHelp() {    
@@ -137,13 +138,15 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
             if (file.exists() == false) {
                 boolean done = file.mkdirs();
                 if (done == false) {
-                    invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "BK2013") + file.getPath(), false));// NOI18N
+                    invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2013") + file.getPath(), false));// NOI18N
+                    invalidTarget = true;
                 }
             }
         }
     }
 
     private boolean validateUserInput(boolean full) {                
+        invalidTarget = false;
         if(repositoryPaths != null) {
             try {           
                 repositoryPaths.getRepositoryFiles();
@@ -284,7 +287,11 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     }
 
     public void focusLost(FocusEvent e) {
-        validateUserInput(true);
+        if (!invalidTarget) {
+            // click on Finish triggers in a series of focus events which results in deletion of the invalid target message
+            // so do not validate when Finish is clicked and the message is shown
+            validateUserInput(true);
+        }
         repositoryFoldersChanged();
     }
         
