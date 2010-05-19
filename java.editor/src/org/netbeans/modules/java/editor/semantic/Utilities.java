@@ -434,15 +434,16 @@ public class Utilities {
             return null;
         }
         
-        ts.moveNext();
-        Token<JavaTokenId> token = ts.token();
-        if (ts.offset() == start && token != null) {
-            final JavaTokenId id = token.id();
-            if (id == JavaTokenId.IDENTIFIER) {
-                return token;
-            }
-            if (id == JavaTokenId.THIS || id == JavaTokenId.SUPER) {
-                return ts.offsetToken();
+        if (ts.moveNext()) {
+            Token<JavaTokenId> token = ts.token();
+            if (ts.offset() == start && token != null) {
+                final JavaTokenId id = token.id();
+                if (id == JavaTokenId.IDENTIFIER) {
+                    return token;
+                }
+                if (id == JavaTokenId.THIS || id == JavaTokenId.SUPER) {
+                    return ts.offsetToken();
+                }
             }
         }
         
