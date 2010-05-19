@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -164,7 +167,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         if (project != null && project.isValid()) {
             try {
                 CsmFile out = project.getFile(javaIoFile, false);
-                if (TRACE) {trace("returns standalone file %s", out);} //NOI18N
+                if (TRACE) {trace("RETURNS STANALONE FILE %s", out);} //NOI18N
                 return out;
             } catch (BufferUnderflowException ex) {
                 // FIXUP: IZ#148840
@@ -248,6 +251,17 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean isStandalone(CsmFile file) {
+        if (file instanceof FileImpl) {
+            NativeFileItem nfi = ((FileImpl) file).getNativeFileItem();
+            if (nfi instanceof CsmStandaloneFileProviderImpl.NativeFileItemImpl) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void scheduleProjectRemoval(final CsmProject project) {
@@ -484,7 +498,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public void runOnCodeModelReadiness(NamedRunnable task) {
+        public void runOnProjectReadiness(NamedRunnable task) {
             task.run();
         }
 
@@ -500,7 +514,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         @Override
         public final String toString() {
-            return projectRoot + ' ' + getClass().getName() + " @" + hashCode() + ":" + System.identityHashCode(this); // NOI18N
+            return "SA " + projectRoot + ' ' + getClass().getName() + " @" + hashCode() + ":" + System.identityHashCode(this); // NOI18N
         }
     }
 
@@ -577,6 +591,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         @Override
         public boolean isExcluded() {
             return false;
+        }
+
+        @Override
+        public String toString() {
+            return "SA " + file + " " + System.identityHashCode(this) + " " + lang + " from project:" + project; // NOI18N
         }
     }
 }

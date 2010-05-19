@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -266,18 +269,7 @@ public final class FileUtilities {
         assert cpProvider != null : "Project has to provide ProjectSourcesClassPathProvider ability"; //NOI18N
 
         SortedSet<String> result = new TreeSet<String>();
-
-        SourceGroup[] scs = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        for (int i = 0; i < scs.length; i++) {
-            final FileObject root = scs[i].getRootFolder();
-            processFolder(root, new NameObtainer() {
-                @Override
-                public String getPackageName(FileObject file) {
-                    String pkgName = relativizeFile(FileUtil.toFile(root), FileUtil.toFile(file));
-                    return pkgName.replace('/', '.');
-                }
-            }, result);
-        }
+        getSourcePackageNames(prj, result, false);
 
         final ClassPath runtimeCP = cpProvider.getProjectSourcesClassPath(ClassPath.EXECUTE);
         FileObject[] cpRoots = runtimeCP.getRoots();
@@ -289,30 +281,60 @@ public final class FileUtilities {
                     public String getPackageName(FileObject file) {
                         return runtimeCP.getResourceName(file, '.', true);
                     }
-                }, result);
+                }, result, false);
             }
         }
 
         return result;
     }
 
-    private static void processFolder(FileObject file, NameObtainer nameObtainer, SortedSet<String> result) {
+    /**
+     * @return Set of names of root packages containing some *.class or *.java.
+     * Result doesn't contain subfolders of such folders
+     */
+    public static SortedSet<String> getBasePackageNames (Project prj) {
+        SortedSet<String> result = new TreeSet<String>();
+        getSourcePackageNames(prj, result, true);
+        return result;
+    }
+
+    private static void getSourcePackageNames (Project prj, SortedSet<String> result, boolean onlyRoots) {
+        SourceGroup[] scs = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (int i = 0; i < scs.length; i++) {
+            final FileObject curRoot = scs[i].getRootFolder();
+            processFolder(curRoot, new NameObtainer() {
+                @Override
+                public String getPackageName(FileObject file) {
+                    String pkgName = relativizeFile(FileUtil.toFile(curRoot), FileUtil.toFile(file));
+                    return pkgName.replace('/', '.');
+                }
+            }, result, onlyRoots);
+        }
+    }
+
+    private static void processFolder(FileObject file, NameObtainer nameObtainer, SortedSet<String> result, boolean onlyRoots) {
         Enumeration<? extends FileObject> dataFiles = file.getData(false);
         Enumeration<? extends FileObject> folders = file.getFolders(false);
 
-        if (dataFiles.hasMoreElements() || !folders.hasMoreElements()) {
+        if (dataFiles.hasMoreElements()) {
             while (dataFiles.hasMoreElements()) {
                 FileObject kid = dataFiles.nextElement();
                 if ((kid.hasExt("java") || kid.hasExt("class")) && Utilities.isJavaIdentifier(kid.getName())) {
                     // at least one java or class inside directory -> valid package
                     result.add(nameObtainer.getPackageName(file));
-                    break;
+                    if (onlyRoots) {
+                        // don't recurse into subfolders
+                        return;
+                    } else {
+                        // recurse inot subfolders
+                        break;
+                    }
                 }
             }
         }
 
         while (folders.hasMoreElements()) {
-            processFolder(folders.nextElement(), nameObtainer, result);
+            processFolder(folders.nextElement(), nameObtainer, result, onlyRoots);
         }
     }
 

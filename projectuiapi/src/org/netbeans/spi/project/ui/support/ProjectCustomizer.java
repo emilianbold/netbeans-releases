@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,6 +46,7 @@ package org.netbeans.spi.project.ui.support;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Frame;
 import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -65,6 +69,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
@@ -98,6 +103,8 @@ public final class ProjectCustomizer {
     private ProjectCustomizer() {
     }
     
+    private static final Logger LOG = Logger.getLogger(ProjectCustomizer.class.getName());
+
     /** Creates standard customizer dialog which can be used for implementation
      * of {@link org.netbeans.spi.project.ui.CustomizerProvider}. You don't need
      * to call <code>pack()</code> method on the dialog. The resulting dialog will
@@ -105,7 +112,7 @@ public final class ProjectCustomizer {
      * Call <code>show()</code> on the dialog to make it visible. The dialog 
      * will be closed automatically after click on "OK" or "Cancel" button.
      * 
-     * @param categories array of descriptions of categories to be shown in the
+     * @param categories nonempty array of descriptions of categories to be shown in the
      *        dialog. Note that categories have the <code>valid</code>
      *        property. If any of the given categories is not valid cusomizer's
      *        OK button will be disabled until all categories become valid
@@ -141,7 +148,7 @@ public final class ProjectCustomizer {
      * you provided as a parameter. In case of the click on the "Cancel" button
      * the dialog will be closed automatically.
      * @since org.netbeans.modules.projectuiapi/1 1.26
-     * @param categories array of descriptions of categories to be shown in the
+     * @param categories nonempty array of descriptions of categories to be shown in the
      *        dialog. Note that categories have the <code>valid</code>
      *        property. If any of the given categories is not valid cusomizer's
      *        OK button will be disabled until all categories become valid
@@ -247,8 +254,11 @@ public final class ProjectCustomizer {
         DataFolder def = DataFolder.findFolder(root);
         assert def != null : "Cannot find DataFolder for " + folderPath;
         DelegateCategoryProvider prov = new DelegateCategoryProvider(def, context);
-        return createCustomizerDialog(prov.getSubCategories(), prov, preselectedCategory, 
-                                      okOptionListener, storeListener, helpCtx);
+        Category[] categories = prov.getSubCategories();
+        if (categories.length == 0) {
+            return new JDialog((Frame) null, "<broken>"); // what else to do?
+        }
+        return createCustomizerDialog(categories, prov, preselectedCategory, okOptionListener, storeListener, helpCtx);
     }
     
     /** Creates standard innerPane for customizer dialog.
@@ -692,20 +702,11 @@ o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/
             return prov.createComponent(category, context);
         }
 
-        public ProjectCustomizer.Category[] getSubCategories() {
-            try {
-               return readCategories(folder);
-            } catch (IOException exc) {
-                Logger.getAnonymousLogger().log(Level.WARNING, "Cannot construct Project UI panels", exc);
-                return new ProjectCustomizer.Category[0];
-            } catch (ClassNotFoundException ex) {
-                Logger.getAnonymousLogger().log(Level.WARNING, "Cannot construct Project UI panels", ex);
-                return new ProjectCustomizer.Category[0];
-            }
+        ProjectCustomizer.Category[] getSubCategories() {
+           return readCategories(folder);
         }
 
-
-        /*private*/ ProjectCustomizer.Category[] readCategories(DataFolder folder) throws IOException, ClassNotFoundException {
+        /* accessible from tests */ ProjectCustomizer.Category[] readCategories(DataFolder folder) {
             List<ProjectCustomizer.Category> toRet = new ArrayList<ProjectCustomizer.Category>();
             for (DataObject dob : folder.getChildren()) {
                 if (dob instanceof DataFolder) {
@@ -714,8 +715,14 @@ o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/
                     for (DataObject subDob : subDobs) {
                         if (subDob.getName().equals(SELF)) {
                             InstanceCookie cookie = subDob.getLookup().lookup(InstanceCookie.class);
-                            if (cookie != null && CompositeCategoryProvider.class.isAssignableFrom(cookie.instanceClass())) {
-                                sProvider = (CompositeCategoryProvider) cookie.instanceCreate();
+                            try {
+                                if (cookie != null && CompositeCategoryProvider.class.isAssignableFrom(cookie.instanceClass())) {
+                                    sProvider = (CompositeCategoryProvider) cookie.instanceCreate();
+                                }
+                            } catch (IOException x) {
+                                LOG.log(Level.WARNING, "Could not load " + subDob, x);
+                            } catch (ClassNotFoundException x) {
+                                LOG.log(Level.WARNING, "Could not load " + subDob, x);
                             }
                         }
                     }
@@ -731,6 +738,7 @@ o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/
                 }
                 if (!dob.getName().equals(SELF)) {
                     InstanceCookie cook = dob.getLookup().lookup(InstanceCookie.class);
+                    try {
                     if (cook != null && CompositeCategoryProvider.class.isAssignableFrom(cook.instanceClass())) {
                         CompositeCategoryProvider provider = (CompositeCategoryProvider)cook.instanceCreate();
                         if (provider != null) {
@@ -741,6 +749,11 @@ o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/
                                 includeSubcats(cat.getSubcategories(), provider);
                             }
                         }
+                    }
+                    } catch (IOException x) {
+                        LOG.log(Level.WARNING, "Could not load " + dob, x);
+                    } catch (ClassNotFoundException x) {
+                        LOG.log(Level.WARNING, "Could not load " + dob, x);
                     }
                 }
             }
@@ -765,7 +778,7 @@ o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/
             try {
                 dn = fo.getFileSystem().getStatus().annotateName(fo.getNameExt(), Collections.singleton(fo));
             } catch (FileStateInvalidException ex) {
-                Logger.getAnonymousLogger().log(Level.WARNING, "Cannot retrieve display name for folder " + fo.getPath(), ex);
+                LOG.log(Level.WARNING, "Cannot retrieve display name for folder " + fo.getPath(), ex);
             }
             return ProjectCustomizer.Category.create(folder.getName(), dn, null, getSubCategories());
         }
@@ -848,8 +861,7 @@ o.n.m.web.project                         Projects/o-n-m-web-project/Customizer/
                     addElement(defEnc);
                 } catch (IllegalCharsetNameException e) {
                     //The source.encoding property is completely broken
-                    Logger.getLogger(this.getClass().getName()).info(
-                            "IllegalCharsetName: " + originalEncoding); //NOI18N
+                    LOG.log(Level.INFO, "IllegalCharsetName: {0}", originalEncoding);
                 }
             }
             if (defEnc == null) {

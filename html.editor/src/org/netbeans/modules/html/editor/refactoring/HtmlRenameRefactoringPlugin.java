@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,8 +45,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -155,6 +160,7 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
             FileObject renamedFolder = file;
 
             Map<FileObject, HtmlFileModel> modelsCache = new WeakHashMap<FileObject, HtmlFileModel>();
+            Set<Entry> refactoredReferenceEntries = new HashSet<Entry>();
             //now I need to find out what links go through the given folder
             for (FileObject source : source2dest.keySet()) {
                 List<Difference> diffs = new ArrayList<Difference>();
@@ -180,7 +186,7 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
                             //XXX the model should contain string representation 2 entry map
                             //linear search :-(
                             for (Entry entry : imports) {
-                                if (entry.isValidInSourceDocument() && entry.getName().equals(dest.linkPath())) {
+                                if (!refactoredReferenceEntries.contains(entry) && entry.isValidInSourceDocument() && entry.getName().equals(dest.linkPath())) {
                                     //a matching entry found, add the rename refactoring
                                     CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(source);
 
@@ -192,12 +198,19 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
                                             entry.getName(),
                                             modification.getModifiedReferencePath(),
                                             NbBundle.getMessage(HtmlRenameRefactoringPlugin.class, "MSG_Modify_File_Import"))); //NOI18N
+
+                                    //remember we already renamed this entry, and ignore it next time.
+                                    //There might be several references to the same css file,
+                                    //so we iterate over the same css model entries several times
+                                    refactoredReferenceEntries.add(entry);
                                 }
                             }
                         }
                     }
                 }
-                modificationResult.addDifferences(source, diffs);
+                if(!diffs.isEmpty()) {
+                    modificationResult.addDifferences(source, diffs);
+                }
             }
 
         } catch (IOException ex) {
@@ -259,7 +272,9 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
                     }
                 }
 
-                modificationResult.addDifferences(refering, diffs);
+                if(!diffs.isEmpty()) {
+                    modificationResult.addDifferences(refering, diffs);
+                }
 
             } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);

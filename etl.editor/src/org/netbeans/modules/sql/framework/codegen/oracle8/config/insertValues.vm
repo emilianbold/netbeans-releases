@@ -1,0 +1,20 @@
+#set( $totalTargetColumns = $targetColumnIdentifiers.size())
+#set( $columnCounter = 1)
+#set( $totalValueColumns = $valueIdentifiers.size())
+#set( $valueCounter = 1)
+#parse("org/netbeans/modules/sql/framework/codegen/oracle8/config/disableConstraints.vm")
+INSERT INTO $targetTable (
+#foreach( $tColumn in $targetColumnIdentifiers )
+    $tColumn.getSql()#if($columnCounter < $totalTargetColumns), #end
+
+#set( $columnCounter = $columnCounter + 1)
+#end
+)
+VALUES (
+#foreach( $vColumn in $valueIdentifiers )
+    $vColumn.getSql()#if($valueCounter < $totalValueColumns), #end
+
+#set( $valueCounter = $valueCounter + 1)
+#end
+)
+#parse("org/netbeans/modules/sql/framework/codegen/oracle8/config/enableConstraints.vm")

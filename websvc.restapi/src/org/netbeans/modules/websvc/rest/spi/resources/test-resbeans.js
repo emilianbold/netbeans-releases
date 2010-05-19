@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -107,7 +110,7 @@ TestSupport.prototype = {
             }
             baseURL = this.concatPath(baseURL, resourceUri);
         } else if (patterns.length == 2) {
-            var applicationPath = patterns[1];
+            var applicationPath = patterns[1]+'/';
             baseURL = this.concatPath(baseURL, applicationPath);
         }
         this.wadlURL = this.concatPath(baseURL, "application.wadl");
@@ -1372,7 +1375,7 @@ WADLParser.prototype = {
        function createNode(/*Node*/ n, parentCat) {  
          var pathVal = ts.wdr.getNormailizedPath(n);
          var pathElem = '';
-         if(pathVal.substring(0,1) == '/')
+         if (pathVal.substring(0,1) == '/' && pathVal.length > 1)
              pathElem = pathVal.substring(1);
          else
              pathElem = pathVal;
@@ -1382,7 +1385,9 @@ WADLParser.prototype = {
              uri = parentCat.uri+pathElem;
          else
              uri = parentCat.uri+'/'+pathElem;
-         var cName = ts.wdr.trimSeperator(pathVal);
+         if (uri.substring(uri.length-2) == '//')
+             uri = uri.substring(0, uri.length-2)
+         var cName = (pathVal == '/' ? '/' : ts.wdr.trimSeperator(pathVal));
          if(ts.wdr.hasResource(n)) {
             return new category(n, ts.wdr.getUniqueCategoryId(pathVal), uri, cName);
          } else {

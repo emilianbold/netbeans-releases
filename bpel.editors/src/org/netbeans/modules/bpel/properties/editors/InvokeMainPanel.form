@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <AccessibilityProperties>
+    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_LBL_Main_Tab" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_LBL_Main_Tab" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+  </AccessibilityProperties>
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="lblErrorMessage" alignment="0" pref="457" max="32767" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lblName" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblPartnerLink" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblOperation" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblInputVariable" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblOutputVariable" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="fldName" alignment="0" pref="349" max="32767" attributes="0"/>
+                          <Component id="cbxPartnerLink" alignment="0" pref="349" max="32767" attributes="0"/>
+                          <Component id="cbxOperation" alignment="0" pref="349" max="32767" attributes="1"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="fldOutputVariable" pref="181" max="32767" attributes="0"/>
+                                  <Component id="fldInputVariable" alignment="0" pref="181" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Component id="btnNewInputVariable" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="btnChooseInputVariable" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <Component id="btnNewOutputVariable" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="btnChooseOutputVariable" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                      </Group>
+                  </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="lblName" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="fldName" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="lblPartnerLink" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbxPartnerLink" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="lblOperation" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbxOperation" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="lblInputVariable" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnChooseInputVariable" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnNewInputVariable" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="fldInputVariable" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="btnChooseOutputVariable" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnNewOutputVariable" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblOutputVariable" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="fldOutputVariable" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="lblErrorMessage" pref="26" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Component class="javax.swing.JLabel" name="lblName">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="fldName"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="LBL_Name" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_LBL_Name" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_LBL_Name" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="fldName">
+      <Properties>
+        <Property name="columns" type="int" value="40"/>
+        <Property name="name" type="java.lang.String" value="" noResource="true"/>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_TXTFLD_InvokeName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_TXTFLD_InvokeName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblPartnerLink">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="cbxPartnerLink"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="LBL_PartnerLink" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_LBL_PartnerLink" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_LBL_PartnerLink" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="MessageConfigurationEditor_lblPartnerLink"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="cbxPartnerLink">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_CBX_PartnerLink" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_CBX_PartnerLink" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="mcc.getCbxPartnerLink();"/>
+        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="MessageConfigurationEditor_jComboBox1"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblOperation">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="cbxOperation"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="LBL_Operation" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_LBL_Operation" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_LBL_Operation" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="MessageConfigurationEditor_lblOperation"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="cbxOperation">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_CBX_Operation" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_CBX_Operation" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="mcc.getCbxOperation();"/>
+        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="MessageConfigurationEditor_jComboBox2"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblInputVariable">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="fldInputVariable"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="LBL_InputVariable" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_LBL_InputVariable" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_LBL_InputVariable" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="MessageConfigurationEditor_lblOutputVariable"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="fldInputVariable">
+      <Properties>
+        <Property name="columns" type="int" value="30"/>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_TXTFLD_InputVariable" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_TXTFLD_InputVariable" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="mcc.getFldInputVariable();"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnNewInputVariable">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="BTN_CreateInputVariable" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 4, 0, 4]"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_BTN_CreateInputVariable" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_BTN_CreateInputVariable" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="mcc.getBtnNewInputVariable();"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnChooseInputVariable">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="BTN_BrowseInputVarible" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 2, 0, 2]"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_BTN_BrowseInputVarible" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_BTN_BrowseInputVarible" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="mcc.getBtnChooseInputVariable();"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblOutputVariable">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="fldOutputVariable"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="LBL_OutputVariable" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_LBL_OutputVariable" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_LBL_OutputVariable" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="MessageConfigurationEditor_lblOutputVariable"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="fldOutputVariable">
+      <Properties>
+        <Property name="columns" type="int" value="30"/>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_TXTFLD_OutputVariable" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_TXTFLD_OutputVariable" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="mcc.getFldOutputVariable();"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnNewOutputVariable">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="BTN_CreateOutputVariable" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 4, 0, 4]"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_BTN_CreateOutputVariable" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_BTN_CreateOutputVariable" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="mcc.getBtnNewOutputVariable();"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnChooseOutputVariable">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="BTN_BrowseOutputVarible" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 2, 0, 2]"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSN_BTN_BrowseOutputVarible" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bpel/properties/editors/Bundle.properties" key="ACSD_BTN_BrowseOutputVarible" replaceFormat="org.openide.util.NbBundle.getMessage(FormBundle.class,&quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="mcc.getBtnChooseOutputVariable();"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblErrorMessage">
+      <Properties>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="0" green="0" red="ff" type="rgb"/>
+        </Property>
+        <Property name="alignmentX" type="float" value="0.5"/>
+      </Properties>
+    </Component>
+  </SubComponents>
+</Form>

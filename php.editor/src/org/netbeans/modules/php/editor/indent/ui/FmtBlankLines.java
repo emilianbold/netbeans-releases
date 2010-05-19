@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -145,6 +148,117 @@ public class FmtBlankLines extends javax.swing.JPanel {
         aUseField = new javax.swing.JTextField();
         aUseLabel = new javax.swing.JLabel();
 
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return bClassEndField;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return bClassEndField;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return bClosePHPTagField;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  bClassEndField){
+                    return aClassField;
+                }
+                if(aComponent ==  bFunctionEndField){
+                    return aOpenPHPTagField;
+                }
+                if(aComponent ==  bNamespaceField){
+                    return aNamespaceField;
+                }
+                if(aComponent ==  aOpenPHPTagField){
+                    return aOpenPHPTagHTMLField;
+                }
+                if(aComponent ==  aFieldsField){
+                    return bMethodsField;
+                }
+                if(aComponent ==  bUseField){
+                    return aUseField;
+                }
+                if(aComponent ==  bFieldsField){
+                    return aFieldsField;
+                }
+                if(aComponent ==  aOpenPHPTagHTMLField){
+                    return bClosePHPTagField;
+                }
+                if(aComponent ==  aClassHeaderField){
+                    return bClassEndField;
+                }
+                if(aComponent ==  bClassField){
+                    return aClassHeaderField;
+                }
+                if(aComponent ==  aNamespaceField){
+                    return bUseField;
+                }
+                if(aComponent ==  bMethodsField){
+                    return aMethodsField;
+                }
+                if(aComponent ==  aUseField){
+                    return bClassField;
+                }
+                if(aComponent ==  aClassField){
+                    return bFieldsField;
+                }
+                if(aComponent ==  aMethodsField){
+                    return bFunctionEndField;
+                }
+                return bClassEndField;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  aClassField){
+                    return bClassEndField;
+                }
+                if(aComponent ==  aOpenPHPTagField){
+                    return bFunctionEndField;
+                }
+                if(aComponent ==  aNamespaceField){
+                    return bNamespaceField;
+                }
+                if(aComponent ==  aOpenPHPTagHTMLField){
+                    return aOpenPHPTagField;
+                }
+                if(aComponent ==  bMethodsField){
+                    return aFieldsField;
+                }
+                if(aComponent ==  aUseField){
+                    return bUseField;
+                }
+                if(aComponent ==  aFieldsField){
+                    return bFieldsField;
+                }
+                if(aComponent ==  bClosePHPTagField){
+                    return aOpenPHPTagHTMLField;
+                }
+                if(aComponent ==  bClassEndField){
+                    return aClassHeaderField;
+                }
+                if(aComponent ==  aClassHeaderField){
+                    return bClassField;
+                }
+                if(aComponent ==  bUseField){
+                    return aNamespaceField;
+                }
+                if(aComponent ==  aMethodsField){
+                    return bMethodsField;
+                }
+                if(aComponent ==  bClassField){
+                    return aUseField;
+                }
+                if(aComponent ==  bFieldsField){
+                    return aClassField;
+                }
+                if(aComponent ==  bFunctionEndField){
+                    return aMethodsField;
+                }
+                return bClosePHPTagField;//end getComponentBefore
+
+            }}
+        );
         setName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_BlankLines")); // NOI18N
         setOpaque(false);
         setRequestFocusEnabled(false);
@@ -346,9 +460,70 @@ public class FmtBlankLines extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        aFieldsField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aFieldsField.AccessibleContext.accessibleDescription")); // NOI18N
+        bFieldsField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bFieldsField.AccessibleContext.accessibleDescription")); // NOI18N
+        aFieldsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aFieldsLabel.AccessibleContext.accessibleName")); // NOI18N
+        aFieldsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aFieldsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        bClosePHPTagLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bClosePHPTagLabel.AccessibleContext.accessibleName")); // NOI18N
+        bClosePHPTagLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bClosePHPTagLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        aClassHeaderField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aClassHeaderField.AccessibleContext.accessibleDescription")); // NOI18N
+        bFieldsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bFieldsLabel.AccessibleContext.accessibleName")); // NOI18N
+        bFieldsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bFieldsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        aClassField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aClassField.AccessibleContext.accessibleDescription")); // NOI18N
+        aClassHeaderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aClassHeaderLabel.AccessibleContext.accessibleName")); // NOI18N
+        aClassHeaderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aClassHeaderLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        bClassField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bClassField.AccessibleContext.accessibleDescription")); // NOI18N
+        aClassLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aClassLabel.AccessibleContext.accessibleName")); // NOI18N
+        aClassLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aClassLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        bMethodsField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bMethodsField.AccessibleContext.accessibleDescription")); // NOI18N
+        bMethodsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bMethodsLabel.AccessibleContext.accessibleName")); // NOI18N
+        bMethodsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bMethodsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        aMethodsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aMethodsLabel.AccessibleContext.accessibleName")); // NOI18N
+        aMethodsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aMethodsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        aMethodsField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aMethodsField.AccessibleContext.accessibleName")); // NOI18N
+        aMethodsField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aMethodsField.AccessibleContext.accessibleDescription")); // NOI18N
+        bFunctionEndLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bFunctionEndLabel.AccessibleContext.accessibleName")); // NOI18N
+        bFunctionEndLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bFunctionEndLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        bFunctionEndField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bFunctionEndField.AccessibleContext.accessibleName")); // NOI18N
+        bFunctionEndField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bFunctionEndField.AccessibleContext.accessibleDescription")); // NOI18N
+        bClassEndLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bClassEndLabel.AccessibleContext.accessibleName")); // NOI18N
+        bClassEndLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bClassEndLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        bClassEndField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bClassEndField.AccessibleContext.accessibleName")); // NOI18N
+        bClassEndField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bClassEndField.AccessibleContext.accessibleDescription")); // NOI18N
+        aOpenPHPTagLebel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aOpenPHPTagLebel.AccessibleContext.accessibleName")); // NOI18N
+        aOpenPHPTagLebel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aOpenPHPTagLebel.AccessibleContext.accessibleDescription")); // NOI18N
+        aOpenPHPTagField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aOpenPHPTagField.AccessibleContext.accessibleName")); // NOI18N
+        aOpenPHPTagField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aOpenPHPTagField.AccessibleContext.accessibleDescription")); // NOI18N
+        bNamespaceField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bNamespaceField.AccessibleContext.accessibleDescription")); // NOI18N
+        bNamespaceLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bNamespaceLabel.AccessibleContext.accessibleName")); // NOI18N
+        bNamespaceLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bNamespaceLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        bClassLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bClassLabel.AccessibleContext.accessibleName")); // NOI18N
+        bClassLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bClassLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        aOpenPHPTagHTMLField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aOpenPHPTagHTMLField.AccessibleContext.accessibleDescription")); // NOI18N
+        bUseField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bUseField.AccessibleContext.accessibleDescription")); // NOI18N
+        bUseLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bUseLabel.AccessibleContext.accessibleName")); // NOI18N
+        bUseLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bUseLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        bClosePHPTagField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bClosePHPTagField.AccessibleContext.accessibleName")); // NOI18N
+        bClosePHPTagField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.bClosePHPTagField.AccessibleContext.accessibleDescription")); // NOI18N
+        aNamespaceField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aNamespaceField.AccessibleContext.accessibleDescription")); // NOI18N
+        aOpenPHPTagHTMLLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aOpenPHPTagHTMLLabel.AccessibleContext.accessibleName")); // NOI18N
+        aOpenPHPTagHTMLLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aOpenPHPTagHTMLLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        aNamespaceLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aNamespaceLabel.AccessibleContext.accessibleName")); // NOI18N
+        aNamespaceLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aNamespaceLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        aUseField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aUseField.AccessibleContext.accessibleDescription")); // NOI18N
+        aUseLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aUseLabel.AccessibleContext.accessibleName")); // NOI18N
+        aUseLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.aUseLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         scrollPane1.setViewportView(jPanel1);
+        jPanel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.jPanel1.AccessibleContext.accessibleName")); // NOI18N
+        jPanel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.jPanel1.AccessibleContext.accessibleDescription")); // NOI18N
 
         add(scrollPane1, java.awt.BorderLayout.CENTER);
+        scrollPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.scrollPane1.AccessibleContext.accessibleName")); // NOI18N
+        scrollPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.scrollPane1.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "FmtBlankLines.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

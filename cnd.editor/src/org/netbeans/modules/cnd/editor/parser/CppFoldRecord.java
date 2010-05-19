@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,9 +45,8 @@
 package org.netbeans.modules.cnd.editor.parser;
 
 import org.netbeans.modules.cnd.editor.folding.CppFile;
-import org.openide.ErrorManager;
 
-public class CppFoldRecord {
+public final class CppFoldRecord {
 
     // Fold types
     public final static int INITIAL_COMMENT_FOLD = CppFile.INITIAL_COMMENT_FOLD;
@@ -58,37 +60,22 @@ public class CppFoldRecord {
     public final static int DESTRUCTOR_FOLD = CppFile.DESTRUCTOR_FOLD;
     public final static int NAMESPACE_FOLD = CppFile.NAMESPACE_FOLD;
     
-    private int type;
-    private int startLnum;
-    private int endLnum;
-    private int startOffset;
-    private int endOffset;
-
-    private static final ErrorManager log =
-		ErrorManager.getDefault().getInstance("CppFoldTracer"); // NOI18N
+    private final int type;
+    private final int startOffset;
+    private final int endOffset;
 
     public CppFoldRecord(int type, int startLnum, int startOffset, int endLnum, int endOffset)
     {
 	this.type = type;
-	this.startLnum = startLnum;
 	this.startOffset = startOffset;
-	this.endLnum = endLnum;
 	this.endOffset = endOffset;
-	log.log(toString() + " [" + Thread.currentThread().getName() + "]"); // NOI18N
     }
 
     public CppFoldRecord(int type, int startOffset, int endOffset)
     {
 	this.type = type;
-	this.startLnum = -1;
 	this.startOffset = startOffset;
-	this.endLnum = -1;
 	this.endOffset = endOffset;
-    }
-    
-    public void setLines(int start, int end) {
-        this.startLnum = start;
-        this.endLnum = end;
     }
     
     public int getType() {
@@ -101,16 +88,6 @@ public class CppFoldRecord {
 
     public int getEndOffset() {
 	return endOffset;
-    }
-
-    public int getStartLine() {
-        assert startLnum != -1;
-        return startLnum;
-    }
-    
-    public int getEndLine() {
-        assert endLnum != -1;
-        return endLnum;
     }
     
     @Override
@@ -152,7 +129,6 @@ public class CppFoldRecord {
                 break;
             default:
         }
-	return kind + " (" + startLnum + // NOI18N
-		", " + startOffset + ", " + endLnum + ", " + endOffset + ")"; // NOI18N
+	return kind + " (" + + startOffset + ", " + endOffset + ")"; // NOI18N
     }
 }

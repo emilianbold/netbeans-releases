@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,11 +61,18 @@ public final class CheckedHighlightsSequence implements HighlightsSequence {
     private final HighlightsSequence originalSeq;
     private final int startOffset;
     private final int endOffset;
-    private final String containerDebugId;
-
+    private String containerDebugId = null;
     private int start = -1;
     private int end = -1;
 
+    /**
+     *
+     * @param seq
+     * @param startOffset
+     * @param endOffset
+     * @param containerDebugId
+     * @deprecated Use the other constructor and setContainerDebugId
+     */
     public CheckedHighlightsSequence(HighlightsSequence seq, int startOffset, int endOffset, String containerDebugId) {
         assert seq != null : "seq must not be null"; //NOI18N
         assert 0 <= startOffset : "startOffset must be greater than or equal to zero"; //NOI18N
@@ -73,9 +83,19 @@ public final class CheckedHighlightsSequence implements HighlightsSequence {
         this.originalSeq = seq;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
-        this.containerDebugId = containerDebugId != null ?
-            containerDebugId :
-            seq.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(seq)); //NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            this.containerDebugId = containerDebugId != null ?
+                containerDebugId :
+                seq.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(seq)); //NOI18N
+        }
+    }
+
+    public CheckedHighlightsSequence(HighlightsSequence seq, int startOffset, int endOffset) {
+        this(seq, startOffset, endOffset, null);
+    }
+    
+    public void setContainerDebugId(String containerDebugId) {
+        this.containerDebugId = containerDebugId;
     }
 
     public @Override boolean moveNext() {

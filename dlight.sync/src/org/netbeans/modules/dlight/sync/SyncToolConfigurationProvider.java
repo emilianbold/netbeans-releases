@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,7 @@
 package org.netbeans.modules.dlight.sync;
 
 import java.awt.Color;
+import java.beans.FeatureDescriptor;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,6 +131,9 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         toolConfiguration.setLongName(TOOL_DESCRIPTION);
         toolConfiguration.setDescription(loc("SyncTool.ToolDescription.Details"));//NOI18N
         toolConfiguration.setIcon("org/netbeans/modules/dlight/sync/resources/threads.png");//NOI18N
+        FeatureDescriptor descriptor = new FeatureDescriptor();
+        descriptor.setValue(DTDCConfiguration.DSCRIPT_TOOL_PROPERTY, getScriptUrl());
+        toolConfiguration.setFeatureDescriptor(descriptor);
         List<DataCollectorConfiguration> dcConfigurations = initDataCollectorConfigurations();
         for (DataCollectorConfiguration dc : dcConfigurations) {
             toolConfiguration.addDataCollectorConfiguration(dc);
@@ -141,14 +148,16 @@ public final class SyncToolConfigurationProvider implements DLightToolConfigurat
         return toolConfiguration;
     }
 
+    private URL getScriptUrl() {
+        return getClass().getResource("resources/sync.d"); // NOI18N
+    }
+
     private List<DataCollectorConfiguration> initDataCollectorConfigurations() {
         List<DataCollectorConfiguration> result = new ArrayList<DataCollectorConfiguration>();
         result.add(new SunStudioDCConfiguration(CollectedInfo.SYNCHRONIZATION));
         result.add(new LLDataCollectorConfiguration(LLDataCollectorConfiguration.CollectedData.SYNC));
-        URL scriptUrl = getClass().getResource("resources/sync.d"); // NOI18N
-
         DTDCConfiguration dataCollectorConfiguration =
-            new DTDCConfiguration(scriptUrl, Arrays.asList(rawTableMetadata));
+            new DTDCConfiguration(getScriptUrl(), Arrays.asList(rawTableMetadata));
 
         dataCollectorConfiguration.setStackSupportEnabled(true);
         dataCollectorConfiguration.setIndicatorFiringFactor(1);

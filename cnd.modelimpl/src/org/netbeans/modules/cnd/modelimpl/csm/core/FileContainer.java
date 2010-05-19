@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -562,6 +565,11 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         private FileEntry(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey) {
             this.fileNew = fileNew;
             this.data = (state == null) ? null : new PreprocessorStatePair(state, FilePreprocessorConditionState.PARSING);
+//            if (state == null) {
+//                if (CndUtils.isDebugMode()) {
+//                    CndUtils.assertTrueInConsole(false, "creating null based entry for " + fileKey); // NOI18N
+//                }
+//            }
             this.canonical = getCanonicalKey(fileKey);
             this.modCount = 0;
         }
@@ -630,15 +638,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
          */
         public Object getLock() {
             return this;
-        }
-
-        //@Deprecated
-        private synchronized APTPreprocHandler.State getState() {
-            final Iterator<PreprocessorStatePair> iterator = getStatePairs().iterator();
-            if (iterator.hasNext()) {
-                return iterator.next().state;
-            }
-            return null;
         }
 
         private synchronized void debugClearState() {

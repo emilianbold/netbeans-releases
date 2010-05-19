@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,11 +66,12 @@ import java.util.logging.Level;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.remote.fs.ui.RemoteFileSystemNotifier;
+import org.netbeans.modules.cnd.api.remote.ConnectionNotifier;
 import org.netbeans.modules.cnd.remote.server.RemoteServerListUI;
 import org.netbeans.modules.cnd.remote.support.RemoteCodeModelUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -75,15 +79,14 @@ import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.openide.util.NbBundle;
 
 /**
- * Reponsible for copying files from remote host.
+ * Responsible for copying files from remote host.
  * Each instance of the RemoteFileSupport class corresponds to a remote server
  * 
  * @author Vladimir Kvashin
  */
-public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
+public class RemoteFileSupport extends NamedRunnable {
 
     private final PendingFilesQueue pendingFilesQueue = new PendingFilesQueue();
-    private RemoteFileSystemNotifier notifier;
     private final ExecutionEnvironment execEnv;
 
     /** File transfer statistics */
@@ -100,6 +103,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
     public static final String FLAG_FILE_NAME = ".rfs"; // NOI18N
 
     public RemoteFileSupport(ExecutionEnvironment execEnv) {
+        super(NbBundle.getMessage(RemoteFileSupport.class, "RemoteDownloadTask.TITLE", RemoteUtil.getDisplayName(execEnv)));
         this.execEnv = execEnv;
         resetStatistic();
     }
@@ -326,28 +330,34 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
             RemoteUtil.LOGGER.log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, remotePath}); //NOI18N
             pendingFilesQueue.add(localFile, remotePath, isDirectory);
-            getNotifier().showIfNeed();
+            ConnectionNotifier.addTask(execEnv, this);
             throw new ConnectException();
         }
     }
 
-    private RemoteFileSystemNotifier getNotifier() {
-        synchronized  (this) {
-            if (notifier == null) {
-                notifier = new RemoteFileSystemNotifier(execEnv, this);
-            }
-            return notifier;
+    @Override
+    protected void runImpl() {
+        try {
+            onConnect();
+        } catch (ConnectException ex) {
+            RemoteUtil.LOGGER.log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
+            ConnectionNotifier.addTask(execEnv, this);
+        } catch (InterruptedException ex) {
+            // don't report interruption
+        } catch (InterruptedIOException ex) {
+            // don't report interruption
+        } catch (IOException ex) {
+            RemoteUtil.LOGGER.log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
+            ConnectionNotifier.addTask(execEnv, this);
+        } catch (ExecutionException ex) {
+            RemoteUtil.LOGGER.log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
+            ConnectionNotifier.addTask(execEnv, this);
         }
     }
 
-    @Override
-    public List<String> getPendingFiles() {
-        return pendingFilesQueue.getPendingFiles();
-    }
 
     // NB: it is always called in a specially created thread
-    @Override
-    public void connected() throws InterruptedException, ConnectException, InterruptedIOException, IOException, ExecutionException {
+    private void onConnect() throws InterruptedException, ConnectException, InterruptedIOException, IOException, ExecutionException {
         ProgressHandle handle = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(getClass(), "Progress_Title", RemoteUtil.getDisplayName(execEnv)));
         handle.start();

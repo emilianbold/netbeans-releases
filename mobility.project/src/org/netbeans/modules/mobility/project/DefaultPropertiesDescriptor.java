@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -114,6 +117,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
     public static final String APP_VERSION_AUTOINCREMENT = "app-version.autoincrement"; //NOI18N
     public static final String APP_VERSION_COUNTER = "deployment.counter"; //NOI18N
     public static final String APP_VERSION_NUMBER = "deployment.number"; //NOI18N
+    public static final String DEBUG_TIMEOUT = "debugger.timeout"; //NOI18N
     
     public static final String JAVADOC_PRIVATE="javadoc.private"; //NOI18N
     public static final String JAVADOC_NO_TREE="javadoc.notree"; //NOI18N
@@ -195,6 +199,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
             set.add(new PropertyDescriptor(RUN_USE_SECURITY_DOMAIN, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));
             set.add(new PropertyDescriptor(RUN_SECURITY_DOMAIN, true, DefaultPropertyParsers.STRING_PARSER, "trusted")); //NOI18N
             set.add(new PropertyDescriptor(RUN_CMD_OPTIONS, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));
+            set.add(new PropertyDescriptor(DEBUG_TIMEOUT, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));
             set.add(new PropertyDescriptor(APP_VERSION_AUTOINCREMENT, false, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));
             set.add(new PropertyDescriptor(APP_VERSION_NUMBER, false, DefaultPropertyParsers.STRING_PARSER, "0.0.1")); //NOI18N
             set.add(new PropertyDescriptor(APP_VERSION_COUNTER, false, DefaultPropertyParsers.INTEGER_PARSER, "2")); //NOI18N

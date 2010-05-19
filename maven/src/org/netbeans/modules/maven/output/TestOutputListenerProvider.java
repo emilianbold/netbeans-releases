@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,10 +57,12 @@ import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.output.TestOutputObserver;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -220,13 +227,16 @@ public class TestOutputListenerProvider implements OutputProcessor {
             io.select();
 
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     BufferedReader reader = null;
                     OutputWriter writer = io.getOut();
                     String line = null;
+                    Collection<? extends TestOutputObserver> observers = getObservers();
                     try {
                         reader = new BufferedReader(new InputStreamReader(fo.getInputStream()));
                         ClassPath classPath = null;
+                        Project project = null;
                         while ((line = reader.readLine()) != null) {
                             Matcher m = testNamePattern.matcher(line);
                             if (m.matches()) {
@@ -234,6 +244,11 @@ public class TestOutputListenerProvider implements OutputProcessor {
                                 File testClassFile = new File(testDir, testClassName);
                                 FileObject testFileObject = FileUtil.toFileObject(testClassFile);
                                 classPath = ClassPath.getClassPath(testFileObject, ClassPath.EXECUTE);
+                                project = FileOwnerQuery.getOwner(testFileObject);
+                            }
+                            // call observers
+                            for (TestOutputObserver o : observers) {
+                                o.processLine(line, project);
                             }
                             if (classPath != null) {
                                 OutputListener list = OutputUtils.matchStackTraceLine(line, classPath);
@@ -258,6 +273,11 @@ public class TestOutputListenerProvider implements OutputProcessor {
                             ErrorManager.getDefault().notify(ex);
                         }
                     }
+                }
+
+                private Collection<? extends TestOutputObserver> getObservers() {
+                    Lookup.Result<TestOutputObserver> result = Lookup.getDefault().lookup(new Lookup.Template<TestOutputObserver>(TestOutputObserver.class));
+                    return result.allInstances();
                 }
             });
         }

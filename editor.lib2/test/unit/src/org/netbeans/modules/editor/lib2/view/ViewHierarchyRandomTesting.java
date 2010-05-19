@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,9 +48,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
-import javax.swing.undo.UndoManager;
 import org.netbeans.lib.editor.util.random.DocumentTesting;
 import org.netbeans.lib.editor.util.random.EditorPaneTesting;
 import org.netbeans.lib.editor.util.random.RandomTestContainer;
@@ -69,7 +70,8 @@ public class ViewHierarchyRandomTesting {
         System.setProperty("org.netbeans.editor.sync.highlights", "true");
         System.setProperty("org.netbeans.editor.linewrap.edt", "true");
 
-        RandomTestContainer container = EditorPaneTesting.initContainer(null, kit);
+        RandomTestContainer container = new RandomTestContainer();
+        EditorPaneTesting.initContainer(container, kit);
         DocumentTesting.initContainer(container);
         DocumentTesting.initUndoManager(container);
         return container;

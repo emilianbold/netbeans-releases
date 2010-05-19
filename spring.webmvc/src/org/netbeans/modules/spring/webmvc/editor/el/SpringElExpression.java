@@ -18,6 +18,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.ImageIcon;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -41,9 +42,10 @@ public class SpringElExpression extends ELExpression {
 
     public static final int SPRING_BEAN = 201;
 
-    public SpringElExpression(Document doc) {
-        super(doc);
+    public SpringElExpression(Document doc, int offset) throws BadLocationException {
+        super(doc, offset);
     }
+    
     public List<CompletionItem> getMethodCompletionItems(String beanType, int anchor)
     {
         JSFCompletionItemsTask task = new JSFCompletionItemsTask(beanType, anchor);

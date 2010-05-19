@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -68,6 +71,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -89,7 +93,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
     private volatile String text;
     private TokenHierarchy<?> tokens;
     private final JavaFileFilterImplementation filter;
-    private static Logger log = Logger.getLogger(SourceFileObject.class.getName());
+    private static final Logger log = Logger.getLogger(SourceFileObject.class.getName());
 
     public static SourceFileObject create (final FileObject file, final FileObject root) {
         try {
@@ -122,29 +126,40 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         this.kind = filter == null ? FileObjects.getKind(ext) : Kind.SOURCE; //#141411
     }
 
-    public void update () throws IOException {
+    public final void update () throws IOException {
         if (this.kind != Kind.CLASS) {
             //Side effect assigns the text
             getContent(true);
         }
     }
 
-    public void update (final CharSequence content) throws IOException {
+    public final void update (CharSequence content) throws IOException {
         if (content == null) {
             update();
         }
         else {
+            if (filter != null) {
+                final FileObject file = handle.resolveFileObject(false);
+                if (file != null) {
+                    final Source source = Source.create(file);
+                    if (source != null && source.getDocument(false) == null) {
+                        content = filter.filterCharSequence(content);
+                    }
+                }
+            }
             this.text = toString(content);
         }
         this.tokens = null;
     }
 
 
+    @Override
     public boolean isNameCompatible (String simplename, JavaFileObject.Kind kind) {
         assert simplename != null;
         return this.kind == kind && this.getNameWithoutExtension().equals(simplename);
     }
 
+    @Override
     public CharBuffer getCharContent(boolean ignoreEncodingErrors) throws IOException {
         String _text = this.text;
         if (_text == null) {
@@ -161,6 +176,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return this.tokens;
     }
 
+    @Override
     public java.io.Writer openWriter() throws IOException {
         final FileObject file = handle.resolveFileObject(true);
         if (file == null) {
@@ -169,6 +185,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return new OutputStreamWriter (this.openOutputStream(), FileEncodingQuery.getEncoding(file));
     }
 
+    @Override
     public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
         String _text = text;
         if (_text == null) {
@@ -177,6 +194,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return new StringReader(_text);
     }
 
+    @Override
     public java.io.OutputStream openOutputStream() throws IOException {
         final FileObject file = handle.resolveFileObject(true);
         if (file == null) {
@@ -191,6 +209,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         }
     }
 
+    @Override
     public InputStream openInputStream() throws IOException {
         String _text = text;
         if (_text == null) {
@@ -199,6 +218,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return new ByteArrayInputStream (_text.getBytes());
     }
 
+    @Override
     public boolean delete() {
         if (isModified()!=null) {
             //If the file is modified in editor do not delete it
@@ -225,10 +245,12 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
     }
 
 
+    @Override
     public JavaFileObject.Kind getKind() {
         return this.kind;
     }
 
+    @Override
     public String getName() {
        return this.handle.getName(true);
     }
@@ -237,6 +259,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return this.handle.getName(false);
     }
 
+    @Override
     public synchronized URI toUri () {
         if (this.uri == null) {
             try {
@@ -254,6 +277,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
      * modified file, the mtime is not known, this method returns
      * the current time.
      */
+    @Override
     public long getLastModified() {
         EditorCookie ec;
         if ((ec=isModified())==null) {
@@ -280,14 +304,17 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return file.lastModified().getTime();
     }
 
+    @Override
     public NestingKind getNestingKind() {
         return null;
     }
 
+    @Override
     public Modifier getAccessLevel() {
         return null;
     }
 
+    @Override
     public String inferBinaryName () {
         if (handle.root == null) {
             return null;
@@ -324,6 +351,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return this.handle.hashCode();
     }
 
+    @Override
     public StyledDocument getDocument() {
         final FileObject file = handle.resolveFileObject(false);
         if (file == null) {
@@ -337,6 +365,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
         return (doc instanceof StyledDocument) ?  ((StyledDocument)doc) : null;
     }
 
+    @Override
     public void runAtomic(final Runnable r) {
         assert r != null;
         final StyledDocument doc = getDocument();
@@ -375,11 +404,9 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
             throw new IOException("No source for: " + FileUtil.getFileDisplayName(file));   //NOI18N
         }
         CharSequence content = toString(source.createSnapshot().getText());
-        if (source.getDocument(false)!=null) {
-            //Snapshot is from Document we have to filter it
-            if (filter != null) {
-                content = filter.filterCharSequence(content);
-            }
+        if (filter != null && source.getDocument(false)==null) {
+            //Snapshot is not from Document and there is a filter => filter it
+            content = filter.filterCharSequence(content);
         }
         String result = toString(content);
         if (assign) {
@@ -452,10 +479,10 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
 
 
     private class LckStream extends OutputStream {
-        
+
         private final OutputStream delegate;
         private final FileLock lock;
-        
+
         public LckStream (final FileObject fo) throws IOException {
             assert fo != null;
             this.lock = fo.lock();
@@ -476,6 +503,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
             this.delegate.write(b);
         }
 
+        @Override
         public void write(int b) throws IOException {
             this.delegate.write (b);
         }
@@ -485,9 +513,9 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
                 this.delegate.close();
             } finally {
                 this.lock.releaseLock();
-                text = null;                
-            }            
-        }                
+                text = null;
+            }
+        }
     }
 
     private class DocumentStream extends OutputStream {
@@ -517,6 +545,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
             this.pos+=b.length;
         }
 
+        @Override
         public synchronized void write(int b) throws IOException {
             ensureSize (1);
             this.data[this.pos++]=(byte)(b&0xff);
@@ -539,6 +568,7 @@ public class SourceFileObject implements DocumentProvider, InferableJavaFileObje
             try {
                 NbDocument.runAtomic(this.doc,
                     new Runnable () {
+                        @Override
                         public void run () {
                             try {
                                 doc.remove(0,doc.getLength());

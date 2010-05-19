@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
@@ -54,12 +59,16 @@ import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.support.Win32APISupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
 
     private Process process = null;
+    private final CountDownLatch additionalMsgLatch = new CountDownLatch(1);
+    private boolean win1073741515added = false;
 
     public LocalNativeProcess(NativeProcessInfo info) {
         super(info);
@@ -90,7 +99,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), env);
         }
 
-        final ProcessBuilder pb = new ProcessBuilder("/bin/sh", "-s"); // NOI18N
+        final ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
 
         // Get working directory ....
         String workingDirectory = info.getWorkingDirectory(true);
@@ -146,7 +155,6 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
         final ProcessBuilder pb = new ProcessBuilder(); // NOI18N
 
         final MacroMap jointEnv = MacroMap.forExecEnv(ExecutionEnvironmentFactory.getLocal());
-        jointEnv.putAll(pb.environment());
         jointEnv.putAll(info.getEnvironment());
 
         if (isInterrupted()) {
@@ -185,7 +193,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         creation_ts = System.nanoTime();
 
-        setErrorStream(process.getErrorStream());
+        setErrorStream(new ErrorStream(process.getErrorStream(), additionalMsgLatch));
         setInputStream(process.getInputStream());
         setOutputStream(process.getOutputStream());
 
@@ -217,7 +225,57 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             return -1;
         }
 
-        return process.waitFor();
+        try {
+            int exitcode = process.waitFor();
+
+            /*
+             * Bug 179555 - Qt application fails to run in case of default qt sdk installation
+             */
+
+            if (exitcode == -1073741515 && Utilities.isWindows()) {
+                // This means Initialization error. May be the reason is that no required dll found
+                // Several threads may be here.
+                // Must be sure that message is added only once.
+                synchronized (this) {
+                    if (!win1073741515added) {
+                        StringBuilder cmd = new StringBuilder();
+                        Iterator<String> iterator = info.getCommand().iterator();
+                        String exec;
+
+                        if (info.isPtyMode()) {
+                            String s = iterator.next(); // pty wrapper
+                            s = iterator.next(); // quoted executable
+                            s = s.substring(1, s.length() - 1); // remove quotes before converting
+                            // remove quotes before converting
+                            exec = WindowsSupport.getInstance().convertToWindowsPath(s);
+                        } else {
+                            exec = iterator.next();
+                        }
+
+                        if (exec.contains(" ")) { // NOI18N
+                            cmd.append('"').append(exec).append('"').append(' '); // NOI18N
+                        } else {
+                            cmd.append(exec).append(' ');
+                        }
+
+                        while (iterator.hasNext()) {
+                            cmd.append(iterator.next()).append(' ');
+                        }
+
+                        String errorMsg = loc("LocalNativeProcess.windowsProcessStartFailed.1073741515.text", cmd.toString()); // NOI18N
+                        if (info.isPtyMode()) {
+                            errorMsg = errorMsg.replaceAll("\n", "\n\r"); // NOI18N
+                        }
+
+                        ((ErrorStream) getErrorStream()).addErrorMessage(errorMsg);
+                        win1073741515added = true;
+                    }
+                }
+            }
+            return exitcode;
+        } finally {
+            additionalMsgLatch.countDown();
+        }
     }
 
     @Override
@@ -229,5 +287,39 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(LocalNativeProcess.class, key, params);
+    }
+
+    private static class ErrorStream extends InputStream {
+
+        private final InputStream orig;
+        private final CountDownLatch additionalMsgLatch;
+        private volatile ByteArrayInputStream additionalMsg = null;
+
+        public ErrorStream(InputStream orig, CountDownLatch additionalMsgLatch) {
+            this.orig = orig;
+            this.additionalMsgLatch = additionalMsgLatch;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int c = orig.read();
+
+            if (c < 0) {
+                try {
+                    additionalMsgLatch.await();
+                } catch (InterruptedException ex) {
+                }
+            }
+
+            if (additionalMsg != null && c < 0) {
+                c = additionalMsg.read();
+            }
+
+            return c;
+        }
+
+        private void addErrorMessage(String additionalMsg) {
+            this.additionalMsg = new ByteArrayInputStream(additionalMsg.getBytes());
+        }
     }
 }

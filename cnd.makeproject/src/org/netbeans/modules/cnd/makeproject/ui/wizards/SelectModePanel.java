@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -125,24 +128,35 @@ public class SelectModePanel extends javax.swing.JPanel {
     
     private void updateInstruction(){
         if (simpleMode.isSelected()){
+            String tool = "Makefile"; // NOI18N
             String toolsInfo = getString("SelectModeSimpleInstructionExtraText_Make"); // NOI18N
-            if (controller.getWizardStorage() != null && controller.getWizardStorage().getMake() == null) {
+            if (controller.getWizardStorage() != null) {
                 String configure = controller.getWizardStorage().getConfigure();
                 if (configure != null) {
                     toolsInfo = getString("SelectModeSimpleInstructionExtraText_Configure"); // NOI18N
+                    tool = configure;
                     File confFile = FileUtil.normalizeFile(new File(configure));
                     FileObject fo = FileUtil.toFileObject(confFile);
                     if (fo != null) {
                         String mimeType = fo.getMIMEType();
                         if (MIMENames.CMAKE_MIME_TYPE.equals(mimeType)) {
                             toolsInfo = getString("SelectModeSimpleInstructionExtraText_CMake"); // NOI18N
+                            tool = "cmake"; // NOI18N
                         } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mimeType)) {
                             toolsInfo = getString("SelectModeSimpleInstructionExtraText_QMake"); // NOI18N
+                            tool = "qmake"; // NOI18N
                         }
+                    }
+                } else {
+                    String makefile = controller.getWizardStorage().getMake();
+                    if (makefile != null) {
+                        tool = makefile;
                     }
                 }
             }
-            instructions.setText(getString("SelectModeSimpleInstructionText", toolsInfo)); // NOI18N
+            String modeInfo = getString("SimpleModeButtonText", tool); // NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(simpleMode, modeInfo);
+            instructions.setText(getString("SelectModeSimpleInstructionText", toolsInfo));
         } else {
             instructions.setText(getString("SelectModeAdvancedInstructionText")); // NOI18N
         }
@@ -420,10 +434,10 @@ public class SelectModePanel extends javax.swing.JPanel {
                     }
                 }
             }
-            if (ConfigureUtils.findMakefile(path) != null){
+            if (ConfigureUtils.findConfigureScript(path) != null){
                 return true;
             }
-            if (ConfigureUtils.findConfigureScript(path) != null){
+            if (ConfigureUtils.findMakefile(path) != null){
                 return true;
             }
             if (simpleMode.isSelected()) {

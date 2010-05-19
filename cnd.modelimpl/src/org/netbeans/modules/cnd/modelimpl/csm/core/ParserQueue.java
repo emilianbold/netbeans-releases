@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -569,7 +572,7 @@ public final class ParserQueue {
             lastFileInProject = markLastProjectFileActivityIfNeeded(data);
             if (TraceFlags.TIMING && stopWatch != null && !stopWatch.isRunning()) {
                 stopWatch.start();
-                System.err.println("=== Starting parser queue stopwatch " + project.getName()); // NOI18N
+                System.err.println("=== Starting parser queue stopwatch " + project.getName() + " (" + project.getFileContainerSize() + " files)"); // NOI18N
             }
         }
         // TODO: think over, whether this should be under if( notifyListeners
@@ -791,7 +794,7 @@ public final class ParserQueue {
                 // but on the other hand in the case of multiple projects such measuring will never work
                 // since project files might be shuffled in queue
                 if (TraceFlags.TIMING && stopWatch != null && stopWatch.isRunning()) {
-                    stopWatch.stopAndReport("=== Stopping parser queue stopwatch " + project.getName() + ": \t"); // NOI18N
+                    stopWatch.stopAndReport("=== Stopping parser queue stopwatch " + project.getName() + " (" + project.getFileContainerSize() + " files): \t"); // NOI18N
                     if (parseWatch != null) {
                         parseWatch.traceProjectData(project);
                     }
@@ -802,7 +805,7 @@ public final class ParserQueue {
         ProgressSupport.instance().fireFileParsingFinished(file);
         if (lastFileInProject) {
             if (TraceFlags.TRACE_CLOSE_PROJECT) {
-                System.err.println("Last file in project " + project.getName()); // NOI18N
+                System.err.println("Last file in project " + project.getName() + " (" + project.getFileContainerSize() + " files)"); // NOI18N
             }
             handleLastProjectFile(project, data);
             if (idle) {

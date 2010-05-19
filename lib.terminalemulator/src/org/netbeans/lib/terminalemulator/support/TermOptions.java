@@ -1,8 +1,11 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -59,7 +62,7 @@ import java.beans.PropertyChangeListener;
  * the singleton.
  */
 
-public class TermOptions {
+public final class TermOptions {
 
     private static TermOptions DEFAULT;
 
@@ -156,7 +159,10 @@ public class TermOptions {
     void loadFrom(Preferences prefs) {
         if (prefs == null)
             return;
+	String fontFamily = prefs.get(PREFIX + PROP_FONT_FAMILY, font.getFamily());
+	int fontStyle = prefs.getInt(PREFIX + PROP_FONT_STYLE, font.getStyle());
 	fontSize = prefs.getInt(PREFIX + PROP_FONT_SIZE, fontSize);
+
 	tabSize = prefs.getInt(PREFIX + PROP_TAB_SIZE, tabSize);
 	historySize = prefs.getInt(PREFIX + PROP_HISTORY_SIZE, historySize);
 
@@ -177,11 +183,21 @@ public class TermOptions {
 					  scrollOnOutput);
 	lineWrap = prefs.getBoolean(PREFIX + PROP_LINE_WRAP,
 				    lineWrap);
+
+	font = new Font(fontFamily, fontStyle, fontSize);
+
+	// If 'fontfamily' isn't recognized Font.<init> will return
+	// a "Dialog" font, per javadoc, which isn't fixed-width so
+	// we need to fall back on Monospaced.
+	if ("Dialog".equals(font.getFamily()))			// NOI18N
+	    font = new Font("Monospaced", fontStyle, fontSize);// NOI18N
     }
 
     public void storeTo(Preferences prefs) {
         if (prefs == null)
             return;
+	prefs.put(PREFIX + PROP_FONT_FAMILY, font.getFamily());
+	prefs.putInt(PREFIX + PROP_FONT_STYLE, font.getStyle());
 	prefs.putInt(PREFIX + PROP_FONT_SIZE, fontSize);
 	prefs.putInt(PREFIX + PROP_TAB_SIZE, tabSize);
 	prefs.putInt(PREFIX + PROP_HISTORY_SIZE, historySize);
@@ -201,15 +217,24 @@ public class TermOptions {
      */
     public static final String PROP_FONT = "font"; // NOI18N
 
+    // we use PROP_FONT_SIZE and these two when we persist PROP_FONT
+    public static final String PROP_FONT_STYLE = "fontStyle"; // NOI18N
+    public static final String PROP_FONT_FAMILY = "fontFamily"; // NOI18N
+
     private Font font;
 
     public Font getFont() {
 	return font;
     }
+
     public void setFont(Font font) {
 	if (this.font!= font) {
-	    this.font= font;
+	    this.font = font;
 	    dirty = true;
+
+	    // recalculate fontSize as well.
+	    fontSize = this.font.getSize();
+
 	    pcs.firePropertyChange(null, null, null);
 	}
     }
@@ -221,15 +246,18 @@ public class TermOptions {
 
     private int fontSize;
 
-    /*
-     TMP
     public int getFontSize() {
 	return fontSize;
-    } 
-     */
+    }
+
     public void setFontSize(int fontSize) {
 	if (this.fontSize != fontSize) {
 	    this.fontSize = fontSize;
+
+	    // recalculate font as well.
+	    font = new Font(font.getFamily(),
+		            font.getStyle(),
+			    this.fontSize);
 	    dirty = true;
 	    pcs.firePropertyChange(null, null, null);
 	} 

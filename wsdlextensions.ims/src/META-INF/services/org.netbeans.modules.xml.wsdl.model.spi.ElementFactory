@@ -1,0 +1,4 @@
+org.netbeans.modules.wsdlextensions.ims.model.impl.IMSElementFactoryProvider$AddressFactory
+org.netbeans.modules.wsdlextensions.ims.model.impl.IMSElementFactoryProvider$BindingFactory
+org.netbeans.modules.wsdlextensions.ims.model.impl.IMSElementFactoryProvider$OperationFactory
+org.netbeans.modules.wsdlextensions.ims.model.impl.IMSElementFactoryProvider$MessageFactory

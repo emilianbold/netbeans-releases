@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,12 +42,14 @@
 package org.netbeans.modules.dlight.api.tool;
 
 import java.awt.EventQueue;
+import java.beans.FeatureDescriptor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
@@ -94,6 +99,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
     private volatile Boolean dcsInitialized = false;
     private boolean visible;
     private boolean isDetailsEnabled = true;
+    private final FeatureDescriptor descriptor;
     //register accessor which will be used ne friend packages of API/SPI accessor packages
     //to get access to tool creation, etc.
 
@@ -114,6 +120,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         indicatorDataProviders = Collections.synchronizedList(new ArrayList<IndicatorDataProvider<?>>());
         this.visible = configuration.isVisible();
         this.enabled = true;
+        this.descriptor = configuration.detailsDescription;
     }
 
     static DLightTool newDLightTool(DLightToolConfiguration configuration) {
@@ -150,6 +157,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         return collectorsTurnedOn;
     }
 
+    @Override
     public ValidationStatus getValidationStatus() {
         return validationStatus;
     }
@@ -160,6 +168,10 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
     public final String getName() {
         return toolName;
+    }
+
+    public final FeatureDescriptor getFeatureDescriptor(){
+        return descriptor;
     }
 
     public final String getDescription(){
@@ -191,7 +203,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         return dataCollectors;
     }
 
-    private final void initCollectors() {
+    private void initCollectors() {
         synchronized (this) {
             if (dcsInitialized){
                 return;
@@ -203,8 +215,8 @@ public final class DLightTool implements Validateable<DLightTarget> {
             for (DataCollectorConfiguration conf : configurations) {
                 DataCollector<?> collector = DataCollectorProvider.getInstance().createDataCollector(conf);
                 if (collector == null) {
-                    log.info("Could not find DataCollector for configuration with id:" + conf.getID() + " check if " + //NOI18N
-                            "DataColelctorFactory is registered in Global Lookup with the same ID"); //NOI18N
+                    log.log(Level.INFO,"Could not find DataCollector for configuration with id:{0}" + " check if " + //NOI18N
+                            "DataColelctorFactory is registered in Global Lookup with the same ID", conf.getID()); //NOI18N
                     continue;
                 }
                 registerCollector(collector);
@@ -219,7 +231,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         }
     }
 
-    private final void initIndicatorDataProviders() {
+    private void initIndicatorDataProviders() {
         synchronized (this) {
             if (idpsInitialized) {
                 return;
@@ -235,8 +247,8 @@ public final class DLightTool implements Validateable<DLightTarget> {
                         (!(idp instanceof DataCollectorConfiguration)) ) {
                     IndicatorDataProvider<?> indDataProvider = IDPProvider.getInstance().create(idp);
                     if (indDataProvider == null) {
-                        log.info("Could not find IndicatorDataProvider for configuration with id:" + idp.getID() + " check if " + //NOI18N
-                                "IndicatorDataProviderFactory is registered in Global Lookup with the same ID"); //NOI18N
+                        log.log(Level.INFO,"Could not find IndicatorDataProvider for configuration with id:{0}" + " check if " + //NOI18N
+                                "IndicatorDataProviderFactory is registered in Global Lookup with the same ID", idp.getID()); //NOI18N
                         continue;
 
                     }
@@ -256,7 +268,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         return dataCollectors;
     }
 
-    private final void registerIndicatorDataProvider(IndicatorDataProvider idp) {
+    private void registerIndicatorDataProvider(IndicatorDataProvider idp) {
         if (!indicatorDataProviders.contains(idp)) {
             indicatorDataProviders.add(idp);
         }
@@ -274,14 +286,14 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
     final List<Indicator<?>> getIndicators() {
         synchronized (indicators) {
-            if (indicators.size() == 0) {
+            if (indicators.isEmpty()) {
                 //Add All indicators
                 List<IndicatorConfiguration> indConfigurationsList = DLightToolConfigurationAccessor.getDefault().getIndicators(configuration);
                 for (IndicatorConfiguration indConfiguration : indConfigurationsList) {
                     Indicator indicator = IndicatorProvider.getInstance().createIndicator(id, indConfiguration, isDetailsEnabled);
                     if (indicator == null) {
-                        log.info("Could not find Indicator for configuration with id:" + indConfiguration.getID() + " check if " + //NOI18N
-                                "IndicatorFactory is registered in Global Lookup with the same ID"); //NOI18N
+                        log.log(Level.INFO,"Could not find Indicator for configuration with id:{0}" + " check if " + //NOI18N
+                                "IndicatorFactory is registered in Global Lookup with the same ID", indConfiguration.getID()); //NOI18N
                         continue;
 
                     }
@@ -307,12 +319,14 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
         collector.addValidationListener(new ValidationListener() {
 
+            @Override
             public void validationStateChanged(Validateable source, ValidationStatus oldStatus, ValidationStatus newStatus) {
                 notifyStatusChanged(oldStatus, newStatus);
             }
         });
     }
 
+    @Override
     public final ValidationStatus validate(final DLightTarget target) {
         if (validationStatus.isValid()) {
             return validationStatus;
@@ -337,6 +351,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         if (EventQueue.isDispatchThread()) {
             Future<ValidationStatus> task = DLightExecutorService.submit(new Callable<ValidationStatus>() {
 
+                @Override
                 public ValidationStatus call() throws Exception {
                     ValidationStatus result = ValidationStatus.initialStatus();
 
@@ -387,6 +402,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         if (EventQueue.isDispatchThread()) {
             Future<ValidationStatus> task = DLightExecutorService.submit(new Callable<ValidationStatus>() {
 
+                @Override
                 public ValidationStatus call() throws Exception {
                     ValidationStatus result = ValidationStatus.initialStatus();
 
@@ -416,6 +432,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
 
     }
 
+    @Override
     public final void invalidate() {
         validationStatus = ValidationStatus.initialStatus();
         notifyStatusChanged(null, validationStatus);
@@ -427,6 +444,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
         if (EventQueue.isDispatchThread()) {
             Future<ValidationStatus> task = DLightExecutorService.submit(new Callable<ValidationStatus>() {
 
+                @Override
                 public ValidationStatus call() throws Exception {
                     ValidationStatus result = ValidationStatus.initialStatus();
 
@@ -460,17 +478,19 @@ public final class DLightTool implements Validateable<DLightTarget> {
         }
     }
 
+    @Override
     public final void addValidationListener(ValidationListener listener) {
         if (!validationListeners.contains(listener)) {
             validationListeners.add(listener);
         }
     }
 
+    @Override
     public final void removeValidationListener(ValidationListener listener) {
         validationListeners.remove(listener);
     }
 
-    private final void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
+    private void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
         if (oldStatus != null && oldStatus.equals(newStatus)) {
             return;
         }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -169,6 +172,13 @@ public class AstRenderer {
                         }
                     } catch (AstRendererException e) {
                         DiagnosticExceptoins.register(e);
+                    }
+                    break;
+                case CPPTokenTypes.CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION:
+                    if (renderForwardClassDeclaration(token, currentNamespace, container, file, isRenderingLocalContext())) {
+                        break;
+                    } else {
+                        renderForwardMemberDeclaration(token, currentNamespace, container, file);
                     }
                     break;
                 case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
@@ -856,8 +866,19 @@ public class AstRenderer {
 
                     CsmClassForwardDeclaration cfdi = null;
 
+                    boolean typeof = false;
                     for (AST curr = firstChild; curr != null; curr = curr.getNextSibling()) {
                         switch (curr.getType()) {
+                            case CPPTokenTypes.LITERAL_typeof:
+                            case CPPTokenTypes.LITERAL___typeof:
+                            case CPPTokenTypes.LITERAL___typeof__:
+                                typeof = true;
+                                break;
+                            case CPPTokenTypes.CSM_EXPRESSION:
+                                if (typeof) {
+                                    classifier = curr.getFirstChild();
+                                }
+                                break;
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
                                 classifier = curr;
@@ -955,7 +976,7 @@ public class AstRenderer {
             return false;
         }
         if (child.getType() == CPPTokenTypes.LITERAL_template) {
-            child = child.getNextSibling();
+            child = skipTemplateSibling(child);
             if (child == null) {
                 return false;
             }
@@ -1275,7 +1296,23 @@ public class AstRenderer {
             tokType = tokType.getNextSibling();
         }
 
-        if (tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
+        boolean typeof = false;
+        if (tokType.getType() == CPPTokenTypes.LITERAL_typeof ||
+                tokType.getType() == CPPTokenTypes.LITERAL___typeof ||
+                tokType.getType() == CPPTokenTypes.LITERAL___typeof__
+                ) {
+            typeof = true;
+            AST next = tokType.getNextSibling();
+            if (next != null && next.getType() == CPPTokenTypes.LPAREN) {
+                next = next.getNextSibling();
+                typeAST = next;
+            }
+            if (typeAST != null && typeAST.getType() == CPPTokenTypes.CSM_EXPRESSION) {
+                typeAST = typeAST.getFirstChild();
+            }
+            tokType = next.getNextSibling();
+        }
+        if (typeof || tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
                 tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
                 tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && isThisReference) {
 

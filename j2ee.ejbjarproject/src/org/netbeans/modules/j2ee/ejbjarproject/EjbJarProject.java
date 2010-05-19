@@ -2,7 +2,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -14,9 +17,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,12 +48,10 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -82,7 +83,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSClientSuppor
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
@@ -106,9 +106,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -122,7 +120,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -132,6 +129,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
@@ -149,11 +147,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
-import org.w3c.dom.Comment;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
@@ -161,7 +156,6 @@ import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.NotifyDescriptor;
@@ -184,7 +178,7 @@ import org.openide.xml.XMLUtil;
     sharedNamespace=EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=EjbJarProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
-public class EjbJarProject implements Project, AntProjectListener, FileChangeListener {
+public class EjbJarProject implements Project, FileChangeListener {
     
     private final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif", false); // NOI18N
     
@@ -312,7 +306,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         css = new CopyOnSaveSupport();
         artifactSupport = new ArtifactCopySupport();
         deployOnSaveSupport = new DeployOnSaveSupportProxy();
-        helper.addAntProjectListener(this);
         ProjectManager.mutex().postWriteRequest(
              new Runnable () {
                  public void run() {
@@ -409,7 +402,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         Lookup base = Lookups.fixed(new Object[] {
                 EjbJarProject.this, // never cast an externally obtained Project to EjbJarProject - use lookup instead
                 buildExtender,
-                new Info(),
+                QuerySupport.createProjectInformation(helper, this, PROJECT_ICON),
                 aux,
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
@@ -466,20 +459,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     
     public ClassPathProviderImpl getClassPathProvider () {
         return this.cpProvider;
-    }
-    
-    public void configurationXmlChanged(AntProjectEvent ev) {
-        if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
-            // Could be various kinds of changes, but name & displayName might have changed.
-            Info info = (Info)getLookup().lookup(ProjectInformation.class);
-            info.firePropertyChange(ProjectInformation.PROP_NAME);
-            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
-        }
-    }
-    
-    public void propertiesChanged(AntProjectEvent ev) {
-        // currently ignored
-        //TODO: should not be ignored!
     }
     
     String getBuildXmlName() {
@@ -583,20 +562,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     
     /** Return configured project name. */
     public String getName() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-            public String run() {
-                Element data = updateHelper.getPrimaryConfigurationData(true);
-                // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); //NOI18N
-                if (nl.getLength() == 1) {
-                    nl = nl.item(0).getChildNodes();
-                    if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                        return ((Text) nl.item(0)).getNodeValue();
-                    }
-                }
-                return "A Broken EJB Project"; // NOI18N
-            }
-        });
+        return ProjectUtils.getInformation(this).getName();
     }
 
     /** Store configured project name. */
@@ -783,61 +749,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     }
 
     // Private innerclasses ----------------------------------------------------
-    
-    //when #110886 gets implemented, this class is obsolete
-    private final class Info implements ProjectInformation {
-        
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        
-        private WeakReference<String> cachedName = null;
-        
-        Info() {}
-        
-        void firePropertyChange(String prop) {
-            pcs.firePropertyChange(prop, null, null);
-            synchronized (pcs) {
-                cachedName = null;
-            }
-        }
-        
-        public String getName() {
-            return PropertyUtils.getUsablePropertyName(getDisplayName());
-        }
-        
-        public String getDisplayName() {
-            synchronized (pcs) {
-                if (cachedName != null) {
-                    String dn = cachedName.get();
-                    if (dn != null) {
-                        return dn;
-                    }
-                }
-            }        
-            String dn = EjbJarProject.this.getName();
-            synchronized (pcs) {
-                cachedName = new WeakReference<String>(dn);
-            }
-            return dn;
-        }
-        
-        public Icon getIcon() {
-            return PROJECT_ICON;
-        }
-        
-        public Project getProject() {
-            return EjbJarProject.this;
-        }
-        
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            pcs.addPropertyChangeListener(listener);
-        }
-        
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            pcs.removePropertyChangeListener(listener);
-        }
-        
-    }
-    
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
         
         ProjectXmlSavedHookImpl() {}

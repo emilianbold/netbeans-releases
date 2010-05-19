@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,10 +45,8 @@
 package org.netbeans.modules.j2ee.archive.project;
 
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,8 +58,8 @@ import javax.swing.Icon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.archive.Util;
 import org.netbeans.modules.j2ee.archive.customizer.ProvidesCustomizer;
@@ -74,6 +75,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -83,7 +85,6 @@ import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
@@ -196,22 +197,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     
     /** Return configured project name. */
     public String getName() {
-        return (String) ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-            @Override
-            public String run() {
-                Element data = updateHelper.getPrimaryConfigurationData(true);
-                // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(ArchiveProjectType.PROJECT_CONFIGURATION_NS, NAME_LIT);
-                if (nl.getLength() == 1) {
-                    nl = nl.item(0).getChildNodes();
-                    if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                        return ((Text) nl.item(0)).getNodeValue();
-                    }
-                }
-                return "BINARCHIVE???"; // NOI18N
-            }
-        });
-        
+        return ProjectUtils.getInformation(this).getName();
     }
     
     public ArchiveProjectProperties getArchiveProjectProperties() {
@@ -226,9 +212,9 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     private final class HelpfulLookup extends Lookup {
         
         private boolean verbose = Boolean.getBoolean("archiveproject.lookup.verbose");
-        
+
         Lookup inner = LookupProviderSupport.createCompositeLookup(Lookups.fixed(new Object[] {
-            new Info(),
+            QuerySupport.createProjectInformation(helper, ArchiveProject.this, ARCHIVE_PROJECT_ICON),
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
             helper.createGlobFileBuiltQuery(eval, new String[] {"${src.dir}/*.java"},
@@ -311,64 +297,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             return ret;
         }
     }
-    //when #110886 gets implemented, this class is obsolete    
-    private final class Info implements ProjectInformation {
-        
-        private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        private WeakReference<String> cachedName = null;
-        
-        Info() {}
-        
-        void firePropertyChange(String prop) {
-            pcs.firePropertyChange(prop, null, null);
-            synchronized (pcs) {
-                cachedName = null;
-            }
-        }
-        
-        @Override
-        public String getName() {
-            return PropertyUtils.getUsablePropertyName(getDisplayName());
-        }
-        
-        @Override
-        public String getDisplayName() {
-            synchronized (pcs) {
-                if (cachedName != null) {
-                    String dn = cachedName.get();
-                    if (dn != null) {
-                        return dn;
-                    }
-                }
-            }
-            String dn = ArchiveProject.this.getNamedProjectAttribute(NAME_LIT);
-            synchronized (pcs) {
-                cachedName = new WeakReference<String>(dn);
-            }
-            return dn;
-        }
-        
-        @Override
-        public Icon getIcon() {
-            return ARCHIVE_PROJECT_ICON;
-        }
-        
-        @Override
-        public Project getProject() {
-            return ArchiveProject.this;
-        }
-        
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            pcs.addPropertyChangeListener(listener);
-        }
-        
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            pcs.removePropertyChangeListener(listener);
-        }
-    }
-    
+
     private final class MyAntProvider implements AntArtifactProvider {
         // TODO - Need to fix for ejb-jar/app-client/resource-adapter cases
         @Override

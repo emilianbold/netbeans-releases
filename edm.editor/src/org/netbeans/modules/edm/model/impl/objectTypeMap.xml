@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<objectTypeMap>
+    <objectTypeClass name="scalar_operator" class="org.netbeans.modules.edm.model.impl.SQLGenericOperatorImpl" />
+    <objectTypeClass name="generic_operator" class="org.netbeans.modules.edm.model.impl.SQLGenericOperatorImpl" />
+    <objectTypeClass name="cast_operator" class="org.netbeans.modules.edm.model.impl.SQLCastOperatorImpl" />
+    <objectTypeClass name="custom_operator" class="org.netbeans.modules.edm.model.impl.SQLCustomOperatorImpl" />
+    <objectTypeClass name="datediff_operator" class="org.netbeans.modules.edm.model.impl.SQLGenericOperatorImpl" />
+    <objectTypeClass name="dateadd_operator" class="org.netbeans.modules.edm.model.impl.SQLGenericOperatorImpl" />
+    <objectTypeClass name="datetochar_operator" class="org.netbeans.modules.edm.model.impl.SQLGenericOperatorImpl" />
+    <objectTypeClass name="chartodate_operator" class="org.netbeans.modules.edm.model.impl.SQLGenericOperatorImpl" />
+    <objectTypeClass name="datepart_operator" class="org.netbeans.modules.edm.model.impl.SQLGenericOperatorImpl" />
+    <objectTypeClass name="case_operator" class="org.netbeans.modules.edm.model.impl.SQLCaseOperatorImpl" />
+    <objectTypeClass name="join_operator" class="org.netbeans.modules.edm.model.impl.SQLJoinOperatorImpl" />
+    <objectTypeClass name="predicate" class="org.netbeans.modules.edm.model.impl.SQLPredicateImpl" />
+    <objectTypeClass name="visible_predicate" class="org.netbeans.modules.edm.model.impl.VisibleSQLPredicateImpl" />
+    <objectTypeClass name="filter" class="org.netbeans.modules.edm.model.impl.SQLFilterImpl" />
+    <objectTypeClass name="literal" class="org.netbeans.modules.edm.model.impl.SQLLiteralImpl" />
+    <objectTypeClass name="visible_literal" class="org.netbeans.modules.edm.model.impl.VisibleSQLLiteralImpl" />
+    <objectTypeClass name="when" class="org.netbeans.modules.edm.model.impl.SQLWhenImpl" />
+    <objectTypeClass name="source_table" class="org.netbeans.modules.edm.model.impl.SourceTableImpl" />
+    <objectTypeClass name="target_table" class="org.netbeans.modules.edm.model.impl.TargetTableImpl" />
+    <objectTypeClass name="column_ref" class="org.netbeans.modules.edm.model.impl.ColumnRefImpl" />
+    <objectTypeClass name="join_view" class="org.netbeans.modules.edm.model.impl.SQLJoinViewImpl" />
+    <objectTypeClass name="join_table" class="org.netbeans.modules.edm.model.impl.SQLJoinTableImpl" />
+</objectTypeMap>

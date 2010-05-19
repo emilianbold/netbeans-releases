@@ -1,0 +1,3 @@
+#set( $indent = "    " )
+SELECT COUNT(*) FROM $tableName
+#if( $useWhere )${indent}WHERE $whereCondition#end

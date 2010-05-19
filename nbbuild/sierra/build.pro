@@ -2,7 +2,10 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
+  Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+  Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+  Other names may be trademarks of their respective owners.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common
@@ -14,9 +17,9 @@
   specific language governing permissions and limitations under the
   License. When distributing the software, include this License Header
   Notice in each file and include the License file at
-  nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+  nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
   particular file as subject to the "Classpath" exception as provided
-  by Sun in the GPL Version 2 section of the License file that
+  by Oracle in the GPL Version 2 section of the License file that
   accompanied this code. If applicable, add the following below the
   License Header, with the fields enclosed by brackets [] replaced by
   your own identifying information:
@@ -45,17 +48,74 @@
     <property name="netbeans.prox" value="false"/>
     <property name="netbeans.type" value="java"/>
 
-    <!-- NetBeans the latest stable nightly -->
-    <!-- property name="netbeans.host" value="http://smetiste.czech.sun.com"/-->
-    <!-- property name="netbeans.path" value="builds/netbeans/trunk/daily/2010-03-17_02-01-09/zip"/-->
-    <!-- property name="netbeans.zip"  value="netbeans-6.9.zip"/-->
+    <!-- GlassFish ESB latest continuous -->
+    <property name="sierra.host" value="http://nephrite.russia.sun.com:8080"/>
+    <property name="sierra.path" value="hudson/job/main/ws/cache/latest"/>
+    <property name="sierra.file" value="main.zip"/>
+    <property name="sierra.name" value="main"/>
+    <property name="sierra.user" value=".netbeans/sierra"/>
 
-    <!-- NetBeans the latest nightly -->
+    <!-- NetBeans latest nightly -->
     <property name="netbeans.host" value="http://smetiste.czech.sun.com"/>
     <property name="netbeans.path" value="builds/netbeans/trunk/daily/latest/zip"/>
     <property name="netbeans.zip"  value="netbeans-6.9.zip"/>
+    <property name="netbeans.user" value=".netbeans/dev"/>
 
+    <!-- cvs -->
+    <property name="test.cvs.host" value=":pserver:guest@cvs.dev.java.net:/cvs"/>
+    <property name="test.cvs.path" value="open-jbi-components/driver-tests/bpelse"/>
+    <property name="test.cvs.branch" value="-A"/>
+    <property name="test.cvs.modules" value="
+        ${test.cvs.path}/assign
+        ${test.cvs.path}/AtomicTxStart
+        ${test.cvs.path}/benchmark
+        ${test.cvs.path}/blueprints
+        ${test.cvs.path}/BpelToBpel
+        ${test.cvs.path}/CAPSIntegration
+        ${test.cvs.path}/clusterSupport
+        ${test.cvs.path}/compensation
+        ${test.cvs.path}/correlation
+        ${test.cvs.path}/dynamicpartnerlink
+        ${test.cvs.path}/empty
+        ${test.cvs.path}/eventHandlers
+        ${test.cvs.path}/exit
+        ${test.cvs.path}/faulthandling
+        ${test.cvs.path}/flow
+        ${test.cvs.path}/foreach-bpel20
+        ${test.cvs.path}/i18n
+        ${test.cvs.path}/if
+        ${test.cvs.path}/implementMultiOperations
+        ${test.cvs.path}/JavaEEIntegration
+        ${test.cvs.path}/MessageExchange
+        ${test.cvs.path}/misc
+        ${test.cvs.path}/nmproperty
+        ${test.cvs.path}/PartnerLinks
+        ${test.cvs.path}/pick
+        ${test.cvs.path}/POJOCalls
+        ${test.cvs.path}/referenced
+        ${test.cvs.path}/repeatuntil
+        ${test.cvs.path}/rethrow
+        ${test.cvs.path}/samples
+        ${test.cvs.path}/scalability
+        ${test.cvs.path}/scenarios
+        ${test.cvs.path}/SchemaElemDecl
+        ${test.cvs.path}/ScopeTermination
+        ${test.cvs.path}/systemicqualities
+        ${test.cvs.path}/TerminationHandler
+        ${test.cvs.path}/TestsForBugs
+        ${test.cvs.path}/wait
+        ${test.cvs.path}/WaitingRequestLifeSpan
+        ${test.cvs.path}/while
+        ${test.cvs.path}/xpathfunctions
+        ${test.cvs.path}/xsddatatypes
+        ${test.cvs.path}/xslt
+    "/>
     <property name="home" value="../.."/>
     <property name="cache" value="${home}/../cache"/>
     <property name="build.name"  value="main"/>
+    <property name="repository" value="http://hg.netbeans.org/main"/>
+    <property name="jbi" location="${cache}/test/${test.cvs.path}"/>
+    <property name="bpel.samples" value="${home}/bpel.samples/resources"/>
+    <property name="xslt.samples" value="${home}/xslt.samples/resources"/>
+    <property name="build.number" value="${home}/nbbuild/netbeans/platform/build_number"/>
 </project>

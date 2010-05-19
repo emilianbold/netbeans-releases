@@ -23,8 +23,7 @@
         <property name="rest.base.url" value="${client.url}"/>
     </target>
     <target name="test-restbeans" depends="run-deploy,-init-display-browser,-check-trim,-trim-url,-spare-url">
-        <xmlproperty file="${webinf.dir}/web.xml"/>
-        <replace file="${restbeans.test.file}" token="${base.url.token}" value="${rest.base.url}||${web-app.servlet-mapping.servlet-name}||${web-app.servlet-mapping.url-pattern}"/>
+        <replace file="${restbeans.test.file}" token="${base.url.token}" value="${rest.base.url}||${rest.application.path}"/>
         <condition property="do.browse-url">
             <istrue value="${display.browser}"/>
         </condition>

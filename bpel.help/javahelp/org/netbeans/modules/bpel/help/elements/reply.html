@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Reply</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Reply</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Reply activity is used to send a response after a Receive activity has been called. The combination of Receive and Reply elements creates a request-response operation. The Reply activity is used in a synchronous (request/response)
+interaction, and specifies the Partner Link and operation. All these attributes should match those for the Receive activity that invoked the process. </p>
+<p>Note that a Reply activity should always be preceded by a Receive activity for the same Partner Link. </p>
+<p><b>To use the Reply element</b>:</p>
+<ol>
+  <li>In the Design view, drag the Reply element from the Palette to the diagram.</li>
+  <li>Right-click the Reply element and choose Edit.</li>
+  <li>In the Property Editor dialog box, specify the following:
+    <ul>
+        <li><b>Name</b>. Enter an arbitrary name. </li>
+      <li><b>Partner Link</b>. Select a Partner Link to which the Reply will send a message. Another way to associate a Partner Link with the Reply activity is to draw a <a href="../design/change_message_flow.html" title="Changing Message Flows">message flow</a> on the diagram.</li>
+      <li><b>Operation</b>. Define an operation associated with the Reply element. The Partner Link and operation should coincide with those of the matching Receive element.  </li>
+    </ul>
+  <li>Select the type of response: </li>
+      <ul>
+          <li><b>Normal Response</b>. <span class="tut"> Select this option to configure the Reply element to send a message of normal response type. Optionally, specify the output variable: either create a new output variable or browse for an existing variable.</span></li>
+          <li><b>Fault Response</b>.  <span class="tut">Select Fault Response to configure the Reply element to send a fault message. Choose a fault name and, optionally, specify the fault variable: either create a new fault variable or browse for an existing variable. </span>See <a href="../properties/throw_name_props.html">Choose Fault Name Dialog Box</a> for details about selecting faults.</li>
+      </ul>
+      <p>The Reply element is now configured to send a response message to a partner web service.</p>
+</ol>
+<h3>Adding Correlation</h3>
+<p>To define correlation <a href="../design/about_correlation_and_wizard.html">use the Correlation Wizard</a>. You can also <a href="../design/create_correlation_manually.html">set the correlation manually</a>. </p>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="partner_link.html" title="Partner Link">Partner Link</a></dd>
+<dd><a href="receive.html" title="Receive">Receive</a></dd>
+<dd><a href="../design/about_correlation_and_wizard.html" title="Understanding Correlation">Understanding Correlation</a></dd>
+<dd><a href="create_variable.html" title="Creating Variables">Creating Variables</a></dd>
+<dd><a href="../properties/new_input_variable.html" title="New Variable Dialog Box">New Variable Dialog Box</a></dd>
+<dd><a href="palette_web_svc.html" title="BPEL Designer Palette: Web Service">BPEL Designer Palette: Web Service</a></dd>
+<dd><a href="../windows_editors/design_view.html" title="About the Design View of the BPEL Designer">About the Design View of the BPEL Designer</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

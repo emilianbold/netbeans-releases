@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
 import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider;
 import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.Function;
 import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.Parameter;
@@ -53,7 +57,6 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -125,7 +128,11 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             switch (t.getTokenID()) {
                 case NEW_LINE:
                 case PREPROCESSOR_DIRECTIVE:
-                    return token;
+                    if (t.isSkipPP()) {
+                        return token;
+                    } else {
+                        return t;
+                    }
                 case WHITESPACE:
                     break;
                 default:
@@ -137,10 +144,6 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
     }
 
     private int indentLine(TokenItem token, int caretOffset) {
-        if (isPreprocessorLine(token)) {
-            // leave untouched for now, (bug#22570)
-            return -1;
-        }
         //if ((dotPos >= 1 && DocumentUtilities.getText(doc).charAt(dotPos-1) != '\\')
         //    || (dotPos >= 2 && DocumentUtilities.getText(doc).charAt(dotPos-2) == '\\')) {
         if (token.getTokenID() == CppTokenId.STRING_LITERAL || token.getTokenID() == CppTokenId.CHAR_LITERAL) {
@@ -194,6 +197,21 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                 return indent;
             }
         }
+        TokenItem ppToken = moveToFirstLineImportantToken(new TokenItem(ts, false));
+        if (isPreprocessorLine(ppToken)) {
+            if (codeStyle.sharpAtStartLine()) {
+                return 0;
+            } else {
+                switch (codeStyle.indentPreprocessorDirectives()){
+                    case PREPROCESSOR_INDENT:
+                        return findPPIndent(ppToken);
+                    case START_LINE:
+                        return 0;
+                    case CODE_INDENT:
+                        break;
+                }
+            }
+        }
         return findIndent(moveToFirstLineImportantToken(token));
     }
 
@@ -215,6 +233,129 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
      */
     private boolean isCCDocComment(TokenItem token) {
         return isMultiLineComment(token);
+    }
+
+    /**
+     * Find the indentation for the first token on the line.
+     * The given token is also examined in some cases.
+     */
+    private int findPPIndent(TokenItem token) {
+        int indent = -1; // assign invalid indent
+        // First check the given token
+        if (token != null) {
+            CppTokenId currentId = token.getTokenPPID();
+            TokenItem prev = findPreviousPP(token);
+            if (prev == null) {
+                return 0;
+            }
+            CppTokenId prevId = prev.getTokenPPID();
+            switch (prevId) {
+                case PREPROCESSOR_IF:
+                case PREPROCESSOR_IFDEF:
+                case PREPROCESSOR_IFNDEF:
+                case PREPROCESSOR_ELSE:
+                case PREPROCESSOR_ELIF:
+                    switch (currentId) {
+                        case PREPROCESSOR_ELSE:
+                        case PREPROCESSOR_ELIF:
+                        case PREPROCESSOR_ENDIF:
+                            indent = getTokenIndent(prev);
+                            break;
+                        default:
+                            indent = getTokenIndent(prev)+ getShiftWidth();
+                            break;
+                    }
+                    break;
+                case PREPROCESSOR_DIRECTIVE:
+                case PREPROCESSOR_START:
+                case PREPROCESSOR_DEFINE:
+                case PREPROCESSOR_UNDEF:
+                case PREPROCESSOR_INCLUDE:
+                case PREPROCESSOR_INCLUDE_NEXT:
+                case PREPROCESSOR_LINE:
+                case PREPROCESSOR_IDENT:
+                case PREPROCESSOR_PRAGMA:
+                case PREPROCESSOR_WARNING:
+                case PREPROCESSOR_ERROR:
+                case PREPROCESSOR_DEFINED:
+                    switch (currentId) {
+                        case PREPROCESSOR_ELSE:
+                        case PREPROCESSOR_ELIF:
+                        case PREPROCESSOR_ENDIF:
+                            // need find correspondend if-else
+                            TokenItem prevIf = matchPreviousPP(prev);
+                            if (prevIf != null) {
+                                indent = getTokenIndent(prevIf);
+                            } else {
+                                indent = getTokenIndent(prev);
+                            }
+                            break;
+                        default:
+                            indent = getTokenIndent(prev);
+                            break;
+                    }
+                    break;
+                case PREPROCESSOR_ENDIF:
+                    switch (currentId) {
+                        case PREPROCESSOR_ELSE:
+                        case PREPROCESSOR_ELIF:
+                        case PREPROCESSOR_ENDIF:
+                            indent = getTokenIndent(prev) - getShiftWidth();;
+                            break;
+                        default:
+                            indent = getTokenIndent(prev);
+                            break;
+                    }
+                    break;
+            }
+        }
+        return indent;
+    }
+
+    private TokenItem findPreviousPP(TokenItem token) {
+        while (token != null) {
+            TokenItem t = token.getPrevious();
+            if (t != null) {
+                if (isPreprocessorLine(t)){
+                    return t;
+                }
+            }
+            token = t;
+        }
+        return null;
+    }
+
+    private TokenItem matchPreviousPP(TokenItem token) {
+        int level = 1;
+        while (token != null) {
+            TokenItem t = findPreviousPP(token);
+            if (t != null) {
+                switch (t.getTokenPPID()){
+                    case PREPROCESSOR_IF:
+                    case PREPROCESSOR_IFDEF:
+                    case PREPROCESSOR_IFNDEF:
+                        level--;
+                        if (level <= 0) {
+                            return t;
+                        }
+                        break;
+                    case PREPROCESSOR_ELSE:
+                    case PREPROCESSOR_ELIF:
+                        if (level == 0) {
+                            return t;
+                        }
+                        break;
+                    case PREPROCESSOR_ENDIF:
+                        level++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            token = t;
+        }
+        return null;
+
     }
 
     /**

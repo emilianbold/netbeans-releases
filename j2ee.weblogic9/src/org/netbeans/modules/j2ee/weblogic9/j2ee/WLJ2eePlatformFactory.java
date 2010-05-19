@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,6 +72,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -201,7 +205,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             
             // add the required jars to the library
             try {
-                List list = new ArrayList();
+                List<URL> list = new ArrayList<URL>();
                 list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/weblogic.jar")));    // NOI18N
                 File apiFile = new File(getPlatformRoot(), "server/lib/api.jar"); // NOI18N
                 if (apiFile.exists()) {
@@ -209,29 +213,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     list.addAll(getJarClassPath(apiFile));
                 }
 
-                //XXX there seems to be a bug in api.jar - it does not contain link to javax.persistence
-                File platformRootFile = new File(getPlatformRoot());
-                File middleware = platformRootFile.getParentFile();
-                // make guess :(
-                if (middleware != null && middleware.exists()) {
-                    File modules = new File(middleware, "modules"); // NOI18N
-                    if (modules.exists() && modules.isDirectory()) {
-                        File[] persistenceCandidates = modules.listFiles(new FilenameFilter() {
-                            @Override
-                            public boolean accept(File dir, String name) {
-                                return name.startsWith("javax.persistence"); // NOI18N
-                            }
-                        });
-                        if (persistenceCandidates.length > 0) {
-                            for (File candidate : persistenceCandidates) {
-                                list.add(fileToUrl(candidate));
-                            }
-                            if (persistenceCandidates.length > 1) {
-                                LOGGER.log(Level.INFO, "Multiple javax.persistence JAR candidates");
-                            }
-                        }
-                    }
-                }
+                addPersistenceLibrary(list);
 
                 // file needed for jsp parsing WL9 and WL10
                 list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/wls-api.jar")));         // NOI18N
@@ -271,7 +253,41 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         public String getDisplayName() {
             return NbBundle.getMessage(WLJ2eePlatformFactory.class, "PLATFORM_NAME"); // NOI18N
         }
-        
+
+        //XXX there seems to be a bug in api.jar - it does not contain link to javax.persistence
+        private void addPersistenceLibrary(List<URL> list) throws MalformedURLException {
+            File platformRootFile = new File(getPlatformRoot());
+            File middleware = null;
+            String mwHome = dm.getProductProperties().getMiddlewareHome();
+            if (mwHome != null) {
+                middleware = new File(mwHome);
+            }
+            if (middleware == null || !middleware.exists() || !middleware.isDirectory()) {
+                middleware = platformRootFile.getParentFile();
+            }
+
+            // make guess :(
+            if (middleware != null && middleware.exists() && middleware.isDirectory()) {
+                File modules = new File(middleware, "modules"); // NOI18N
+                if (modules.exists() && modules.isDirectory()) {
+                    File[] persistenceCandidates = modules.listFiles(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String name) {
+                            return name.startsWith("javax.persistence"); // NOI18N
+                        }
+                    });
+                    if (persistenceCandidates.length > 0) {
+                        for (File candidate : persistenceCandidates) {
+                            list.add(fileToUrl(candidate));
+                        }
+                        if (persistenceCandidates.length > 1) {
+                            LOGGER.log(Level.INFO, "Multiple javax.persistence JAR candidates");
+                        }
+                    }
+                }
+            }
+        }
+
         /**
          * Converts a file to the URI in system resources.
          * Copied from the plugin for Sun Appserver 8

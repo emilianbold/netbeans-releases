@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<TemplateGroup>
+    <Template name="SourceTable">
+        <PropertyGroup name="default" position="0" >
+            <OptionProperty name="extractionType" valueType="java.lang.String" position="0"  default="true" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
+                <Option name="full" value="full" />
+                <Option name="conditional" value="conditional" />
+            </OptionProperty>
+            <Property name="extractionCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true"  />
+            <Property name="validationCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true"  />
+            <Property name="selectDistinct" valueType="java.lang.Boolean" position="3"  />
+            <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
+            <Property name="schema" valueType="java.lang.String" position="5" readOnly="true"/>
+            <Property name="catalog" valueType="java.lang.String" position="6" readOnly="true" />
+            <Property name="modelName" valueType="java.lang.String" position="7" readOnly="true" customEditor= "true"/>
+            <Property name="primaryKeys" valueType="java.lang.String" position="8" readOnly="true" customEditor="true" />
+            <Property name="foreignKeys" valueType="java.lang.String" position="9" readOnly="true" customEditor="true" />
+            <Property name="indices" valueType="java.lang.String" position="10" readOnly="true" customEditor="true" />
+        </PropertyGroup>
+        
+        <PropertyGroup name="expert" position="1" >
+            <Property name="aliasName" valueType="java.lang.String" position="1" readOnly="true" />
+            <Property name="userDefinedTableName" valueType="java.lang.String" position="2"  />
+            <Property name="userDefinedSchemaName" valueType="java.lang.String" position="3" />
+            <Property name="userDefinedCatalogName" valueType="java.lang.String" position="4" />
+            <Property name="useFullyQualifiedName" valueType="java.lang.Boolean" position="5" />
+            <Property name="tablePrefix" valueType="java.lang.String" position="6"  />
+            <Property name="stagingTableName" valueType="java.lang.String" position="7" />
+            <Property name="dropStagingTable" valueType="java.lang.Boolean" position="8"  default="true" />
+            <Property name="truncateStagingTable" valueType="java.lang.Boolean" position="9"  default="true" />
+            <Property name="batchSize" valueType="java.lang.Integer" position="10" />
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="TargetTable">
+        <PropertyGroup name="default" position="0" >
+            <OptionProperty name="strStatementType" valueType="java.lang.String" position="1" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
+                <Option name="insert" value="insert" />
+                <Option name="insert_update" value="insert_update" />
+                <Option name="update" value="update" />
+                <Option name="delete" value="delete" />
+            </OptionProperty>
+            <Property name="joinCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true" />
+            <Property name="filterCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true" />
+            <Property name="SQLGroupBy" valueType="org.netbeans.modules.sql.framework.model.SQLGroupBy" position="3"  customEditor ="true" />
+            <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
+            <Property name="schema" valueType="java.lang.String" position="5" readOnly="true" />
+            <Property name="catalog" valueType="java.lang.String" position="6" readOnly="true" />
+            <Property name="modelName" valueType="java.lang.String" position="7" readOnly="true" default="true" customEditor="true" />
+            <Property name="primaryKeys" valueType="java.lang.String" position="8" readOnly="true" default="true" customEditor="true" />
+            <Property name="foreignKeys" valueType="java.lang.String" position="9" readOnly="true" default="true" customEditor="true" />
+            <Property name="indices" valueType="java.lang.String" position="10" readOnly="true" default="true" customEditor="true" />
+        </PropertyGroup>
+        <PropertyGroup name="expert" position="1" >
+            <Property name="aliasName" valueType="java.lang.String" position="1" readOnly="true" />
+            <Property name="userDefinedTableName" valueType="java.lang.String" position="2"  />
+            <Property name="userDefinedSchemaName" valueType="java.lang.String" position="3" />
+            <Property name="userDefinedCatalogName" valueType="java.lang.String" position="4" />
+            <Property name="useFullyQualifiedName" valueType="java.lang.Boolean" position="5" default="true" />
+            <Property name="tablePrefix" valueType="java.lang.String" position="6"  />
+            <Property name="createTargetTable" valueType="java.lang.Boolean" position="7" />
+            <Property name="truncateBeforeLoad" valueType="java.lang.Boolean" position="8" default="false" />
+            <Property name="disableConstraints" valueType="java.lang.Boolean" position="9" default="false" />
+            <Property name="batchSize" valueType="java.lang.Integer" position="9" />
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="FFSourceTable">
+        <PropertyGroup name="default" position="0" >
+            <OptionProperty name="extractionType" valueType="java.lang.String" position="0"  default="true" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
+                <Option name="full" value="full" />
+                <Option name="conditional" value="conditional" />
+            </OptionProperty>
+            <Property name="extractionCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true"  />
+            <Property name="validationCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true"  />
+            <Property name="selectDistinct" valueType="java.lang.Boolean" position="3"  />
+            <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
+            <Property name="modelName" valueType="java.lang.String" position="5" readOnly="true" customEditor="true"/>
+            <Property name="primaryKeys" valueType="java.lang.String" position="6" readOnly="true" customEditor="true" />
+            <Property name="foreignKeys" valueType="java.lang.String" position="7" readOnly="true" customEditor="true" />
+            <Property name="indices" valueType="java.lang.String" position="8" readOnly="true" customEditor="true" />
+        </PropertyGroup>
+        
+        <PropertyGroup name="expert" position="1" >
+            <Property name="aliasName" valueType="java.lang.String" position="1" readOnly="true" />
+            <Property name="stagingTableName" valueType="java.lang.String" position="2" />
+            <Property name="dropStagingTable" valueType="java.lang.Boolean" position="3"  default="true" />
+            <Property name="truncateStagingTable" valueType="java.lang.Boolean" position="4"  default="true"/>
+            <Property name="batchSize" valueType="java.lang.Integer" position="5" />
+        </PropertyGroup>
+        <PropertyGroup name="organization" position="1" >
+            <Property name="fileType" valueType="java.lang.String" position="1" readOnly="true"/>
+            <Property name="fileName" valueType="java.lang.String" position="2" />
+            <Property name="fieldDelimiter" valueType="java.lang.String" position="3" />
+            <Property name="textQualifier" valueType="java.lang.String" position="4" />
+            <Property name="firstLineHeader" valueType="java.lang.Boolean" position="5"/>
+            <Property name="recordDelimiter" valueType="java.lang.String" position="6" />
+            <Property name="rowsToSkip" valueType="java.lang.Integer" position="7" />
+            <Property name="trimWhiteSpace" valueType="java.lang.Boolean" position="8"/>
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="FFTargetTable">
+        <PropertyGroup name="default" position="0" >
+            <OptionProperty name="strStatementType" valueType="java.lang.String" position="0" default="true" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
+                <Option name="insert" value="insert" />
+                <Option name="insert_update" value="insert_update" />
+                <Option name="update" value="update" />
+                <Option name="delete" value="delete" />
+            </OptionProperty>
+            <Property name="joinCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true" />
+            <Property name="filterCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true" />            
+            <Property name="SQLGroupBy" valueType="org.netbeans.modules.sql.framework.model.SQLGroupBy" position="3"  customEditor ="true" />
+            <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
+            <Property name="modelName" valueType="java.lang.String" position="5" readOnly="true" customEditor="true"/>
+            <Property name="primaryKeys" valueType="java.lang.String" position="6" readOnly="true" default="true" customEditor="true" />
+            <Property name="foreignKeys" valueType="java.lang.String" position="7" readOnly="true" default="true" customEditor="true" />
+            <Property name="indices" valueType="java.lang.String" position="8" readOnly="true" default="true" customEditor="true" />
+        </PropertyGroup>
+        <PropertyGroup name="expert" position="1" >
+            <Property name="aliasName" valueType="java.lang.String" position="1" readOnly="true" />
+            <Property name="createTargetTable" valueType="java.lang.Boolean" position="2" />
+            <Property name="truncateBeforeLoad" valueType="java.lang.Boolean" position="3" default="false" />
+            <Property name="disableConstraints" valueType="java.lang.Boolean" position="4" default="false" />
+            <Property name="batchSize" valueType="java.lang.Integer" position="5" />
+        </PropertyGroup>
+        <PropertyGroup name="organization" position="1" >
+            <Property name="fileType" valueType="java.lang.String" position="1" readOnly="true"/>
+            <Property name="fileName" valueType="java.lang.String" position="2" />
+            <Property name="fieldDelimiter" valueType="java.lang.String" position="3" />
+            <Property name="textQualifier" valueType="java.lang.String" position="4" />
+            <Property name="firstLineHeader" valueType="java.lang.Boolean" position="5" />
+            <Property name="recordDelimiter" valueType="java.lang.String" position="6" />
+            <Property name="rowsToSkip" valueType="java.lang.Integer" position="7" />
+            <Property name="trimWhiteSpace" valueType="java.lang.Boolean" position="8"/>
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="RSSSourceTable">
+        <PropertyGroup name="default" position="0" >
+            <OptionProperty name="extractionType" valueType="java.lang.String" position="0"  default="true" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
+                <Option name="full" value="full" />
+                <Option name="conditional" value="conditional" />
+            </OptionProperty>
+            <Property name="extractionCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true"  />
+            <Property name="validationCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true"  />
+            <Property name="selectDistinct" valueType="java.lang.Boolean" position="3"  />
+            <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
+            <Property name="modelName" valueType="java.lang.String" position="5" readOnly="true" />
+            <Property name="primaryKeys" valueType="java.lang.String" position="6" readOnly="true" customEditor="true" />
+            <Property name="foreignKeys" valueType="java.lang.String" position="7" readOnly="true" customEditor="true" />
+            <Property name="indices" valueType="java.lang.String" position="8" readOnly="true" customEditor="true" />
+        </PropertyGroup>
+        
+        <PropertyGroup name="expert" position="1" >
+            <Property name="aliasName" valueType="java.lang.String" position="1" readOnly="true" />
+            <Property name="stagingTableName" valueType="java.lang.String" position="2" />
+            <Property name="dropStagingTable" valueType="java.lang.Boolean" position="3"  default="true" />
+            <Property name="truncateStagingTable" valueType="java.lang.Boolean" position="4"  default="true"/>
+            <Property name="batchSize" valueType="java.lang.Integer" position="5" />
+        </PropertyGroup>
+        <PropertyGroup name="organization" position="1" >
+            <Property name="fileType" valueType="java.lang.String" position="1" readOnly="true"/>
+            <Property name="url" valueType="java.lang.String" position="2" />
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="RSSTargetTable">
+        <PropertyGroup name="default" position="0" >
+            <OptionProperty name="strStatementType" valueType="java.lang.String" position="0" default="true" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
+                <Option name="insert" value="insert" />
+                <Option name="insert_update" value="insert_update" />
+                <Option name="update" value="update" />
+                <Option name="delete" value="delete" />
+            </OptionProperty>
+            <Property name="joinCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true" />
+            <Property name="filterCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true" />            
+            <Property name="SQLGroupBy" valueType="org.netbeans.modules.sql.framework.model.SQLGroupBy" position="3"  customEditor ="true" />
+            <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
+            <Property name="modelName" valueType="java.lang.String" position="5" readOnly="true" customEditor="true"/>
+            <Property name="primaryKeys" valueType="java.lang.String" position="6" readOnly="true" default="true" customEditor="true" />
+            <Property name="foreignKeys" valueType="java.lang.String" position="7" readOnly="true" default="true" customEditor="true" />
+            <Property name="indices" valueType="java.lang.String" position="8" readOnly="true" default="true" customEditor="true" />
+        </PropertyGroup>
+        <PropertyGroup name="expert" position="1" >
+            <Property name="aliasName" valueType="java.lang.String" position="1" readOnly="true" />
+            <Property name="createTargetTable" valueType="java.lang.Boolean" position="2" />
+            <Property name="truncateBeforeLoad" valueType="java.lang.Boolean" position="3" default="false" />
+            <Property name="disableConstraints" valueType="java.lang.Boolean" position="4" default="false" />
+            <Property name="batchSize" valueType="java.lang.Integer" position="5" />
+        </PropertyGroup>
+        <PropertyGroup name="organization" position="1" >
+            <Property name="fileType" valueType="java.lang.String" position="1" readOnly="true"/>
+            <Property name="url" valueType="java.lang.String" position="2" />
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="WebSourceTable">
+        <PropertyGroup name="default" position="0" >
+            <OptionProperty name="extractionType" valueType="java.lang.String" position="0"  default="true" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
+                <Option name="full" value="full" />
+                <Option name="conditional" value="conditional" />
+            </OptionProperty>
+            <Property name="extractionCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true"  />
+            <Property name="validationCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true"  />
+            <Property name="selectDistinct" valueType="java.lang.Boolean" position="3"  />
+            <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
+            <Property name="modelName" valueType="java.lang.String" position="5" readOnly="true" />
+            <Property name="primaryKeys" valueType="java.lang.String" position="6" readOnly="true" customEditor="true" />
+            <Property name="foreignKeys" valueType="java.lang.String" position="7" readOnly="true" customEditor="true" />
+            <Property name="indices" valueType="java.lang.String" position="8" readOnly="true" customEditor="true" />
+        </PropertyGroup>
+        
+        <PropertyGroup name="expert" position="1" >
+            <Property name="aliasName" valueType="java.lang.String" position="1" readOnly="true" />
+            <Property name="stagingTableName" valueType="java.lang.String" position="2" />
+            <Property name="dropStagingTable" valueType="java.lang.Boolean" position="3"  default="true" />
+            <Property name="truncateStagingTable" valueType="java.lang.Boolean" position="4"  default="true"/>
+            <Property name="batchSize" valueType="java.lang.Integer" position="5" />
+        </PropertyGroup>
+        <PropertyGroup name="organization" position="1" >
+            <Property name="fileType" valueType="java.lang.String" position="1" readOnly="true"/>
+            <Property name="url" valueType="java.lang.String" position="2" />
+            <Property name="fieldDelimiter" valueType="java.lang.String" position="3" />
+            <Property name="textQualifier" valueType="java.lang.String" position="4" />
+            <Property name="firstLineHeader" valueType="java.lang.Boolean" position="5" />
+            <Property name="recordDelimiter" valueType="java.lang.String" position="6" />
+            <Property name="rowsToSkip" valueType="java.lang.Integer" position="7" />
+            <Property name="trimWhiteSpace" valueType="java.lang.Boolean" position="8"/>
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="WebTargetTable">
+        <PropertyGroup name="default" position="0" >
+            <OptionProperty name="strStatementType" valueType="java.lang.String" position="0" default="true" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
+                <Option name="insert" value="insert" />
+                <Option name="insert_update" value="insert_update" />
+                <Option name="update" value="update" />
+                <Option name="delete" value="delete" />
+            </OptionProperty>
+            <Property name="joinCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true" />
+            <Property name="filterCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true" />            
+            <Property name="SQLGroupBy" valueType="org.netbeans.modules.sql.framework.model.SQLGroupBy" position="3"  customEditor ="true" />
+            <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
+            <Property name="modelName" valueType="java.lang.String" position="5" readOnly="true" customEditor="true"/>
+            <Property name="primaryKeys" valueType="java.lang.String" position="6" readOnly="true" default="true" customEditor="true" />
+            <Property name="foreignKeys" valueType="java.lang.String" position="7" readOnly="true" default="true" customEditor="true" />
+            <Property name="indices" valueType="java.lang.String" position="8" readOnly="true" default="true" customEditor="true" />
+        </PropertyGroup>
+        <PropertyGroup name="expert" position="1" >
+            <Property name="aliasName" valueType="java.lang.String" position="1" readOnly="true" />
+            <Property name="createTargetTable" valueType="java.lang.Boolean" position="2" />
+            <Property name="truncateBeforeLoad" valueType="java.lang.Boolean" position="3" default="false" />
+            <Property name="disableConstraints" valueType="java.lang.Boolean" position="4" default="false" />
+            <Property name="batchSize" valueType="java.lang.Integer" position="5" />
+        </PropertyGroup>
+        <PropertyGroup name="organization" position="1" >
+            <Property name="fileType" valueType="java.lang.String" position="1" readOnly="true"/>
+            <Property name="url" valueType="java.lang.String" position="2" />
+            <Property name="fieldDelimiter" valueType="java.lang.String" position="3" />
+            <Property name="textQualifier" valueType="java.lang.String" position="4" />
+            <Property name="firstLineHeader" valueType="java.lang.Boolean" position="5" />
+            <Property name="recordDelimiter" valueType="java.lang.String" position="6" />
+            <Property name="rowsToSkip" valueType="java.lang.Integer" position="7" />
+            <Property name="trimWhiteSpace" valueType="java.lang.Boolean" position="8"/>
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="WebrowsetSourceTable">
+        <PropertyGroup name="default" position="0" >
+            <OptionProperty name="extractionType" valueType="java.lang.String" position="0"  default="true" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
+                <Option name="full" value="full" />
+                <Option name="conditional" value="conditional" />
+            </OptionProperty>
+            <Property name="extractionCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true"  />
+            <Property name="validationCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true"  />
+            <Property name="selectDistinct" valueType="java.lang.Boolean" position="3"  />
+            <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
+            <Property name="modelName" valueType="java.lang.String" position="5" readOnly="true" />
+            <Property name="primaryKeys" valueType="java.lang.String" position="6" readOnly="true" customEditor="true" />
+            <Property name="foreignKeys" valueType="java.lang.String" position="7" readOnly="true" customEditor="true" />
+            <Property name="indices" valueType="java.lang.String" position="8" readOnly="true" customEditor="true" />
+        </PropertyGroup>
+        
+        <PropertyGroup name="expert" position="1" >
+            <Property name="aliasName" valueType="java.lang.String" position="1" readOnly="true" />
+            <Property name="stagingTableName" valueType="java.lang.String" position="2" />
+            <Property name="dropStagingTable" valueType="java.lang.Boolean" position="3"  default="true" />
+            <Property name="truncateStagingTable" valueType="java.lang.Boolean" position="4"  default="true"/>
+            <Property name="batchSize" valueType="java.lang.Integer" position="5" />
+        </PropertyGroup>
+        <PropertyGroup name="organization" position="1" >
+            <Property name="fileType" valueType="java.lang.String" position="1" readOnly="true"/>
+            <Property name="fileName" valueType="java.lang.String" position="2" />
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="WebrowsetTargetTable">
+        <PropertyGroup name="default" position="0" >
+            <OptionProperty name="strStatementType" valueType="java.lang.String" position="0" default="true" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
+                <Option name="insert" value="insert" />
+                <Option name="insert_update" value="insert_update" />
+                <Option name="update" value="update" />
+                <Option name="delete" value="delete" />
+            </OptionProperty>
+            <Property name="joinCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true" />
+            <Property name="filterCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="2"  customEditor ="true" />            
+            <Property name="SQLGroupBy" valueType="org.netbeans.modules.sql.framework.model.SQLGroupBy" position="3"  customEditor ="true" />
+            <Property name="displayName" valueType="java.lang.String" position="4" readOnly="true" />
+            <Property name="modelName" valueType="java.lang.String" position="5" readOnly="true" customEditor="true"/>
+            <Property name="primaryKeys" valueType="java.lang.String" position="6" readOnly="true" default="true" customEditor="true" />
+            <Property name="foreignKeys" valueType="java.lang.String" position="7" readOnly="true" default="true" customEditor="true" />
+            <Property name="indices" valueType="java.lang.String" position="8" readOnly="true" default="true" customEditor="true" />
+        </PropertyGroup>
+        <PropertyGroup name="expert" position="1" >
+            <Property name="aliasName" valueType="java.lang.String" position="1" readOnly="true" />
+            <Property name="createTargetTable" valueType="java.lang.Boolean" position="2" />
+            <Property name="truncateBeforeLoad" valueType="java.lang.Boolean" position="3" default="false" />
+            <Property name="disableConstraints" valueType="java.lang.Boolean" position="4" default="false" />
+            <Property name="batchSize" valueType="java.lang.Integer" position="4" />
+        </PropertyGroup>
+        <PropertyGroup name="organization" position="1" >
+            <Property name="fileType" valueType="java.lang.String" position="1" readOnly="true"/>
+            <Property name="fileName" valueType="java.lang.String" position="2" />
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="Collaboration">
+        <PropertyGroup name="default" position="0" >
+            <Property name="displayName" valueType="java.lang.String" position="1" readOnly="true" />
+            <OptionProperty name="executionStrategyCode" valueType="java.lang.Integer" position="2" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
+                <Option name="Best Fit" value="0" />
+                <Option name="Pipeline" value="1" />
+                <Option name="Staging" value="2" />
+            </OptionProperty>
+            <Property name="sourceConnections" valueType="java.lang.String" position="3" readOnly="true" customEditor="true"/>
+            <Property name="targetConnections" valueType="java.lang.String" position="4" readOnly="true" customEditor="true"/>
+            <Property name="axiondbWorkingDirectory" valueType="java.lang.String" position="5"/>
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="DBModel">
+        <PropertyGroup name ="default" position="0" >
+            <Property name="connectionURL"  valueType ="java.lang.String" position="1"/>
+            <Property name="userName"  valueType ="java.lang.String" position="2"/>
+            <Property name="password"  valueType ="java.lang.String" position="3" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.DefaultPropertyEditor$PasswordTextEditor"/>
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="RuntimeInput">
+        <PropertyGroup name ="default" position="0" >
+            <Property name="displayName"  valueType ="java.lang.String" position="1" readOnly="true"/>
+            <Property name="modelName"  valueType ="java.lang.String" position="2" readOnly="true"/>
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="RuntimeOutput">
+        <PropertyGroup name ="default" position="0" >
+            <Property name="displayName"  valueType ="java.lang.String" position="1" readOnly="true"/>
+            <Property name="modelName"  valueType ="java.lang.String" position="2" readOnly="true"/>
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="DBTable">
+        <PropertyGroup name="default" position="0" >
+            <Property name="Catalog" valueType="java.lang.String" position="1" />
+            <Property name="Schema" valueType="java.lang.String" position="2" />
+        </PropertyGroup>
+    </Template>
+    
+    <Template name="Join">
+        <PropertyGroup name="default" position="0" >
+            <Property name="joinCondition" valueType ="org.netbeans.modules.sql.framework.model.SQLCondition" position="1"  customEditor ="true" />
+            <OptionProperty name="joinType" valueType="java.lang.Integer" position="2" defaultOption="0" editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
+                <Option name="Inner" value="0" />
+                <Option name="Full Outer" value="1" />
+                <Option name="Left Outer" value="2" />
+                <Option name="Right Outer" value="3" />
+            </OptionProperty>
+        </PropertyGroup>
+    </Template>
+    
+</TemplateGroup>

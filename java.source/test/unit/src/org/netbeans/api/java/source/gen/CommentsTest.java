@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -1446,6 +1449,43 @@ public class CommentsTest extends GeneratorTest {
                 Comment comment = Comment.create(Comment.Style.JAVADOC, -1, -1, -1, commentText);
                 make.addComment(clazz, comment, true);
                 workingCopy.rewrite(clazz, make.addClassMember(clazz, method));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testRemoveComment186017() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "/**test\n" +
+            " * test\n" +
+            " */\n" +
+            "public class Test {\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n\n" +
+            "public class Test {\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                GeneratorUtilities.get(workingCopy).importComments(clazz, cut);
+                ClassTree newClazz = make.setLabel(clazz, clazz.getSimpleName());
+                GeneratorUtilities.get(workingCopy).copyComments(clazz, newClazz, true);
+                make.removeComment(newClazz, 0, true);
+                workingCopy.rewrite(clazz, newClazz);
             }
 
         };

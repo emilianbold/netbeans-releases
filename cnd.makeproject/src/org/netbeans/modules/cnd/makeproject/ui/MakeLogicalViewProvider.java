@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,6 +58,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -409,33 +413,53 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
+    /**
+     * This is long operation, don't call from EDT.
+     *
+     * @param project
+     */
     public static void refreshBrokenItems(final Project project) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                refreshBrokenItemsImpl(project);
-            }
-        });
-    }
-
-    private static void refreshBrokenItemsImpl(Project project) {
-        Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
-        refreshBrokenItemsImpl(findProjectNode(rootNode, project));
+        Node rootNode = getRootNode();
+        if (rootNode != null) {
+            refreshBrokenItemsImpl(findProjectNode(rootNode, project));
+        }
     }
 
     private static void refreshBrokenItemsImpl(Node root) {
         if (root != null) {
             if (root.isLeaf()) {
-                Object o = root.getLookup().lookup(BrokenViewItemNode.class);
-                if (o != null) {
-                    ((BrokenViewItemNode) o).refresh();
+                BrokenViewItemNode brokenItem = root.getLookup().lookup(BrokenViewItemNode.class);
+                if (brokenItem != null) {
+                    brokenItem.refresh();
                 }
             } else {
                 for (Node node : root.getChildren().getNodes(true)) {
                     refreshBrokenItemsImpl(node);
                 }
             }
+        }
+    }
+
+    private static Node getRootNode() {
+        // ProjectTabBridge.getExplorerManager() wants to be called from EDT
+        if (SwingUtilities.isEventDispatchThread()) {
+            return ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
+        } else {
+            final Node[] root = new Node[1];
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        root[0] = getRootNode();
+                    }
+                });
+            } catch (InterruptedException ex) {
+                // skip
+            } catch (InvocationTargetException ex) {
+                // skip
+            }
+            return root[0];
         }
     }
 
@@ -506,7 +530,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     /** Filter node containin additional features for the Make physical
      */
-    private final static class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListener, LookupListener {
+    private final static class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListener, LookupListener, PropertyChangeListener {
 
         private boolean brokenLinks;
         private boolean brokenIncludes;
@@ -533,6 +557,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             // Handle annotations
             setForceAnnotation(true);
             updateAnnotationFiles();
+            ProjectUtils.getInformation(provider.getProject()).addPropertyChangeListener(this);
         }
 
         public Folder getFolder() {
@@ -599,6 +624,17 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         @Override
         public String getShortDescription() {
             return MakeLogicalViewProvider.getShortDescription(provider.getProject());
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            setName(ProjectUtils.getInformation(provider.getProject()).getDisplayName());
+            String prop = evt.getPropertyName();
+            if (ProjectInformation.PROP_DISPLAY_NAME.equals(prop)) {
+                fireDisplayNameChange(null, null);
+            } else if (ProjectInformation.PROP_NAME.equals(prop)) {
+                fireNameChange(null, null);
+            }
         }
 
         private final class VisualUpdater implements Runnable {

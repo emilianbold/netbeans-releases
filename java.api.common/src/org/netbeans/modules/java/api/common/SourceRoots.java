@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,6 +58,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -107,6 +112,8 @@ public final class SourceRoots {
      * Default label for tests node used in {@link org.netbeans.spi.project.ui.LogicalViewProvider}.
      */
     public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_test.src.dir");
+
+    private static final Logger LOG = Logger.getLogger(SourceRoots.class.getName());
 
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
@@ -505,6 +512,7 @@ public final class SourceRoots {
         private final Set<File> files = new HashSet<File>();
         private final FileChangeListener weakFilesListener = WeakListeners.create(FileChangeListener.class, this, null);
 
+        //@GuardedBy("SourceRoots.this")
         public void add(File f) {
             if (!files.contains(f)) {
                 files.add(f);
@@ -512,9 +520,15 @@ public final class SourceRoots {
             }
         }
 
+        //@GuardedBy("SourceRoots.this")
         public void removeFileListeners() {
             for(File f : files) {
-                FileUtil.removeFileChangeListener(weakFilesListener, f);
+                try {
+                    FileUtil.removeFileChangeListener(weakFilesListener, f);
+                } catch (IllegalArgumentException iae) {
+                    // log
+                    LOG.log(Level.FINE, null, iae);
+                }
             }
             files.clear();
         }

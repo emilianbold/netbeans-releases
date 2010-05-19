@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -56,6 +59,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.spi.actions.RunCommandAction;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.spi.project.ActionProvider;
@@ -235,9 +239,18 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
                 PhpModuleActionsExtender actionsExtender = frameworkProvider.getActionsExtender(phpModule);
                 if (actionsExtender != null) {
+                    RunCommandAction runCommandAction = actionsExtender.getRunCommandAction();
                     List<? extends Action> frameworkActions = actionsExtender.getActions();
-                    if (!frameworkActions.isEmpty()) {
-                        actions.add(new FrameworkMenu(actionsExtender.getMenuName(), frameworkActions));
+                    if (runCommandAction != null || !frameworkActions.isEmpty()) {
+                        List<Action> allActions = new ArrayList<Action>(frameworkActions.size() + 2);
+                        if (runCommandAction != null) {
+                            allActions.add(runCommandAction);
+                            if (!frameworkActions.isEmpty()) {
+                                allActions.add(null);
+                            }
+                        }
+                        allActions.addAll(frameworkActions);
+                        actions.add(new FrameworkMenu(actionsExtender.getMenuName(), allActions));
                     }
                 }
             }

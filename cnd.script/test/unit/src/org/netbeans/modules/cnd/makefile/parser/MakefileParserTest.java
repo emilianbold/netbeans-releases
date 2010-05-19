@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.api.makefile.MakefileElement;
+import org.netbeans.modules.cnd.api.makefile.MakefileInclude;
 import org.netbeans.modules.cnd.api.makefile.MakefileMacro;
 import org.netbeans.modules.cnd.api.makefile.MakefileRule;
 import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
@@ -90,22 +94,26 @@ public class MakefileParserTest extends NbTestCase {
         assertEquals("CC", cc.getName());
         assertEquals("gcc", cc.getValue());
 
-        MakefileRule buildConf = (MakefileRule) elements.get(2);
+        MakefileInclude include = (MakefileInclude) elements.get(2);
+        assertEquals(MakefileElement.Kind.INCLUDE, include.getKind());
+        assertEquals(Arrays.asList("Makefile", "${FOO}.mk"), include.getFileNames());
+
+        MakefileRule buildConf = (MakefileRule) elements.get(3);
         assertEquals(MakefileElement.Kind.RULE, buildConf.getKind());
         assertEquals(Collections.singletonList(".build-conf"), buildConf.getTargets());
         assertEquals(Arrays.asList("$(BUILD_SUBPROJECTS)", "dist/Debug/GNU-Solaris-x86/quote_1"), buildConf.getPrerequisites());
 
-        MakefileRule cleanConf = (MakefileRule) elements.get(3);
+        MakefileRule cleanConf = (MakefileRule) elements.get(4);
         assertEquals(MakefileElement.Kind.RULE, cleanConf.getKind());
         assertEquals(Collections.singletonList(".clean-conf"), cleanConf.getTargets());
         assertEquals(Collections.emptyList(), cleanConf.getPrerequisites());
 
-        MakefileRule done = (MakefileRule) elements.get(4);
+        MakefileRule done = (MakefileRule) elements.get(5);
         assertEquals(MakefileElement.Kind.RULE, done.getKind());
         assertEquals(Collections.singletonList(".DONE"), done.getTargets());
         assertEquals(Collections.emptyList(), done.getPrerequisites());
 
-        assertEquals(5, elements.size());
+        assertEquals(6, elements.size());
     }
 
     private MakefileParseResult parseFile(File file) throws ParseException {

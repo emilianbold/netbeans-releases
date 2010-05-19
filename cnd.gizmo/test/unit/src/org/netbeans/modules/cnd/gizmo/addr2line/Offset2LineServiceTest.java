@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,36 +43,28 @@
 package org.netbeans.modules.cnd.gizmo.addr2line;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.StringReader;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
 import org.netbeans.modules.cnd.dwarfdump.Offset2LineService.AbstractFunctionToLine;
 import org.netbeans.modules.cnd.gizmo.RemoteJarServiceProvider;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 
 /**
  *
  * @author Alexander Simon
  */
-public class Offset2LineServiceTest extends NbTestCase {
+public class Offset2LineServiceTest extends CndBaseTestCase {
 
     public Offset2LineServiceTest() {
         super("Offset2LineServiceTest");
@@ -100,7 +95,7 @@ public class Offset2LineServiceTest extends NbTestCase {
 
         NativeProcess process = getJavaProcess(Offset2LineService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
         assertNotNull(process);
-        BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream(),Charset.forName("UTF-8"))); // NOI18N
         res2 = Offset2LineService.getOffset2Line(br);
         process.destroy();
         assertEquals(res1.size(), res2.size());

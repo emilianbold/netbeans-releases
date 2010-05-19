@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -71,8 +74,6 @@ public final class ViewUpdates implements DocumentListener {
     private FactoriesListener factoriesListener;
 
     private DocumentListener incomingModificationListener;
-
-    private boolean incomingModification;
 
     int rebuildStartOffset;
 
@@ -146,8 +147,13 @@ public final class ViewUpdates implements DocumentListener {
         assert (endIndexBatch > startIndex) : "endIndexBatch=" + endIndexBatch + " > startIndex=" + startIndex; // NOI18N
         ParagraphView startChild = documentView.getEditorView(startIndex);
         ParagraphView lastChild = documentView.getEditorView(endIndexBatch - 1);
+        int docTextLength = documentView.getDocument().getLength() + 1;
         int startOffset = startChild.getStartOffset();
         int endOffset = lastChild.getEndOffset();
+        assert (startOffset <= endOffset) : "startOffset=" + startOffset + // NOI18N
+                " > endOffset=" + endOffset + "\n" + documentView.toStringDetail(); // NOI18N
+        assert (endOffset <= docTextLength) : "endOffset=" + endOffset + // NOI18N
+                " > docTextLength=" + docTextLength + "\n" + documentView.toStringDetail(); // NOI18N
         ViewBuilder viewBuilder = new ViewBuilder(
                 null, documentView, startIndex, viewFactories, startOffset, endOffset, endOffset, 0, true);
         try {
@@ -165,7 +171,7 @@ public final class ViewUpdates implements DocumentListener {
             mutex.lock();
             documentView.checkDocumentLocked();
             try {
-                if (!documentView.isActive()) {
+                if (!documentView.isUpdatable()) {
                     return;
                 }
                 // Insert into document was performed -> update or rebuild views
@@ -295,7 +301,7 @@ public final class ViewUpdates implements DocumentListener {
                 }
                 resetRebuildInfo();
             } finally {
-                incomingModification = false;
+                documentView.setIncomingModification(false);
                 mutex.unlock();
             }
         }
@@ -308,7 +314,7 @@ public final class ViewUpdates implements DocumentListener {
             mutex.lock();
             documentView.checkDocumentLocked();
             try {
-                if (!documentView.isActive()) {
+                if (!documentView.isUpdatable()) {
                     return;
                 }
                 // Removal in document was performed -> update or rebuild views
@@ -421,7 +427,7 @@ public final class ViewUpdates implements DocumentListener {
                 }
                 resetRebuildInfo();
             } finally {
-                incomingModification = false;
+                documentView.setIncomingModification(false);
                 mutex.unlock();
             }
         }
@@ -434,7 +440,7 @@ public final class ViewUpdates implements DocumentListener {
             mutex.lock();
             documentView.checkDocumentLocked();
             try {
-                if (!documentView.isActive()) {
+                if (!documentView.isUpdatable()) {
                     return;
                 }
                 checkFactoriesComponentInited();
@@ -446,7 +452,7 @@ public final class ViewUpdates implements DocumentListener {
                 resetRebuildInfo();
                 documentView.checkIntegrity();
             } finally {
-                incomingModification = false;
+                documentView.setIncomingModification(false);
                 mutex.unlock();
             }
         }
@@ -498,7 +504,7 @@ public final class ViewUpdates implements DocumentListener {
             mutex.lock();
             try {
                 documentView.checkDocumentLocked();
-                if (documentView.isActive() && !incomingModification) {
+                if (documentView.isActive()) {
                     if (isRebuildNecessary()) {
                         int rStartOffset = rebuildStartOffset;
                         int rEndOffset = rebuildEndOffset;
@@ -572,17 +578,17 @@ public final class ViewUpdates implements DocumentListener {
 
         @Override
         public void insertUpdate(DocumentEvent e) {
-            incomingModification = true;
+            documentView.setIncomingModification(true);
         }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
-            incomingModification = true;
+            documentView.setIncomingModification(true);
         }
 
         @Override
         public void changedUpdate(DocumentEvent e) {
-            incomingModification = true;
+            documentView.setIncomingModification(true);
         }
 
     }

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -81,9 +84,15 @@ import org.openide.util.WeakListeners;
 * @version 1.00
 */
 
-public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, DocumentListener {
+public class BaseTextUI extends BasicTextUI implements
+        PropertyChangeListener, DocumentListener, AtomicLockListener {
 
     /* package */ static final String PROP_DEFAULT_CARET_BLINK_RATE = "nbeditor-default-swing-caret-blink-rate"; //NOI18N
+
+    /**
+     * How many modifications inside atomic section is considered a lengthy operation (e.g. reformat).
+     */
+    private static final int LENGTHY_ATOMIC_EDIT_THRESHOLD = 30;
     
     /** Extended UI */
     private EditorUI editorUI;
@@ -96,6 +105,8 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
     int componentID = -1;
     
     private AbstractDocument lastDocument;
+
+    private int atomicModCount;
     
     /** Instance of the <tt>GetFocusedComponentAction</tt> */
     private static final GetFocusedComponentAction gfcAction
@@ -413,6 +424,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
                                   
             if (oldDoc != null) {
                 oldDoc.removeDocumentListener(this);
+                oldDoc.removeAtomicLockListener(this);
             }
 
             BaseDocument newDoc = (evt.getNewValue() instanceof BaseDocument)
@@ -420,6 +432,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
                                   
             if (newDoc != null) {
                 newDoc.addDocumentListener(this);
+                newDoc.addAtomicLockListener(this);
             }
         } else if ("ancestor".equals(propName)) { // NOI18N
             JTextComponent comp = (JTextComponent)evt.getSource();
@@ -437,6 +450,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
     /** Insert to document notification. */
     public void insertUpdate(DocumentEvent evt) {
         try {
+            checkLengthyAtomicEdit();
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             EditorUI eui = getEditorUI();
             int y = getYFromPos(evt.getOffset());
@@ -457,6 +471,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
     /** Remove from document notification. */
     public void removeUpdate(DocumentEvent evt) {
         try {
+            checkLengthyAtomicEdit();
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             EditorUI eui = getEditorUI();
             int y = getYFromPos(evt.getOffset());
@@ -490,6 +505,37 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
                 Utilities.annotateLoggable(ex);
             }
         }
+    }
+
+    private void checkLengthyAtomicEdit() {
+        if (++atomicModCount == LENGTHY_ATOMIC_EDIT_THRESHOLD) {
+            View rootView = getRootView(getComponent());
+            View view;
+            if (rootView != null && rootView.getViewCount() > 0 &&
+                    (view = rootView.getView(0)) instanceof org.netbeans.modules.editor.lib2.view.DocumentView)
+            {
+                ((org.netbeans.modules.editor.lib2.view.DocumentView)view).updateLengthyAtomicEdit(+1);
+            }
+        }
+    }
+
+    @Override
+    public void atomicLock(AtomicLockEvent evt) {
+        atomicModCount = 0;
+    }
+
+    @Override
+    public void atomicUnlock(AtomicLockEvent evt) {
+        if (atomicModCount >= LENGTHY_ATOMIC_EDIT_THRESHOLD) {
+            View rootView = getRootView(getComponent());
+            View view;
+            if (rootView != null && rootView.getViewCount() > 0 &&
+                    (view = rootView.getView(0)) instanceof org.netbeans.modules.editor.lib2.view.DocumentView)
+            {
+                ((org.netbeans.modules.editor.lib2.view.DocumentView)view).updateLengthyAtomicEdit(-1);
+            }
+        }
+        atomicModCount = 0;
     }
 
     
@@ -564,7 +610,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
             needsRefresh = false;
         }
     }
-    
+
     private static class GetFocusedComponentAction extends TextAction {
 
         private GetFocusedComponentAction() {

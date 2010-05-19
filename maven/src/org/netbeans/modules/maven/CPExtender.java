@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -88,6 +91,15 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     private NbMavenProjectImpl project;
     private static final String POM_XML = "pom.xml"; //NOI18N
     
+    /**
+     * ClassPath for compiling only, but not running. In practice this means that scope
+     * for the artefacts with this classpath will be set to <code>provided</code>
+     * if added to a source group, and <code>test</code> if added to test source group.
+     * This constant is in practice a friend API, even if it is hardcoded in the
+     * consuming module (see e.g. bug 186221).
+     */
+    public static final String CLASSPATH_COMPILE_ONLY = "classpath/compile_only";
+
     /** Creates a new instance of CPExtender */
     public CPExtender(NbMavenProjectImpl project) {
         this.project = project;
@@ -196,31 +208,8 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         return null;
     }
     
-    private URL[] getRepoURLs() {
-        Set<URL> urls = new HashSet<URL>();
-        List<RepositoryInfo> ris = RepositoryPreferences.getInstance().getRepositoryInfos();
-        for (RepositoryInfo ri : ris) {
-            if (ri.getRepositoryUrl() != null) {
-                try {
-                    urls.add(new URL(ri.getRepositoryUrl()));
-                } catch (MalformedURLException ex) {
-                    //ignore
-                }
-            }
-        }
-        // these 2 urls are essential (together with central) for correct 
-        // resolution of maven pom urls in libraries
-        try {
-            urls.add(new URL("http://repo1.maven.org/maven2")); //NOI18N
-            urls.add(new URL("http://download.java.net/maven/2"));//NOI18N
-            urls.add(new URL("http://download.java.net/maven/1"));//NOI18N
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return urls.toArray(new URL[0]);
-    }
     /**
-     */ 
+     */
     private boolean checkLibraryForPoms(Library library, POMModel model, String scope) {
         if (!"j2se".equals(library.getType())) {//NOI18N
             //only j2se library supported for now..
@@ -230,25 +219,25 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         boolean added = false;
         if (poms != null && poms.size() > 0) {
             for (URL pom : poms) {
-                URL[] repos = getRepoURLs();
-                String[] result = checkLibrary(pom, repos);
+                Set<String> repos = RepositoryPreferences.getInstance().getKnownRepositoryUrls();
+                ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom, repos);
                 if (result != null) {
                     added = true;
                     //set dependency
-                    Dependency dep = ModelUtils.checkModelDependency(model, result[2], result[3], true);
-                    dep.setVersion(result[4]);
+                    Dependency dep = ModelUtils.checkModelDependency(model, result.getGroupId(), result.getArtifactId(), true);
+                    dep.setVersion(result.getVersion());
                     if (scope != null) {
                         dep.setScope(scope);
                     }
-                    if (result.length == 6) {
-                        dep.setClassifier(result[5]);
+                    if (result.getClassifier() != null) {
+                        dep.setClassifier(result.getClassifier());
                     }
                     //set repository
                     org.netbeans.modules.maven.model.pom.Repository reposit = ModelUtils.addModelRepository(
-                            project.getOriginalMavenProject(), model, result[1]);
+                            project.getOriginalMavenProject(), model, result.getRepoRoot());
                     if (reposit != null) {
                         reposit.setId(library.getName());
-                        reposit.setLayout(result[0]);
+                        reposit.setLayout(result.getRepoType());
                         reposit.setName("Repository for library " + library); //NOI18N - content coming into the pom.xml file
                     }
                 }
@@ -267,58 +256,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
      *          [4] version
      *          [5] classifier (optional, not part of path, but url's ref)
      */ 
-    
-    static String[] checkLibrary(URL pom, URL[] knownRepos) {
-        String path = pom.getPath();
-        Matcher match = LEGACY.matcher(path);
-        boolean def = false;
-        if (!match.matches()) {
-            match = DEFAULT.matcher(path);
-            def = true;
-        }
-        if (match.matches()) {
-            String[] toRet;
-            if (pom.getRef() != null) {
-                toRet = new String[6];
-                toRet[5] = pom.getRef();
-            } else {
-                toRet = new String[5];
-            }
-            toRet[0] = def ? "default" : "legacy"; //NOI18N
-            toRet[1] = pom.getProtocol() + "://" + pom.getHost() + (pom.getPort() != -1 ? (":" + pom.getPort()) : ""); //NOI18N
-            toRet[2] = match.group(1);
-            toRet[3] = match.group(2);
-            toRet[4] = match.group(3);
-            for (URL repo : knownRepos) {
-                String root = repo.getProtocol() + "://" + repo.getHost() + (repo.getPort() != -1 ? (":" + repo.getPort()) : ""); //NOI18N
-                if (root.equals(toRet[1]) && toRet[2].startsWith(repo.getPath())) {
-                    toRet[1] = toRet[1] + repo.getPath();
-                    toRet[2] = toRet[2].substring(repo.getPath().length());
-                    break;
-                }
-            }
-            if (toRet[2].startsWith("/")) { //NOI18N
-                toRet[2] = toRet[2].substring(1);
-            }
-            //sort of hack, these 2 are the most probable root paths.
-            if (toRet[2].startsWith("maven/")) {//NOI18N
-                toRet[1] = toRet[1] + "/maven";//NOI18N
-                toRet[2] = toRet[2].substring("maven/".length());//NOI18N
-            }
-            if (toRet[2].startsWith("maven2/")) {//NOI18N
-                toRet[1] = toRet[1] + "/maven2";//NOI18N
-                toRet[2] = toRet[2].substring("maven2/".length());//NOI18N
-            }
-            if (toRet[2].startsWith("mirror/eclipse/rt/eclipselink/maven.repo/")) {//NOI18N
-                toRet[1] = toRet[1] + "/mirror/eclipse/rt/eclipselink/maven.repo";//NOI18N
-                toRet[2] = toRet[2].substring("mirror/eclipse/rt/eclipselink/maven.repo/".length());//NOI18N
-            }
-            toRet[2] = toRet[2].replace('/', '.'); //NOI18N
-            return toRet;
-        }
-        return null;
-    }
-    
+        
     public boolean addAntArtifact(AntArtifact arg0, URI arg1) throws IOException {
         throw new IOException("Cannot add Ant based projects as subprojecs to Maven projects."); //NOI18N
     }
@@ -346,7 +284,8 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     public String[] getExtensibleClassPathTypes(SourceGroup arg0) {
         return new String[] {
             ClassPath.COMPILE,
-            ClassPath.EXECUTE
+            ClassPath.EXECUTE,
+            CLASSPATH_COMPILE_ONLY
         };
     }
 
@@ -358,6 +297,9 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         String name = grp.getName();
         if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
             scope = "test"; //NOI18N
+        }
+        if (scope == null && CLASSPATH_COMPILE_ONLY.equals(type)) {
+            scope = Artifact.SCOPE_PROVIDED;
         }
         final String fScope = scope;
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
@@ -458,6 +400,11 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
                         dependency.setVersion(mp.getVersion());
                         if (fScope != null) {
                             dependency.setScope(fScope);
+                        } else {
+                            if (NbMavenProject.TYPE_EJB.equals(nbprj.getPackagingType()) ||
+                                NbMavenProject.TYPE_WAR.equals(nbprj.getPackagingType())) {
+                                dependency.setScope(Artifact.SCOPE_PROVIDED);
+                            }
                         }
                         added[0] = true;
                     } else {

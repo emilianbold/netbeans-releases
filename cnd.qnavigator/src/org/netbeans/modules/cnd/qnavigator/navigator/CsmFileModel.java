@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,6 +43,9 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
 /**
@@ -52,6 +58,8 @@ public class CsmFileModel {
     private List<CppDeclarationNode> list = Collections.synchronizedList(new ArrayList<CppDeclarationNode>());
     private CsmFileFilter filter;
     private Action[] actions;
+    private FileObject fileObject;
+    private boolean isStandalone;
 
     public CsmFileModel(CsmFileFilter filter, Action[] actions){
         this.filter = filter;
@@ -75,15 +83,35 @@ public class CsmFileModel {
         return filter;
     }
 
+    public FileObject getFileObject(){
+        return fileObject;
+    }
+
+    public boolean isStandalone(){
+        return isStandalone;
+    }
+
     public void addOffset(Node node, CsmOffsetable element, List<IndexOffsetNode> lineNumberIndex) {
         lineNumberIndex.add(new IndexOffsetNode(node,element.getStartOffset(), element.getEndOffset()));
     }
+
+    public void addFileOffset(Node node, CsmFile element, List<IndexOffsetNode> lineNumberIndex) {
+        lineNumberIndex.add(new IndexOffsetNode(node, 0, 0));
+    }
     
     private boolean buildModel(CsmFile csmFile, boolean force) {
+        isStandalone = CsmStandaloneFileProvider.getDefault().isStandalone(csmFile);
+        fileObject = CsmUtilities.getFileObject(csmFile);
         boolean res = true;
         List<CppDeclarationNode> newList = new ArrayList<CppDeclarationNode>();
         List<IndexOffsetNode> newLineNumberIndex = new ArrayList<IndexOffsetNode>();
         if (csmFile != null && csmFile.isValid()) {
+            if (isStandalone) {
+                CppDeclarationNode node = CppDeclarationNode.nodeFactory(csmFile, this, false, lineNumberIndex);
+                if (node != null) {
+                    newList.add(node);
+                }
+            }
             if (filter.isApplicableInclude()) {
                 for (CsmInclude element : csmFile.getIncludes()) {
                     CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, newLineNumberIndex);

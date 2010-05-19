@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -269,11 +272,17 @@ public class HostUpdates {
         Set<File> refreshDirs = new HashSet<File>();
         for (FileDownloadInfo info : infos) {
             handle.progress(NbBundle.getMessage(getClass(), "RemoteUpdatesProgress_Message", info.getLocalFile().getName()), cnt++);
+            File dirToRefresh = info.getLocalFile().getParentFile();
+            while (!dirToRefresh.exists() && dirToRefresh != null) {
+                dirToRefresh = dirToRefresh.getParentFile();
+            } // no need to create here, info.download() will do this; but we need to refresh on previously existing ones
             info.download();
             if (info.getState() == FileDownloadInfo.State.DONE) {
                 // Refreshing the file itself does not work.
                 // Need to refresh containing directory.
-                refreshDirs.add(info.getLocalFile().getParentFile());
+                if (dirToRefresh != null) {
+                    refreshDirs.add(dirToRefresh);
+                }
             }
         }
         // Bug 183353 - Files tab is not updated when downloading completes

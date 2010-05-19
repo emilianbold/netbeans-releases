@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Invoke</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body>
+<h2>Invoke</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<!-- add to the Property Editor section -->
+<p>The Invoke activity invokes a one-way or request-response operation between the BPEL process and a partner web service on a port provided by the partner. Invoke is used in both synchronous and asynchronous calls. In other words, it enables the BPEL process to exchange messages with partners. </p>
+As Invoke interacts with a partner web service, an Invoke activity should be associated with a <a href="partner_link.html">Partner Link</a> element on the diagram. 
+<p><b>To se the Invoke element</b>:</p>
+<ol>
+  <li>In the Design view, drag the Invoke element from the Palette to the diagram.</li>
+  <li>Right-click the Invoke element and choose Edit.</li>
+  <li>In the Property Editor dialog box, configure the following:
+<ul>
+      <li><b>Name</b>. Enter an arbitrary name. </li>
+      <li><b>Partner Link</b>. Select a Partner Link for which to specify an operation. Another way to associate a Partner Link with the Invoke activity is to draw a <a href="../design/change_message_flow.html" title="Changing Message Flows">message flow</a> on the diagram.</li>
+      <li><b>Operation</b>. Define an operation to be invoked. The operation is defined in the partner WSDL file, so you can only select it from the drop-down list.</li>
+      <li><b>Input Variable</b>. Create a new variable or use an existing variable to pass the input data to the partner service. </li>
+      <li><b>Output Variable.</b> Create a new variable or use an existing variable to transport the data received from the partner service.  </li>
+    </ul>
+ The Invoke element is now configured to invoke calls to the target partner web service.      
+</ol>
+<h3>Adding Correlation </h3>
+ <p>Correlation sets on Invoke activities are used to verify that 
+outbound messages contain data that is consistent with the data found 
+within specified correlation set instances. </p>
+ <p>To define correlation   <a href="../design/about_correlation_and_wizard.html">use the Correlation Wizard</a>. You can also <a href="../design/create_correlation_manually.html">set the correlation manually</a>. </p>
+ <dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="partner_link.html" title="Partner Link">Partner Link</a></dd>
+<dd><a href="create_variable.html" title="Creating Variables">Creating Variables</a></dd>
+<dd><a href="../design/about_correlation_and_wizard.html" title="Understanding Correlation. Using Correlation Wizard">Understanding Correlation. Using the Correlation Wizard</a></dd>
+<dd><a href="../design/create_correlation_manually.html" title="Adding Correlation Sets Manually">Adding Correlation Sets Manually</a></dd>
+
+<dd><a href="../properties/new_input_variable.html" title="New Variable Dialog Box">New Variable Dialog Box</a></dd>
+<dd><a href="palette_web_svc.html" title="BPEL Designer Palette: Web Service">BPEL Designer Palette: Web Service</a></dd>
+<dd><a href="../windows_editors/design_view.html" title="About the Design View of the BPEL Designer">About the Design View of the BPEL Designer</a></dd>
+
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

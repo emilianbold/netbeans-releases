@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Partner Link</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Partner Link</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>In the context of BPEL, partner links describe interaction between a BPEL process and external web services. The Partner Link activity defines the role each partner plays in the exchange of conversational messages. Indirectly, by virtue of its reference to a partner link type, a Partner Link activity indicates which port types are implemented by each partner.</p>
+<h3>Partner Link Elements and Partner Link Type Definitions </h3>
+<p> The partner link type is a BPEL extension for WSDL. As such, it is  defined in a WSDL file, not in a BPEL file. The partner link type  creates an association between one or two arbitrary roles and indicates that each role must implement a single port type. By associating a port type with a role, the partner link type defines interaction rules between partners.</p>
+<p> Do not confuse the Partner Link elements and partner link type definitions: </p>
+<ul>
+  <li class="tut"> Partner link types and roles are  BPEL extensions, which are defined in  WSDL files. </li>
+  <li class="tut"> Partner Link elements are BPEL 2.0 elements. They are defined in the BPEL process file. Partner Link elements make reference to partner link type attributes.</li>
+</ul>
+<p> Partner link type definitions are prerequisites to a Partner Link element. A Partner Link element can only be defined by referring to a particular partner link type and role which must be defined in the WSDL file. </p>
+<h3>Ways to Add a Partner Link</h3>
+<p>You can add a  Partner Link to a business process in one of the following  ways:</p>
+<ul>
+  <li>Drag the Partner Link element from the Palette onto the diagram. </li>
+  <li>Drag a WSDL file from the same project in the Projects window onto the diagram.</li>
+  <li>Drag a WSDL file from a different project in the Projects window onto the diagram. The IDE automatically retrieves the WSDL file from another project and copies related files to the Partner directory in your project structure.</li>
+  <li>Drag a web service node from an EJB project or a Web Application project in the Projects window onto the diagram.</li>
+</ul>
+<ul class="note">
+  <li>When you drag a web service node, the BPEL Designer retrieves the WSDL file from the Application Server. To successfully retrieve the WSDL file, the Application Server must be running and the web service project must be deployed. </li>
+</ul>
+<h3>Using a Partner Link element</h3>
+<p><b>To use the Partner Link element:</b></p>
+
+<ol>
+  <li>In the Design view, add a Partner Link element to the diagram using one of the methods listed above. <br>
+  The Partner Link Property Editor dialog box appears. </li>
+  <li>In the Property Editor dialog box, specify the following: </li>
+  <ul>
+  <li><b>Name</b>. Accept the default name or enter an arbitrary name. The name must be unique for the process. </li>
+  <li><b>WSDL File</b>. Select the WSDL file describing external service associated with the Partner Link. <br>
+  The WSDL file can be pre-selected if you have added the Partner Link element by dragging a WSDL file onto the diagram. </li>
+  </ul>
+  <li>Select one of the following options to specify the Partner Link Type:</li>
+  <ul>
+  <li><b>Use Existing Partner Link Type</b>. If you want to use the partner link type definitions that already exist in the  specified WSDL file, select this option and follow the <a href="#existing">procedure for existing Partner Link Types</a> below. </li>
+  <li><b>Use a Newly Created Partner Link Type</b>. If you want to create a new partner link type definition in the specified WSDL file and use it within this Partner Link element, select this option and follow the <a href="#new">procedure for new Partner Link Types</a> as outlined below. </li>
+  </ul>
+</ol>
+<p><a name="existing"></a><b>To use an existing Partner Link Type</b>:</p>
+<ol>
+  <li>Select the Use Existing Partner Link Type option and select the partner link type from the drop-down list. The My Role and/or Partner Role fields are filled in automatically.</li>
+  <li>Click OK. <br>
+  The IDE modifies the BPEL file with the values you have provided. </li>
+</ol>
+<ul class="note">
+  <li>To swap the roles of the business process (My Role) and the partner (Partner Role), click the Swap Roles button.</li>
+</ul>
+<p><a name="new"><b>To add a Partner Link Type to a WSDL file and configure the Partner Link element to use it:</b></a></p>
+<ol>
+  <li>Select the Use a Newly Created Partner Link Type option.</li>
+  <li>Specify the WSDL file in which to add a partner link type. You can do one of the following: <br>
+  <ul>
+  <li> Add the partner link type to the wrapper WSDL file, as suggested by   the IDE in the Create in File field by default. If you choose this   option, the IDE will automatically create the wrapper WSDL file in   your project structure.  The original WSDL file will be imported to the   newly created wrapper WSDL file. <br>
+    <ul class="note">
+      <li>You can use wrapper WSDL files when the original WSDL file is read-only or when you do not want to modify the original WSDL file.</li>
+    </ul>
+  </li>
+  <li>Add the partner link type to a WSDL file within your project. Click Browse and locate the WSDL file in which to add the partner link type. </li>
+  </ul>
+  <li>Specify the partner link type name. </li>
+  <li>Specify the role for the business process (My Role) and/or the partner role (Partner Role) as follows: </li>
+  <ol type="a">
+  <li>Select the checkbox that to the role you want to define. </li>
+  <li>Specify the role name in the Role Name field. </li>
+  <li>Select the Port Type from the drop-down list.</li>
+  </ol>
+  <li>Click OK. <br>
+    The IDE adds a new partner link type definition to the WSDL file and modifies the BPEL file with the values you have provided. </li>
+</ol>
+<ul class="note">
+  <li> Note that at least one of the roles must be set or the Partner  Link will not be configured properly.</li>
+</ul>
+<a name="dynamic_addr"><h3>Dynamic Addressing</h3></a>
+<p>Sometimes you need to communicate with partner services whose endpoints  are not known beforehand or you need to change an endpoint reference (EPR) during the process execution. The Dynamic Partner Links feature allows you  to dynamically assign an endpoint reference to the partner link. This  means you can use one partner link for communication with several  web&ndash;services as long as these services  have the same interface. </p>
+<p><span lang="EN"><span lang="EN">Each partne link has abstract information and concrete information defined. </span>While the abstract information describing web-service interface should be static, the concrete access information such as address and port can  be discovered and used dynamically.</span></p>
+<p>
+<strong>Note:</strong> For successful deployment of the process a partner link should be completely defined. It means that when you deploy the project, the WSDL file for the partner link should contain both the abstract and the concrete information for the partner link defined, including address and port,  though later the concrete information can be changed independently from the WSDL file.</p>
+<p>
+<strong>Note: </strong>The BPEL specification mandates that only the partner EPR can be changed dynamically. In BPEL terms, only the partnerRole of a partnerLink element can have a new value assigned. The myRole value doesn't change after the BPEL has been deployed.</p>
+<p>
+To assign a new EPR to a partner link you can use the standard Assign activity and the BPEL Mapper.</p>
+
+ <p>The EPR information can be provided in different ways:</p>
+ <ul>
+   <li> you can provide it as a literal (type endpoint reference information manually into a literal) and map it to the partner link</li>
+   <li> use an incoming message to extract the endpoint address </li>
+   <li>use a variable of the Service Reference type </li>
+ </ul>
+ <p>If you use an incoming message, an EPR schema should be defined as a part of the message  in  WSDL. 
+ To assign the EPR to a partner link, use the message variable. </p>
+ <p><strong>To assign a new endpoint reference to a partner link from a variable:</strong></p>
+ <ol>
+   <li> Create a new Assign activity in the process.</li>
+   <li>Open the BPEL Mapper</li>
+   <li>Iin the target tree on the right, find the partner link to which you want  deliver a new concrete part. </li>
+   <li>In the source tree, find a variable containing the new endpoint address</li> 
+   <p>The address of the web-service can be defined in terms of different schemas, and the JBI container requires a special data type called ServiceRefType which is a simple wrapper for any endpoint-describing data type.</p>
+   <p>To wrap your data: </p>
+  <ul>
+   <li>In the mapper toolbar, choose BPEL > Wrap with Service Reference. 
+   <br> 
+   This function is a doXslTranform function that uses a predefined XSL-style sheet. <br>
+   </li>
+ </ul>
+ <br>
+ <li>
+   Draw an ingoing connection to the function from your variable. Then draw an outgoing connection to the partner link.</li>
+   <li>A new concrete part is assigned to the partner link. </li>
+ </ol>
+ <dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="receive.html" title="Receive">Receive</a></dd>
+<dd><a href="reply.html" title="Reply">Reply</a></dd>
+<dd><a href="invoke.html" title="Invoke">Invoke</a></dd>
+<dd><a href="../design/import_wsdl_resources.html" title="Adding WSDL and XML Schema Imports">Adding WSDL and XML Schema Imports</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.xml.wsdlui/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor.html" title="About the WSDL Editor">About the WSDL Editor</a></dd>
+<dd><a href="palette_web_svc.html" title="BPEL Designer Palette: Web Service">BPEL Designer Palette: Web Service</a></dd>
+<dd><a href="../windows_editors/design_view.html" title="About the Design View of the BPEL Designer">About the Design View of the BPEL Designer</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

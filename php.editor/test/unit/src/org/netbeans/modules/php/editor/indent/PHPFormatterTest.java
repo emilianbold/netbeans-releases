@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -1033,6 +1036,20 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceWithinParens08.php", options);
     }
 
+    public void testSpacesWithinMethodDeclParens02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinMethodDeclParens, true);
+        options.put(FmtOptions.spaceWithinMethodCallParens, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinMethodDecl01.php", options);
+    }
+
+    public void testSpacesWithinMethodDeclParens03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinMethodDeclParens, false);
+        options.put(FmtOptions.spaceWithinMethodCallParens, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinMethodDecl02.php", options);
+    }
+
     public void testSpacesWithinTypeCastParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceWithinTypeCastParens, false);
@@ -1834,6 +1851,11 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testIssue185353_05() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue185353_05.php", options);
+    }
+
+    public void testIssue186183_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/issue186183_01.php", options);
     }
 
     private void reformatFileContents(String file) throws Exception {

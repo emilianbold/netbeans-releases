@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -110,6 +113,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Quote;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
@@ -698,8 +702,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 }
                 if (classScope != null) {
                     final String name = fieldAccessInfo.getName();
-                    if (name == null ) {
-                        showAssertionFor185229();
+                    if (name == null) {
+                        showAssertionFor185229(fieldAccessInfo.getOriginalNode());
                     } else {
                         Set<FieldElement> declaredFields = new HashSet<FieldElement>();
                         declaredFields.addAll(classScope.getDeclaredFields());
@@ -721,9 +725,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         super.scan(rightHandSide);
     }
 
-    private void showAssertionFor185229() {
+    private void showAssertionFor185229(final FieldAccess originalNode) {
         boolean showAssertFor185229 = false;
         assert showAssertFor185229 = true;
+        if (showAssertFor185229) {
+            Variable field = originalNode.getField();
+            if (field instanceof ReflectionVariable) {
+                return;
+            }
+        }
         if (showAssertFor185229) {
             final FileObject fileObject = fileScope.getFileObject();
             if (fileObject != null) {

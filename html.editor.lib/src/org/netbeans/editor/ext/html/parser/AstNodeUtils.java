@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.editor.ext.html.dtd.DTD;
 
@@ -331,6 +335,7 @@ public class AstNodeUtils {
         DTD.ContentModel contentModel = leafNodeForPosition.getDTDElement().getContentModel();
         DTD.Content content = contentModel.getContent();
         //resolve all preceding siblings before the astPosition
+        Collection<DTD.Element> childrenBefore = new ArrayList<DTD.Element>();
         for (AstNode sibling : leafNodeForPosition.children()) {
             if (sibling.startOffset() >= astPosition) {
                 //process only siblings before the offset!
@@ -340,7 +345,12 @@ public class AstNodeUtils {
                 DTD.Content subcontent = content.reduce(sibling.getDTDElement().getName());
                 if (subcontent != null) {
                     //sibling reduced - update the content to the resolved one
-                    content = subcontent;
+                    if(content == subcontent) {
+                        //the content is reduced to itself
+                    } else {
+                        content = subcontent;
+                        childrenBefore.add(sibling.getDTDElement());
+                    }
                 } else {
                     //the siblibg doesn't reduce the content - it is unallowed there - ignore it
                 }
@@ -353,12 +363,15 @@ public class AstNodeUtils {
 
             //but do not do that on the root level
             if (leafNodeForPosition.parent().type() != AstNode.NodeType.ROOT) {
-                elements.addAll(getPossibleOpenTagElements(root, leafNodeForPosition.startOffset()));
+                Collection<DTD.Element> elementsBeforeLeaf = getPossibleOpenTagElements(root, leafNodeForPosition.startOffset());
+                //remove all elements which has already been reduced before
+                elementsBeforeLeaf.removeAll(childrenBefore);
+                elements.addAll(elementsBeforeLeaf);
             }
         }
 
-        elements.addAll(content.getPossibleElements());
-
+//      elements.addAll(content.getPossibleElements());
+        addAllPossibleElements(elements, content.getPossibleElements());
 
         //process includes/excludes from the root node to the leaf
         List<AstNode> path = new ArrayList<AstNode>();
@@ -372,6 +385,15 @@ public class AstNodeUtils {
         }
 
         return elements;
+    }
+
+    private static void addAllPossibleElements(Set<DTD.Element> result, Collection<DTD.Element> elements) {
+        for(DTD.Element element : elements) {
+            result.add(element);
+            if(element.hasOptionalStart()) {
+                addAllPossibleElements(result, element.getContentModel().getContent().getPossibleElements());
+            }
+        }
     }
 
     public static boolean hasForbiddenEndTag(AstNode node) {

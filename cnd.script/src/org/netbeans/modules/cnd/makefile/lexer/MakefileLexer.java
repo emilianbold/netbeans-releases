@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,9 +43,8 @@
  */
 package org.netbeans.modules.cnd.makefile.lexer;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
@@ -60,59 +62,68 @@ import org.netbeans.spi.lexer.TokenFactory;
  */
 /*package*/ final class MakefileLexer implements Lexer<MakefileTokenId> {
 
-    private static final Set<String> SPECIAL_TARGETS = new HashSet<String>(Arrays.asList(
-            // standard
-            ".DEFAULT", // NOI18N
-            ".IGNORE", // NOI18N
-            ".POSIX", // NOI18N
-            ".PRECIOUS", // NOI18N
-            ".SCCS_GET", // NOI18N
-            ".SILENT", // NOI18N
-            ".SUFFIXES", // NOI18N
+    private static final Map<String, MakefileTokenId> SPECIAL_TOKENS = new HashMap<String, MakefileTokenId>();
 
-            // gmake extensions
-            // http://www.gnu.org/software/automake/manual/make/Special-Targets.html
-            ".PHONY", // NOI18N
-            ".INTERMEDIATE", // NOI18N
-            ".SECONDARY", // NOI18N
-            ".SECONDEXPANSION", // NOI18N
-            ".DELETE_ON_ERROR", // NOI18N
-            ".LOW_RESOLUTION_TIME", // NOI18N
-            ".EXPORT_ALL_VARIABLES", // NOI18N
-            ".NOTPARALLEL", // NOI18N
+    private static void addSpecialTokens(MakefileTokenId tokenId, String... tokens) {
+        for (String token : tokens) {
+            SPECIAL_TOKENS.put(token, tokenId);
+        }
+    }
 
-            // dmake extensions
-            // http://docs.sun.com/source/820-4180/man1/dmake.1.html
-            ".KEEP_STATE", // NOI18N
-            ".KEEP_STATE_FILE", // NOI18N
-            ".NO_PARALLEL", // NOI18N
-            ".PARALLEL", // NOI18N
-            ".LOCAL", // NOI18N
-            ".WAIT", // NOI18N
+    static {
+        addSpecialTokens(MakefileTokenId.SPECIAL_TARGET,
+                // standard
+                ".DEFAULT", // NOI18N
+                ".IGNORE", // NOI18N
+                ".POSIX", // NOI18N
+                ".PRECIOUS", // NOI18N
+                ".SCCS_GET", // NOI18N
+                ".SILENT", // NOI18N
+                ".SUFFIXES", // NOI18N
 
-            // other extensions
-            ".DONE", // NOI18N
-            ".FAILED", // NOI18N
-            ".GET_POSIX", // NOI18N
-            ".INIT", // NOI18N
-            ".MAKE_VERSION", // NOI18N
-            ".SCCS_GET_POSIX")); // NOI18N
+                // gmake extensions
+                // http://www.gnu.org/software/automake/manual/make/Special-Targets.html
+                ".PHONY", // NOI18N
+                ".INTERMEDIATE", // NOI18N
+                ".SECONDARY", // NOI18N
+                ".SECONDEXPANSION", // NOI18N
+                ".DELETE_ON_ERROR", // NOI18N
+                ".LOW_RESOLUTION_TIME", // NOI18N
+                ".EXPORT_ALL_VARIABLES", // NOI18N
+                ".NOTPARALLEL", // NOI18N
 
-    /**
-     * All keywords are extensions of the standard.
-     */
-    private static final Set<String> KEYWORDS = new HashSet<String>(Arrays.asList(
-            // gmake
-            "override", // NOI18N
-            "define", // NOI18N
-            "endef", // NOI18N
-            "include", // NOI18N
-            "ifdef", // NOI18N
-            "ifndef", // NOI18N
-            "ifeq", // NOI18N
-            "ifneq", // NOI18N
-            "else", // NOI18N
-            "endif")); // NOI18N
+                // dmake extensions
+                // http://docs.sun.com/source/820-4180/man1/dmake.1.html
+                ".KEEP_STATE", // NOI18N
+                ".KEEP_STATE_FILE", // NOI18N
+                ".NO_PARALLEL", // NOI18N
+                ".PARALLEL", // NOI18N
+                ".LOCAL", // NOI18N
+                ".WAIT", // NOI18N
+
+                // other extensions
+                ".DONE", // NOI18N
+                ".FAILED", // NOI18N
+                ".GET_POSIX", // NOI18N
+                ".INIT", // NOI18N
+                ".MAKE_VERSION", // NOI18N
+                ".SCCS_GET_POSIX"); // NOI18N
+
+        // All keywords are extensions of the standard.
+        addSpecialTokens(MakefileTokenId.KEYWORD,
+                // gmake
+                "override", // NOI18N
+                "define", // NOI18N
+                "endef", // NOI18N
+                "ifdef", // NOI18N
+                "ifndef", // NOI18N
+                "ifeq", // NOI18N
+                "ifneq", // NOI18N
+                "else", // NOI18N
+                "endif"); // NOI18N
+
+        addSpecialTokens(MakefileTokenId.INCLUDE, "include"); // NOI18N
+    }
 
     private static enum State {
         AT_LINE_START,
@@ -595,12 +606,7 @@ import org.netbeans.spi.lexer.TokenFactory;
     }
 
     private static Token<MakefileTokenId> createBareOrKeyword(String text, TokenFactory<MakefileTokenId> factory) {
-        if (SPECIAL_TARGETS.contains(text)) {
-            return factory.createToken(MakefileTokenId.SPECIAL_TARGET);
-        } else if (KEYWORDS.contains(text)) {
-            return factory.createToken(MakefileTokenId.KEYWORD);
-        } else {
-            return factory.createToken(MakefileTokenId.BARE);
-        }
+        MakefileTokenId tokenId = SPECIAL_TOKENS.get(text);
+        return factory.createToken(tokenId == null? MakefileTokenId.BARE : tokenId);
     }
 }

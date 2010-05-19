@@ -17,9 +17,6 @@
     <h2>
        C/C++ Unit Test Tasks: Quick Reference
     </h2>
-    <h3>
-       ***this will need to be updated when c unit test implementation complete
-    </h3>
     <p>
        The following table describes common unit testing tasks for C/C++ projects.
     </p>
@@ -36,61 +33,58 @@
       </tr>
       <tr valign="top">
         <td>
-          Create a test for a single C/C++ function.
+          Create tests for individual C/C++ functions.
         </td>
         <td>
           <ol>
             <li>
-              Right-click the function in the editor window and choose New Test &gt; Create Unit
-              Tests (Ctrl-Shift-U). ???
+                Right-click a source file in the Projects window or in the editor window and choose Create Test &gt; New <i>test type</i>
             </li>
             <li>
-              Set ... in dialog box and click OK.
+              Select the functions you want to test in the Select Elements dialog box and click Next.
+            </li>
+            <li>
+                Specify the test name and the filename for the test and click Finish.
+            </li>
+            <li>Edit the generated test files to test the project's functions.</li>
+          </ol>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>
+          Create an empty test.
+        </td>
+        <td>
+          <ol>
+            <li>
+                Right-click the project's Test Files folder and select New <i>test type</i>.
+            </li>
+            
+            <li>
+                Specify the test name and the filename for the test and click Finish.
+            </li>
+            
+          </ol>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>
+          Run a single test suite.
+        </td>
+        <td>
+          <ol>
+            <li>
+              Right-click the Test Files subfolder of the test suite you want to run.
+            </li>
+            <li>
+              Choose Test.
             </li>
           </ol>
         </td>
       </tr>
       <tr valign="top">
         <td>
-          Create an empty test or test suite.***not sure c/c++ uses this term
-        </td>
-        <td>
-          <ol>
-            <li>
-              Choose File &gt; New File.
-            </li>
-            <li>
-              Select Unit Test(?) in the Categories pane and the appropriate test type in the File
-              Types pane. Click Next.
-            </li>
-            <li>
-              Enter a name, target package and other required information, and set any required
-              options.
-            </li>
-            <li>
-              Click Finish.
-            </li>
-          </ol>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
-          Run a test for source file.
-        </td>
-        <td>
-          <ol>
-            <li>
-              Right-click the file whose test you wish to run.
-            </li>
-            <li>
-              Choose Run Test.
-            </li>
-          </ol>
-        </td>
-      </tr>
-      <tr valign="top">
-        <td>
-          Run tests for an entire project.
+          Run all tests for a project.
         </td>
         <td>
           <ol>
@@ -98,7 +92,7 @@
               Select any node in the project for which you wish to run tests.
             </li>
             <li>
-              Choose Run &gt; <a href="c_unit_runningtests.html">Test <i>project name</i></a>
+              Choose Run &gt; <a href="c_unit_runningtests.html">Test Project <i>project name</i></a>
               (Alt-F6) from the main menu.
             </li>
           </ol>
@@ -106,18 +100,31 @@
       </tr>
       <tr valign="top">
         <td>
-          Debug a test.
+          Debug a test suite.
         </td>
         <td>
           <ol>
             <li>
-              Right-click the test you want to debug.
+              Right-click the folder of a test suite you want to debug.
             </li>
             <li>
               Choose <a href="c_unit_debuggingtests.html">Debug Test</a>.
             </li>
           </ol>
+
+
         </td>
+      </tr>
+      <tr valign="top">
+          <td>
+              Debug a single test.</td>
+          <td><ol>
+                <li>Run tests and view the results in the Test Results window.</li>
+                <li>Right-click an individual test in the Test Results window and choose Debug.
+                </li>
+            </ol>
+
+          </td>
       </tr>
     </table>
     <hr>

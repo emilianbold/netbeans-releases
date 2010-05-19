@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,8 +42,12 @@
 
 package org.netbeans.modules.php.project.ui;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -153,6 +160,34 @@ public class BrowseTestSources extends JPanel {
         testSourcesTextField = new JTextField();
         testSourcesBrowseButton = new JButton();
 
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return testSourcesTextField;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return testSourcesTextField;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return testSourcesBrowseButton;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  testSourcesTextField){
+                    return testSourcesBrowseButton;
+                }
+                return testSourcesTextField;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  testSourcesBrowseButton){
+                    return testSourcesTextField;
+                }
+                return testSourcesBrowseButton;//end getComponentBefore
+
+            }}
+        );
+
         Mnemonics.setLocalizedText(infoLabel, "dummy"); // NOI18N
 
         testSourcesLabel.setLabelFor(testSourcesTextField);
@@ -165,8 +200,9 @@ public class BrowseTestSources extends JPanel {
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -176,7 +212,7 @@ public class BrowseTestSources extends JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(testSourcesLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(testSourcesTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                        .addComponent(testSourcesTextField, GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(testSourcesBrowseButton)))
                 .addContainerGap())
@@ -189,10 +225,19 @@ public class BrowseTestSources extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(testSourcesLabel)
-                    .addComponent(testSourcesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(testSourcesTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(testSourcesBrowseButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        testSourcesLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.AccessibleContext.accessibleName")); // NOI18N
+        testSourcesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        testSourcesTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesTextField.AccessibleContext.accessibleName")); // NOI18N
+        testSourcesTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        testSourcesBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        testSourcesBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void testSourcesBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_testSourcesBrowseButtonActionPerformed

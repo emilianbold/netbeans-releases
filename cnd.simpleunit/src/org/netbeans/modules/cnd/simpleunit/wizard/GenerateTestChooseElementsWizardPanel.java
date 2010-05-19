@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -79,12 +82,14 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
      * component from this class, just use getComponent().
      */
     private GenerateTestChooseElementsVisualPanel component;
+    private final String unitTestKind;
     private final ChangeSupport cs;
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private Task task;
     private WizardDescriptor wizard;
 
-    public GenerateTestChooseElementsWizardPanel() {
+    public GenerateTestChooseElementsWizardPanel(String unitTestKind) {
+        this.unitTestKind = unitTestKind;
         cs = new ChangeSupport(this);
     }
 
@@ -101,7 +106,8 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx("GenerateTestChooseElementsWizard_HELP_ID");
+        return new HelpCtx(AbstractUnitTestIterator.CND_UNITTEST_KIND_CPPUNIT.equals(unitTestKind)?
+            "CreateCppUnitTestWizardP1" : "CreateTestWizardP1"); // NOI18N
     }
 
     public boolean isValid() {

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://schemas.sun.com/jbi/message/email/"
+            xmlns:email="http://schemas.sun.com/jbi/message/email/"
+            elementFormDefault="qualified">
+    <xsd:annotation>
+        <xsd:documentation>This schema defines the structure of the abstract WSDL message for Email.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:element name="IMAPMessage" type="email:tIMAPMessage">
+    </xsd:element>
+    <xsd:element name="POP3Message" type="email:tPOP3Message">
+    </xsd:element>
+    <xsd:element name="SMTPMessage" type="email:tSMTPMessage">
+    </xsd:element>
+    <xsd:complexType name="tIMAPMessage">
+        <xsd:annotation>
+            <xsd:documentation>The definition of Email IMAP message.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="body" type="xsd:string" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="to" type="xsd:string" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="cc" type="xsd:string" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="bcc" type="xsd:string" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="subject" type="xsd:string" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="from" type="xsd:string" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="contentType" type="xsd:string" minOccurs="1" maxOccurs="1">
+            </xsd:element>
+            <xsd:element name="attachment" maxOccurs="unbounded" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        </xsd:element>
+                        <xsd:element name="contentType" type="xsd:string" minOccurs="1">
+                        </xsd:element>
+                        <xsd:element name="disposition" type="xsd:string" minOccurs="1">
+                        </xsd:element>
+                        <xsd:element name="transferEncoding" type="xsd:string" minOccurs="1">
+                        </xsd:element>
+                        <xsd:element name="content" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="tPOP3Message">
+        <xsd:annotation>
+            <xsd:documentation>The definition of Email POP3 message.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="body" type="xsd:string" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="to" type="xsd:string" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="cc" type="xsd:string" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="bcc" type="xsd:string" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="subject" type="xsd:string" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="from" type="xsd:string" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="contentType" type="xsd:string" minOccurs="1" maxOccurs="1">
+            </xsd:element>
+            <xsd:element name="attachment" maxOccurs="unbounded" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="name" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        </xsd:element>
+                        <xsd:element name="contentType" type="xsd:string" minOccurs="1">
+                        </xsd:element>
+                        <xsd:element name="disposition" type="xsd:string" minOccurs="1">
+                        </xsd:element>
+                        <xsd:element name="transferEncoding" type="xsd:string" minOccurs="1">
+                        </xsd:element>
+                        <xsd:element name="content" type="xsd:string" minOccurs="1" maxOccurs="1">
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="tSMTPMessage">
+        <xsd:annotation>
+            <xsd:documentation>The definition of Email SMTP message.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+        	<xsd:element name="body" type="xsd:string" minOccurs="0">
+        	</xsd:element>
+        	<xsd:element name="to" type="xsd:string" minOccurs="0"
+        		maxOccurs="unbounded">
+        	</xsd:element>
+        	<xsd:element name="cc" type="xsd:string" minOccurs="0"
+        		maxOccurs="unbounded">
+        	</xsd:element>
+        	<xsd:element name="bcc" type="xsd:string" minOccurs="0"
+        		maxOccurs="unbounded">
+        	</xsd:element>
+        	<xsd:element name="newsgroups" type="xsd:string"
+        		minOccurs="0" maxOccurs="unbounded">
+        	</xsd:element>
+        	<xsd:element name="subject" type="xsd:string"
+        		minOccurs="0">
+        	</xsd:element>
+        	<xsd:element name="from" type="xsd:string" minOccurs="0">
+        	</xsd:element>
+        	<xsd:element name="contentType" type="xsd:string"
+        		minOccurs="0" maxOccurs="1">
+        	</xsd:element>
+        	<xsd:element name="attachment" maxOccurs="unbounded"
+        		minOccurs="0">
+        		<xsd:complexType>
+        			<xsd:sequence>
+        				<xsd:element name="name" type="xsd:string"
+        					minOccurs="0">
+        				</xsd:element>
+        				<xsd:element name="contentType"
+        					type="xsd:string" minOccurs="0">
+        				</xsd:element>
+        				<xsd:element name="disposition" minOccurs="0">
+        					<xsd:simpleType>
+        						<xsd:restriction base="xsd:string">
+        							<xsd:enumeration value="ATTACHMENT" />
+        							<xsd:enumeration value="INLINE" />
+        						</xsd:restriction>
+        					</xsd:simpleType>
+        				</xsd:element>
+        				<xsd:element name="content" minOccurs="0"
+        					maxOccurs="1">
+        					<xsd:annotation>
+        						<xsd:documentation>
+        							When attribute "attachFromFile" is
+        							specified, the content will be
+        							loaded from the specified file,
+        							otherwise this node value itself
+        							represents the attachment content.
+        						</xsd:documentation>
+        					</xsd:annotation>
+        					<xsd:complexType>
+        						<xsd:simpleContent>
+        							<xsd:extension base="xsd:string">
+        								<xsd:attribute
+        									name="attachFromFile" type="xsd:string" />
+        							</xsd:extension>
+        						</xsd:simpleContent>
+        					</xsd:complexType>
+        				</xsd:element>
+        			</xsd:sequence>
+        		</xsd:complexType>
+        	</xsd:element>
+
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

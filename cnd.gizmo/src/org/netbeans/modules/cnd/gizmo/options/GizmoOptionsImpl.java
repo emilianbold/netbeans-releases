@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,6 +58,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
@@ -69,7 +73,6 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     public static final String CONFIGURATION_PROP = "configuration"; // NOI18N
     private static final String GIZMO_CATEGORY = "Gizmo"; // NOI18N
     private static final String GIZMO_SIMPLE_CONFIGURATION = "GizmoSimple"; // NOI18N
-
     private final PropertyChangeSupport pcs;
     private boolean needSave = false;
     private String baseDir;
@@ -215,8 +218,8 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         // Take first valid configuration marked as default (configuration positions in layer.xml matter!)
         for (DLightConfiguration dlightConf : list) {
             // configuration that requires SunStudio becomes default only if we have SunStudio
-            if (dlightConf.isDefault() &&
-                    (!dlightConf.getCollectorProviders().contains("SunStudio") || hasSunStudio)) { // NOI18N
+            if (dlightConf.isDefault()
+                    && (!dlightConf.getCollectorProviders().contains("SunStudio") || hasSunStudio)) { // NOI18N
                 defConf = dlightConf;
                 break;
             }
@@ -269,6 +272,10 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     private void checkPropertyChange(String propertyName, boolean oldValue, boolean newValue) {
         if (oldValue != newValue && pcs != null) {
             pcs.firePropertyChange(propertyName, oldValue, newValue);
+        }
+        if (oldValue != newValue && PROFILE_ON_RUN_PROP.equals(propertyName)) {
+            //TRAKING SYSTEM
+            UIGesturesSupport.submit("USG_CND_PROFILE_ON_RUN", newValue ? "ON" : "OFF");//NOI18N
         }
     }
 

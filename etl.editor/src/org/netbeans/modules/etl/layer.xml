@@ -1,0 +1,1623 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="ETLActions">
+            <file name="org-netbeans-modules-etl-ui-view-graph-actions-ConfigureParametersAction.instance"/>
+        </folder>
+    </folder>
+    <!--folder name="UI">
+        <folder name="Services">
+            <folder name="IDEConfiguration">
+                <folder name="ServerAndExternalToolSettings">
+                    <file name="AxionDBConfigurationNode.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mashup.db.ui.AxionDBConfiguration.createViewNode"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder-->
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-etl+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-etl-ui-ETLDataLoader.instance"/>
+                </folder>
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-etl-ui-view-graph-actions-separatorBefore.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1053"/>
+                    </file>
+                    <file name="org-netbeans-modules-etl-ui-view-graph-actions-ConfigureParametersAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/ETLActions/org-netbeans-modules-etl-ui-view-graph-actions-ConfigureParametersAction.instance"/>
+                        <attr name="position" intvalue="1054"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    <!--folder name="Menu">
+        <folder name="Tools">
+            <file name="NewFFDBAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mashup.db.wizard.NewFFDBAction"/>
+                <attr name="position" intvalue="1250"/>
+            </file>
+        </folder>
+    </folder-->
+    <folder name="Templates">
+        <folder name="SOA_ETL">
+            <attr name="position" intvalue="105"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.Bundle"/>
+            <file name="Collaboration.etl" url="empty.etl">
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.etl.ui.view.wizards.ETLCollaborationWizard.newTemplateIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/etl/template.html"/>
+                <attr name="templateCategory" stringvalue="SOA_ETL"/>
+            </file>
+            
+        </folder>
+    </folder>
+    
+    <folder name="Services">
+        <!-- Recognize text/x-etl+xml: -->
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-etl-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png"/>
+                <attr name="position" intvalue="447"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <!-- ETL Operators-->
+    <!--
+    * Valid values of attribute "ToolbarCategory" are
+    * 0 - All (default),
+    * 1 - Transformation/Main canvas,
+    * 2 - Filter condition
+    * 4 - Validation condition
+    * 8 - Not on any pallet
+    * 16 - having condition, need to allow aggregate function
+    * To enable a category or operator node for more than one category, add the desired values.
+    * For example, to display a category for both Filter and Validation toolbars, but not
+    * the main toolbar, set ToolbarCategory to 2 + 4 = 6.
+    *
+    * Some common combinations:
+    * 3 - Transformation + Filter (not in validation toolbar)
+    * 5 - Transformation + Validation (not in filter toolbar)
+    * 6 - Filter + Validation (not in Transformation toolbar)
+    * 7 - Same as 0 (Transformation + Filter + Validation)
+    *
+    -->
+    <folder name="ETLOperators">
+        
+        <folder name="String">
+            <attr name="DisplayName" stringvalue="LBL_String"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/String.png"/>
+            <file name="varconcat.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/varconcat.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/concat.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_String_varconcat"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_varconcat"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+
+                <attr name="InputParam1" stringvalue="str"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_varconcat_inputParm1"/>
+
+                <attr name="OutputParam1" stringvalue="output"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_varconcat_outputParm1"/>
+
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_varconcat_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_varconcat_outputparam1"/>
+            </file>
+
+            <!--file name="varconcat.xml" url="/org/netbeans/modules/etl/ui/palette/resources/varconcat.xml">
+                <attr name="position" intvalue="100"/>
+            </file-->
+            
+            
+            <file name="replace.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/replace.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/replace.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_String_replace"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_replace"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="3"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_replace_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="str2"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_String_replace_inputParm2"/>
+                
+                <attr name="InputParam3" stringvalue="str3"/>
+                <attr name="InputTooltip3" stringvalue="TOOLTIP_String_replace_inputParm3"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_replace_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_replace_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_String_displayname_replace_inputparam2"/>
+                <attr name="InputParam3_DisplayName" stringvalue="LBL_String_displayname_replace_inputparam3"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_replace_outputparam1"/>
+            </file>
+            
+            <file name="touppercase.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/touppercase.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/uppercase.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_String_touppercase"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_touppercase"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_touppercase_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_touppercase_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_touppercase_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_touppercase_outputparam1"/>
+            </file>
+            
+            <file name="tolowercase.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/tolowercase.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/lowercase.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_String_tolowercase"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_tolowercase"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_tolowercase_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_tolowercase_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_tolowercase_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_tolowercase_outputparam1"/>
+            </file>
+            
+            <file name="lefttrim.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/lefttrim.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/leftTrim.png"/>
+                <attr name="DisplayName" stringvalue="LBL_String_lefttrim"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_lefttrim"/>
+                <attr name="Checked" boolvalue="false"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_lefttrim_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_lefttrim_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_lefttrim_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_lefttrim_outputparam1"/>
+            </file>
+            
+            <file name="righttrim.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/righttrim.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/rightTrim.png"/>
+                <attr name="DisplayName" stringvalue="LBL_String_righttrim"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_righttrim"/>
+                <attr name="Checked" boolvalue="false"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_righttrim_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_righttrim_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_righttrim_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_righttrim_outputparam1"/>
+            </file>
+            
+            
+            <file name="lpad.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/lpad.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/trim.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_String_lpad"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_lpad"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                <attr name="InputNum" intvalue="3"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_lpad_inputParam1"/>
+                
+                <attr name="InputParam2" stringvalue="padlen"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_String_lpad_inputParam2"/>
+                
+                <attr name="InputParam3" stringvalue="padstring"/>
+                <attr name="InputTooltip3" stringvalue="TOOLTIP_String_lpad_inputParam3"/>
+                
+                <attr name="OutputParam1" stringvalue="output"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_lpad_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_lpad_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_lpad_outputparam1"/>
+            </file>
+            
+            <file name="rpad.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/rpad.xml" >
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/trim.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_String_rpad"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_rpad"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                <attr name="InputNum" intvalue="3"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_rpad_inputParam1"/>
+                
+                <attr name="InputParam2" stringvalue="padlen"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_String_rpad_inputParam2"/>
+                
+                <attr name="InputParam3" stringvalue="padstring"/>
+                <attr name="InputTooltip3" stringvalue="TOOLTIP_String_rpad_inputParam3"/>
+                
+                <attr name="OutputParam1" stringvalue="output"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_rpad_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_rpad_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_rpad_outputparam1"/>
+            </file>
+            
+            
+            <file name="trim.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/trim.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/trim.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_String_trim"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_trim"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_trim_inputParam1"/>
+                
+                <attr name="OutputParam1" stringvalue="output"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_trim_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_trim_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_trim_outputparam1"/>
+            </file>
+            
+            <file name="substring.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/substring.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/substring.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_String_substring"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_substring"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="3"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_substring_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="pos1"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_String_substring_inputParm2"/>
+                
+                <attr name="InputParam3" stringvalue="pos2"/>
+                <attr name="InputTooltip3" stringvalue="TOOLTIP_String_substring_inputParm3"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_substring_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_substring_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_String_displayname_substring_inputparam2"/>
+                <attr name="InputParam3_DisplayName" stringvalue="LBL_String_displayname_substring_inputparam3"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_substring_outputparam1"/>
+            </file>
+            
+            <file name="length.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/length.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/length.png"/>
+                <attr name="DisplayName" stringvalue="LBL_String_length"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_length"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_length_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_length_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_length_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_length_outputparam1"/>
+            </file>
+            
+            <file name="numberToHex.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/numberToHex.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/numberToHex.png"/>
+                <attr name="DisplayName" stringvalue="LBL_String_numberToHex"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_numberToHex"/>
+                <attr name="Checked" boolvalue="false"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="val"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_numberToHex_inputParam1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_numberToHex_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_numberToHex_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_numberToHex_outputparam1"/>
+            </file>
+            
+            <file name="stringToHex.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/stringToHex.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/stringToHex.png"/>
+                <attr name="DisplayName" stringvalue="LBL_String_stringToHex"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_stringToHex"/>
+                <attr name="Checked" boolvalue="false"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_stringToHex_inputParam1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_stringToHex_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_stringToHex_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_stringToHex_outputparam1"/>
+            </file>
+        </folder>
+        
+        <folder name="Number">
+            <attr name="DisplayName" stringvalue="LBL_Number"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/Math.png"/>
+            
+            <file name="subtract.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/subtract.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/subtraction.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_Number_subtraction"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Number_subtraction"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="subtractend"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Number_subtraction_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="subtractor"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Number_subtraction_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_subtraction_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_subtraction_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Number_displayname_subtraction_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_subtraction_outputparam1"/>
+            </file>
+            
+            <file name="multiply.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/multiply.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/multiplication.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Number_multiplication"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Number_multiplication"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="a"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Number_multiplication_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="b"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Number_multiplication_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_multiplication_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_multiplication_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Number_displayname_multiplication_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_multiplication_outputparam1"/>
+            </file>
+            
+            <file name="divide.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/divide.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/division.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Number_division"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Number_division"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="dividend"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Number_division_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="divisor"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Number_division_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_division_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_division_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Number_displayname_division_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_division_outputparam1"/>
+            </file>
+            
+            <file name="mod.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/mod.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/modulo.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Number_modulo"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Number_modulo"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="dividend"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Number_modulo_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="divisor"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Number_modulo_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_modulo_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_modulo_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Number_displayname_modulo_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_modulo_outputparam1"/>
+            </file>
+            
+            <file name="absolutevalue.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/absolutevalue.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/trim.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_Number_absolutevalue"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Number_absolutevalue"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="value"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Number_absolutevalue_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_absolutevalue_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_absolutevalue_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Number_displayname_absolutevalue_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_absolutevalue_outputparam1"/>
+            </file>
+            
+            <file name="varadd.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/varadd.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/addition.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_Number_varadd"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Number_varadd"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="num"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Number_varadd_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="output"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_varadd_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_varadd_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_varadd_outputparam1"/>
+            </file>
+            
+            <file name="sign.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/sign.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/sign.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Sign"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Sign"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="arg1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Sign_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Sign_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Comp_displayname_Sign_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Comp_displayname_Sign_outputparam1"/>
+            </file>
+            
+            <file name="sum.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/sum.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/SUM.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Number_sum"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Number_sum"/>
+                <attr name="Checked" boolvalue="true"/>
+                
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="column"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Number_sum_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_sum_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_sum_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_sum_outputparam1"/>
+                <attr name="ToolbarCategory" intvalue="17"/>
+            </file>
+            
+            <file name="average.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/average.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/average.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Number_avg"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Number_avg"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="column"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Number_avg_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_avg_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_avg_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_avg_outputparam1"/>
+                <attr name="ToolbarCategory" intvalue="17"/>
+            </file>
+            
+            <file name="minimum.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/minimum.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/min.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Number_min"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Number_min"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="column"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Number_min_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_min_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_min_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_min_outputparam1"/>
+                <attr name="ToolbarCategory" intvalue="17"/>
+            </file>
+            
+            <file name="maximum.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/maximum.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/max.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Number_max"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Number_max"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="column"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Number_max_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Number_max_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Number_displayname_max_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Number_displayname_max_outputparam1"/>
+                <attr name="ToolbarCategory" intvalue="17"/>
+            </file>
+        </folder>
+        
+        <folder name="Comparison">
+            <attr name="DisplayName" stringvalue="LBL_Comp"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/Comparison.png"/>
+            <attr name="ToolbarCategory" intvalue="6"/>
+            
+            <file name="=.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/=.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/equal.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Comp_equal"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Comp_equal"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLPredicateImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="left"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Comp_equal_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="right"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Comp_equal_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Comp_equal_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Comp_displayname_equal_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Comp_displayname_equal_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Comp_displayname_equal_outputparam1"/>
+            </file>
+            
+            <file name="!=.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/!=.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/not_equal.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Comp_not_equal"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Comp_not_equal"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLPredicateImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="left"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Comp_not_equal_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="right"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Comp_not_equal_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Comp_not_equal_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Comp_displayname_not_equal_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Comp_displayname_not_equal_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Comp_displayname_not_equal_outputparam1"/>
+            </file>
+            
+            <file name="&lt;.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/lessthan.xml" >
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/lesser_than.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Comp_lesser_than"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Comp_lesser_than"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLPredicateImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="left"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Comp_lesser_than_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="right"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Comp_lesser_than_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Comp_lesser_than_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Comp_displayname_lesser_than_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Comp_displayname_lesser_than_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Comp_displayname_lesser_than_outputparam1"/>
+            </file>
+            
+            <file name="&lt;=.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/lessthanequal.xml"  >
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/lesser_equal.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Comp_lesser_equal"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Comp_lesser_equal"/>
+                <attr name="Checked" boolvalue="false"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLPredicateImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="left"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Comp_lesser_equal_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="right"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Comp_lesser_equal_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Comp_lesser_equal_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Comp_displayname_lesser_equal_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Comp_displayname_lesser_equal_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Comp_displayname_lesser_equal_outputparam1"/>
+            </file>
+            
+            <file name="&gt;.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/greaterthan.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/greater_than.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Comp_greater_than"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Comp_greater_than"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLPredicateImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="left"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Comp_greater_than_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="right"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Comp_greater_than_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Comp_greater_than_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Comp_displayname_greater_than_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Comp_displayname_greater_than_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Comp_displayname_greater_than_outputparam1"/>
+            </file>
+            
+            <file name="&gt;=.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/greaterthanequal.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/greater_equal.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Comp_greater_equal"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Comp_greater_equal"/>
+                <attr name="Checked" boolvalue="false"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLPredicateImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="left"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Comp_greater_equal_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="right"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Comp_greater_equal_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Comp_greater_equal_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Comp_displayname_greater_equal_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Comp_displayname_greater_equal_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Comp_displayname_greater_equal_outputparam1"/>
+            </file>
+            
+            <file name="like.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/like.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/like.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Comp_like"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Comp_like"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLPredicateImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="left"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Comp_like_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="right"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Comp_like_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Comp_like_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Comp_displayname_like_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Comp_displayname_like_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Comp_displayname_like_outputparam1"/>
+            </file>
+            
+            <file name="IS.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/IS.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/ISNULL.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Comp_is"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Comp_is"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLPredicateImpl$LeftUnary"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="left"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Comp_is_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Comp_is_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Comp_displayname_is_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Comp_displayname_is_outputparam1"/>
+            </file>
+            
+            <file name="IS NOT.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/IS NOT.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/ISNOTNULL.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Comp_is_not"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Comp_is_not"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLPredicateImpl$LeftUnary"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="left"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Comp_is_not_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Comp_is_not_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Comp_displayname_is_not_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Comp_displayname_is_not_outputparam1"/>
+            </file>
+        </folder>
+        
+        <folder name="Conditional">
+            <attr name="DisplayName" stringvalue="LBL_Cond"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/Boolean.png"/>
+            <attr name="ToolbarCategory" intvalue="6"/>
+            
+            <file name="and.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/and.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/and.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Cond_and"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Cond_and"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLPredicateImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="left"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Cond_and_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="right"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Cond_and_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Cond_and_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Cond_displayname_and_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Cond_displayname_and_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Cond_displayname_and_outputparam1"/>
+            </file>
+            
+            <file name="or.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/or.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/or.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Cond_or"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Cond_or"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLPredicateImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="left"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Cond_or_inputParm1"/>
+                
+                <attr name="InputParam2" stringvalue="right"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Cond_or_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Cond_or_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Cond_displayname_or_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Cond_displayname_or_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Cond_displayname_or_outputparam1"/>
+            </file>
+            
+            <file name="not.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/not.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/booleanNot.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Cond_not"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Cond_not"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLPredicateImpl$RightUnary"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="right"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Cond_not_inputParm1"/>
+                
+                
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Cond_not_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Cond_displayname_not_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Cond_displayname_not_outputparam1"/>
+            </file>
+        </folder>
+        
+        <folder name="SQL">
+            <attr name="DisplayName" stringvalue="LBL_Sql"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/Show_Sql.png"/>
+            
+            <file name="literal.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/literal.xml" >
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/literal.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Sql_literal"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Sql_literal"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLLiteralImpl"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="0"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputParamEditable1" boolvalue="true"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Sql_literal_outputParm1"/>
+                
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Sql_displayname_literal_outputparam1"/>
+            </file>
+            
+            <file name="castas.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/castas.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/castAs.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Sql_castas"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Sql_castas"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLCastOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="column"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Sql_castas_inputParam1"/>
+                
+                <attr name="InputParam2" stringvalue="type"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Sql_castas_inputParam2"/>
+                <attr name="InputParamStatic2" boolvalue="true"/>
+                <attr name="InputParamEditable2" boolvalue="false"/>
+                <attr name="InputParamStaticChoices2" stringvalue="bigint,bit,char,date,decimal,double,float,integer,numeric,real,smallint,time,timestamp,tinyint,longvarchar,varchar,binary,longvarbinary,varbinary"/>
+                <!--attr name="InputParamStaticChoices2" stringvalue="char,date,double,float,integer,time,timestamp,varchar" /-->
+                <attr name="InputParamStaticDefault2" stringvalue="char"/>
+                <attr name="InputParamStaticChoices2_DisplayValues" stringvalue="LBL_castas_displayvalues_inputParam3"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Sql_castas_outputParam"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Sql_displayname_castas_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Sql_displayname_castas_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Sql_displayname_castas_outputparam1"/>
+            </file>
+            
+            <file name="case.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/case.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/Case.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Sql_case"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Sql_case"/>
+                <attr name="Checked" boolvalue="true"/>
+                
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLCaseOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="Condition"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Sql_case_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="output"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Sql_case_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_SQL_displayname_case_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_SQL_displayname_case_outputparam1"/>
+                
+                <attr name="ToolbarCategory" intvalue="1"/>
+            </file>
+            
+            <file name="null.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/null.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/null.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Sql_null"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Sql_null"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="0"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Sql_null_outputParm1"/>
+                
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Sql_displayname_null_outputparam1"/>
+            </file>
+            
+            <file name="nullIf.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/nullIf.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/nullif.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Nullif"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Nullif"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="arg1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Nullif_inputParm1"/>
+                <attr name="InputParam2" stringvalue="arg2"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Nullif_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Nullif_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Comp_displayname_Nullif_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Comp_displayname_Nullif_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Comp_displayname_Nullif_outputparam1"/>
+            </file>
+            
+            <file name="coalesce.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/coalesce.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/coalesce.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Coalesce"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Coalesce"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="arg1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Coalesce_inputParm1"/>
+                <attr name="InputParam2" stringvalue="arg2"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Coalesce_inputParm2"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Coalesce_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Comp_displayname_Coalesce_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Comp_displayname_Coalesce_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Comp_displayname_Coalesce_outputparam1"/>
+            </file>
+            
+            <file name="count.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/count.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/Count.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Sql_count"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Sql_count"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="column"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Sql_count_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Sql_count_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Sql_displayname_count_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Sql_displayname_count_outputparam1"/>
+                <attr name="ToolbarCategory" intvalue="1"/>
+            </file>
+            <file name="userFx.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/userFx.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/userFunction.png"/>
+                <attr name="DisplayName" stringvalue="LBL_String_userfx"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_userfx"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLCustomOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="arg1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_userfx_inputParm1"/>
+                
+                <attr name="OutputParam1" stringvalue="output"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_userfx_outputParm1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_userfx_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_userfx_outputparam1"/>
+                <attr name="ToolbarCategory" intvalue="0"/>
+            </file>
+        </folder>
+        
+        <folder name="Date">
+            <attr name="DisplayName" stringvalue="LBL_Date"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/datePart.png"/>
+            
+            <file name="now.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/now.xml" >
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/NOW2.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Date_now"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Date_now"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="0"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Date_now_outputParam1"/>
+                
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Date_displayname_now_outputParam1"/>
+            </file>
+            
+            <file name="datediff.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/datediff.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/DateSubtraction.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Date_datediff"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Date_datediff"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="3"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="timestamp1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Date_datediff_inputParam1"/>
+                
+                <attr name="InputParam2" stringvalue="timestamp2"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Date_datediff_inputParam2"/>
+                
+                <attr name="InputParam3" stringvalue="type"/>
+                <attr name="InputTooltip3" stringvalue="TOOLTIP_Date_dateadd_inputParam3"/>
+                <attr name="InputParamStatic3" boolvalue="true"/>
+                <attr name="InputParamEditable3" boolvalue="false"/>
+                <attr name="InputParamStaticChoices3" stringvalue="SECOND,MINUTE,HOUR,DAY,WEEK,MONTH,QUARTER,YEAR"/>
+                <attr name="InputParamStaticDefault3" stringvalue="DAY"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Date_datediff_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Date_displayname_datediff_inputParam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Date_displayname_datediff_inputParam2"/>
+                <attr name="InputParam3_DisplayName" stringvalue="LBL_Date_displayname_datediff_inputParam3"/>
+                <attr name="InputParamStaticChoices3_DisplayValues" stringvalue="LBL_Date_displayvalues_dateadd_inputParam3"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Date_displayname_datediff_outputParam1"/>
+            </file>
+            
+            <file name="dateadd.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/dateadd.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/DateAddition.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Date_dateadd"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Date_dateadd"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <attr name="InputNum" intvalue="3"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="timestamp1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Date_dateadd_inputParam1"/>
+                
+                <attr name="InputParam2" stringvalue="interval"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Date_dateadd_inputParam2"/>
+                
+                <attr name="InputParam3" stringvalue="type"/>
+                <attr name="InputTooltip3" stringvalue="TOOLTIP_Date_dateadd_inputParam3"/>
+                <attr name="InputParamStatic3" boolvalue="true"/>
+                <attr name="InputParamEditable3" boolvalue="false"/>
+                <attr name="InputParamStaticChoices3" stringvalue="SECOND,MINUTE,HOUR,DAY,WEEK,MONTH,QUARTER,YEAR"/>
+                <attr name="InputParamStaticDefault3" stringvalue="DAY"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Date_dateadd_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Date_displayname_dateadd_inputParam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Date_displayname_dateadd_inputParam2"/>
+                <attr name="InputParam3_DisplayName" stringvalue="LBL_Date_displayname_dateadd_inputParam3"/>
+                <attr name="InputParamStaticChoices3_DisplayValues" stringvalue="LBL_Date_displayvalues_dateadd_inputParam3"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Date_displayname_dateadd_outputParam1"/>
+            </file>
+            
+            <file name="datetochar.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/datetochar.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/DateToChar.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Date_datetochar"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Date_datetochar"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="JavaOperator" boolvalue="true"/>
+                <attr name="attrListDelimiter" stringvalue="|"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                <attr name="InputParam1" stringvalue="timestamp1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Date_datetochar_inputParam1"/>
+                <attr name="InputParam2" stringvalue="format"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Date_common_format"/>
+                <attr name="InputParamStatic2" boolvalue="true"/>
+                <attr name="InputParamEditable2" boolvalue="false"/>
+                <attr name="InputParamStaticChoices2" stringvalue="MON DD YYYY HH:MIAM|MM/DD/YY|MM/DD/YYYY|YY.MM.DD|YYYY.MM.DD|DD/MM/YY|DD/MM/YYYY|DD.MM.YY|DD.MM.YYYY|DD-MM-YY|DD-MM-YYYY|DD MON YY|DD MON YYYY|MON DD, YY|MON DD, YYYY|HH:MI:SS|MM-DD-YY|MM-DD-YYYY|YY/MM/DD|YYYY/MM/DD|YYMMDD|YYYYMMDD|YYYY-MM-DD|DD MON YYYY HH24:MI:SS.FF|HH24:MI:SS:FF|DD MON YYYY HH24:MI:SS|HH24:MI:SS|YYYY-MM-DD HH24:MI:SS.FF|YYYY-MM-DDTHH24:MI:SS|YYYYMMDDTHH24MISS|DD MON YYYY HH:MI:SS.FFAM|DD/MM/YYYY HH:MI:SS.FFAM"/>
+                <attr name="InputParamStaticDefault2" stringvalue="MM/DD/YYYY"/>
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Date_datetochar_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Date_displayname_datetochar_inputParam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Date_common_format"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Date_displayname_datetochar_outputParam1"/>
+                
+                
+                <attr name="InputParamStaticChoices2_DisplayValues" stringvalue="LBL_Date_displayvalues_common_dateformats"/>
+            </file>
+            
+            <file name="chartodate.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/chartodate.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/CharToDate.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Date_chartodate"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Date_chartodate"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="JavaOperator" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                <attr name="attrListDelimiter" stringvalue="|"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                <attr name="InputParam1" stringvalue="char1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Date_chartodate_inputParam1"/>
+                <attr name="InputParam2" stringvalue="format"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Date_common_format"/>
+                <attr name="InputParamStatic2" boolvalue="true"/>
+                <attr name="InputParamEditable2" boolvalue="false"/>
+                <attr name="InputParamStaticChoices2" stringvalue="MON DD YYYY HH:MIAM|MM/DD/YY|MM/DD/YYYY|YY.MM.DD|YYYY.MM.DD|DD/MM/YY|DD/MM/YYYY|DD.MM.YY|DD.MM.YYYY|DD-MM-YY|DD-MM-YYYY|DD MON YY|DD MON YYYY|MON DD, YY|MON DD, YYYY|HH:MI:SS|MM-DD-YY|MM-DD-YYYY|YY/MM/DD|YYYY/MM/DD|YYMMDD|YYYYMMDD|YYYY-MM-DD|DD MON YYYY HH24:MI:SS.FF|HH24:MI:SS:FF|DD MON YYYY HH24:MI:SS|HH24:MI:SS|YYYY-MM-DD HH24:MI:SS.FF|YYYY-MM-DDTHH24:MI:SS|YYYYMMDDTHH24MISS|DD MON YYYY HH:MI:SS.FFAM|DD/MM/YYYY HH:MI:SS.FFAM"/>
+                <attr name="InputParamStaticDefault2" stringvalue="MM/DD/YYYY"/>
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Date_chartodate_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Date_displayname_chartodate_inputParam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Date_common_format"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Date_displayname_chartodate_outputParam1"/>
+                
+                <attr name="InputParamStaticChoices2_DisplayValues" stringvalue="LBL_Date_displayvalues_common_dateformats"/>
+            </file>
+            
+            <file name="datepart.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/datepart.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/datePart.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Date_datepart"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Date_datepart"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="JavaOperator" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                <attr name="InputParam1" stringvalue="datePart"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Date_datepart_inputParam1"/>
+                <attr name="InputParamStatic1" boolvalue="true"/>
+                <attr name="InputParamEditable1" boolvalue="false"/>
+                <attr name="InputParamStaticChoices1" stringvalue="WEEKDAY,WEEKDAY3,WEEKDAYFULL,DAY,MONTH,MONTH3,MONTHFULL,YEAR,YEAR2,HOUR,HOUR12,HOUR24,MINUTE,SECOND,WEEK,QUARTER,MILLISECOND,AMPM"/>
+                <attr name="InputParamStaticDefault1" stringvalue="WEEKDAY"/>
+                <attr name="InputParam2" stringvalue="timestamp1"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Date_datepart_inputParam2"/>
+                
+                <attr name="OutputParam1" stringvalue="result"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Date_datepart_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Date_displayname_datepart_inputParam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Date_displayname_datepart_inputParam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Date_displayname_datepart_outputParam1"/>
+                
+                <attr name="InputParamStaticChoices1_DisplayValues" stringvalue="LBL_Date_displayvalues_datepart_inputParam1"/>
+            </file>
+        </folder>
+        
+        <folder name="Validation">
+            <attr name="DisplayName" stringvalue="LBL_Validation"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/isValidDateTime.png"/>
+            <attr name="ToolbarCategory" intvalue="6"/>
+            
+            <file name="matches.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/matches.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/matches.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Validation_matches"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Validation_matches"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="JavaOperator" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleMatchesPredicateImpl"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                <attr name="InputParam1" stringvalue="left"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Validation_matches_inputParam1"/>
+                <attr name="InputParam2" stringvalue="right"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Validation_matches_inputParam2"/>
+                <attr name="InputParamStatic2" boolvalue="true"/>
+                <attr name="InputParamEditable2" boolvalue="true"/>
+                <attr name="InputParamStaticChoices2" stringvalue=".*,^[0-9]{5}([\- ]?[0-9]{4})?$,^[0-9]{3}-[0-9]{2}-[0-9]{4}$|^[0-9]{3}[0-9]{2}[0-9]{4}$"/>
+                <attr name="InputParamStaticDefault2" stringvalue=".*"/>
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Validation_matches_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Validation_displayname_matches_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Validation_displayname_matches_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Validation_displayname_matches_outputparam1"/>
+                
+                <attr name="InputParamStaticChoices2_DisplayValues" stringvalue="LBL_Validation_displayvalues_matches_inputParam2"/>
+            </file>
+            
+            <file name="isvaliddatetime.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/isvaliddatetime.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/isValidDateTime.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Validation_isvaliddatetime"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Validation_isvaliddatetime"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="JavaOperator" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.VisibleSQLPredicateImpl"/>
+                <attr name="attrListDelimiter" stringvalue="|"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="2"/>
+                <attr name="OutputNum" intvalue="1"/>
+                <attr name="InputParam1" stringvalue="left"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Validation_isvaliddatetime_inputParam1"/>
+                <attr name="InputParam2" stringvalue="right"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Date_common_format"/>
+                <attr name="InputParamStatic2" boolvalue="true"/>
+                <attr name="InputParamEditable2" boolvalue="true"/>
+                <attr name="InputParamStaticChoices2" stringvalue="MON DD YYYY HH:MIAM|MM/DD/YY|MM/DD/YYYY|YY.MM.DD|YYYY.MM.DD|DD/MM/YY|DD/MM/YYYY|DD.MM.YY|DD.MM.YYYY|DD-MM-YY|DD-MM-YYYY|DD MON YY|DD MON YYYY|MON DD, YY|MON DD, YYYY|HH:MI:SS|MM-DD-YY|MM-DD-YYYY|YY/MM/DD|YYYY/MM/DD|YYMMDD|YYYYMMDD|DD MON YYYY HH24:MI:SS.FF|HH24:MI:SS:FF|DD MON YYYY HH24:MI:SS|HH24:MI:SS|YYYY-MM-DD HH24:MI:SS.FF|YYYY-MM-DDTHH24:MI:SS|YYYYMMDDTHH24MISS|DD MON YYYY HH:MI:SS.FFAM|DD/MM/YYYY HH:MI:SS.FFAM"/>
+                <attr name="InputParamStaticDefault2" stringvalue="MM/DD/YYYY"/>
+                <attr name="OutputParam1" stringvalue="result (boolean)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Validation_isvaliddatetime_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Validation_displayname_isvaliddatetime_inputParam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Date_common_format"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Validation_displayname_isvaliddatetime_outputParam1"/>
+                
+                <attr name="InputParamStaticChoices2_DisplayValues" stringvalue="LBL_Date_displayvalues_common_dateformats"/>
+            </file>
+        </folder>
+        
+        <folder name="Cleansing">
+            <attr name="DisplayName" stringvalue="LBL_Cleansing"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/parseAddress.png"/>
+            
+            <file name="normalizeName.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/normalizeName.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/normalizePerson.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Cleansing_normalizeName"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Cleansing_normalizeName"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="JavaOperator" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLNormalizeOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="3"/>
+                <attr name="OutputNum" intvalue="1"/>
+                <attr name="InputParam1" stringvalue="part"/>
+                <attr name="InputParamStatic1" boolvalue="true"/>
+                <attr name="InputParamEditable1" boolvalue="false"/>
+                <attr name="InputParamStaticChoices1" stringvalue="FirstName,LastName"/>
+                <attr name="InputParamStaticDefault1" stringvalue="FirstName"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Cleansing_normalizeName_inputParam1"/>
+                <attr name="InputParam2" stringvalue="str"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Cleansing_normalizeName_inputParam2"/>
+                <attr name="InputParam3" stringvalue="locale"/>
+                <attr name="InputParamStatic3" boolvalue="true"/>
+                <attr name="InputParamEditable3" boolvalue="false"/>
+                <attr name="InputParamStaticChoices3" stringvalue="US,UK"/>
+                <attr name="InputParamStaticDefault3" stringvalue="US"/>
+                <attr name="InputTooltip3" stringvalue="TOOLTIP_Cleansing_normalizeName_inputParam3"/>
+                
+                <attr name="OutputParam1" stringvalue="result (varchar)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Cleansing_normalizeName_outputParam1"/>
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Cleansing_displayname_normalizeName_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Cleansing_displayname_normalizeName_inputparam2"/>
+                <attr name="InputParam3_DisplayName" stringvalue="LBL_Cleansing_displayname_normalizeName_inputparam3"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Cleansing_displayname_normalizeName_outputparam1"/>
+                
+                <attr name="InputParamStaticChoices1_DisplayValues" stringvalue="LBL_Cleansing_displayvalues_normalizeName_inputparam1"/>
+                <attr name="InputParamStaticChoices3_DisplayValues" stringvalue="LBL_Cleansing_displayvalues_common_locale"/>
+            </file>
+            
+            <file name="parseAddress.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/parseAddress.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/parseAddress.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Cleansing_parseAddress"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Cleansing_parseAddress"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="JavaOperator" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLStandardizeOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="3"/>
+                <attr name="OutputNum" intvalue="1"/>
+                <attr name="InputParam1" stringvalue="part"/>
+                <attr name="InputParamStatic1" boolvalue="true"/>
+                <attr name="InputParamEditable1" boolvalue="false"/>
+                <attr name="InputParamStaticChoices1" stringvalue="WithinStructDescript,WithinStructIdentif,HouseNumber,MatchStreetName,StreetNameSufType,OrigStreetName,StreetNamePrefDirection"/>
+                <attr name="InputParamStaticDefault1" stringvalue="MatchStreetName"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Cleansing_parseAddress_inputParam1"/>
+                <attr name="InputParam2" stringvalue="str"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Cleansing_parseAddress_inputParam2"/>
+                <attr name="InputParam3" stringvalue="locale"/>
+                <attr name="InputParamStatic3" boolvalue="true"/>
+                <attr name="InputParamEditable3" boolvalue="false"/>
+                <attr name="InputParamStaticChoices3" stringvalue="US,UK"/>
+                <attr name="InputParamStaticDefault3" stringvalue="US"/>
+                <attr name="InputTooltip3" stringvalue="TOOLTIP_Cleansing_parseAddress_inputParam3"/>
+                <attr name="OutputParam1" stringvalue="result (varchar)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Cleansing_parseAddress_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Cleansing_displayname_parseAddress_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Cleansing_displayname_parseAddress_inputparam2"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Cleansing_displayname_parseAddress_outputparam1"/>
+                
+                <attr name="InputParamStaticChoices1_DisplayValues" stringvalue="LBL_Cleansing_displayvalues_parseAddress_inputparam1"/>
+                <attr name="InputParamStaticChoices3_DisplayValues" stringvalue="LBL_Cleansing_displayvalues_common_locale"/>
+            </file>
+            
+            <file name="parseBusinessName.xml" url="nbresloc:/org/netbeans/modules/etl/ui/resources/parseBusinessName.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/parseBusinessName.png"/>
+                <attr name="DisplayName" stringvalue="LBL_Cleansing_parseBusinessName"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_Cleansing_parseBusinessName"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="JavaOperator" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLStandardizeOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                
+                <!--Fields-->
+                <attr name="InputNum" intvalue="3"/>
+                <attr name="OutputNum" intvalue="1"/>
+                <attr name="InputParam1" stringvalue="part"/>
+                <attr name="InputParamStatic1" boolvalue="true"/>
+                <attr name="InputParamEditable1" boolvalue="false"/>
+                <attr name="InputParamStaticChoices1" stringvalue="PrimaryName,OrgTypeKeyword"/>
+                <attr name="InputParamStaticDefault1" stringvalue="PrimaryName"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_Cleansing_parseBusinessName_inputParam1"/>
+                <attr name="InputParam2" stringvalue="str"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_Cleansing_parseBusinessName_inputParam2"/>
+                <attr name="InputParam3" stringvalue="locale"/>
+                <attr name="InputParamStatic3" boolvalue="true"/>
+                <attr name="InputParamEditable3" boolvalue="false"/>
+                <attr name="InputParamStaticChoices3" stringvalue="US,UK"/>
+                <attr name="InputParamStaticDefault3" stringvalue="US"/>
+                <attr name="InputTooltip3" stringvalue="TOOLTIP_Cleansing_parseBusinessName_inputParam3"/>
+                <attr name="OutputParam1" stringvalue="result (varchar)"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_Cleansing_parseBusinessName_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_Cleansing_displayname_parseBusinessName_inputparam1"/>
+                <attr name="InputParam2_DisplayName" stringvalue="LBL_Cleansing_displayname_parseBusinessName_inputparam2"/>
+                <attr name="InputParam3_DisplayName" stringvalue="LBL_Cleansing_displayname_parseBusinessName_inputparam3"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_Cleansing_displayname_parseBusinessName_outputparam1"/>
+                
+                <attr name="InputParamStaticChoices1_DisplayValues" stringvalue="LBL_Cleansing_displayvalues_parseBusinessName_inputparam1"/>
+                <attr name="InputParamStaticChoices3_DisplayValues" stringvalue="LBL_Cleansing_displayvalues_common_locale"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="x-etl+xml">
+                    <file name="org-netbeans-modules-etl-ui-navigator-ETLNavigatorComponent.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="ETLOutputWindowTopComponent.settings" url="ETLOutputWindowTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="output">
+                <file name="ETLOutputWindowTopComponent.wstcref" url="ETLOutputWindowTopComponentWstcref.xml">
+                    <attr name="position" intvalue="317"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

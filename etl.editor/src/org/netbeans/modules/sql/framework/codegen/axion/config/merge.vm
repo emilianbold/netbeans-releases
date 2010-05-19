@@ -1,0 +1,53 @@
+#set( $indent = "    " )
+MERGE INTO $targetTable 
+USING (
+#set( $totalColumns = $sourceColumnIdentifiers.size())
+#set( $columnCounter = 1)
+${indent}SELECT #if($distinct) DISTINCT #end
+
+#foreach($sColumn in $sourceColumnIdentifiers )
+${indent}${indent}$sColumn.getSql()#if($aliasColumns) AS $sColumn.getAliasName()#end#if($columnCounter < $totalColumns), #end
+
+#set( $columnCounter = $columnCounter + 1)
+#end
+${indent}FROM $fromContent
+#if($useWhere)
+${indent}WHERE 
+#if($condition != "")${indent}${indent}$condition
+## END if ($condition)
+#end
+## END if ($useWhere)
+#end
+) $subSelectAliasName
+ON ($mergeCondition)
+WHEN MATCHED THEN
+${indent}UPDATE SET 
+#set( $totalMappings = $mappings.size())
+#set( $columnCounter = 1)
+#foreach($mapping in $mappings)
+${indent}${indent}$mapping.getTarget().getSql() = $mapping.getSource().getAliasName()#if($columnCounter < $totalMappings), #end
+
+#set( $columnCounter = $columnCounter + 1)
+#end
+WHEN NOT MATCHED THEN
+${indent}INSERT (
+#set( $totalTargetColumns = $targetColumnIdentifiers.size())
+#set( $columnCounter = 1 )
+#foreach( $tColumn in $targetColumnIdentifiers )
+${indent}${indent}$tColumn.getSql()#if($columnCounter < $totalTargetColumns), #end
+
+#set( $columnCounter = $columnCounter + 1)
+#end
+${indent})
+${indent}VALUES (
+#set( $totalValueColumns = $valueIdentifiers.size() )
+#set( $valueCounter = 1 )
+#foreach( $vColumn in $valueIdentifiers )
+${indent}${indent}$vColumn.getAliasName()#if($valueCounter < $totalValueColumns), #end
+
+#set( $valueCounter = $valueCounter + 1)
+#end
+${indent})
+#if($exceptionWhen != "")
+${exceptionWhen}
+#end

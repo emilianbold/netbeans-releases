@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -122,6 +125,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
     private static HintsUI INSTANCE;
     private static final Set<String> fixableAnnotations;
     private static final String POPUP_NAME = "hintsPopup"; // NOI18N
+    private static final String SUB_POPUP_NAME = "subHintsPopup"; // NOI18N
     private static final int POPUP_VERTICAL_OFFSET = 5;
 
     static {
@@ -263,6 +267,10 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         JTextComponent comp = getComponent();
 
         if (comp == null) return;
+
+        if (subhintListComponent != null) {
+            closeSubList();
+        }
         
         List<Fix> ff = new LinkedList<Fix>();
 
@@ -281,7 +289,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
 
         subhintListComponent.getView().addMouseListener (this);
         subhintListComponent.getView().addMouseMotionListener(this);
-        subhintListComponent.setName("sub" + POPUP_NAME);
+        subhintListComponent.setName(SUB_POPUP_NAME);
 
         assert sublistPopup == null;
         sublistPopup = getPopupFactory().getPopup(
@@ -482,9 +490,17 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
 //    }
 
     public void mouseClicked(java.awt.event.MouseEvent e) {
-        if (e.getSource() == hintListComponent || e.getSource() instanceof ListCompletionView) {
+        if (   e.getSource() == hintListComponent.getView()
+            && hintListComponent.getView().getSize().width - ListCompletionView.arrowSpan() <= e.getPoint().x) {
+            if (hintListComponent.getView().right()) {
+                e.consume();
+                return;
+            }
+        }
+
+        if (e.getSource() instanceof ListCompletionView) {
             Fix f = null;
-            Object selected = hintListComponent.getView().getSelectedValue();
+            Object selected = ((ListCompletionView) e.getSource()).getSelectedValue();
             
             if (selected instanceof Fix) {
                 f = (Fix) selected;
@@ -521,8 +537,16 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
     }
 
     public void mouseMoved(MouseEvent e) {
-        ListCompletionView view = hintListComponent.getView();
-        view.setSelectedIndex(view.locationToIndex(e.getPoint()));
+        if (e.getSource() instanceof ListCompletionView) {
+            ListCompletionView view = (ListCompletionView) e.getSource();
+            int wasSelected = view.getSelectedIndex();
+
+            view.setSelectedIndex(view.locationToIndex(e.getPoint()));
+
+            if (wasSelected != view.getSelectedIndex() && view == hintListComponent.getView()) {
+                closeSubList();
+            }
+        }
     }
 
     public boolean isActive() {
@@ -825,10 +849,11 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
                 }
                 
                 Component comp = (Component)aWTEvent.getSource();
-                Container par = SwingUtilities.getAncestorNamed(POPUP_NAME, comp); //NOI18N
+                Container par1 = SwingUtilities.getAncestorNamed(POPUP_NAME, comp); //NOI18N
+                Container par2 = SwingUtilities.getAncestorNamed(SUB_POPUP_NAME, comp); //NOI18N
                 // Container barpar = SwingUtilities.getAncestorOfClass(PopupUtil.class, comp);
                 // if (par == null && barpar == null) {
-                if ( par == null ) {
+                if ( par1 == null && par2 == null ) {
                     removePopup();
                 }
             }

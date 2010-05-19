@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -80,11 +83,13 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     }
 
     private void createFolder(int folderKind, APTToken begin, APTToken end) {
-        // remove one symbol because we want to leave closing curly
-        if (APTFoldingUtils.isStandalone()) {
-            parserFolders.add(new CppFoldRecord(folderKind, begin.getLine(), begin.getColumn(), end.getEndLine(), end.getEndColumn()));
-        } else {
-            parserFolders.add(new CppFoldRecord(folderKind, begin.getOffset(), end.getEndOffset()));
+        if (begin.getLine() != end.getEndLine()) {
+            // remove one symbol because we want to leave closing curly
+            if (APTFoldingUtils.isStandalone()) {
+                parserFolders.add(new CppFoldRecord(folderKind, begin.getLine(), begin.getOffset(), end.getEndLine(), end.getEndOffset()));
+            } else {
+                parserFolders.add(new CppFoldRecord(folderKind, begin.getOffset(), end.getEndOffset()));
+            }
         }
     }
 
@@ -121,6 +126,22 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         }
         return null;
     }
+
+    public static List<CppFoldRecord> parse(String name, char[] buf) {
+        try {
+            TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(name, buf, APTLanguageSupport.GNU_CPP);
+            APTFoldingParser parser = getParser(name, lexer);
+            parser.translation_unit();
+            return new ArrayList<CppFoldRecord>(parser.getFolders());
+        } catch (Exception e) {
+            if (reportErrors) {
+                System.err.println("exception: " + e); // NOI18N
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
     private final static boolean reportErrors = Boolean.getBoolean("folding.parser.report.errors"); // NOI18N
 
     @Override

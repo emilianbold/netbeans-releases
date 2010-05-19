@@ -1,0 +1,498 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.soa.pojo.wizards;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.InputMethodEvent;
+import java.awt.event.InputMethodListener;
+import java.util.ArrayList;
+import java.util.Iterator;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.JTextField;
+import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+
+public class MultiTargetChooserPanelGUI extends JPanel
+    implements ActionListener, DocumentListener
+{
+    private static final class GroupListCellRenderer extends DefaultListCellRenderer
+    {
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+        {
+            SourceGroup g = (SourceGroup)value;
+            if(g != null)
+            {
+                super.getListCellRendererComponent(list, g.getDisplayName(), index, isSelected, cellHasFocus);
+                setIcon(g.getIcon(false));
+            }
+            return this;
+        }
+
+        public GroupListCellRenderer()
+        {
+        }
+    }
+
+
+    private static final String DEFAULT_NEW_PACKAGE_NAME = NbBundle.getMessage(MultiTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_DefaultNewPackageName");
+    private static final String NEW_CLASS_PREFIX = NbBundle.getMessage(MultiTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_NewJavaClassPrefix");
+    private static final Dimension PREF_DIM = new Dimension(500, 340);
+    private Project project;
+    private String expectedExtension;
+    private final java.util.List listeners = new ArrayList();
+    private int type;
+    private SourceGroup groups[];
+    private boolean ignoreRootCombo;
+    private JPanel bottomPanelContainer;
+    private JLabel documentNameLabel;
+    private JTextField documentNameTextField;
+    private JLabel jLabel1;
+    private JLabel jLabel5;
+    private JPanel jPanel1;
+    private JPanel jPanel2;
+    private JComboBox packageComboBox;
+    private JLabel packageLabel;
+    private JTextField projectTextField;
+    private JComboBox rootComboBox;
+    private JSeparator targetSeparator;
+    private org.openide.util.RequestProcessor.Task updatePackagesTask;
+    private static final ComboBoxModel WAIT_MODEL = new DefaultComboBoxModel(new String[] {
+        NbBundle.getMessage(MultiTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_PackageName_PleaseWait")
+    });
+    //static final boolean $assertionsDisabled = !org/netbeans/modules/soa/pojo/wizards/MultiTargetChooserPanelGUI.desiredAssertionStatus();
+
+    public MultiTargetChooserPanelGUI(Project p, SourceGroup groups[], Component bottomPanel, int type)
+    {
+        updatePackagesTask = null;
+        this.type = type;
+        project = p;
+        this.groups = groups;
+        initComponents();
+        if(type == 1)
+        {
+            packageComboBox.setVisible(false);
+            packageLabel.setVisible(false);
+            Mnemonics.setLocalizedText(documentNameLabel, NbBundle.getMessage(MultiTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_PackageName_Label"));
+            documentNameTextField.getDocument().addDocumentListener(this);
+        } else
+        if(type == 2)
+        {
+            documentNameTextField.setEditable(false);
+        } else
+        {
+            packageComboBox.getEditor().addActionListener(this);
+            documentNameTextField.getDocument().addDocumentListener(this);
+        }
+        if(bottomPanel != null)
+            bottomPanelContainer.add(bottomPanel, "Center");
+        rootComboBox.setRenderer(new GroupListCellRenderer());
+        packageComboBox.setRenderer(PackageView.listRenderer());
+        rootComboBox.addActionListener(this);
+        setPreferredSize(PREF_DIM);
+        setName(NbBundle.getBundle(MultiTargetChooserPanelGUI.class).getString("LBL_JavaTargetChooserPanelGUI_Name"));
+    }
+
+    public void addNotify()
+    {
+        Dimension panel2Size = jPanel2.getPreferredSize();
+        Dimension bottomPanelSize = bottomPanelContainer.getPreferredSize();
+        Dimension splitterSize = targetSeparator.getPreferredSize();
+        int vmax = panel2Size.height + bottomPanelSize.height + splitterSize.height + 12;
+        if(vmax > PREF_DIM.height)
+            setPreferredSize(new Dimension(PREF_DIM.width, vmax));
+        super.addNotify();
+    }
+
+    public void initValues(FileObject template, FileObject preselectedFolder)
+    {
+        assert (project != null) : "Project must be specified.";
+        projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
+        assert template != null;
+        String displayName = null;
+        try
+        {
+            DataObject templateDo = DataObject.find(template);
+            displayName = templateDo.getNodeDelegate().getDisplayName();
+        }
+        catch(DataObjectNotFoundException ex)
+        {
+            displayName = template.getName();
+        }
+        putClientProperty("NewFileWizard_Title", displayName);
+        rootComboBox.setModel(new DefaultComboBoxModel(groups));
+        SourceGroup preselectedGroup = getPreselectedGroup(preselectedFolder);
+        ignoreRootCombo = true;
+        rootComboBox.setSelectedItem(preselectedGroup);
+        ignoreRootCombo = false;
+        Object preselectedPackage = getPreselectedPackage(preselectedGroup, preselectedFolder, packageComboBox.getModel());
+        if(type == 1)
+        {
+            String docName = preselectedPackage != null && preselectedPackage.toString().length() != 0 ? (new StringBuilder()).append(preselectedPackage.toString()).append(".").append(DEFAULT_NEW_PACKAGE_NAME).toString() : DEFAULT_NEW_PACKAGE_NAME;
+            documentNameTextField.setText(docName);
+            int docNameLen = docName.length();
+            int defPackageNameLen = DEFAULT_NEW_PACKAGE_NAME.length();
+            documentNameTextField.setSelectionEnd(docNameLen - 1);
+            documentNameTextField.setSelectionStart(docNameLen - defPackageNameLen);
+        } else
+        {
+            if(preselectedPackage != null)
+                packageComboBox.getEditor().setItem(preselectedPackage);
+            if(template != null && documentNameTextField.getText().trim().length() == 0)
+                if(type == 2)
+                {
+                    documentNameTextField.setText(template.getName());
+                } else
+                {
+                    documentNameTextField.setText((new StringBuilder()).append(NEW_CLASS_PREFIX).append(template.getName()).toString());
+                    documentNameTextField.selectAll();
+                }
+            updatePackages(false);
+        }
+        String ext = template != null ? template.getExt() : "";
+        expectedExtension = ext.length() != 0 ? (new StringBuilder()).append(".").append(ext).toString() : "";
+        updateText();
+    }
+
+    public FileObject getRootFolder()
+    {
+        SourceGroup sourceGroup = (SourceGroup)rootComboBox.getSelectedItem();
+        return sourceGroup != null ? sourceGroup.getRootFolder() : null;
+    }
+
+    public String getPackageFileName()
+    {
+        if(type == 1)
+        {
+            return "";
+        } else
+        {
+            String packageName = packageComboBox.getEditor().getItem().toString();
+            return packageName.replace('.', '/');
+        }
+    }
+
+    String getPackageName()
+    {
+        if(type == 1)
+            return "";
+        else
+            return packageComboBox.getEditor().getItem().toString();
+    }
+
+    public String getTargetName()
+    {
+        String text = documentNameTextField.getText().trim();
+        if(text.length() == 0)
+            return null;
+        else
+            return text;
+    }
+
+    public void addChangeListener(ChangeListener l)
+    {
+        listeners.add(l);
+    }
+
+    public void removeChangeListener(ChangeListener l)
+    {
+        listeners.remove(l);
+    }
+
+    private void fireChange()
+    {
+        ChangeEvent e = new ChangeEvent(this);
+        ChangeListener l;
+        for(Iterator i$ = listeners.iterator(); i$.hasNext(); l.stateChanged(e))
+            l = (ChangeListener)i$.next();
+
+    }
+
+    private void initComponents()
+    {
+        targetSeparator = new JSeparator();
+        bottomPanelContainer = new JPanel();
+        jPanel2 = new JPanel();
+        jPanel1 = new JPanel();
+        documentNameLabel = new JLabel();
+        documentNameTextField = new JTextField();
+        jLabel5 = new JLabel();
+        projectTextField = new JTextField();
+        jLabel1 = new JLabel();
+        rootComboBox = new JComboBox();
+        packageLabel = new JLabel();
+        packageComboBox = new JComboBox();
+        setLayout(new GridBagLayout());
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 0;
+        gridBagConstraints.fill = 1;
+        gridBagConstraints.insets = new Insets(0, 0, 12, 0);
+        add(targetSeparator, gridBagConstraints);
+        bottomPanelContainer.setLayout(new BorderLayout());
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 0;
+        gridBagConstraints.gridheight = 0;
+        gridBagConstraints.fill = 1;
+        gridBagConstraints.weighty = 1.0D;
+        add(bottomPanelContainer, gridBagConstraints);
+        jPanel2.setLayout(new GridBagLayout());
+        jPanel1.setLayout(new GridBagLayout());
+        documentNameLabel.setLabelFor(documentNameTextField);
+        Mnemonics.setLocalizedText(documentNameLabel, NbBundle.getMessage(MultiTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label_1"));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.anchor = 17;
+        jPanel1.add(documentNameLabel, gridBagConstraints);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = 0;
+        gridBagConstraints.fill = 2;
+        gridBagConstraints.weightx = 1.0D;
+        gridBagConstraints.insets = new Insets(0, 6, 0, 0);
+        jPanel1.add(documentNameTextField, gridBagConstraints);
+        documentNameTextField.getAccessibleContext().setAccessibleDescription("null");
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = 0;
+        gridBagConstraints.fill = 1;
+        gridBagConstraints.weightx = 1.0D;
+        gridBagConstraints.insets = new Insets(0, 0, 24, 0);
+        jPanel2.add(jPanel1, gridBagConstraints);
+        jLabel5.setLabelFor(projectTextField);
+        Mnemonics.setLocalizedText(jLabel5, NbBundle.getMessage(MultiTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel5_1"));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.anchor = 17;
+        gridBagConstraints.insets = new Insets(0, 0, 6, 0);
+        jPanel2.add(jLabel5, gridBagConstraints);
+        projectTextField.setEditable(false);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = 0;
+        gridBagConstraints.fill = 2;
+        gridBagConstraints.insets = new Insets(0, 6, 6, 0);
+        jPanel2.add(projectTextField, gridBagConstraints);
+        projectTextField.getAccessibleContext().setAccessibleDescription("null");
+        jLabel1.setLabelFor(rootComboBox);
+        Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(MultiTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel1_1"));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.anchor = 17;
+        gridBagConstraints.insets = new Insets(0, 0, 6, 0);
+        jPanel2.add(jLabel1, gridBagConstraints);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = 0;
+        gridBagConstraints.fill = 2;
+        gridBagConstraints.weightx = 1.0D;
+        gridBagConstraints.insets = new Insets(0, 6, 6, 0);
+        jPanel2.add(rootComboBox, gridBagConstraints);
+        rootComboBox.getAccessibleContext().setAccessibleDescription("null");
+        packageLabel.setLabelFor(packageComboBox);
+        Mnemonics.setLocalizedText(packageLabel, NbBundle.getMessage(MultiTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel2_1"));
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.anchor = 17;
+        gridBagConstraints.insets = new Insets(0, 0, 6, 0);
+        jPanel2.add(packageLabel, gridBagConstraints);
+        packageComboBox.setEditable(true);
+        packageComboBox.addFocusListener(new FocusAdapter() {
+            public void focusLost(FocusEvent evt)
+            {
+                packageComboBoxFocusLost(evt);
+            }
+        });
+        packageComboBox.addInputMethodListener(new InputMethodListener() {
+            public void caretPositionChanged(InputMethodEvent inputmethodevent){
+            }
+
+            public void inputMethodTextChanged(InputMethodEvent evt){
+                packageComboBoxInputMethodTextChanged(evt);
+            }
+        });
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = 0;
+        gridBagConstraints.fill = 2;
+        gridBagConstraints.weightx = 1.0D;
+        gridBagConstraints.insets = new Insets(0, 6, 6, 0);
+        jPanel2.add(packageComboBox, gridBagConstraints);
+        packageComboBox.getAccessibleContext().setAccessibleDescription("null");
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 0;
+        gridBagConstraints.fill = 2;
+        gridBagConstraints.anchor = 18;
+        gridBagConstraints.weightx = 1.0D;
+        add(jPanel2, gridBagConstraints);
+        getAccessibleContext().setAccessibleDescription("null");
+    }
+
+    private void packageComboBoxInputMethodTextChanged(InputMethodEvent inputmethodevent){
+    }
+
+    private void packageComboBoxFocusLost(FocusEvent focusevent){
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if(rootComboBox == e.getSource())
+        {
+            if(!ignoreRootCombo && type != 1)
+                updatePackages(true);
+            updateText();
+        } else
+        if(packageComboBox == e.getSource())
+            updateText();
+        else
+        if(packageComboBox.getEditor() == e.getSource())
+            updateText();
+    }
+
+    public void changedUpdate(DocumentEvent e)
+    {
+        updateText();
+        fireChange();
+    }
+
+    public void insertUpdate(DocumentEvent e)
+    {
+        changedUpdate(e);
+    }
+
+    public void removeUpdate(DocumentEvent e)
+    {
+        changedUpdate(e);
+    }
+
+    private void updatePackages(final boolean clean)
+    {
+        WAIT_MODEL.setSelectedItem(packageComboBox.getEditor().getItem());
+        packageComboBox.setModel(WAIT_MODEL);
+        if(updatePackagesTask != null)
+            updatePackagesTask.cancel();
+            updatePackagesTask = (new RequestProcessor("ComboUpdatePackages")).
+                    post(new Runnable() {
+            private ComboBoxModel model;
+
+            public void run()
+            {
+                if(!SwingUtilities.isEventDispatchThread())
+                {
+                    SourceGroup sourceGroup = (SourceGroup)rootComboBox.getSelectedItem();
+                    if(sourceGroup != null)
+                    {
+                        model = PackageView.createListView(sourceGroup);
+                        SwingUtilities.invokeLater(this);
+                    }
+                } else
+                {
+                    if(!clean)
+                        model.setSelectedItem(packageComboBox.getEditor().getItem());
+                    packageComboBox.setModel(model);
+                }
+            }
+        });
+    }
+
+    private void updateText()
+    {
+    }
+
+    private SourceGroup getPreselectedGroup(FileObject folder)
+    {
+        for(int i = 0; folder != null && i < groups.length; i++)
+        {
+            FileObject root = groups[i].getRootFolder();
+            if(root.equals(folder) || FileUtil.isParentOf(root, folder))
+                return groups[i];
+        }
+
+        if(groups == null || groups.length == 0)
+            return null;
+        else
+            return groups[0];
+    }
+
+    private Object getPreselectedPackage(SourceGroup group, FileObject folder, ListModel model)
+    {
+        if(folder == null || group == null)
+            return null;
+        FileObject root = group.getRootFolder();
+        String relPath = FileUtil.getRelativePath(root, folder);
+        if(relPath == null)
+        {
+            return null;
+        } else
+        {
+            String name = relPath.replace('/', '.');
+            return name;
+        }
+    }
+}

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ package org.netbeans.modules.cnd.script.lexer;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -526,11 +530,11 @@ class ShLexer implements Lexer<ShTokenId> {
             case '`':
             case '%':
             case '$':
-                afterSeparator = i == ';';
+                afterSeparator = i == ';' || (afterSeparator && (i == '@' || i == '+' || i == '-'));
                 return info.tokenFactory().createToken(ShTokenId.OPERATOR);
             case '\\':
                 i = input.read();
-                afterSeparator = false;
+                afterSeparator &= i == '\n';
                 return info.tokenFactory().createToken(ShTokenId.OPERATOR);
             case ' ':
             case '\n':
@@ -620,7 +624,9 @@ class ShLexer implements Lexer<ShTokenId> {
             default:
                 if (
                     (i >= 'a' && i <= 'z') ||
-                    (i >= 'A' && i <= 'Z')
+                    (i >= 'A' && i <= 'Z') ||
+                    i == '_' ||
+                    i == '~'
                 ) {
                     do {
                         i = input.read ();
@@ -629,21 +635,19 @@ class ShLexer implements Lexer<ShTokenId> {
                         (i >= 'A' && i <= 'Z') ||
                         (i >= '0' && i <= '9') ||
                         i == '_' ||
-                        i == '-' ||
                         i == '~'
                     );
                     input.backup (1);
-                    String id = input.readText ().toString ();
-                    String lcid = id.toLowerCase ();
+                    String idstr = input.readText().toString();
                     if (afterSeparator) {
                         afterSeparator = false;
-                        if (keywords.contains(lcid)) {
+                        if (keywords.contains(idstr)) {
                             return info.tokenFactory().createToken(ShTokenId.KEYWORD);
-                        } else if (commands.contains(lcid)) {
+                        } else if (commands.contains(idstr)) {
                             return info.tokenFactory().createToken(ShTokenId.COMMAND);
                         }
                     }
-                    return info.tokenFactory ().createToken (ShTokenId.IDENTIFIER);
+                    return info.tokenFactory().createToken(ShTokenId.IDENTIFIER);
                 }
                 return info.tokenFactory ().createToken (ShTokenId.ERROR);
         }

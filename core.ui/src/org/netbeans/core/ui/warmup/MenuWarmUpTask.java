@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.lang.reflect.*;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
@@ -198,7 +202,8 @@ public final class MenuWarmUpTask implements Runnable {
             }
             final ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh"), this, null);
             if (!LOG.isLoggable(Level.FINE)) {
-                h.setInitialDelay(10000);
+                int delay = Integer.parseInt(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_RefreshDelay"));
+                h.setInitialDelay(delay);
             }
             h.start();
             Runnable run = null;
@@ -250,10 +255,16 @@ public final class MenuWarmUpTask implements Runnable {
 
                 @Override
                 public void run() {
-                    h.suspend(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh_Suspend"));
+                    if (EventQueue.isDispatchThread()) {
+                        h.suspend(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh_Suspend"));
+                    } else {
+                        EventQueue.invokeLater(this);
+                    }
                 }
             }
-            ActionEvent handleBridge = new HandleBridge(this);
+            HandleBridge handleBridge = new HandleBridge(this);
+            // preinitialize
+            handleBridge.run();
 
             try {
                 File userDir = new File(System.getProperty("netbeans.user")); // NOI18N

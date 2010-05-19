@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+  * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
+    may be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+  THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<wsdl:definitions name="Asynchronous"
+                  targetNamespace="http://enterprise.netbeans.org/bpel/Asynchronous"
+                  xmlns:tns="http://enterprise.netbeans.org/bpel/Asynchronous"
+                  xmlns:xs="http://enterprise.netbeans.org/bpel/AsynchronousSchemaNamespace"
+                  xmlns="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"                          
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+                  xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/varprop">
+    
+    <types>
+        <xsd:schema xmlns="http://enterprise.netbeans.org/bpel/AsynchronousSchemaNamespace" 
+                    targetNamespace="http://enterprise.netbeans.org/bpel/Asynchronous">
+        <xsd:import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSchemaNamespace"
+                    schemaLocation="Asynchronous.xsd"/>
+        </xsd:schema>
+    </types>
+    
+    <wsdl:message name="requestMessage">
+        <wsdl:part name="inputType" element="xs:typeA"/>
+    </wsdl:message>
+    
+    <wsdl:message name="responseMessage">
+        <wsdl:part name="resultType" element="xs:typeA"/>
+    </wsdl:message>
+    
+    <wsdl:portType name="MyPortType">
+        <wsdl:operation name="asyncOperation">
+            <wsdl:input message="tns:requestMessage"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    
+    <wsdl:portType name="MyCallbackPortType">
+        <wsdl:operation name="onResult">
+            <wsdl:input message="tns:responseMessage"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    
+    <binding name="SoapBinding" type="tns:MyPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="asyncOperation">
+            <soap:operation/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+        </operation>
+    </binding>
+    
+    <wsdl:service name="Asynchronous_asyncService">
+        <wsdl:port name="Asynchronous_asyncPortName" binding="tns:SoapBinding">
+            <soap:address location="http://localhost:18181/Asynchronous"/>
+        </wsdl:port>
+    </wsdl:service>
+    
+    <binding name="CallbackSoapBinding" type="tns:MyCallbackPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="onResult">
+            <soap:operation/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+        </operation>
+    </binding>
+    
+    <wsdl:service name="AsynchronousClient_asyncCallbackService">
+        <wsdl:port name="AsynchronousClient_asyncCallbackPortName" binding="tns:CallbackSoapBinding">
+            <soap:address location="http://localhost:18181/AsynchronousCallback"/>
+        </wsdl:port>
+    </wsdl:service>
+    
+    <plnk:partnerLinkType name="AsyncPartnerLinkType">
+        <plnk:role name="serviceProvider"
+                   portType="tns:MyPortType">
+        </plnk:role>
+        <plnk:role name="serviceRequestor"
+                   portType="tns:MyCallbackPortType">
+        </plnk:role>
+    </plnk:partnerLinkType>
+</wsdl:definitions>

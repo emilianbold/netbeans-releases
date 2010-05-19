@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -10,9 +13,9 @@
  * http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
  * License for the specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header Notice in
- * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+ * each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
  * designates this particular file as subject to the "Classpath" exception as
- * provided by Sun in the GPL Version 2 section of the License file that
+ * provided by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
@@ -61,12 +64,12 @@ PLATFORM_IDS         [5] = "macosx-ppc";
 */
 
 BUNDLE_IDS [0] = "javase";
-//BUNDLE_IDS [1] = "javafx";
-BUNDLE_IDS [1] = "java";
-BUNDLE_IDS [2] = "ruby";
-BUNDLE_IDS [3] = "cpp";
-BUNDLE_IDS [4] = "php";
-BUNDLE_IDS [5] = "all";
+BUNDLE_IDS [1] = "javafx";
+BUNDLE_IDS [2] = "java";
+BUNDLE_IDS [3] = "ruby";
+BUNDLE_IDS [4] = "cpp";
+BUNDLE_IDS [5] = "php";
+BUNDLE_IDS [6] = "all";
 
 var DEFAULT_LANGUAGE = "DEFAULT";
 var PAGELANG_SEP = "pagelang=";

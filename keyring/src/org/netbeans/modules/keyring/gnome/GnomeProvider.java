@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -162,7 +165,11 @@ public class GnomeProvider implements KeyringProvider {
             LIBRARY.gnome_keyring_found_list_free(found[0]);
         }
         if (id > 0) {
-            error(GnomeKeyringLibrary.LIBRARY.gnome_keyring_item_delete_sync(null, id));
+            if ("SunOS".equals(System.getProperty("os.name")) && "5.10".equals(System.getProperty("os.version"))) { // #185698
+                save(key, new char[0], null); // gnome_keyring_item_delete(null, id, null, null, null) does not seem to do anything
+            } else {
+                error(GnomeKeyringLibrary.LIBRARY.gnome_keyring_item_delete_sync(null, id));
+            }
         }
     }
 

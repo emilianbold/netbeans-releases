@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,7 +42,7 @@
 
 package org.netbeans.modules.cnd.script.lexer;
 
-import org.netbeans.modules.cnd.script.lexer.ShLanguageHierarchy;
+import org.junit.Test;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
@@ -66,15 +69,14 @@ public class ShLexerTest extends NbTestCase {
         return 500000;
     }
 
+    @Test
     public void testSimple() {
-        String text = "#!/bin/sh\n\n" +
+        TokenSequence<ShTokenId> ts = getShellTokenSequence(
+                "#!/bin/sh\n\n" +
                 "for f in foo.tar foo.bar; do\n" +
                 "\techo if for do $f \\\"asd\\\" \"fasdf\" >/dev/null 2>&1\n" +
                 "done\n\n" +
-                "tar xf foo.tar\n";
-
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, new ShLanguageHierarchy().language());
-        TokenSequence<?> ts = hi.tokenSequence();
+                "tar xf foo.tar\n");
 
         assertNextTokenEquals(ts, COMMENT, "#!/bin/sh\n");
         assertNextTokenEquals(ts, WHITESPACE, "\n");
@@ -135,5 +137,46 @@ public class ShLexerTest extends NbTestCase {
         assertNextTokenEquals(ts, WHITESPACE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
+    }
+
+    @Test
+    public void testEscapedLine() {
+        TokenSequence<ShTokenId> ts = getShellTokenSequence("\\\necho foo\\\necho bar");
+
+        assertNextTokenEquals(ts, OPERATOR, "\\\n");
+        assertNextTokenEquals(ts, COMMAND, "echo");
+        assertNextTokenEquals(ts, WHITESPACE, " ");
+        assertNextTokenEquals(ts, IDENTIFIER, "foo");
+        assertNextTokenEquals(ts, OPERATOR, "\\\n");
+        assertNextTokenEquals(ts, IDENTIFIER, "echo");
+        assertNextTokenEquals(ts, WHITESPACE, " ");
+        assertNextTokenEquals(ts, IDENTIFIER, "bar");
+
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
+    @Test
+    public void testCaseSensitivity() {
+        TokenSequence<ShTokenId> ts = getShellTokenSequence("ECHO foo\necho foo\nEcho foo\n");
+
+        assertNextTokenEquals(ts, IDENTIFIER, "ECHO");
+        assertNextTokenEquals(ts, WHITESPACE, " ");
+        assertNextTokenEquals(ts, IDENTIFIER, "foo");
+        assertNextTokenEquals(ts, WHITESPACE, "\n");
+        assertNextTokenEquals(ts, COMMAND, "echo");
+        assertNextTokenEquals(ts, WHITESPACE, " ");
+        assertNextTokenEquals(ts, IDENTIFIER, "foo");
+        assertNextTokenEquals(ts, WHITESPACE, "\n");
+        assertNextTokenEquals(ts, IDENTIFIER, "Echo");
+        assertNextTokenEquals(ts, WHITESPACE, " ");
+        assertNextTokenEquals(ts, IDENTIFIER, "foo");
+        assertNextTokenEquals(ts, WHITESPACE, "\n");
+
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
+    private static TokenSequence<ShTokenId> getShellTokenSequence(String text) {
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, ShTokenId.language());
+        return hi.tokenSequence(ShTokenId.language());
     }
 }

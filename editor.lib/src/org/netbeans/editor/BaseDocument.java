@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -90,6 +93,7 @@ import javax.swing.undo.CannotRedoException;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
@@ -103,6 +107,8 @@ import org.netbeans.modules.editor.lib.drawing.DrawEngine;
 import org.netbeans.modules.editor.lib.drawing.DrawGraphics;
 import org.netbeans.modules.editor.lib.impl.MarkVector;
 import org.netbeans.modules.editor.lib.impl.MultiMark;
+import org.netbeans.spi.lexer.MutableTextInput;
+import org.netbeans.spi.lexer.TokenHierarchyControl;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -218,6 +224,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     /** Write lock without write lock */
     private static final String WRITE_LOCK_MISSING = "extWriteUnlock() without extWriteLock()"; // NOI18N
+
+    /**
+     * How many modifications under atomic lock are necessary for disabling of lexer's token hierarchy.
+     */
+    private static final int DEACTIVATE_LEXER_THRESHOLD = 30;
 
     private static final Object annotationsLock = new Object();
     private static final Object getVisColFromPosLock = new Object();
@@ -2186,7 +2197,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         public @Override void undo() throws CannotUndoException {
             atomicLockImpl ();
             try {
-                super.undo();
+                TokenHierarchyControl<?> thcInactive = thcInactive();
+                try {
+                    super.undo();
+                } finally {
+                    if (thcInactive != null) {
+                        thcInactive.setActive(true);
+                    }
+                }
             } finally {
                 atomicUnlockImpl ();
             }
@@ -2204,10 +2222,31 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
             atomicLockImpl ();
             try {
-                super.redo();
+                TokenHierarchyControl<?> thcInactive = thcInactive();
+                try {
+                    super.redo();
+                } finally {
+                    if (thcInactive != null) {
+                        thcInactive.setActive(true);
+                    }
+                }
             } finally {
                 atomicUnlockImpl ();
             }
+        }
+
+        private TokenHierarchyControl<?> thcInactive() {
+            TokenHierarchyControl<?> thc = null;
+            if (edits.size() > DEACTIVATE_LEXER_THRESHOLD) {
+                MutableTextInput<?> input = (MutableTextInput<?>)
+                        BaseDocument.this.getProperty(MutableTextInput.class);
+                if (input != null && (thc = input.tokenHierarchyControl()) != null && thc.isActive()) {
+                    thc.setActive(false);
+                } else {
+                    thc = null;
+                }
+            }
+            return thc;
         }
 
         public @Override void die() {

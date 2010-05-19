@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,12 +46,7 @@ package org.netbeans.modules.cnd.makefile.lexer;
 import java.util.Collection;
 
 import java.util.EnumSet;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.cnd.script.lexer.ShTokenId;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -60,23 +58,13 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public class MakefileLanguageHierarchy extends LanguageHierarchy<MakefileTokenId> {
 
     @Override
-    protected synchronized Collection<MakefileTokenId> createTokenIds() {
+    protected Collection<MakefileTokenId> createTokenIds() {
         return EnumSet.allOf(MakefileTokenId.class);
     }
 
     @Override
     protected Lexer<MakefileTokenId> createLexer(LexerRestartInfo<MakefileTokenId> info) {
         return new MakefileLexer(info);
-    }
-
-    @Override
-    protected LanguageEmbedding<?> embedding(Token<MakefileTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-        switch (token.id()) {
-            case SHELL:
-                return LanguageEmbedding.create(ShTokenId.language(), 0, 0, true);
-            default:
-                return null;
-        }
     }
 
     @Override

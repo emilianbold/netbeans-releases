@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Creating Sample Processes in the BPEL Designer </title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Creating Sample Processes in the BPEL Designer</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The best way to get acquainted with constructing BPEL diagrams is to create sample processes.  You can design your BPEL process by modifying existing sample processes.</p>
+<p>For samples, the New Project  wizard automatically generates both types of projects, BPEL Module and Composite Application, so you do not need to create each of these projects separately. However, to deploy the sample  application, you need to manually add the BPEL Module as a JBI module to the Composite Application project. </p>
+<p>In the BPEL Designer, you can create the following sample processes:</p>
+<ul>
+  <li>Synchronous sample process</li>
+  <li>Asynchronous sample process </li>
+  <li>Travel Reservation Service sample </li>
+</ul>
+<h3>A Synchronous Sample Process </h3>
+<p>A synchronous process    refers to a conversation style    in which the client sends 
+  a message to the process, waits for a reply, and continues  only when 
+  the reply comes back. When you create a synchronous sample process, the IDE generates a skeletal 
+  process with a single synchronous operation and the required WSDL and XML schema files. </p>
+<h3>An Asynchronous Sample Process</h3>
+<p>An asynchronous process applies to long-running conversations in which 
+  the client does not wait for a reply from the process before continuing its 
+  work. Instead of returning the result synchronously to the client, this process 
+  accepts the client's request, performs work that might be long-running, 
+  and then asynchronously calls back to the client when the work is done. When you create an asynchronous process, the IDE generates a skeletal 
+  process with one incoming and one outgoing asynchronous operations and the required  WSDL and XML schema files. </p>
+<p> Note that any particular process can consist of an arbitrary  collection of synchronous and asynchronous interactions with one or  more conversational partners. </p>
+<h3>Travel Reservation Service Sample </h3>
+<p>This sample is a real-world BPEL process sample constructed using the majority of BPEL elements and several partner web services. </p>
+<p>Together with the Travel Reservation Service sample, the wizard creates two other projects, <tt>ReservationPartnerServicesApplication</tt> and <tt>ReservationPartnerServices. </tt>These two projects both need to be deployed    to the bundled Application Server in order to provide partner web services for the Travel Reservation Service process. See the <i>Understanding the Travel Reservation Service </i> guide for detailed information about how to work with this sample project. </p>
+<p><b>To create a sample BPEL project:</b></p>
+<ol>
+  <li> Choose File &gt; New 
+    Project (Ctrl-Shift-N).  </li>
+  <li>In the Categories list, expand the Samples node and select the SOA node.</li>
+  <li>In the Projects list, select the sample project you want to create and click Next.</li>
+  <li>In the Name and Location page, name the project and specify the location of project files. </li>
+  <li>Click Finish. <br>
+    The wizard creates two types of projects for the selected sample: a sample BPEL Module project and a sample Composite Application project.   You are free to modify the sample business process  or add  additional BPEL processes to the BPEL Module project.   To deploy, test-run, and debug the process, add the sample BPEL project as a JBI module to the Composite Application project.</li>
+</ol>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../design/create_diagram.html" title="Creating a BPEL Diagram">Creating a BPEL Diagram</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.compapp.capshelp/org/netbeans/modules/compapp/capshelp/basics/about.html" title="About Composite Application Projects">About Composite Application Projects</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.compapp.capshelp/org/netbeans/modules/compapp/capshelp/basics/add_jbi_module.html" title="Adding JBI Modules to Composite Application Projects">Adding JBI Modules to Composite Application Projects</a></dd>
+  <dd><a href="project_lifecycle.html" title="Understanding Service Oriented Architecture Projects">Understanding Service Oriented Architecture Projects</a></dd>
+  <dd><a href="../test_run/about.html" title="Deploying and Performing Test Runs of BPEL Processes">Deploying and Performing Test Runs of BPEL Processes</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,13 +42,8 @@
 package org.netbeans.modules.nativeexecution.pty;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.support.ShellSession;
 
 /**
  *
@@ -53,100 +51,25 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
  */
 public final class SttySupport {
 
-    private final static HashMap<ExecutionEnvironment, SttySupport> cache =
-            new HashMap<ExecutionEnvironment, SttySupport>();
-    private final Process sh;
-    private final OutputStream in;
-    private final InputStream out;
-    private final OutputProcessor outProcessor;
-//    private final InputStream err;
-//    private final OutputProcessor errProcessor;
-    private final ExecutionEnvironment env;
-    private volatile boolean stopped = false;
-
-    private SttySupport(final ExecutionEnvironment env) throws IOException {
-        this.env = env;
-
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
-        npb.setExecutable("/bin/sh").setArguments("-s"); // NOI18N
-        npb.getEnvironment().put("LC_ALL", "C"); // NOI18N
-
-        sh = npb.call();
-        in = sh.getOutputStream();
-        out = sh.getInputStream();
-        outProcessor = new OutputProcessor(out);
+    private SttySupport() {
     }
 
-    public static synchronized SttySupport getFor(final ExecutionEnvironment env) throws IOException {
-        if (!cache.containsKey(env)) {
-            SttySupport newSupport = new SttySupport(env);
-            cache.put(env, newSupport);
+    /**
+     *
+     * @param env
+     * @param tty
+     * @param args
+     * @return may return null in case of failure
+     */
+    public static String[] apply(final ExecutionEnvironment env, final String tty, final String args) {
+        String[] result = null;
+
+        try {
+            result = ShellSession.execute(env, "/bin/stty " + args + " < " + tty + " 2>/dev/null"); // NOI18N
+        } catch (IOException ex) {
+            // bad luck.. still just ignore..
         }
 
-        return cache.get(env);
-    }
-
-    // TODO: When?
-    void stop() {
-        if (stopped) {
-            return;
-        }
-
-        synchronized (cache) {
-            cache.remove(env);
-        }
-
-        ProcessUtils.destroy(sh);
-    }
-
-    public synchronized String[] apply(final String tty, final String args) throws IOException {
-        if (stopped) {
-            throw new IllegalArgumentException("This SttySupport is already stopped... "); // NOI18N
-        }
-
-        post("/bin/stty " + args + " < " + tty + " 2>/dev/null; echo ==="); // NOI18N
-        return outProcessor.getOutput();
-    }
-
-    private void post(String cmd) throws IOException {
-        in.write((cmd + "\n").getBytes()); // NOI18N
-        in.flush();
-    }
-
-    private static class OutputProcessor {
-
-        private final ArrayList<String> resultBuffer = new ArrayList<String>();
-        private final StringBuilder lineBuffer = new StringBuilder();
-        private final InputStream out;
-
-        public OutputProcessor(InputStream out) {
-            this.out = out;
-        }
-
-        public String[] getOutput() throws IOException {
-            resultBuffer.clear();
-            lineBuffer.setLength(0);
-
-            int c;
-
-            while (true) {
-                if ((c = out.read()) < 0) {
-                    break;
-                }
-
-                if (c == '\n') {
-                    String line = lineBuffer.toString();
-                    lineBuffer.setLength(0);
-                    if (line.startsWith("===")) { // NOI18N
-                        break;
-                    }
-                    resultBuffer.add(line);
-                } else {
-                    lineBuffer.append((char) c);
-                }
-            }
-
-            return resultBuffer.toArray(new String[0]);
-        }
+        return result;
     }
 }

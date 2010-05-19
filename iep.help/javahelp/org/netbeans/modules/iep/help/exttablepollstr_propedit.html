@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html>
+
+
+
+<head>
+
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the External Table Polling Stream Operator</title>
+
+</head>
+
+
+
+<body>
+
+<h2>Using the External Table Polling Stream Operator</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+
+
+<p>The External Table Polling Stream operator enables you to retrieve records from an external database table at a specified interval, 
+and to output the records as a stream.</p>
+
+<p>The property editor includes a wizard that you use to specify the various properties, 
+including the table columns, the polling interval, and the number of records to retrieve.</p>
+
+<p>After using the wizard, you can update the values for most of the properties from the property editor. 
+However, if you want to add or remove table columns, then you must go through the wizard again.</p>
+
+<p>In the event process, you can link the output of the External Table Polling Stream operator to more than one operator.</p>
+
+<p>One of the properties is the JNDI name of the database resource. 
+Before you deploy the event process, ensure that the JNDI name is configured in the application server to point to a valid database connection. 
+For detailed instructions on configuring JNDI names, see the application server documentation.</p>
+
+
+
+<p><strong>To use the External Table Polling Stream operator:</strong></p>
+
+<ol>
+
+  <li>Drag an External Table Polling Stream operator from the Palette to the Design view.</li>
+  <li>Double-click the External Table Polling Stream component. The property editor opens.</li>
+
+  <li>Click Select Table. The Select External Table To Poll wizard appears.</li>
+
+  <li>In step 1 of the wizard, do the following:</li>
+
+  <ol type="a">
+    <li>Select the data source.<br>
+        <b>Note:</b> Data sources are configured in the Databases node of the Services window.</li>
+    <li>Select the table from which you want to poll.</li>
+    <li>Click Next.</li>
+  </ol>
+
+  <li>In step 2 of the wizard, do the following:</li>
+
+  <ol type="a">
+    <li>Select the column or columns that you want to retrieve from the table.</li>
+    <li>(Optional) Add a condition to the Where Clause area (for example, <tt>amount > 100</tt>).</li>
+    <li>Click Next.</li>
+  </ol>
+
+  <li>In step 3 of the wizard, do the following:</li>
+
+  <ol type="a">
+
+    <li>The wizard displays the column or columns that you specified in step 2. Select the one or more columns that uniquely identify each record.<br>
+        <b>Note:</b> The operator uses this information to keep track of the last record that was retrieved. 
+        If you do not select any of the columns, then each fetch will start at the beginning of the table.</li>
+
+    <li>In the Interval field and drop-down list, specify how often you want to retrieve records from the table.</li>
+    <li>In the Record Size field, specify the number of records to retrieve each time.</li>
+
+    <li>If you want to delete the records from the table after they have been fetched, then select the Delete Records check box.<br>
+        <b>Note:</b> If you do not select the one or more columns that uniquely identify each record, 
+        then selecting the Delete Records check box will ensure that you do not keep retrieving the same records.</li>
+
+    <li>In the JNDI Name field, type the JNDI name of the database resource (for example, <tt>jdbc/iepseDerbyNonXA</tt>).</li>
+
+    <li>Click Finish. The property editor displays the values that you specified.</li>
+
+  </ol>
+
+  <li>By default, the Preserve Last Fetched Record check box is selected. 
+      This setting indicates that if the event process is redeployed, then the operator starts retrieving records where it left off.<br>
+      If you leave the Preserve Last Fetched Record check box selected, then you must specify a table name in the Last Fetched Record Table field. 
+      This table will be created in the IEP database, not in the external database table.<br>
+      If you want the operator to go back to the beginning of the table instead, then clear the Preserve Last Fetched Record check box.</li>
+
+
+  <li>If you are retrieving records from an Oracle external database, then examine the Data Type column. 
+      If a data type is not one of the <a href="aboutdatatypes.html">supported IEP data types</a>, then change the data type to a supported IEP data type. 
+      For example, change the DECIMAL data type to the INTEGER data type.</li>
+
+  <li>(Optional) In the SELECT area, modify any of the default expressions by adding a SQL function.</li>
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK.</li>
+
+</ol>
+
+
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="streaminput_prop.html">Using the Stream Input Operator</a></dd>
+<dd>&nbsp;</dd>
+</dl>
+
+<hr>
+
+<small><a href="credits.html">Legal Notices</a></small>
+
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</body>
+
+</html>

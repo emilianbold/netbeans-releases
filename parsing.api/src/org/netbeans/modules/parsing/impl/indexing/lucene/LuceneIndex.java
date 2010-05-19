@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -183,11 +186,16 @@ public class LuceneIndex implements IndexImpl, Evictable {
         assert fieldName != null;
         assert value != null;
         assert kind != null;
-        
+
         return LuceneIndexManager.getDefault().readAccess(new LuceneIndexManager.Action<List<IndexDocumentImpl>>() {
             public List<IndexDocumentImpl> run() throws IOException {
                 checkPreconditions();
-
+                if (empty) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Ignoring empty index: {0}", indexFolder.getAbsolutePath());
+                    }
+                    return Collections.<IndexDocumentImpl>emptyList();
+                }
                 final IndexReader r = getReader();
                 if (r != null) {
                     // index exists
@@ -197,7 +205,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     return Collections.<IndexDocumentImpl>emptyList();
                 }
             }
-        });        
+        });
     }
 
     public void fileModified(String relativePath) {
@@ -354,6 +362,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
     private volatile IndexReader reader; //Cache, do not use this directly, use getReader
     private volatile boolean closed;
     private boolean valid;
+    private volatile boolean empty; //Volatile as there may be more readLocks in getReader and query
 
     private static final LMListener lmListener = new LMListener();
 
@@ -674,6 +683,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     out.optimize(false);
                 }
             } finally {
+                empty = false;
                 try {
                     out.close();
                 } finally {
@@ -707,6 +717,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
                     r = reader = new NoNormsReader(IndexReader.open(this.directory));
                 } catch (FileNotFoundException fnf) {
+                    empty = true;
                     LOGGER.fine(String.format("LuceneIndex[%s] does not exist.", this.toString())); //NOI18N
                     //pass - returns null
                 } catch (IOException ioe) {

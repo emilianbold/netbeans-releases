@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -81,11 +84,10 @@ public final class HostInfoFactory {
             info.cpuFamily = CpuFamily.UNKNOWN;
         }
 
-        info.shell = initData.getProperty("SH", UNKNOWN); // NOI18N
+        info.loginShell = initData.getProperty("SH", UNKNOWN); // NOI18N
         info.tempDir = initData.getProperty("TMPDIRBASE", UNKNOWN); // NOI18N
         info.userDir = initData.getProperty("USERDIRBASE", UNKNOWN); // NOI18N
         info.cpuNum = getInt(initData, "CPUNUM", 1); // NOI18N
-        info.envFile = initData.getProperty("ENVFILE", "/dev/null"); // NOI18N
 
         if (environment == null) {
             info.environment = Collections.unmodifiableMap(Collections.<String, String>emptyMap());
@@ -135,12 +137,11 @@ public final class HostInfoFactory {
         private OS os;
         private CpuFamily cpuFamily;
         private String hostname;
-        private String shell;
+        private String loginShell;
         private String tempDir;
         private String userDir;
         private int cpuNum;
         private long clockSkew;
-        private String envFile;
         private Map<String, String> environment;
 
         @Override
@@ -169,8 +170,13 @@ public final class HostInfoFactory {
         }
 
         @Override
+        public String getLoginShell() {
+            return loginShell;
+        }
+
+        @Override
         public String getShell() {
-            return shell;
+            return "/bin/sh"; // NOI18N
         }
 
         @Override
@@ -204,11 +210,6 @@ public final class HostInfoFactory {
         @Override
         public long getClockSkew() {
             return clockSkew;
-        }
-
-        @Override
-        public String getEnvFile() {
-            return envFile;
         }
 
         @Override

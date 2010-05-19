@@ -1485,24 +1485,33 @@ creation.
 
 <h3><a name="jni">JNI</a></h3>
 
-<p>It is possible to run
-modules making use of JNI native implementations inside
-NetBeans. You may create a directory
-<samp>modules/lib/</samp> (i.e. a subdirectory <samp>lib/</samp> beneath the directory where the module JAR resides)
-and place native libraries (DLL or shared-object) there;
-it will be added to the search path for calls to
-<code>System.loadLibrary</code> made from module code. This avoids the
-need to explicitly add some directory to the binary load path. The
-module is entirely responsible for distinguishing between various
-platforms and operating systems and requesting a library name
-appropriate to the current one, however. Use of JNI is of course not
+<p>It is possible to run modules making use of JNI native implementations inside
+NetBeans. You may place the native libraries (DLL or shared-object) beneath
+a <samp>modules/lib</samp> directory (i.e. a subdirectory <samp>lib/</samp>
+beneath the directory where the module JAR resides). If your native library file
+names for different architectures or operating systems clash, you may create
+subdirectories under <samp>modules/lib</samp> for each supported platform and
+nested subdirectories for each supported operating system. The directory names
+must match <code>System.getProperty ("os.arch")</code> and
+<code>System.getProperty ("os.name").toLowerCase ()</code> respectively.
+The <code>System.loadLibrary</code> call originating from the module code
+will try to locate the library file in the following order of directories:<ul>
+    <li><samp>modules/lib/</samp></li>
+    <li><samp>modules/lib/&lt;arch&gt;/</samp></li>
+    <li><samp>modules/lib/&lt;arch&gt;/&lt;os&gt;/</samp></li>
+</ul>
+so you may place e.g. 64bit linux version of a <samp>foo</samp> library in a file
+<samp>modules/lib/amd64/linux/libfoo.so</samp>.
+The module may distinguish additional library variants itself or even override
+the platform selection logic by naming the library <em>file</em> appropriately
+and calling System.loadLibrary with such a name. Use of JNI is of course not
 recommended and should be restricted to cases where it is unavoidable.</p>
 
 <p>Example of usage: if on Linux a module located in <samp>/home/app/cluster/modules/something.jar</samp> calls
-<samp>System.loadLibrary("stuff-linux-i386")</samp>, the library should be in
-<samp>/home/app/cluster/modules/lib/libstuff-linux-i386.so</samp>. On Windows, if
+<samp>System.loadLibrary("stuff-linux-i386-gnome")</samp>, the library should be in
+<samp>/home/app/cluster/modules/lib/libstuff-linux-i386-gnome.so</samp>. On 64bit Windows, if
 <samp>C:\app\cluster\modules\something.jar</samp> calls <samp>System.loadLibrary("stuff")</samp>, the library
-should be in <samp>C:\app\cluster\modules\lib\stuff.dll</samp>. (Remember that Java has platform-specific
+should be in <samp>C:\app\cluster\modules\lib\amd64\stuff.dll</samp>. (Remember that Java has platform-specific
 prefixes and suffixes it adds to plain library names before trying to find it on disk.)</p>
 
 <p>If a native library refers to <em>other</em> native libraries, they

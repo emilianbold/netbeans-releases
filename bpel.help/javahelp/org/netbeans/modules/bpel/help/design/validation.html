@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>BPEL Designer: Validating BPEL Processes</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>BPEL Designer: Validating BPEL Processes </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The BPEL Designer has a built-in BPEL code validation functionality, the BPEL Validator, that helps you create processes compliant with the WS-BPEL 2.0 standard. The code is checked for errors and the user is notified if  validation fails.</p>
+<h3>Validation Criteria</h3>
+<p> The Validator checks  BPEL processes in accordance with the following criteria: </p>
+<ol>
+  <li>Conformance with the BPEL 2.0 schema </li>
+  <li> Compliance with static analysis rules defined in the WS-BPEL 2.0 specification </li>
+  <li> Broken references </li>
+  <li>Constructs that are valid per the BPEL 2.0 specification but are not yet supported by the Sun BPEL Service Engine</li>
+</ol>
+<h3>Validation Types</h3>
+<p> The BPEL Designer provides the following types of validation: </p>
+<ul>
+  <li><b>Real-time validation</b>. This  type of validation is invoked automatically and does not require any  explicit actions from the user. Only the current file is checked. The  validation is performed in accordance with all the criteria mentioned  above, with the exception of validation for conformance with the BPEL 2.0 schema.</li>
+  <li><b>Explicit validation</b>. This type of validation requires that the user explicitly invokes the  validation process. All imported XSD and WSDL files are also checked.  The validation is performed in accordance with all the criteria  mentioned above. </li>
+</ul>
+<p><b>To invoke explicit validation, do one of the following: </b></p>
+      <ul>
+        <li> In the Source view, right-click the source and, from the pop-up menu, choose Validate XML (Alt-Shift-F9). </li>
+        <li> In the Design or Source view, click the Validate XML button (Alt-Shift-F9).</li>
+      </ul>
+      <h3>Validation 
+      Messages</h3>
+      <p>The results of checking code validity are shown in the following areas:</p>
+      <ul>
+        <li>Design view</li>
+        <li>Source view </li>
+        <li>Output window</li>
+        <li>BPEL Logical view of the Navigator window </li>
+      </ul>
+      <p>The Design, Source and Logical views display the results of both real-time and explicit  validation types.</p>
+      <p>In the Design view: </p>
+      <ul>
+        <li>Error messages on the BPEL diagram. Red mark with a cross next to an element on a diagram means that  the element has not passed validation. If you click the cross, a  callout window appears, listing errors and warning messages related to validation in  accordance with the above-listed criteria. 
+        Messages related to the  real-time validation are constantly updated. <br>
+        <ul class="note">
+<li>Note that the messages related to the  validation for conformance with the BPEL 2.0 schema are updated in the callout window only when you explicitly invoke validation. This happens because validation for conformance with the  BPEL 2.0 schema is not performed in real-time mode.</li>
+</ul>
+        <li>Error stripe. The error stripe is a strip to the right of the scroll bar that contains red marks if some elements have not passed validation. The error stripe represents the entire diagram, not just the portion that is currently displayed. You can immediately see if your BPEL process contains errors without having to scroll through the entire diagram. You can click a red mark to jump to the element that causes problems. If no errors are detected, the small square in the error stripe is green.      </li>
+      </ul>
+          <p>In
+      the Source view:</p>
+          <ul>
+            <li>Error mark. Red mark with a cross appears to the right of the opening tag of the element with an error. The string is underlined with a red wavy line. </li>
+</ul>
+          <p>In the BPEL Logical view (Navigator window):</p>
+          <ul>
+            <li>The element containing error is marked with a red label.  </li>
+</ul>
+          <p>The Output window shows the results of validation when validation has  been invoked explicitly. If validation fails, the Output window  contains error and warning messages.</p>
+      <h3>Quick Fix</h3>
+      
+      <p>Quick Fix enables to partly automate validation errors fixing.</p>
+      <p><strong>To use Quick Fix: </strong></p>
+      <ol>
+        <li>Open the Source view of the process.</li>
+        <li>Click Validate XML button on the toolbar or  right-click the source and choose Validate XML (Alt-Shift-F9). In the Output window you will get the result of validation. If output contains errors or warnings, you can try to resolve them using Quick Fix.</li>
+        <li>Click the Quick Fix button on the toolbar. Quick Fix result is shown in the Quick Fix tab of the Output window. All the changes performed by Quick Fix (if any) are reflected in the  window. </li>
+      </ol>
+          At the moment 
+          
+          Quick Fix supports
+          automatic correction of  misspelled variable names. 
+          <dl>
+<dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../windows_editors/design_elements.html" title="Operations with Elements in the Design View">Operations with Elements in the Design View</a></dd>
+ <dd><a href="../elements/about.html" title="About BPEL Elements">About BPEL Elements</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

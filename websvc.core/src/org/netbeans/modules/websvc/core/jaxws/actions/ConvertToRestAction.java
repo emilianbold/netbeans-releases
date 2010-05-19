@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,8 +42,12 @@
 
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.support.LogUtils;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -62,6 +69,14 @@ public class ConvertToRestAction extends CookieAction {
         if(activatedNodes.length == 1){
             Node node = activatedNodes[0];
             Service service = node.getLookup().lookup(Service.class);
+            FileObject implClass = node.getLookup().lookup(FileObject.class);
+            if (implClass == null) {
+                return false;
+            }
+            Project project = FileOwnerQuery.getOwner(implClass);
+            if (project == null || project.getLookup().lookup(RestSupport.class) == null) {
+                return false;
+            }
             if(service != null){
                 return !service.isUseProvider();
             }

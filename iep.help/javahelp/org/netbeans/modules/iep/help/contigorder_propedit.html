@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+
+<html>
+
+
+
+<head>
+
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Contiguous Order Operator</title>
+
+</head>
+
+
+
+<body>
+
+<h2>Using the Contiguous Order Operator</h2>
+
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Contiguous Order operator defines a stream that consists of events selected by one or more attributes and then placed in sequence sorted by another attribute.</p>
+
+
+
+<p>Assume that you have the following scenario:</p>
+
+<ul>
+  <li>A server receives a stream of messages from various hardware devices.</li>
+  <li>For each hardware device, the messages have unique IDs (1, 2, 3, 4, and so on).</li>
+  <li>Because of an unreliable network, messages may be lost or received in a different order.</li>
+  <li>For each hardware device, you want to sort the messages by their unique ID.</li>
+</ul>
+
+<p>You could add a Stream Input operator with the following attributes:</p>
+
+<ul>
+  <li><tt>deviceID</tt> (VARCHAR)</li>
+  <li><tt>msgID</tt> (BIGINT)</li>
+  <li><tt>msg</tt> (VARCHAR)</li>
+</ul>
+
+<p>You could then connect the Stream Input operator to a Contiguous Order operator.</p>
+
+<p>In the property editor of the Contiguous Order operator, set the partition key to the <tt>deviceID</tt> attribute. 
+This setting divides the input stream into multiple substreams, one per device.</p>
+
+<p>In the property editor of the Contiguous Order operator, set the sort value to the <tt>msgID</tt> attribute and the start value to 1.
+For each substream, the Contiguous Order operator sorts the messages by their unique ID.</p>
+
+<p>For example, let's say that the messages from one device arrive in the following order: 3, 2, 5, 1, 7, 4, 4, 6.</p>
+
+<p>When message 1 is received, the Contiguous Order operator will output messages 1, 2, and 3. 
+When message 4 is received, the Contiguous Order operator will output messages 4 and 5. 
+When message 6 is received, the Contiguous Order operator will output messages 6 and 7.</p>
+
+<p>The Contiguous Order operator ignores duplicate events. 
+Therefore, the output stream in the hardware device scenario contains only one instance of message 4.</p>
+
+<p>Note that in the output stream, the output from the multiple substreams is interspersed.</p>
+
+
+
+<p><strong>To use the Contiguous Order operator:</strong></p>
+
+<ol>
+  <li>Drag a Contiguous Order operator from the Palette to the Design view.</li>
+  <li>Connect the input of the new Contiguous Order component to an operator that has stream output.</li>
+  <li>Double-click the Contiguous Order component. The property editor opens. Notice that the component has inherited the schema of its input stream.</li>
+
+  <li>In the Attributes area, set the Partition Key column to the attribute or attributes that you want to use to divide the input stream into substreams.</li>
+  <li>In the Sort By drop-down list, select the attribute that you want to sort by. The attribute must have values that can be sorted sequentially.</li>
+  <li>In the Start field, type the attribute value that you want to start with.</li>
+
+  <li>(Optional) Click the Documentation tab and supply notes on this component.</li>
+  <li>Click OK.</li>
+</ol>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="gapwindow_propedit.html">Using the Gap Window Operator</a></dd>
+<dd>&nbsp;</dd>
+</dl>
+
+<hr>
+
+<small><a href="credits.html">Legal Notices</a></small>
+
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</body>
+
+</html>

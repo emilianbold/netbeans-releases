@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,8 +47,10 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
@@ -86,7 +91,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
     private final ExecutionEnvironment env;
     private boolean shown;
     private Notification notification;
-    private final List<NamedRunnable> tasks = new ArrayList<NamedRunnable>();
+    private final Set<NamedRunnable> tasks = new HashSet<NamedRunnable>();
 
     public ConnectionNotifierDelegate(ExecutionEnvironment execEnv) {
         this.env = execEnv;
@@ -109,9 +114,9 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
 
     @Override
     public void connected(ExecutionEnvironment env) {
-        if (ConnectionNotifierDelegate.this.env.equals(env)) {
+        if (this.env.equals(env)) {
             ConnectionManager.getInstance().removeConnectionListener(this);
-            RequestProcessor.getDefault().post(new NamedRunnable("Pending files synchronizer for " + env.getDisplayName()) { //NOI18N
+            RequestProcessor.getDefault().post(new NamedRunnable("Connection notifier for " + env.getDisplayName()) { //NOI18N
                 @Override
                 protected void runImpl() {
                     onConnect();
@@ -151,20 +156,14 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
 
     private void show(Exception error) {
         ActionListener onClickAction = new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (PasswordManager.getInstance().isRememberPassword(env)) {
-                    RequestProcessor.getDefault().post(new NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
-
-                        @Override
-                        protected void runImpl() {
-                            connect();
-                        }
-                    });
-                    return;
-                }
-                showConnectDialog();
+                RequestProcessor.getDefault().post(new NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
+                    @Override
+                    protected void runImpl() {
+                        connect();
+                    }
+                });
             }
         };
         String envString = RemoteUtil.getDisplayName(env);
@@ -173,38 +172,21 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
         ImageIcon icon;
 
         if (error == null) {
-            title = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.TITLE", envString);
+            StringBuilder reasons = new StringBuilder();
+            for (NamedRunnable task : tasks) {
+                reasons.append(' ');
+                reasons.append(task.getName());
+            }
+            title = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.TITLE", envString, reasons);
             icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/fs/ui/exclamation.gif", false); // NOI18N
             details = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.DETAILS", envString);
         } else {
             title = NbBundle.getMessage(getClass(), "ConnectionNotifier.error.TITLE", envString);
             icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/fs/ui/error.png", false); // NOI18N
             String errMsg = (error.getMessage() == null) ? "" : error.getMessage();
-            details = NbBundle.getMessage(getClass(), "ConnectionNotifier.error.DETAILS", envString, errMsg, envString);
+            details = NbBundle.getMessage(getClass(), "ConnectionNotifier.error.DETAILS", errMsg, envString);
         }
         notification = NotificationDisplayer.getDefault().notify(title, icon, details, onClickAction, NotificationDisplayer.Priority.HIGH);
-    }
-
-    private void showConnectDialog() {
-        final ConnectionNotifierPanel panel = new ConnectionNotifierPanel(env, tasks);
-        String envString = RemoteUtil.getDisplayName(env);
-        String caption = NbBundle.getMessage(ConnectionNotifierDelegate.class, "ConnectionNotifier.TITLE", envString);
-        DialogDescriptor dd = new DialogDescriptor(panel, caption, true,
-                new Object[]{DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION},
-                DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
-        dlg.setVisible(true);
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-            RequestProcessor.getDefault().post(new NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
-
-                @Override
-                protected void runImpl() {
-                    connect();
-                }
-            });
-        } else {
-            reShow(null);
-        }
     }
 
     private void connect() {

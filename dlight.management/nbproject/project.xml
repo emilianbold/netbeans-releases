@@ -65,22 +65,23 @@
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-		    <run-dependency>
-                       <specification-version>8.0</specification-version>
-	             </run-dependency>
+                    <run-dependency>
+                        <specification-version>8.0</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.util.lookup</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-		    <run-dependency>
-                       <specification-version>8.0</specification-version>
-	             </run-dependency>
+                    <run-dependency>
+                        <specification-version>8.0</specification-version>
+                    </run-dependency>
                 </dependency>
             </module-dependencies>
             <friend-packages>
                 <friend>com.sun.dlight.bridge</friend>
                 <friend>com.sun.dlight.spi.impl</friend>
+                <friend>com.sun.dlight.targets</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
@@ -95,6 +96,9 @@
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
+                <friend>com.sun.dlight.amp</friend>
+                <friend>com.sun.dlight.spi.impl</friend>
+                <friend>com.sun.dlight.branding</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
                 <package>org.netbeans.modules.dlight.management.api</package>
                 <package>org.netbeans.modules.dlight.management.remote.spi</package>

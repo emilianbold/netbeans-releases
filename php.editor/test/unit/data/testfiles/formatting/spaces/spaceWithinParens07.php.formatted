@@ -12,20 +12,20 @@ class Example {
         }
     }
 
-    public function forExample( ) {
+    public function forExample() {
         for ($i = 1; $i <= 10; $i++) {
             echo $i;
         }
     }
 
-    public function foreachEample( ) {
+    public function foreachEample() {
         $arr = array(1, 2, 3, 4);
         foreach ($arr as &$value) {
             $value = $value * 2;
         }
     }
 
-    public function whileExample( ) {
+    public function whileExample() {
         $i = 1;
         while ($i <= 10) {
             echo $i++;
@@ -38,7 +38,7 @@ class Example {
         } while ($i > 0);
     }
 
-    public function switchExample( ) {
+    public function switchExample() {
         switch ($i) {
             case 0:
                 echo "i equals 0";
@@ -49,7 +49,7 @@ class Example {
         }
     }
 
-    public function tryExample( ) {
+    public function tryExample() {
         try {
             echo inverse(5) . "\n";
         } catch (Exception $e) {

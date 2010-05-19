@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+>
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+        <title>Adding XSLT Rules</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>
+             Adding XSLT Rules
+        </h2>
+        <p>
+            <small><a href="#seealso">See Also</a></small>
+        </p>
+        <p>
+             Using the Design view of the XSL Transformation Editor you can add two XSLT rules: If and For Each.
+        </p>
+        <p>
+            <b>To add an XSLT Rule:</b>
+        </p>
+        <ul>
+            <li>
+                Right-click a node in the Destination tree pane and choose Add &gt; <i>XSLT rule</i>. 
+            </li>
+        </ul>
+        <p>
+            If the node is a placeholder node, it is added to the stylesheet, and the <i>XSLT rule</i> is added as a subnode (<img src="../../../images/rule.png">). <i>XSLT rule</i> nodes behave similarly to schema nodes:
+        </p>
+        <ul>
+            <li>
+                You can drag data flow links to the <i>XSLT rule</i> nodes. A link dragged to the <i>XSLT rule</i> node adds the <tt>test</tt> attribute to the If rule, and the <tt>select</tt> attribute to the For Each rule.
+            </li>
+            <li>
+                You can add subnodes for the element you added the <i>XSLT rule</i> to if the schema allows. Dragging a data flow link to a subnode adds a transformation instruction to this subnode.
+            </li>
+        </ul>
+        <p>
+            The following pop-up menu actions are available for the <i>XSLT rule</i> nodes:
+        </p>
+        <ul>
+            <li>
+                <b>Add</b>
+                <ul>
+                    <li>
+                        <i><b>Child node</b></i>. Adds information about the <i>child node</i> to the stylesheet without creating any transformation instructions. Available only for elements that can have nested elements.
+                    </li>
+                    <li>
+                        <i><b>XSLT rule</b></i>. Adds the <i>XSLT rule</i> to the stylesheet.
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <b>Delete</b>. Deletes the node.
+            </li>
+        </ul>
+        <dl>
+            <dt>
+                <a name="seealso">See Also</a>
+            </dt>
+            <dd>
+                 <a href="about.html" title="About the Destination Tree Pane">About the Destination Tree Pane</a>
+            </dd>
+        </dl>
+        <hr>
+        <small>  
+<a href="../../../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="150">
+            <tr>
+                <td>
+                     &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                     &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td>
+                     &nbsp;
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

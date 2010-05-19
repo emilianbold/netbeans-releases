@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.cnd.api.makefile.MakefileElement;
+import org.netbeans.modules.cnd.api.makefile.MakefileInclude;
 import org.netbeans.modules.cnd.api.makefile.MakefileMacro;
 import org.netbeans.modules.cnd.api.makefile.MakefileRule;
 import org.netbeans.modules.cnd.makefile.MakefileApiAccessor;
@@ -106,7 +110,7 @@ public class MakefileParser extends Parser {
 
         FileObject fobj = snapshot.getSource().getFileObject();
 
-        List<MakefileElement> makefileElements = new ArrayList<MakefileElement>();
+        List<MakefileElement> makefileElements = new ArrayList<MakefileElement>(1);
 
         int startIndex = 0;
         while (tokenSequence.moveNext() && !cancelled.get()) {
@@ -123,6 +127,11 @@ public class MakefileParser extends Parser {
                 case COLON:
                     tokenSequence.moveIndex(startIndex);
                     makefileElements.add(createRule(fobj, tokenSequence));
+                    startIndex = tokenSequence.index() + 1;
+                    break;
+
+                case INCLUDE:
+                    makefileElements.add(createInclude(fobj, tokenSequence));
                     startIndex = tokenSequence.index() + 1;
                     break;
 
@@ -172,7 +181,7 @@ public class MakefileParser extends Parser {
         StringBuilder nameBuilder = new StringBuilder();
         int startOffset = -1;
 
-        List<String> targets = new ArrayList<String>();
+        List<String> targets = new ArrayList<String>(1);
         TARGETS_LOOP: while (tokenSequence.moveNext()) {
             Token<MakefileTokenId> token = tokenSequence.token();
             if (startOffset == -1) {
@@ -197,7 +206,7 @@ public class MakefileParser extends Parser {
             }
         }
 
-        List<String> prereqs = new ArrayList<String>();
+        List<String> prereqs = new ArrayList<String>(1);
         PREREQS_LOOP: while (tokenSequence.moveNext()) {
             Token<MakefileTokenId> token = tokenSequence.token();
             switch (token.id()) {
@@ -222,5 +231,37 @@ public class MakefileParser extends Parser {
         int endOffset = tokenSequence.offset();
 
         return MakefileApiAccessor.getInstance().newMakefileRule(fobj, startOffset, endOffset, targets, prereqs);
+    }
+
+    private static MakefileInclude createInclude(FileObject fobj, TokenSequence<MakefileTokenId> tokenSequence) {
+        StringBuilder nameBuilder = new StringBuilder();
+        int startOffset = tokenSequence.offset();
+
+        List<String> fileNames = new ArrayList<String>(1);
+        NAMES_LOOP: while (tokenSequence.moveNext()) {
+            Token<MakefileTokenId> token = tokenSequence.token();
+            switch (token.id()) {
+                case WHITESPACE:
+                case ESCAPED_NEW_LINE:
+                    if (0 < nameBuilder.length()) {
+                        fileNames.add(nameBuilder.toString());
+                        nameBuilder.setLength(0);
+                    }
+                    break;
+
+                case COMMENT:
+                case NEW_LINE:
+                    if (0 < nameBuilder.length()) {
+                        fileNames.add(nameBuilder.toString());
+                        nameBuilder.setLength(0);
+                    }
+                    break NAMES_LOOP;
+
+                default:
+                    nameBuilder.append(token.text());
+            }
+        }
+
+        return MakefileApiAccessor.getInstance().newMakefileInclude(fobj, startOffset, startOffset, fileNames);
     }
 }

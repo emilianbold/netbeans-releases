@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -38,13 +41,11 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
-import java.util.Map;
-import java.util.Set;
+import java.io.OutputStreamWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
@@ -55,12 +56,31 @@ import org.openide.util.Exceptions;
  */
 public final class EnvWriter {
 
-    private final OutputStream os;
-    private final boolean remote;
+    public static final String[] wellKnownVars = new String[]{
+        "LANG", "LC_COLLATE", "LC_CTYPE", "LC_MESSAGES", "LC_MONETARY", // NOI18N
+        "LC_NUMERIC", "LC_TIME", "TMPDIR", "PATH", "LD_LIBRARY_PATH", // NOI18N
+        "LD_PRELOAD" // NOI18N
+    };
+    private final OutputStreamWriter writer;
 
     public EnvWriter(final OutputStream os, final boolean remote) {
-        this.os = os;
-        this.remote = remote;
+        OutputStreamWriter w = null;
+        
+        if (remote) {
+            try {
+                String charSet = ProcessUtils.getRemoteCharSet();
+                if (java.nio.charset.Charset.isSupported(charSet)) {
+                    w = new OutputStreamWriter(os, charSet);
+                }
+            } catch (UnsupportedEncodingException ex) {
+            }
+        }
+
+        if (w == null) {
+            w = new OutputStreamWriter(os);
+        }
+
+        this.writer = w;
     }
 
     public static byte[] getBytes(String str, boolean remote) {
@@ -77,36 +97,30 @@ public final class EnvWriter {
         return str.getBytes();
     }
 
+    public EnvWriter(OutputStreamWriter writer) {
+        this.writer = writer;
+    }
+
     public void write(final MacroMap env) throws IOException {
-        write(env.entrySet());
-    }
-
-    public void write(Map<String, String> env) throws IOException {
-        write(env.entrySet());
-    }
-
-    private void write(Set<Entry<String, String>> env) throws IOException {
         if (!env.isEmpty()) {
-            String name = null;
             String value = null;
             // Very simple sanity check of vars...
             Pattern pattern = Pattern.compile("[A-Z0-9_]+"); // NOI18N
 
-            for (Entry<String, String> entry : env) {
-                // ask key as is
-                name = entry.getKey();
+            for (String name : env.getExportVariablesSet()) {
                 // check capitalized key by pattern
                 if (!pattern.matcher(name.toUpperCase(java.util.Locale.ENGLISH)).matches()) {
                     continue;
                 }
 
-                value = entry.getValue();
+                value = env.get(name);
 
-                if (value != null) {
-                    os.write(getBytes(name + "=\"" + value + "\" && export " + name + "\n", remote)); // NOI18N
-                    os.flush();
+                if (value != null && value.indexOf('"') < 0) {
+                    writer.write(name + "=\"" + value + "\" && export " + name + "\n"); // NOI18N
                 }
             }
+
+            writer.flush();
         }
     }
 }

@@ -1,0 +1,92 @@
+<!-- jbi.xml descriptor for the binding component (BC) -->
+<jbi
+    version="1.0"
+    xmlns="http://java.sun.com/xml/ns/jbi"
+    xmlns:identification="http://www.sun.com/jbi/descriptor/identification"    
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:config='http://www.sun.com/jbi/Configuration/V1.0'
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xsi:schemaLocation="http://www.sun.com/jbi/Configuration ./componentConfiguration.xsd http://java.sun.com/xml/ns/jbi ./jbi.xsd">
+    <!-- identification information about this binding -->
+    <component type="binding-component">
+        <identification>
+            <name>sun-jms-binding</name>
+            <description>JMS binding</description>
+            <identification:VersionInfo specification-version="${JBI_SPEC_VERSION}" build-number="${BUILD_NUMBER}"/>            
+        </identification>
+        <config:Configuration>
+            
+            <!-- Example of component property -->
+
+            <config:Property name="ThreadCount"
+                             displayName="Number of Threads"
+                             displayDescription="# of threads to proccess outbound JMS requests and Message Exchange responses concurrentlty"
+                             type="xsd:positiveInteger"
+                             value="10"
+                             isComponentRestartRequired="true"  
+                             onChangeMessage="Please restart component">
+                <config:Constraint facet="minInclusive" value="1"/>
+                <config:Constraint facet="maxInclusive" value="100"/>
+            </config:Property>
+            <!-- Example of Application Variable -->
+            <config:ApplicationVariable name="JMSApplicationVariables"
+                                        displayName="Application Variable" displayDescription="A list of Application Variables"
+                                        isApplicationRestartRequired="true"
+                                        onChangeMessage="Restart of application is required after changing this property" 
+                                        hideDisplay="install">
+                <config:ApplicationVariableName name="JMSVariable"
+                                                displayName="JMS Application Variable Name"
+                                                displayDescription="Name of the application variable"
+                                                type="xsd:string"
+                                                required="true"/>
+                <config:ApplicationVariableValue name="JMSApplicationVariableValue"
+                                                 displayName="JMS Application Variable Value"
+                                                 displayDescription="Value of Application Variable"
+                                                 required="true"/>
+                <config:ApplicationVariableType name="JMSApplicationVariableType"
+                                                displayName="Application Variable Type"
+                                                displayDescription="Type of the application variable"
+                                                type="xsd:string"
+                                                required="true"/>
+            </config:ApplicationVariable>
+            
+            <!-- Example of Application Configuration -->
+            <config:ApplicationConfiguration name="JMSApplicationConfiguration"
+                                             displayName="JMS BC Application Configuration" displayDescription="Describes JMS connection properties"
+                                             isApplicationRestartRequired="true"
+                                             onChangeMessage="Restart of application is required after changing this property" 
+                                             hideDisplay="install">
+                <config:Property name="ApplicationConfigurationName"
+                                 displayName="Application Configuration Name"
+                                 displayDescription="Name of the application configuration"
+                                 type="xsd:string"
+                                 required="true"/>
+                <config:Property name="UserName"
+                                 displayName="User Name"
+                                 displayDescription="user name to use to connect to JMS server"
+                                 type="xsd:string"
+                                 required="true"/>
+                <config:Property name="Password"
+                                 displayName="Password"
+                                 displayDescription="Password to use to connect to JMS server"
+                                 type="xsd:string"
+                                 required="true"
+                                 encrypted="true"/>
+                <config:CompoundProperty name="JndiEnv"
+                                         displayName="JNDI enviornment" displayDescription="JNDI environment enntries"
+                                         required="false">
+                    <config:Property name="JndiName"
+                                     displayName="JNDI Name"
+                                     displayDescription="JNDI entry name"
+                                     type="xsd:string"
+                                     required="true"/>
+                    <config:Property name="JndiValue"
+                                     displayName="JNDI Value"
+                                     displayDescription="JNDI value"
+                                     type="xsd:string"
+                                     required="true"/>
+                </config:CompoundProperty>
+            </config:ApplicationConfiguration>
+        </config:Configuration>
+    </component>
+</jbi>

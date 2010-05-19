@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,14 +43,13 @@
 package org.netbeans.modules.maven.osgi;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.osgi.util.PackageDefinitionUtil;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -57,10 +59,11 @@ import org.openide.filesystems.FileUtil;
  * @author mkleint
  */
 public class AccessQueryImpl implements AccessibilityQueryImplementation {
+
     private NbMavenProject mavenProject;
     private Project project;
     private WeakReference<List<Pattern>> ref;
-    static List<Pattern> DEFAULT_IMP = Collections.singletonList(Pattern.compile(".*"));
+    private static String DEFAULT_IMP = "*";
     
     public AccessQueryImpl(Project prj) {
         project = prj;
@@ -86,7 +89,6 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
     }
     
     private Boolean check(String value) {
-        boolean matches = false;
         String[] exps = PluginPropertyUtils.getPluginPropertyList(mavenProject.getMavenProject(),
                 OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN, 
                 OSGIConstants.PARAM_INSTRUCTIONS, OSGIConstants.EXPORT_PACKAGE,
@@ -104,21 +106,13 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
             imp = imps[0];
         }
         if (exp != null) {
-            List<Pattern> pubPatt = preparePackagesPatterns(exp);
-            for (Pattern pattern : pubPatt) {
-                matches = pattern.matcher(value).matches();
-                if (matches) {
-                    return Boolean.TRUE;
-                }
-            }
-        } 
-        List<Pattern> privPatt = imp != null ? preparePackagesPatterns(imp) : DEFAULT_IMP;
-        for (Pattern pattern : privPatt) {
-            matches = pattern.matcher(value).matches();
-            if (matches) {
-                return Boolean.FALSE;
-            }
+			if (testPackagePatterns(exp, value)) {
+				return Boolean.TRUE;
+			}
         }
+		if (testPackagePatterns(imp != null ? imp : DEFAULT_IMP, value)) {
+			return Boolean.FALSE;
+		}
         if (exp == null) {
             //handle default behaviour if not defined..
             //TODO handle 1.x bundle plugin defaults..
@@ -130,27 +124,43 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
         return null;
     }
     
-    
-    static List<Pattern> preparePackagesPatterns(String value) {
-        List<Pattern> toRet = new ArrayList<Pattern>();
-        if (value != null) {
-            StringTokenizer tok = new StringTokenizer(value, " ,", false); //NOI18N
-            while (tok.hasMoreTokens()) {
+	static boolean testPackagePatterns(String patterns, String value) {
+		boolean matches = false;
+        if (patterns != null) {
+			patterns = PackageDefinitionUtil.omitDirectives(patterns);
+            StringTokenizer tok = new StringTokenizer(patterns, " ,", false); //NOI18N
+            while (tok.hasMoreTokens() && !matches) {
                 String token = tok.nextToken();
                 token = token.trim();
+				if ("*".equals(token)) { //NOI18N
+					return true;
+				}
+					
                 boolean recursive = false;
-                if (token.endsWith(".*")) { //NOI18N
-                    token = token.substring(0, token.length() - ".*".length()); //NOI18N
-                    recursive = true;
+				boolean exclusivePattern = false;
+				if (token.startsWith("!")) {
+					token = token.substring(1);
+					exclusivePattern = true;
+				}
+				if (token.endsWith("*")) { //NOI18N
+					// The following cases are tested with maven-bundle-plugin
+					// a.* or a* -> recursive
+					// a. -> non-recursive
+					token = token.substring(0, token.length() - "*".length()); //NOI18N
+					recursive = true;
+					if (token.endsWith(".")) {
+						// Removes the last dot also
+						token = token.substring(0, token.length() - 1);
+					}
                 }
-                token = token.replace(".","\\."); //NOI18N
-                if (recursive) {
-                    token = token + ".*"; //NOI18N
-                }
-                toRet.add(Pattern.compile(token));
+				matches = recursive ? value.startsWith(token) : value.equals(token);
+				if (matches && exclusivePattern) {
+					// only excluding when it matches
+					matches = !matches;
+				}
             }
         }
-        return toRet;
-    }
-    
+		return matches;
+	}
+
 }

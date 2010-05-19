@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -53,12 +56,12 @@ public class ActionButton extends LinkButton {
     private String urlString;
     private boolean visited = false;
 
-    public ActionButton( Action a, String urlString, boolean showBorder ) {
-        this( a, urlString, Utils.getColor(LINK_COLOR), showBorder );
+    public ActionButton( Action a, String urlString, boolean showBorder, String usageTrackingId ) {
+        this( a, urlString, Utils.getColor(LINK_COLOR), showBorder, usageTrackingId );
     }
 
-    public ActionButton( Action a, String urlString, Color foreground, boolean showBorder ) {
-        super( a.getValue( Action.NAME ).toString(), foreground, showBorder );
+    public ActionButton( Action a, String urlString, Color foreground, boolean showBorder, String usageTrackingId ) {
+        super( a.getValue( Action.NAME ).toString(), foreground, showBorder, usageTrackingId );
         this.action = a;
         this.urlString = urlString;
         Object icon = a.getValue( Action.SMALL_ICON );
@@ -67,11 +70,6 @@ public class ActionButton extends LinkButton {
         Object tooltip = a.getValue( Action.SHORT_DESCRIPTION );
         if( null != tooltip )
             setToolTipText( tooltip.toString() );
-        if( null == urlString ) {
-            setUsageTrackingId(getText());
-        } else {
-            setUsageTrackingId(getText() + " (" + urlString + ")"); //NOI18N
-        }
     }
 
     @Override

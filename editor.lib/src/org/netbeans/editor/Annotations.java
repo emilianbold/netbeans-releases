@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -263,24 +266,12 @@ public class Annotations implements DocumentListener {
                     }
 
                     // insert newly created LineAnnotations into sorted array
-                    boolean inserted = false;
-                    for (int i=0; i < lineAnnotationsArray.size(); i++) {
-                        if (((LineAnnotations)lineAnnotationsArray.get(i)).getLine() > lineAnnos.getLine()) {
-                            lastGetLineAnnotationsIdx = -1;
-                            lastGetLineAnnotationsLine = -1;
-                            lastGetLineAnnotationsResult = null;
-                            lineAnnotationsArray.add(i, lineAnnos);
-                            inserted = true;
-                            break;
-                        }
-                    }
-                    if (!inserted) {
-                        lastGetLineAnnotationsIdx = -1;
-                        lastGetLineAnnotationsLine = -1;
-                        lastGetLineAnnotationsResult = null;
-                        lineAnnotationsArray.add(lineAnnos);
-                    }
+                    int pos = Collections.binarySearch(lineAnnotationsArray, lineAnnos, new LineAnnotationsComparator());
 
+                    lineAnnotationsArray.add(-pos - 1, lineAnnos);
+                    lastGetLineAnnotationsIdx = -1;
+                    lastGetLineAnnotationsLine = -1;
+                    lastGetLineAnnotationsResult = null;
                 }
                 else {
                     lineAnnos.addAnnotation(anno);
@@ -1441,5 +1432,12 @@ public class Annotations implements DocumentListener {
             return menuOneText.compareTo(menuTwoText);
         }
     } // End of MenuComparator class
+
+    private static class LineAnnotationsComparator implements Comparator<LineAnnotations> {
+        @Override
+        public int compare(LineAnnotations o1, LineAnnotations o2) {
+            return o1.getLine() - o2.getLine();
+        }
+    }
     
 }

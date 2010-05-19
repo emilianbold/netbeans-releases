@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -88,8 +91,9 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         this( null, performer, namePattern, popupPattern, icon, lookup );
     }
     
-    private ProjectAction( String command, ProjectActionPerformer performer, String namePattern, String popupPattern, Icon icon, Lookup lookup ) {
-        super( icon, lookup, new Class[] { Project.class, DataObject.class } );
+    @SuppressWarnings("LeakingThisInConstructor")
+    private ProjectAction(String command, ProjectActionPerformer performer, String namePattern, String popupPattern, Icon icon, Lookup lookup) {
+        super(icon, lookup, new Class<?>[] {Project.class, DataObject.class});
         this.command = command;
         if ( command != null ) {
             ActionsUtil.SHORCUTS_MANAGER.registerAction( command, this );
@@ -102,8 +106,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
     
-    @Override
-    public void putValue( String key, Object value ) {
+    public final @Override void putValue( String key, Object value ) {
         super.putValue( key, value );
         
         if (Action.ACCELERATOR_KEY.equals(key)) {

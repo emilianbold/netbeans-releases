@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -160,15 +163,11 @@ public class SimplifiedJspServlet extends JSPProcessor {
 
         processIncludes();
 
-        TokenHierarchy tokenHierarchy = null;
+        //XXX The InputAttribute from the document are not copied to the following TokenHierarchy,
+        //the JspLexer behaviour may seem to be inaccurate in some cases!
+        TokenHierarchy<CharSequence> tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());
 
-        if (doc != null){
-            tokenHierarchy = TokenHierarchy.get(doc);
-        } else {
-            tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());
-        }
-
-        TokenSequence tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence
+        TokenSequence<JspTokenId> tokenSequence = tokenHierarchy.tokenSequence(JspTokenId.language()); //get top level token sequence
         if (!tokenSequence.moveNext()) {
             return; //no tokens in token sequence
         }
@@ -178,7 +177,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
          * note: We count on the fact the scripting language in JSP is Java
          */
         do {
-            Token token = tokenSequence.token();
+            Token<JspTokenId> token = tokenSequence.token();
 
             if (token.id() == JspTokenId.SCRIPTLET) {
                 int blockStart = token.offset(tokenHierarchy);
@@ -201,7 +200,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
             }
         } while (tokenSequence.moveNext());
 
-        processJavaInTagValues();
+        processJavaInTagValues(tokenSequence); //repositions the tokenSequence
 
 
         String extendsClass = null; //NOI18N
@@ -251,16 +250,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
      *
      * additionaly it returns a list of imports found
      */
-    private void processJavaInTagValues() {
-        TokenHierarchy tokenHierarchy = null;
-
-        if (doc != null){
-            tokenHierarchy = TokenHierarchy.get(doc);
-        } else {
-            tokenHierarchy = TokenHierarchy.create(charSequence, JspTokenId.language());
-        }
-        
-        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+    private void processJavaInTagValues(TokenSequence<JspTokenId> tokenSequence) {
         tokenSequence.moveStart();
 
         while (tokenSequence.moveNext()) {
@@ -365,10 +355,6 @@ public class SimplifiedJspServlet extends JSPProcessor {
                                     // attr values can be specified using double or single quotes
                                     && (val.charAt(0) == '"' || val.charAt(0) == '\'')
                                     && val.charAt(val.length() - 1) == val.charAt(0)) {
-
-                                // a hack for compatibility with
-                                // org.netbeans.modules.editor.java.Utilities.isJavaContext()
-                                tokenSequence.createEmbedding(JavaTokenId.language(), 1, 1);
 
                                 int startOffset = tokenSequence.offset() + 1;
                                 int len = val.length() - 1;

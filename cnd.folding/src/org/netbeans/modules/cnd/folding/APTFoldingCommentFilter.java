@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -149,7 +152,9 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
             if (firstLineComment != lastLineComment) {
                 assert (firstLineComment != null);
                 assert (lastLineComment != null);
-                lineCommentFolds.add(createFoldRecord(COMMENTS_FOLD, firstLineComment, lastLineComment));
+                if (firstLineComment.getLine() != lastLineComment.getEndLine()) {
+                    lineCommentFolds.add(createFoldRecord(COMMENTS_FOLD, firstLineComment, lastLineComment));
+                }
             }
             firstLineComment = null;
             lastLineComment = null;        
@@ -159,13 +164,15 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     
     private void createBlockCommentsFold(APTToken token) {
         createLineCommentsFoldIfNeeded();
-        if (state == BEFORE_FIRST_TOKEN_STATE) {
-            // this is the copyright 
-            assert (initialCommentFold == null) : "how there could be two copyrights?";
-            initialCommentFold = createFoldRecord(INITIAL_COMMENT_FOLD, token, token);
-        } else {
-            blockCommentFolds.add(createFoldRecord(BLOCK_COMMENT_FOLD, token, token));
-        }        
+        if (token.getLine() != token.getEndLine()) {
+            if (state == BEFORE_FIRST_TOKEN_STATE) {
+                // this is the copyright
+                assert (initialCommentFold == null) : "how there could be two copyrights?";
+                initialCommentFold = createFoldRecord(INITIAL_COMMENT_FOLD, token, token);
+            } else {
+                blockCommentFolds.add(createFoldRecord(BLOCK_COMMENT_FOLD, token, token));
+            }
+        }
         state = INIT_STATE;
     }
     
@@ -174,7 +181,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     
     private CppFoldRecord createFoldRecord(int folderKind, APTToken begin, APTToken end) {
         if (APTFoldingUtils.isStandalone()) {
-            return new CppFoldRecord(folderKind, begin.getLine(), begin.getColumn(), end.getEndLine(), end.getEndColumn());
+            return new CppFoldRecord(folderKind, begin.getLine(), begin.getOffset(), end.getEndLine(), end.getEndOffset());
         } else {
             return new CppFoldRecord(folderKind, begin.getOffset(), end.getEndOffset());            
         }        

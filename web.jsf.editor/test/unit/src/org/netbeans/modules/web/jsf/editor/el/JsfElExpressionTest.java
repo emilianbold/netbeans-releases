@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -196,7 +199,6 @@ public class JsfElExpressionTest extends TestBase {
         WebModule wm = WebModule.getWebModule(file);
         assertNotNull(wm);
 
-        JsfElExpression expr = new JsfElExpression(wm, doc);
 
         //initialize the html extension
         JsfSupport.findFor(file);
@@ -240,7 +242,8 @@ public class JsfElExpressionTest extends TestBase {
         doc.insertString(0, code, null);
 
         int offset = code.lastIndexOf('.') + 1;
-        int parseCode = expr.parse(offset);
+        JsfElExpression expr = new JsfElExpression(wm, doc, offset);
+        int parseCode = expr.parse();
 
         System.out.println("parsed text=" + code);
         System.out.println("parser code=" + parseCode);
@@ -382,7 +385,6 @@ public class JsfElExpressionTest extends TestBase {
         WebModule wm = WebModule.getWebModule(file);
         assertNotNull(wm);
 
-        JsfElExpression expr = new JsfElExpression(wm, doc);
         
         doc.remove(0, doc.getLength());
         doc.insertString(0, code, null);
@@ -394,7 +396,8 @@ public class JsfElExpressionTest extends TestBase {
         //remove the pipe from the code
         doc.remove(offset, 1);
 
-        int parseCode = expr.parse(offset);
+        JsfElExpression expr = new JsfElExpression(wm, doc, offset);
+        int parseCode = expr.parse();
 
         assertEquals(JsfElExpression.EL_JSF_BEAN, parseCode);
 

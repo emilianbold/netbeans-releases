@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -60,6 +63,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.ui.Icons;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
@@ -69,6 +74,8 @@ import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.NbDocument;
+import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 
 /** This class contains various methods bound to visualization of Java model 
  * elements. It was formerly included under SourceUtils
@@ -348,8 +355,21 @@ public final class  UiUtils {
             EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
             LineCookie lc = od.getLookup().lookup(LineCookie.class);
             
-            if (ec != null && lc != null && offset != -1) {                
-                StyledDocument doc = ec.openDocument();                
+            if (ec != null && lc != null && offset != -1) {
+                StyledDocument doc = null;
+                try {
+                    doc = ec.openDocument();
+                } catch (UserQuestionException uqe) {
+                    final Object value = DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Confirmation(uqe.getLocalizedMessage(),
+                            NbBundle.getMessage(UiUtils.class, "TXT_Question"),
+                            NotifyDescriptor.YES_NO_OPTION));
+                    if (value != NotifyDescriptor.YES_OPTION) {
+                        return false;
+                    }
+                    uqe.confirmed();
+                    doc = ec.openDocument();
+                }
                 if (doc != null) {
                     int line = NbDocument.findLineNumber(doc, offset);
                     int lineOffset = NbDocument.findLineOffset(doc, line);

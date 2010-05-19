@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
+                     "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+<!--
+    * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+    * Use is subject to license terms.
+-->
+
+<toc version="2.0">
+        <tocitem text="SOA Development">
+	<tocitem text="XSLT Designer" target="xslt_about">
+		<tocitem text="About the XSLT Designer" target="xslt_about" />
+		<tocitem text="Working with XSLT Module Projects" target="xslt_project_about">
+			<tocitem text="About XSLT Module Projects" target="xslt_project_about" />
+			<tocitem text="Creating XSLT Module Projects" target="xslt_project_create" />
+			<tocitem text="Adding XSL Files to XSLT Module Projects" target="xslt_project_addxsl" />
+			<tocitem text="Building XSLT Module Projects" target="xslt_project_build" />
+			<tocitem text="Deploying XSLT Module Projects" target="xslt_project_deploy" />
+			<tocitem text="Testing XSLT Module Projects" target="xslt_project_test" />
+			<tocitem text="XSLT Module Projects Properties" target="xslt_project_properties" />
+		</tocitem>
+		<tocitem text="Creating XSL Stylesheets with the XSL Transformation Editor" target="xslt_editor_about">
+			<tocitem text="About the XSL Transformation Editor" target="xslt_editor_about" />
+			<tocitem text="The Design View of the XSL Transformation Editor" target="xslt_editor_design_about">
+				<tocitem text="About the Design View of the XSL Transformation Editor" target="xslt_editor_design_about" />
+				<tocitem text="About the Source Tree Pane" target="xslt_editor_design_sourcetree" />
+				<tocitem text="Transformations Pane" target="xslt_editor_design_panel_about">
+					<tocitem text="About the Transformations Pane" target="xslt_editor_design_panel_about" />
+					<tocitem text="Creating Simple Data Mapping" target="xslt_editor_design_panel_simplemap" />
+					<tocitem text="Adding XPath Functions" target="xslt_editor_design_panel_xpath" />
+				</tocitem>
+				<tocitem text="Destination Tree Pane" target="xslt_editor_design_target_about">
+					<tocitem text="About the Destination Tree Pane" target="xslt_editor_design_target_about" />
+					<tocitem text="Adding XSLT Rules" target="xslt_editor_design_target_rules" />
+				</tocitem>
+				<tocitem text="The Design View Palette" target="xslt_editor_design_palette_about">
+					<tocitem text="About the Design View Palette" target="xslt_editor_design_palette_about" />
+					<tocitem text="The Operator Section" target="xslt_editor_design_palette_operator" />
+					<tocitem text="The String Section" target="xslt_editor_design_palette_string" />
+					<tocitem text="The Number Section" target="xslt_editor_design_palette_number" />
+					<tocitem text="The Boolean Section" target="xslt_editor_design_palette_boolean" />
+					<tocitem text="The Nodes Section" target="xslt_editor_design_palette_nodes" />
+				</tocitem>
+				<tocitem text="The Expression Builder" target="xslt_editor_xpath" />
+			</tocitem>
+			<tocitem text="The Source View of the XSL Transformation Editor" target="xslt_editor_source" />
+		</tocitem>
+	</tocitem>
+    </tocitem>
+</toc>

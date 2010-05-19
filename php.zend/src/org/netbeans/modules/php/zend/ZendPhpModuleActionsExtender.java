@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,15 +45,21 @@ package org.netbeans.modules.php.zend;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.php.spi.actions.GoToActionAction;
+import org.netbeans.modules.php.spi.actions.GoToViewAction;
+import org.netbeans.modules.php.spi.actions.RunCommandAction;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.zend.ui.actions.RunCommandAction;
+import org.netbeans.modules.php.zend.ui.actions.ZendRunCommandAction;
+import org.netbeans.modules.php.zend.ui.actions.ZendGoToActionAction;
+import org.netbeans.modules.php.zend.ui.actions.ZendGoToViewAction;
+import org.netbeans.modules.php.zend.util.ZendUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
 public class ZendPhpModuleActionsExtender extends PhpModuleActionsExtender {
-    private static final List<Action> ACTIONS = Collections.<Action>singletonList(RunCommandAction.getInstance());
 
     @Override
     public String getMenuName() {
@@ -58,7 +67,32 @@ public class ZendPhpModuleActionsExtender extends PhpModuleActionsExtender {
     }
 
     @Override
+    public RunCommandAction getRunCommandAction() {
+        return ZendRunCommandAction.getInstance();
+    }
+
+    @Override
     public List<? extends Action> getActions() {
-        return ACTIONS;
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean isViewWithAction(FileObject fo) {
+        return ZendUtils.isViewWithAction(fo);
+    }
+
+    @Override
+    public boolean isActionWithView(FileObject fo) {
+        return ZendUtils.isAction(fo);
+    }
+
+    @Override
+    public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
+        return new ZendGoToActionAction(fo);
+    }
+
+    @Override
+    public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
+        return new ZendGoToViewAction(fo, offset);
     }
 }

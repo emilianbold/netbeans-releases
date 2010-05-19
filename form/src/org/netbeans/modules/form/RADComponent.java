@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,8 @@ import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractButton;
@@ -1252,7 +1257,7 @@ public class RADComponent {
                     }
                 }
             } catch (IntrospectionException iex) {
-                iex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, iex.getMessage(), iex);
             }
         }
 
@@ -1450,7 +1455,7 @@ public class RADComponent {
             try {
                 prop = new FakeRADProperty(this, (FakePropertyDescriptor) desc);   
             } catch (IntrospectionException ex) { // should not happen
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
 		return null;
             }             
         } else {
@@ -1515,7 +1520,7 @@ public class RADComponent {
                             }
                         }
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
             });
@@ -1554,7 +1559,7 @@ public class RADComponent {
                 nameToProperty.put("cursor", prop); // NOI18N
                 normalProps.add(prop);
             } catch (IntrospectionException ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
          // hack for buttons - add fake property for ButtonGroup
@@ -1582,7 +1587,7 @@ public class RADComponent {
                 nameToProperty.put("rowHeight", prop); // NOI18N
                 normalProps.add(prop);
             } catch (IntrospectionException ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
         
@@ -1958,7 +1963,7 @@ public class RADComponent {
             try {
                 propertyDescriptors.add(new FakePropertyDescriptor(propertyName, propertyClass));
             } catch (IntrospectionException ex) {
-                ex.printStackTrace(); // should not happen
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex); // should not happen
             }
         }
                 

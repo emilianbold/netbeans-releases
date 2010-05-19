@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -120,7 +123,7 @@ class CachingSupport {
         Collection<? extends MethodScope> retval;
         CachingSupport cachingSupport = CachingSupport.getInstance(elem);
         if (cachingSupport != null) {
-            retval = cachingSupport.getMergedMethods((ClassScopeImpl)clsScope, methodName);
+            retval = cachingSupport.getMergedMethods(clsScope, methodName);
         } else {
             Set<MethodScope> tmp =  new HashSet<MethodScope>();
             tmp.addAll(ModelUtils.filter(clsScope.getDeclaredMethods(), methodName));
@@ -270,10 +273,10 @@ class CachingSupport {
 
     }
 
-    private Collection<? extends MethodScope> getMergedMethods(ClassScopeImpl clsScope, String methodName, final int... modifiers) {
+    private Collection<? extends MethodScope> getMergedMethods(TypeScope clsScope, String methodName, final int... modifiers) {
         Collection<? extends MethodScope> methods = getCachedMethods(clsScope, methodName);
         if (methods.isEmpty()) {
-            methods = (clsScope != null ? clsScope.findDeclaredMethods(methodName, modifiers) : Collections.<MethodScopeImpl>emptyList());
+            methods = clsScope instanceof TypeScopeImpl ? ((TypeScopeImpl)clsScope).findDeclaredMethods(methodName, modifiers) : Collections.<MethodScopeImpl>emptyList();
             if (methods.isEmpty()) {
                 Set<MethodScope> tmp = new HashSet<MethodScope>();
                 tmp.addAll(ModelUtils.filter(clsScope.getDeclaredMethods(), methodName));
@@ -433,12 +436,12 @@ class CachingSupport {
         });
     }
 
-    private List<? extends MethodScope> getCachedMethods(TypeScopeImpl typeScope, final String queryName, final int... modifiers) {
+    private List<? extends MethodScope> getCachedMethods(TypeScope typeScope, final String queryName, final int... modifiers) {
         return getCachedMethods(QuerySupport.Kind.EXACT, typeScope, queryName, modifiers);
     }
 
     private List<? extends MethodScope> getCachedMethods(final QuerySupport.Kind nameKind, 
-            TypeScopeImpl typeScope, final String queryName, final int... modifiers) {
+            TypeScope typeScope, final String queryName, final int... modifiers) {
         List<MethodScope> toFilter = methodScopes.get(typeScope);
         if (toFilter == null) return Collections.emptyList();
 

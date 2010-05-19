@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -48,13 +51,16 @@ import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
@@ -110,18 +116,19 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
 
     @Override
     public void changedLine(final int line) {
-        scheduleRefresh(343); //ms
+        scheduleRefresh(isTyping() ? 343 : 43); //ms
     }
 
     @Override
     public void changedAll() {
-        scheduleRefresh(43); //ms
+        scheduleRefresh(isTyping() ? 343 : 43); //ms
     }
 
     // ----------------------------------------------------------------------
     //  Private implementation
     // ----------------------------------------------------------------------
 
+    // -J-Dorg.netbeans.modules.editor.impl.highlighting.AnnotationsHighlighting.level=FINE
     private static final Logger LOG = Logger.getLogger(AnnotationsHighlighting.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(LAYER_TYPE_ID);
 
@@ -134,6 +141,7 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
     private RequestProcessor.Task refreshAllLinesTask = null;
 
     private void scheduleRefresh(int delay) {
+        LOG.log(Level.FINE, "scheduleRefresh: delay={0}", delay); //NOI18N
         synchronized (this) {
             if (refreshAllLines == null) {
                 refreshAllLines = new R();
@@ -143,6 +151,11 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
                 refreshAllLinesTask.schedule(delay);
             }
         }
+    }
+
+    private static boolean isTyping() {
+        JTextComponent jtc = EditorRegistry.focusedComponent();
+        return jtc != null ? DocumentUtilities.isWriteLocked(jtc.getDocument()) : false;
     }
 
     private final class R implements Runnable {

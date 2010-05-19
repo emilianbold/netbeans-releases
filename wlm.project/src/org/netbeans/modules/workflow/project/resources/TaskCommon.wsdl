@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="TaskStatic" targetNamespace="http://jbi.com.sun/wfse/wsdl/TaskCommon"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:tns="http://jbi.com.sun/wfse/wsdl/TaskCommon"
+             xmlns:ns1="http://jbi.com.sun/wfse/wsdl/TaskCommon"
+             xmlns:ns2="http://wlmse.sample/po">
+    <types>
+        <xsd:schema targetNamespace="http://jbi.com.sun/wfse/wsdl/TaskCommon" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns1="http://jbi.com.sun/wfse/wsdl/TaskCommon"  elementFormDefault="qualified">
+            <xsd:complexType name="TaskListType">
+                <xsd:sequence>
+                    <xsd:element name="totalRecords" type="xsd:int" />
+                    <xsd:element name="returnedRecords" type="xsd:int" />
+                    <xsd:element name="task" type="ns1:TaskType" minOccurs="0" maxOccurs="unbounded">
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="taskList" type="ns1:TaskListType">
+            </xsd:element>
+            <xsd:simpleType name="ResultCodeType">
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="SUCCESS"/>
+                    <xsd:enumeration value="FAILED"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+
+            <xsd:simpleType name="TaskStatus">
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="UNASSIGNED"/>
+                    <xsd:enumeration value="ASSIGNED"/>
+                    <xsd:enumeration value="CLAIMED"/>
+                    <xsd:enumeration value="COMPLETED"/>
+                    <xsd:enumeration value="EXPIRED"/>
+                    <xsd:enumeration value="ESCALATED"/>
+                    <xsd:enumeration value="ABORTED"/>
+                    <xsd:enumeration value="FAILED"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType name="SortField">
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="id"/>
+                    <xsd:enumeration value="title"/>
+                    <xsd:enumeration value="createDate"/>
+		    <xsd:enumeration value="deadline"/>
+                    <xsd:enumeration value="priority"/>
+                    <xsd:enumeration value="status"/>
+                    <xsd:enumeration value="assignedTo"/>
+                    <xsd:enumeration value="owner"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType name="Direction">
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="ASC"/>
+                    <xsd:enumeration value="DESC"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:element name="resultCode" type="ns1:ResultCodeType">
+            </xsd:element>
+            <xsd:complexType name="FaultType">
+                <xsd:sequence>
+                    <xsd:element name="FaultCode" type="xsd:string">
+                    </xsd:element>
+                    <xsd:element name="FaultReason" type="xsd:string">
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="fault" type="ns1:FaultType">
+            </xsd:element>
+            <xsd:complexType name="TaskType">
+                <xsd:sequence>
+                    <xsd:element name="taskId" type="xsd:long">
+                    </xsd:element>
+                    <xsd:element name="title" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="client" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="priority" type="xsd:int" minOccurs="0"/>
+                    <xsd:element name="claimedBy" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="assignedTo" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="submittedDate" type="xsd:dateTime" minOccurs="0"/>
+                    <xsd:element name="status" type="ns1:TaskStatus"
+                    minOccurs="0" />
+		    <xsd:element name="taskDefId" type="xsd:string"
+				 minOccurs="0" />
+		    <xsd:element name="deadline" type="xsd:dateTime"
+				 minOccurs="0" />
+		    <xsd:element name="completedBy" type="xsd:string" minOccurs="0" />
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="task" type="ns1:TaskType">
+            </xsd:element>
+            <xsd:element name="content" type="xsd:anyType">
+            </xsd:element>
+            <xsd:complexType name="AnyType">
+                <xsd:sequence>
+                    <xsd:element name="content" type="xsd:anyType">
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ConnectInfoType">
+                <xsd:sequence>
+                    <xsd:element name="userId" type="xsd:string">
+                    </xsd:element>
+                    <xsd:element name="password" type="xsd:string">
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="connectInfo" type="ns1:ConnectInfoType">
+            </xsd:element>
+            <xsd:complexType name="UsersType">
+                <xsd:sequence>
+                    <xsd:element name="user" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="GroupsType">
+                <xsd:sequence>
+                    <xsd:element name="group" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+                </xsd:sequence>
+            </xsd:complexType>
+
+	    <xsd:complexType name="DeadlineQueryType">
+	      <xsd:sequence>
+		<xsd:element name="periodType"  default="DAY">
+		  <xsd:simpleType>
+		    <xsd:restriction base="xsd:string">
+		      <xsd:enumeration value="HOUR"/>
+		      <xsd:enumeration value="DAY"/>
+		      <xsd:enumeration value="WEEK"/>
+		      <xsd:enumeration value="MONTH"/>
+		    </xsd:restriction>
+		  </xsd:simpleType>
+		</xsd:element>
+		<xsd:element name="period"  type="xsd:int" />
+	      </xsd:sequence>
+	    </xsd:complexType>
+
+            <xsd:complexType name="QueryType">
+                <xsd:sequence>
+                    <xsd:element name="type"  default="DEFAULT">
+                        <xsd:simpleType>
+                            <xsd:restriction base="xsd:string">
+                                <xsd:enumeration value="DEFAULT"/>
+                                <xsd:enumeration value="FILTERED"/>
+                                <xsd:enumeration value="TEXTSEARCH"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                    </xsd:element>
+                    <xsd:element name="users" type="ns1:UsersType"  minOccurs="0"/>
+
+                    <xsd:element name="groups" type="ns1:GroupsType" minOccurs="0"/>
+
+                    <xsd:element name="excluded"  minOccurs="0">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="users" type="ns1:UsersType" minOccurs="0"/>
+                                <xsd:element name="groups" type="ns1:GroupsType" minOccurs="0"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+
+                    <xsd:element name="taskStatus"
+                    type="ns1:TaskStatus" minOccurs="0"
+                    maxOccurs="unbounded" />
+                    <xsd:element name="sort"
+                    type="ns1:SortField"  minOccurs="0" />
+                    <xsd:element name="dir"
+                    type="ns1:Direction"  minOccurs="0" />
+		    <xsd:element name="deadlineQuery" type="ns1:DeadlineQueryType"  minOccurs="0" />
+                    <xsd:element name="searchString" type="xsd:string"  minOccurs="0">
+           			 </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:element  name="query" type="ns1:QueryType" />
+            <xsd:element name="taskIdentifer"
+            type="xsd:int">
+            </xsd:element>
+            <xsd:element name="AssigneeRole" type="xsd:string">
+            </xsd:element>
+            <xsd:element name="AssigneeUser" type="xsd:string">
+            </xsd:element>
+        </xsd:schema>
+
+    </types>
+    <message name="GetTaskListRequestMsg">
+        <part name="queryString" type="ns1:QueryType"/>
+        <part name="userId" type="xsd:string"/>
+        <part name="start" type="xsd:int"/>
+        <part name="pageSize" type="xsd:int"/>
+    </message>
+
+    <message name="GetTaskRequestMsg">
+        <part name="taskId" type="xsd:long"/>
+	<part name="userId" type="xsd:string"/>
+    </message>    
+
+    <message name="GetTaskResponseMsg">
+        <part name="taskItem" type="ns1:TaskType"/>
+    </message>    
+
+    <message name="GetTaskListResponseMsg">
+        <part name="taskList" type="ns1:TaskListType"/>
+    </message>
+    <message name="ClaimTaskRequestMsg">
+        <part name="taskId" type="xsd:long"/>
+        <part name="userId" type="xsd:string"/>
+    </message>
+    <message name="ClaimTaskResponseMsg">
+        <part name="resultCode" type="ns1:ResultCodeType"/>
+    </message>
+    <message name="RevokeTaskRequestMsg">
+        <part name="taskId" type="xsd:long"/>
+        <part name="userId" type="xsd:string"/>
+    </message>
+    <message name="RevokeTaskResponseMsg">
+        <part name="resultCode" type="ns1:ResultCodeType"/>
+    </message>
+    <message name="CompleteTaskRequestMsg">
+        <part name="taskId" type="xsd:long"/>
+        <part name="userId" type="xsd:string"/>
+    </message>
+    <message name="CompleteTaskResponseMsg">
+        <part name="resultCode" type="ns1:ResultCodeType"/>
+    </message>
+    <message name="ReassignTaskRequestMsg">
+        <part name="taskId" type="xsd:long"/>
+        <part name="group" type="xsd:string"/>
+        <part name="user" type="xsd:string"/>
+        <part name="excludedGroup" type="xsd:string"/>
+        <part name="excludedUser" type="xsd:string"/>
+        <part name="userId" type="xsd:string"/>
+    </message>
+    <message name="ReassignTaskResponseMsg">
+        <part name="resultCode" type="ns1:ResultCodeType"/>
+    </message>
+    <message name="GetTaskInputRequestMsg">
+        <part name="taskId" type="xsd:long"/>
+        <part name="userId" type="xsd:string"/>
+    </message>
+    <message name="GetTaskOutputResponseMsg">
+        <part name="outputMsg" type="xsd:anyType"/>
+    </message>
+    <message name="GetTaskInputResponseMsg">
+        <part name="inputMsg" type="xsd:anyType"/>
+    </message>
+    <message name="GetTaskOutputRequestMsg">
+        <part name="taskId" type="xsd:long"/>
+        <part name="userId" type="xsd:string"/>
+    </message>
+    <message name="SetTaskOutputRequestMsg">
+        <part name="taskId" type="xsd:long"/>
+        <part name="outputMsg" type="xsd:anyType"/>
+        <part name="userId" type="xsd:string"/>
+    </message>
+    <message name="SetTaskOutputResponseMsg">
+        <part name="resultCode" type="ns1:ResultCodeType"/>
+    </message>
+    <message name="TaskFaultMsg">
+        <part name="fault" element="ns1:fault"/>
+    </message>
+    <message name="TaskIdMsg">
+        <part name="taskId" type="xsd:long"/>
+    </message>
+    <message name="GetTaskXFormRequestMsg">
+        <part name="taskId" type="xsd:long"/>
+    </message>
+    <message name="GetTaskXFormResponseMsg">
+        <part name="xForm" type="xsd:anyType"/>
+    </message>
+    <portType name="TaskCommonPortType">
+        <operation name="GetTaskList">
+            <input name="GetTaskListRequest" message="tns:GetTaskListRequestMsg"/>
+            <output name="GetTaskListResponse" message="tns:GetTaskListResponseMsg"/>
+            <fault name="fault1" message="tns:TaskFaultMsg"/>
+        </operation>
+        <operation name="GetTask">
+            <input name="GetTaskRequest" message="tns:GetTaskRequestMsg"/>
+            <output name="GetTaskResponse" message="tns:GetTaskResponseMsg"/>
+            <fault name="fault1" message="tns:TaskFaultMsg"/>
+        </operation>
+        <operation name="ClaimTask">
+            <input name="ClaimTaskRequest" message="tns:ClaimTaskRequestMsg"/>
+            <output name="ClaimTaskResponse" message="tns:ClaimTaskResponseMsg"/>
+            <fault name="fault1" message="tns:TaskFaultMsg"/>
+        </operation>
+        <operation name="RevokeTask">
+            <input name="RevokeTaskRequest" message="tns:RevokeTaskRequestMsg"/>
+            <output name="RevokeTaskResponse" message="tns:RevokeTaskResponseMsg"/>
+            <fault name="fault1" message="tns:TaskFaultMsg"/>
+        </operation>
+        <operation name="CompleteTask">
+            <input name="CompleteTaskRequest" message="tns:CompleteTaskRequestMsg"/>
+            <output name="CompleteTaskResponse" message="tns:CompleteTaskResponseMsg"/>
+            <fault name="fault1" message="tns:TaskFaultMsg"/>
+        </operation>
+        <operation name="ReassignTask">
+            <input name="ReassignTaskRequest" message="tns:ReassignTaskRequestMsg"/>
+            <output name="ReassignTaskResponse" message="tns:ReassignTaskResponseMsg"/>
+            <fault name="fault1" message="tns:TaskFaultMsg"/>
+        </operation>
+        <operation name="GetTaskInput">
+            <input name="GetTaskInputRequest" message="tns:GetTaskInputRequestMsg"/>
+            <output name="GetTaskInputResponse" message="tns:GetTaskInputResponseMsg"/>
+            <fault name="fault1" message="tns:TaskFaultMsg"/>
+        </operation>
+        <operation name="GetTaskOutput">
+            <input name="GetTaskOutputRequest" message="tns:GetTaskOutputRequestMsg"/>
+            <output name="GetTaskOutputResponse" message="tns:GetTaskOutputResponseMsg"/>
+            <fault name="fault1" message="tns:TaskFaultMsg"/>
+        </operation>
+        <operation name="SetTaskOutput">
+            <input name="SetTaskOutputRequest" message="tns:SetTaskOutputRequestMsg"/>
+            <output name="SetTaskOutputResponse" message="tns:SetTaskOutputResponseMsg"/>
+            <fault name="fault1" message="tns:TaskFaultMsg"/>
+        </operation>
+        <operation name="GetTaskXForm">
+            <input name="GetTaskXFormRequest" message="tns:GetTaskXFormRequestMsg"/>
+            <output name="GetTaskXFormResponse" message="tns:GetTaskXFormResponseMsg"/>
+            <fault name="fault1" message="tns:TaskFaultMsg"/>
+        </operation>
+    </portType>
+</definitions>

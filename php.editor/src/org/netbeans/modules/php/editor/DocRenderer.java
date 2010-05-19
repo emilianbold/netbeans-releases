@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,6 +42,9 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -54,9 +60,17 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQuery.Index;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
@@ -97,37 +111,82 @@ class DocRenderer {
         }
 
         if (element instanceof PhpElement) {
-            return documentIndexedElement(info, (PhpElement) element);
+            return documentIndexedElement( (PhpElement) element);
         }
 
         if (element instanceof TypeMemberElement) {
             TypeMemberElement indexedClassMember = (TypeMemberElement) element;
-            return documentIndexedElement(info, indexedClassMember);
+            return documentIndexedElement(indexedClassMember);
         }
 
         return null;
     }
 
-    private static String documentIndexedElement(ParserResult info, PhpElement indexedElement) {
+    private static String documentIndexedElement(final PhpElement indexedElement) {
+        final StringBuilder description = new StringBuilder();
+        final CCDocHtmlFormatter locationHeader = new CCDocHtmlFormatter();
+        CCDocHtmlFormatter header = new CCDocHtmlFormatter();
+        final String location = getLocation(indexedElement);
+        final StringBuilder phpDoc = new StringBuilder();
+        final ElementQuery elementQuery = indexedElement.getElementQuery();
+        if (location != null) {
+            locationHeader.appendHtml(String.format("<div align=\"right\"><font size=-1>%s</font></div>", location));  //NOI18N
+        }
+        if (canBeProcessed(indexedElement)) {
+            if (getPhpDoc(indexedElement, header, phpDoc).length() == 0) {
+                if (indexedElement instanceof MethodElement) {
+                    ElementFilter forName = ElementFilter.forName(NameKind.exact(indexedElement.getName()));
+                    ElementQuery.Index index = elementQuery.getQueryScope().isIndexScope() ? (Index) elementQuery
+                            : ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(indexedElement.getFileObject()));
+                    final LinkedHashSet<TypeElement> inheritedTypes = index.getInheritedTypes(((MethodElement) indexedElement).getType());
+                    for (Iterator<TypeElement> typeIt = inheritedTypes.iterator(); phpDoc.length() == 0 && typeIt.hasNext();) {
+                        final Set<MethodElement> inheritedMethods = forName.filter(index.getDeclaredMethods(typeIt.next()));
+                        for (Iterator<MethodElement> methodIt = inheritedMethods.iterator(); phpDoc.length() == 0 && methodIt.hasNext();) {
+                            getPhpDoc(methodIt.next(), header = new CCDocHtmlFormatter(), phpDoc);
+                        }
+                    }
+                }
+            }
+        }
+        if (phpDoc.length() > 0) {
+            description.append(phpDoc);
+        } else {
+            description.append(NbBundle.getMessage(DocRenderer.class, "PHPDocNotFound"));
+        }
+        return String.format("%s%s%s", locationHeader.getText(), header.getText(), description.toString());
 
-        StringBuilder description = new StringBuilder();
-        final CCDocHtmlFormatter header = new CCDocHtmlFormatter();
+    }
 
+    private static boolean canBeProcessed(PhpElement indexedElement) {
+        return indexedElement != null && indexedElement.getOffset() > -1 && indexedElement.getFileObject() != null;
+    }
+
+    private static StringBuilder getPhpDoc(final PhpElement indexedElement, final CCDocHtmlFormatter header, final StringBuilder phpDoc) {
+        if (canBeProcessed(indexedElement)) {
+            FileObject nextFo = indexedElement.getFileObject();
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(nextFo)), new PHPDocExtractor(header, phpDoc, indexedElement));
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return phpDoc;
+    }
+
+    private static String getLocation(PhpElement indexedElement) {
         String location = null;
-        
-        if (indexedElement.isPlatform()){
+        if (indexedElement.isPlatform()) {
             location = NbBundle.getMessage(DocRenderer.class, "PHPPlatform");
         } else {
             FileObject fobj = indexedElement.getFileObject();
-
             if (fobj != null) {
                 Project project = FileOwnerQuery.getOwner(fobj);
-
                 if (project != null) {
                     // find the appropriate source root
                     Sources sources = ProjectUtils.getSources(project);
                     // TODO the PHPSOURCE constatnt has to be published in the project api
-                    for (SourceGroup group : sources.getSourceGroups("PHPSOURCE")) { //NOI18N
+                    for (SourceGroup group : sources.getSourceGroups("PHPSOURCE")) {
+                        //NOI18N
                         String relativePath = FileUtil.getRelativePath(group.getRootFolder(), fobj);
                         if (relativePath != null) {
                             location = relativePath;
@@ -143,37 +202,7 @@ class DocRenderer {
                 }
             }
         }
-
-        
-        if (location != null) {
-            header.appendHtml(String.format("<div align=\"right\"><font size=-1>%s</font></div>", location));  //NOI18N
-        }
-
-        final StringBuilder phpDoc = new StringBuilder();
-
-        if (indexedElement.getOffset() > -1) {
-            FileObject fo = indexedElement.getFileObject();
-            
-            if (fo == null){
-                return null;
-            }
-
-            UserTask task = new PHPDocExtractor(header, phpDoc, indexedElement);
-            try {
-                ParserManager.parse(Collections.singleton(Source.create(fo)), task);
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        if (phpDoc.length() > 0) {
-            description.append(phpDoc);
-        } else {
-            description.append(NbBundle.getMessage(DocRenderer.class, "PHPDocNotFound"));
-        }
-
-        return header.getText() + description.toString();
-
+        return location;
     }
 
     static final class PHPDocExtractor extends UserTask {

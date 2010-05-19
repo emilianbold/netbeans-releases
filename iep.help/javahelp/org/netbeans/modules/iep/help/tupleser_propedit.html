@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Using the Tuple Serial Correlation Operator Property Editor</title>
+</head>
+<body>
+<h2>Using the Tuple Serial Correlation Operator Property Editor </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Tuple Serial Correlation operator provides correlation of sequential events; that is, it uses a specification of a number of events from an existing stream to create a  stream that contains larger events. </p>
+<p>For example, you have a stream of transactions of a stock, and you want to compute a new stream in which each event is composed of three consecutive events from the original stream. Using this functionality, you can build a trading model that predicts the next stock prices, using the latest two stock prices.</p>
+<p><strong>To create a Tuple Serial Correlation operator:</strong></p>
+<ol>
+  <li>Drag a Tuple Serial Correlation  operator from the Palette to the Design view.</li>
+  <li>Click the Tuple Serial Correlation   operator icon.The property editor opens. </li>
+  <li>In the Increment field, enter how often you want to obtain events via the Tuple Serial Correlation operator, based on the number of events. </li>
+  <li>In the Size field, specify the number of small consecutive events that you want to add to the larger cumulative event.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd>&nbsp;</dd>
+<dd><a href="tuplebased_propedit.html">Using the Tuple Based Operator Property Editor </a></dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

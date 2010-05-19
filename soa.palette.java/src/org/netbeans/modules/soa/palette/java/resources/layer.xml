@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <file name="PaletteController.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.palette.PaletteController"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.soa.palette.java.CAPSOTDPaletteFactory.getPalette"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Services">
+        <folder name="JavaHelp">
+            <file name="soaJavaPalette-helpset.xml" url="soaJavaPalette-helpset.xml">
+                <attr name="position" stringvalue="3690"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="CAPSEEPalette">
+        <folder name="JAXB">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.soa.palette.java.resources.Bundle"/>
+            <attr name="isExpanded" stringvalue="true"/>
+            <attr name="position" intvalue="65"/>
+            <file name="jaxbMarshal.xml" url="nbresloc:/org/netbeans/modules/soa/palette/java/resources/jaxbMarshal.xml"/>
+            <file name="jaxbUnmarshal.xml" url="nbresloc:/org/netbeans/modules/soa/palette/java/resources/jaxbUnmarshal.xml"/>
+            <file name="jaxbConstructs.xml" url="nbresloc:/org/netbeans/modules/soa/palette/java/resources/jaxbConstructs.xml"/>
+        </folder>
+    </folder>
+</filesystem>

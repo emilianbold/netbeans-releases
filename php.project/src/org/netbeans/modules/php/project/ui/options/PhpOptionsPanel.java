@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -341,7 +344,7 @@ public class PhpOptionsPanel extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(phpInterpreterTextField, GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+                        .addComponent(phpInterpreterTextField, GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(phpInterpreterBrowseButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
@@ -359,7 +362,7 @@ public class PhpOptionsPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(debuggingLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(debuggingSeparator, GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE))
+                .addComponent(debuggingSeparator, GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
@@ -379,7 +382,7 @@ public class PhpOptionsPanel extends JPanel {
                 .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
+                        .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.TRAILING)
                             .addComponent(addFolderButton)
@@ -391,7 +394,7 @@ public class PhpOptionsPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(globalIncludePathLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE))
+                .addComponent(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton});
@@ -485,6 +488,8 @@ public class PhpOptionsPanel extends JPanel {
         debuggerSessionIdTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdTextField.AccessibleContext.accessibleDescription")); // NOI18N
         stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleName")); // NOI18N
         stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        watchesAndEvalCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.watchesAndEvalCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        watchesAndEvalCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.watchesAndEvalCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
         globalIncludePathSeparator.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.globalIncludePathSeparator.AccessibleContext.accessibleName_1")); // NOI18N
         globalIncludePathSeparator.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.globalIncludePathSeparator.AccessibleContext.accessibleDescription_1")); // NOI18N
         globalIncludePathLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.globalIncludePathLabel.AccessibleContext.accessibleName")); // NOI18N

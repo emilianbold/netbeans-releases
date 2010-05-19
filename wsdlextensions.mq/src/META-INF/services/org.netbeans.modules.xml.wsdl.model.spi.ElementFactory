@@ -1,0 +1,7 @@
+org.netbeans.modules.wsdlextensions.mq.impl.MQElementFactoryProvider$BindingFactory
+org.netbeans.modules.wsdlextensions.mq.impl.MQElementFactoryProvider$OperationFactory
+org.netbeans.modules.wsdlextensions.mq.impl.MQElementFactoryProvider$AddressFactory
+org.netbeans.modules.wsdlextensions.mq.impl.MQElementFactoryProvider$BodyFactory
+org.netbeans.modules.wsdlextensions.mq.impl.MQElementFactoryProvider$HeaderFactory
+org.netbeans.modules.wsdlextensions.mq.impl.MQElementFactoryProvider$RedeliveryFactory
+org.netbeans.modules.wsdlextensions.mq.impl.MQElementFactoryProvider$FaultFactory

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,10 +47,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FocusTraversalPolicy;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.DefaultListModel;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -72,6 +77,7 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * List of frameworks is "copied" from web project.
@@ -259,38 +265,71 @@ public class PhpFrameworksPanelVisual extends JPanel implements HelpCtx.Provider
         separator = new JSeparator();
         configPanel = new JPanel();
 
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return frameworksTable;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return frameworksTable;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return frameworksTable;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                return frameworksTable;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                return frameworksTable;//end getComponentBefore
+
+            }}
+        );
+
         frameworksTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         frameworksTable.setShowHorizontalLines(false);
         frameworksTable.setShowVerticalLines(false);
         frameworksTable.setTableHeader(null);
         frameworksScrollPane.setViewportView(frameworksTable);
+        frameworksTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.frameworksTable.AccessibleContext.accessibleName")); // NOI18N
+        frameworksTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.frameworksTable.AccessibleContext.accessibleDescription")); // NOI18N
 
         descriptionLabel.setText("DUMMY"); // NOI18N
 
         configPanel.setLayout(new BorderLayout());
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addComponent(separator, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(separator, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(descriptionLabel)
                 .addContainerGap())
-            .addComponent(configPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-            .addComponent(frameworksScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(configPanel, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(frameworksScrollPane, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(frameworksScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(frameworksScrollPane, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(separator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(descriptionLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(configPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
+                .addComponent(configPanel, GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
         );
+
+        frameworksScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.frameworksScrollPane.AccessibleContext.accessibleName")); // NOI18N
+        frameworksScrollPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.frameworksScrollPane.AccessibleContext.accessibleDescription")); // NOI18N
+        descriptionLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.descriptionLabel.AccessibleContext.accessibleName")); // NOI18N
+        configPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.configPanel.AccessibleContext.accessibleName")); // NOI18N
+        configPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.configPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpFrameworksPanelVisual.class, "PhpFrameworksPanelVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 

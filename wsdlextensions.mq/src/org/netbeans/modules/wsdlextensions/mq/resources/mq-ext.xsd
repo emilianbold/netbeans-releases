@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+           xmlns:mq="http://schemas.sun.com/jbi/wsdl-extensions/mq/"
+           targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/mq/"
+           elementFormDefault="qualified">
+    <xs:import namespace="http://schemas.xmlsoap.org/wsdl/"
+               schemaLocation="wsdl.xsd"/>
+    <xs:element name="binding" type="mq:tBinding">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_binding</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tBinding">
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement"/>
+            <!-- could add more attributes to the binding -->
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:element name="operation">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_operation</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                    <xs:attribute name="queueName" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_queueName
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="queueOpenOptions" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_queueOpenOptions
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="transaction" type="mq:TransactionTypes"
+                                  use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_transaction
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="pollingInterval" type="mq:MQPortNumberType">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_pollingInterval
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="redelivery">
+        <xs:annotation>
+            <xs:documentation>
+                DESC_Element_RedeliveryType
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                    <xs:attribute name="delay" type="mq:RedeliveryRetryDelayType">
+                        <xs:annotation>
+                            <xs:documentation>
+                                DESC_Attribute_Redelivery_Retry_Delay
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="count" type="mq:RedeliveryRetryCountType">
+                        <xs:annotation>
+                            <xs:documentation>
+                                DESC_Attribute_Redelivery_Retry_Count
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="target" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+                                DESC_Attribute_Redelivery_Redirection_Target
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="input">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_input</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                    <xs:sequence>
+                        <xs:element ref="mq:body" minOccurs="1" maxOccurs="1"/>
+                        <xs:element ref="mq:header" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="output">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_input</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                    <xs:sequence>
+                        <xs:element ref="mq:body" minOccurs="1" maxOccurs="1"/>
+                        <xs:element ref="mq:header" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="fault">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_fault</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                    <xs:attribute name="reasonCodePart" type="xs:NMTOKEN" use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_reasonCodePart
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="reasonTextPart" type="xs:NMTOKEN">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_reasonTextPart
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="body">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_body</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                    <xs:attribute name="messageBody" type="xs:string">
+                    <xs:annotation>
+                            <xs:documentation>DESC_Attribute_messageBody
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="use" type="mq:useTypes" use="required"/>
+                    <xs:attribute name="encodingStyle" type="xs:anyURI"/>
+                    <xs:attribute name="messageType" type="mq:messageTypes"
+                                  use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_messageType
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="syncpoint" type="xs:boolean">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_syncpoint
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="header">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_header</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                    <xs:attribute name="descriptor"
+                                  type="mq:Descriptor"
+                                  use="required"/>
+                    <xs:attribute name="part" type="xs:string" use="required"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="address">
+        <xs:annotation>
+            <xs:documentation>DESC_Element_address</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="wsdl:tExtensibilityElement">
+                    <xs:attribute name="hostName" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_hostName
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="portNumber" type="mq:MQPortNumberType">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_portNumber
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="queueManagerName" type="xs:string"
+                                  use="required">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_queueManagerName
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="channelName" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_channelName
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="codedCharacterSetID" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_codedCharacterSetID
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="userName" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_userName
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="password" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_password
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="cipherSuite" type="mq:CipherSuite">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_cipherSuite
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="sslPeerName" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>DESC_Attribute_sslPeerName
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:simpleType name="MQOperationTypes">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="mqput"/>
+            <xs:enumeration value="mqrecv"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="MQPortNumberType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="([0-9]{1,19})|($\{([a-zA-Z0-9]+[\.-_]?)+\})"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="MQPollingNumberType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="([0-9]{1,5})|($\{([a-zA-Z0-9]+[\.-_]?)+\})"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="TransactionTypes">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="NoTransaction"/>
+            <xs:enumeration value="XATransaction"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="messageTypes">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="TextMessage"/>
+            <xs:enumeration value="ByteMessage"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="useTypes">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="literal"/>
+            <xs:enumeration value="encoded"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="CipherSuite">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="SSL_RSA_EXPORT_WITH_RC4_40_MD5"/>
+            <xs:enumeration value="SSL_RSA_WITH_3DES_EDE_CBC_SHA"/>
+            <xs:enumeration value="SSL_RSA_WITH_DES_CBC_SHA"/>
+            <xs:enumeration value="SSL_RSA_WITH_NULL_MD5"/>
+            <xs:enumeration value="SSL_RSA_WITH_NULL_SHA"/>
+            <xs:enumeration value="SSL_RSA_WITH_RC4_128_MD5"/>
+            <xs:enumeration value="SSL_RSA_WITH_RC4_128_SHA"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Descriptor">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="accountingToken"/>
+            <xs:enumeration value="applicationId"/>
+            <xs:enumeration value="applicationOrigin"/>
+            <xs:enumeration value="backoutCount"/>
+            <xs:enumeration value="characterSet"/>
+            <xs:enumeration value="correlationId"/>
+            <xs:enumeration value="encoding"/>
+            <xs:enumeration value="expiry"/>
+            <xs:enumeration value="feedback"/>
+            <xs:enumeration value="format"/>
+            <xs:enumeration value="groupId"/>
+            <xs:enumeration value="messageFlags"/>
+            <xs:enumeration value="messageId"/>
+            <xs:enumeration value="messageSequenceNumber"/>
+            <xs:enumeration value="messageType"/>
+            <xs:enumeration value="offset"/>
+            <xs:enumeration value="originalLength"/>
+            <xs:enumeration value="persistence"/>
+            <xs:enumeration value="priority"/>
+            <xs:enumeration value="putApplicationName"/>
+            <xs:enumeration value="putApplicationType"/>
+            <xs:enumeration value="putDateTime"/>
+            <xs:enumeration value="replyToQueueManager"/>
+            <xs:enumeration value="replyToQueueName"/>
+            <xs:enumeration value="report"/>
+            <xs:enumeration value="userId"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="RedeliveryRetryDelayType">
+        <xs:restriction base="xs:integer">
+            <xs:minInclusive value="0"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="RedeliveryRetryCountType">
+        <xs:restriction base="xs:integer">
+            <xs:minInclusive value="0"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

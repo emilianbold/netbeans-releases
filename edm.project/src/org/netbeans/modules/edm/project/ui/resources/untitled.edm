@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mashupDefinition>
+	<attr name="version" type="java.lang.String" value="6.0" />
+	<sqlDefinition displayName="" >
+		<attr name="version" type="java.lang.String" value="6.0" />
+		<attr name="executionStrategyCode" type="java.lang.Integer" value="0" />
+ 		<runtimeModel name="RuntimeDbModel" id="sqlObject_0" displayName="Runtime DbModel" type="runtime">
+		</runtimeModel>
+	</sqlDefinition>
+</mashupDefinition>

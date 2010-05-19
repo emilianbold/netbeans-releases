@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -59,6 +63,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallbackSystemAction;
@@ -188,7 +193,7 @@ public class FindSupport {
                             highlighter.addHighlight(currentStart, currentEnd, highlighterCurrent);
                             scrollToCurrent();
                         } catch (BadLocationException blex) {
-                            blex.printStackTrace();
+                            BugtrackingManager.LOG.log(Level.INFO, blex.getMessage(), blex);
                         }
                         return true;
                     }
@@ -214,7 +219,7 @@ public class FindSupport {
             Rectangle r = r1.union(r2);
             currentComp.scrollRectToVisible(r);
         } catch (BadLocationException blex) {
-            blex.printStackTrace();
+            BugtrackingManager.LOG.log(Level.INFO, blex.getMessage(), blex);
         }
     }
 
@@ -267,7 +272,7 @@ public class FindSupport {
                         highlighter.addHighlight(currentStart, currentEnd, highlighterCurrent);
                         scrollToCurrent();
                     } catch (BadLocationException blex) {
-                        blex.printStackTrace();
+                        BugtrackingManager.LOG.log(Level.INFO, blex.getMessage(), blex);
                     }
                     return true;
                 }
@@ -300,7 +305,7 @@ public class FindSupport {
             try {
                 currentComp.getHighlighter().addHighlight(currentStart, currentEnd, highlighterCurrent);
             } catch (BadLocationException blex) {
-                blex.printStackTrace();
+                BugtrackingManager.LOG.log(Level.INFO, blex.getMessage(), blex);
             }
         }
         if (on) {
@@ -330,7 +335,7 @@ public class FindSupport {
                     try {
                         highlighter.addHighlight(start, end, highlighterAll);
                     } catch (BadLocationException blex) {
-                        blex.printStackTrace();
+                        BugtrackingManager.LOG.log(Level.INFO, blex.getMessage(), blex);
                     }
                     idx = matcher.end();
                 }
@@ -360,9 +365,9 @@ public class FindSupport {
                 }
             } else {
                 bar.setVisible(true);
-                bar.requestFocusInWindow();
                 updatePattern();
             }
+            bar.requestFocusInWindow();
         }
 
     }

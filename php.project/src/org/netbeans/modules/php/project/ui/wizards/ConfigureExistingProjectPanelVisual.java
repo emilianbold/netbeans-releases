@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -44,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.charset.Charset;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -129,10 +133,12 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
         Mnemonics.setLocalizedText(sourcesInfoLabel, NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "TXT_ExistingSourcesHint"));
         projectNameLabel.setHorizontalAlignment(SwingConstants.LEFT);
         projectNameLabel.setLabelFor(projectNameTextField);
-
-        Mnemonics.setLocalizedText(projectNameLabel, NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "LBL_ProjectName")); // NOI18N
+        Mnemonics.setLocalizedText(projectNameLabel, NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "LBL_ProjectName"));
         projectNameLabel.setVerticalAlignment(SwingConstants.TOP);
-        Mnemonics.setLocalizedText(phpVersionLabel, NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.phpVersionLabel.text"));
+
+        phpVersionLabel.setLabelFor(phpVersionComboBox);
+
+        Mnemonics.setLocalizedText(phpVersionLabel, NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.phpVersionLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(phpVersionInfoLabel, NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.phpVersionInfoLabel.text"));
 
         encodingLabel.setLabelFor(encodingComboBox);
@@ -140,13 +146,13 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
         Mnemonics.setLocalizedText(encodingLabel, NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "LBL_Encoding"));
         projectFolderPanel.setLayout(new BorderLayout());
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addComponent(separator, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
-            .addComponent(projectFolderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+            .addComponent(separator, GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
+            .addComponent(projectFolderPanel, GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(encodingLabel)
@@ -162,10 +168,10 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
                         .addComponent(phpVersionComboBox, 0, 309, Short.MAX_VALUE)
                         .addComponent(sourcesInfoLabel)
                         .addGroup(layout.createSequentialGroup()
-                            .addComponent(sourcesTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+                            .addComponent(sourcesTextField, GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(sourcesBrowseButton))
-                        .addComponent(projectNameTextField, Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
+                        .addComponent(projectNameTextField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
                         .addComponent(encodingComboBox, 0, 309, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
@@ -174,32 +180,33 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(sourcesLabel)
                     .addComponent(sourcesBrowseButton)
-                    .addComponent(sourcesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(sourcesTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(sourcesInfoLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(projectNameLabel)
-                    .addComponent(projectNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(projectNameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(phpVersionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(phpVersionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(phpVersionLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(phpVersionInfoLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(encodingLabel)
-                    .addComponent(encodingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(encodingComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(separator, GroupLayout.PREFERRED_SIZE, 2, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.UNRELATED)
-                .addComponent(projectFolderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(projectFolderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         sourcesLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesLabel.AccessibleContext.accessibleName")); // NOI18N
         sourcesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        sourcesTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesTextField.AccessibleContext.accessibleName_1")); // NOI18N
         sourcesTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesTextField.AccessibleContext.accessibleDescription")); // NOI18N
         sourcesBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesBrowseButton.AccessibleContext.accessibleName")); // NOI18N
         sourcesBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.sourcesBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -209,6 +216,11 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
         projectNameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.projectNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
         projectNameTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.projectNameTextField.AccessibleContext.accessibleName")); // NOI18N
         projectNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.projectNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        phpVersionLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.phpVersionLabel.AccessibleContext.accessibleName_1")); // NOI18N
+        phpVersionLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.phpVersionLabel.AccessibleContext.accessibleDescription_1")); // NOI18N
+        phpVersionComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.phpVersionComboBox.AccessibleContext.accessibleDescription_1")); // NOI18N
+        phpVersionInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.phpVersionInfoLabel.AccessibleContext.accessibleName_1")); // NOI18N
+        phpVersionInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.phpVersionInfoLabel.AccessibleContext.accessibleDescription_1")); // NOI18N
         encodingLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.encodingLabel.AccessibleContext.accessibleName")); // NOI18N
         encodingLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.encodingLabel.AccessibleContext.accessibleDescription")); // NOI18N
         encodingComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.encodingComboBox.AccessibleContext.accessibleName")); // NOI18N

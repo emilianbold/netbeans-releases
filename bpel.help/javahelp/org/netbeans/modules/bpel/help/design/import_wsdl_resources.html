@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>BPEL Designer: Adding WSDL and XML Schema Imports</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>BPEL Designer: Adding WSDL and XML Schema Imports </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Business process authoring involves the exchange and manipulation of XML data. XML data types are typically defined in XML schema files (<tt>.xsd</tt> files). Business processes use XML Schema files (<tt>.xsd</tt>) to define the business data that will be used by the business process. Business processes also involve message exchange with partner services. The interfaces for these partner services are defined in their WSDL files. </p>
+<p>To reference the data from external or new WSDL and XML Schema  files, you can do one of the following:</p>
+<ul>
+  <li>Use cross-project XML file references, which means that you can add references to XML Schema and WSDL files located in other IDE projects from within your BPEL Module project . For more information about adding See <a href="nbdocs://org.netbeans.modules.xml.catalogsupport/org/netbeans/modules/xml/catalogsupport/docs/catalogsupport-about.html" title="About Cross-Project XML File References">About Cross-Project XML File References</a>.</li>
+  <li>Import external or new files into your  business process. About importing, see the procedure below. </li>
+</ul>
+<p>To import WSDL and XML Schema <tt></tt> files, follow these general steps: </p>
+<ol>
+  <li>Add a resource file into the BPEL Module project: </li>
+  <ul>
+  <li>Create a <tt>.wsdl</tt> or <tt>.xsd</tt> file from scratch. See <a href="nbdocs://org.netbeans.modules.xml.schema/org/netbeans/modules/xml/schema/tasks/creatingxmlschema.html" title="Creating XML Schema Files">Creating XML Schema Files</a> and <a href="nbdocs://org.netbeans.modules.xml.wsdlui/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor_creating.html#newwsdl" title="Creating a WSDL File From Scratch">Creating a WSDL File From Scratch</a> for details. </li>
+  <li>Retrieve an existing file into your BPEL Module project. 
+    See <a href="nbdocs://org.netbeans.modules.xml.schema/org/netbeans/modules/xml/schema/tasks/retrievingxmlresources.html" title="Retrieving XML Resources">Retrieving XML Resources</a> and <a href="nbdocs://org.netbeans.modules.xml.wsdlui/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor_creating.html#retrievewsdl" title="Creating a WSDL File From Scratch">Creating a WSDL File From Scratch</a> for details.</li>
+  </ul>
+  <li>Import these files to your process. <br>
+  Without this step, you will be unable to reference these files in your business process. </li>
+</ol>
+<p><b>To add a resource file (<tt>.wsdl</tt> or <tt>.xsd</tt>) as an import:</b></p>
+<ol>
+  <li>In the   BPEL Logical View of the Navigator window, right-click the Imports node and choose one of the following, depending on the format of the imported file: Add WSDL Import or Add Schema Import.<br>
+  You can also right-click the process in the Design view and select Add &gt; WSDL Import or Add &gt; Schema Import. </li>
+  <li>In the Create New Import dialog box, select the file in your project structure to add it as import.  </li>
+  <ul class="note">
+    <li>Note that you first need to add the files stored in  your project directory to the project structure. Then you can add  them as imports. The files that are already referenced are displayed in the strikethrough style. </li>
+  </ul>
+  <li>View the values in the read-only Namespace and Type fields and click OK.<br>
+  The resource file you have just added appears under the Imports node in the Navigator window.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="nbdocs://org.netbeans.modules.xml.schema/org/netbeans/modules/xml/schema/about.html" title="About XML Schema Tools">About XML Schema Tools</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.xml.catalogsupport/org/netbeans/modules/xml/catalogsupport/docs/catalogsupport-about.html" title="About Cross-Project XML File References">About Cross-Project XML File References</a> </dd>
+<dd><a href="nbdocs://org.netbeans.modules.xml.schema/org/netbeans/modules/xml/schema/tasks/creatingxmlschema.html" title="Creating XML Schema Files">Creating XML Schema Files</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.xml.wsdlui/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor_creating.html#newwsdl" title="Creating a WSDL File From Scratch">Creating a WSDL File From Scratch</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.xml.schema/org/netbeans/modules/xml/schema/tasks/retrievingxmlresources.html" title="Retrieving XML Resources">Retrieving XML Resources</a></dd>
+<dd><a href="../windows_editors/nav_bpelview.html" title="BPEL Designer Navigator: BPEL Logical View">BPEL Designer Navigator: BPEL Logical View</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

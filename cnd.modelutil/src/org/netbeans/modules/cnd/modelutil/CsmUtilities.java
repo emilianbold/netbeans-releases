@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -89,6 +92,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -418,6 +422,28 @@ public class CsmUtilities {
                             if (csmFile != null) {
                                 files.add(csmFile);
                             }
+                        }
+                    }
+                }
+                if (CndUtils.isDebugMode()) {
+                    for (int i = 0; i < files.size(); i++) {
+                        CsmFile csmFile = files.get(i);
+                        CsmProject csmProject = csmFile.getProject();
+                        if (csmProject != null) {
+                            Object platformProject = csmProject.getPlatformProject();
+                            if (platformProject == null) {
+                                CndUtils.assertTrueInConsole(false, "null platform project for FILE " + csmFile + " from PROJECT " + csmProject); // NOI18N
+                            } else if (!csmProject.isValid()) {
+                                CndUtils.assertTrueInConsole(false, "FILE " + csmFile + " from invalid PROJECT " + csmProject); // NOI18N
+                            } else if (platformProject.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
+                                if (i == 0 && files.size() > 1) {
+                                    CndUtils.assertTrue(false, "!!! STANDALONE FILE " + csmFile + "\nTOOK PRIORITY OVER OTHER FILES " + files); // NOI18N
+                                } else {
+//                                    System.err.printf("STANDALONE FILE TO BE USED %s\n", csmFile); // NOI18N
+                                }
+                            }
+                        } else {
+                           CndUtils.assertTrue(false, "FILE WITHOUT PROJECT" + csmFile); // NOI18N
                         }
                     }
                 }

@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>BPEL Designer: About BPEL Elements</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>BPEL Designer: About BPEL Elements</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<!-- add to the Property Editor section -->
+<p>A process diagram represents the connected elements in a business process. To edit a diagram, 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+open the Design view and use the icons in the Design view Palette (hereafter, Palette). Drag and 
+drop icons from the Palette onto the BPEL diagram. </p>
+<p><b>To manually invoke the Palette:</b></p>
+<ul>
+  <li>Choose Window &gt; Palette, or press Ctrl-Shift-8. </li>
+</ul>
+<p>The Palette is divided into three sections 
+  labeled Web Service, 
+  Basic Activities, and 
+  Structured Activities.</p>
+<h3>Placeholders </h3>
+<p>Placeholders mark places on the diagram where you can insert an element.   The behavior of element placeholders 
+  illustrates how the BPEL Designer enforces the rules of the WS-BPEL 2.0 specification.</p>
+<p>When you drag an element from the 
+  Palette, you can see placeholders showing acceptable drop points for this element. These drop points reflect the 
+  construction 
+  logic of the diagram. As you move the mouse pointer on the diagram, a placeholder that is active for the current mouse pointer position is highlighted. Align the dragged element with one of the placeholders and release the mouse button to insert the element.  </p>
+<p>Some   placeholders are always present on the diagram marking the places where it is necessary to insert an activity so that the BPEL process be valid. These are the places inside  container elements, for example the If element.</p>
+
+<h3>Adding Child Elements </h3>
+<p>Many diagram elements allow only one child element in a container element.  
+To overcome this limitation, the BPEL Designer automatically adds a Sequence element as the immediate child and adds a second child activity to the Sequence element. </p>
+<p>For example, if you have one child activity for a While element and want to add a second child activity, the BPEL Designer automatically adds a Sequence element inside the While activity. It then places all children activities into the Sequence element. </p>
+<h3>Wrapping Elements</h3>
+<p>In the Design view of the BPEL Designer, you can wrap elements with container elements with a single click. The wrap feature might be useful, for example when you want to quickly place an activity inside another activity. </p>
+<p><b>To wrap an activity:</b></p>
+<ol>
+  <li>In the IDE, open the BPEL file (<tt>.bpel</tt>).<br>
+    By default, the IDE opens the Design view for the BPEL file.</li>
+  <li>In the Design view, right-click the activity you want to wrap, point to the Wrap With option, and select the wrapper BPEL activity.  </li>
+</ol>
+<h3>The Process Element</h3>
+<p>The Process element is not on the Palette because it automatically appears in your new diagram when you create a BPEL Module
+project. The Process element is a container for all activities that do not come directly from a partner service. </p>
+<p>Being a container for all activities, the Process element has  important 
+properties. For example, using the pop-up menu of the Process element, you can define correlation sets, variables, and handlers for the entire BPEL process, and add WSDL and XML schema imports. </p>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="palette_web_svc.html" title="BPEL Designer Palette: Web Service">BPEL Designer Palette: Web Service</a></dd>
+<dd><a href="palette_basic_acts.html" title="BPEL Designer Palette: Basic Activities">BPEL Designer Palette: Basic Activities</a></dd>
+<dd><a href="palette_struct_acts.html" title="BPEL Designer Palette: Structured Activities">BPEL Designer Palette: Structured Activities</a></dd>
+<dd><a href="../windows_editors/design_elements.html" title="Operations with Elements in the Design View">Operations with Elements in the Design View</a></dd>
+<dd><a href="../design/about_correlation_and_wizard.html" title="Understanding Correlation. Using Correlation Wizard">Understanding Correlation. Using the Correlation Wizard</a></dd>
+<dd><a href="../design/create_correlation_manually.html" title="Adding Correlation Sets Manually">Adding Correlation Sets Manually</a></dd>
+<dd><a href="create_variable.html" title="Creating Variables">Creating Variables</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -56,6 +59,7 @@ import org.openide.util.RequestProcessor;
  * @author Rob
  */
 public class RefreshAction extends BaseAction {
+    private static final RequestProcessor RP = new RequestProcessor(RefreshAction.class);
     @Override
     public String getName() {
         return NbBundle.getMessage (RefreshAction.class, "Refresh"); // NOI18N
@@ -66,6 +70,7 @@ public class RefreshAction extends BaseAction {
         return new HelpCtx(RefreshAction.class);
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
 
@@ -82,14 +87,16 @@ public class RefreshAction extends BaseAction {
             return;
         }
         final BaseNode baseNode = activatedNodes[0].getLookup().lookup(BaseNode.class);
-        RequestProcessor.getDefault().post(
+        RP.post(
             new Runnable() {
+                @Override
                 public void run() {
                     MetadataModel model = baseNode.getLookup().lookup(DatabaseConnection.class).getMetadataModel();
                     if (model != null) {
                         try {
                             model.runReadAction(
                                 new Action<Metadata>() {
+                                    @Override
                                     public void run(Metadata metaData) {
                                         metaData.refresh();
                                     }

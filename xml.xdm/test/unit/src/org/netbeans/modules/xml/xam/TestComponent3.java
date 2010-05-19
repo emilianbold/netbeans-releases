@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -58,7 +61,7 @@ import org.w3c.dom.NodeList;
 public class TestComponent3 extends AbstractDocumentComponent<TestComponent3> implements NamedReferenceable<TestComponent3> {
     public static String NS_URI = "http://www.test.com/TestModel";
     public static String NS2_URI = "http://www.test2.com/TestModel";
-    public static String NS_ERR_URI = "http://www.test2.com/TestModel/Err";
+    // public static String NS_ERR_URI = "http://www.test2.com/TestModel/Err";
     
     public TestComponent3(TestModel3 model, org.w3c.dom.Element e) {
         super(model, e);
@@ -120,7 +123,7 @@ public class TestComponent3 extends AbstractDocumentComponent<TestComponent3> im
             return new TestComponent3.D(model, e);
         } else if (e.getLocalName().equals("e") && NS_URI.equals(namespace)) {
             return new TestComponent3.E(model, e);
-        } else if (e.getLocalName().equals(Err.LNAME) && NS_ERR_URI.equals(namespace)) {
+        } else if (e.getLocalName().equals(Err.LNAME) && NS_URI.equals(namespace)) {
             return new TestComponent3.Err(model, e);
         } else {
             return null;
@@ -260,9 +263,9 @@ public class TestComponent3 extends AbstractDocumentComponent<TestComponent3> im
      */
     public static class Err extends TestComponent3 {
         public static final String LNAME = "err";
-        public static final QName QNAME = new QName(NS_ERR_URI, LNAME);
+        public static final QName QNAME = new QName(NS_URI, LNAME);
         public Err(TestModel3 model, int i) {
-            super(model, LNAME, NS_ERR_URI, i);
+            super(model, LNAME, NS_URI, i);
         }
         public Err(TestModel3 model, Element e) {
             super(model, e);

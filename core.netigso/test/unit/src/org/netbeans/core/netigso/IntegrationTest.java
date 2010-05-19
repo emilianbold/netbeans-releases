@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -45,6 +48,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
@@ -62,6 +66,7 @@ import org.osgi.framework.launch.Framework;
  */
 public class IntegrationTest extends NbTestCase {
     private File j1;
+    private Logger LOG;
 
     public IntegrationTest(String name) {
         super(name);
@@ -79,7 +84,13 @@ public class IntegrationTest extends NbTestCase {
     }
 
     @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
+    @Override
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test." + getName());
         File jars = new File(getWorkDir(), "jars");
         jars.mkdirs();
 
@@ -96,17 +107,22 @@ public class IntegrationTest extends NbTestCase {
             "Bundle-ManifestVersion: 2\n" +
             "Export-Package: org.foo";
 
+        LOG.info("about to enable module org.foo");
         File jj1 = NetigsoHid.changeManifest(getWorkDir(), j1, mf);
         m1 = mgr.create(jj1, null, false, false, false);
         mgr.enable(m1);
+        LOG.info("Enabling is over");
 
         assertTrue("OSGi module is now enabled", m1.isEnabled());
         mgr.mutexPrivileged().exitWriteAccess();
 
         Object obj = Lookup.getDefault().lookup(NetigsoFramework.class);
+        LOG.log(Level.INFO, "NetigsoFramework: {0}", obj);
         final Method m = obj.getClass().getDeclaredMethod("getFramework");
         m.setAccessible(true);
+        LOG.log(Level.INFO, "Method to use: {0}", m);
         Framework w = (Framework) m.invoke(obj);
+        LOG.log(Level.INFO, "Framework is here: {0}", w);
         assertNotNull("Framework found", w);
         if (!w.getClass().getName().contains("felix")) {
             fail("By default the OSGi framework is felix: " + w.getClass());

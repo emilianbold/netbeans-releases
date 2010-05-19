@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions
+    name="ErrorHandling"
+    targetNamespace="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:tns="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling">
+
+    <message name="faultMessage">
+        <part name="fault" type="xsd:anyType"/>
+    </message>
+</definitions>

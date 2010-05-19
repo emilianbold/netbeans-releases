@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -39,10 +42,14 @@
 
 package org.netbeans.modules.php.editor.options;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.prefs.Preferences;
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -302,7 +309,93 @@ public class CodeCompletionPanel extends JPanel {
         unqualifiedRadioButton = new JRadioButton();
         unqualifiedInfoLabel = new JLabel();
 
-        setFocusTraversalPolicy(null);
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return autoCompletionFullRadioButton;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return autoCompletionFullRadioButton;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return unqualifiedRadioButton;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  autoCompletionFullRadioButton){
+                    return autoCompletionCustomizeRadioButton;
+                }
+                if(aComponent ==  allVariablesRadioButton){
+                    return currentFileVariablesRadioButton;
+                }
+                if(aComponent ==  autoCompletionCustomizeRadioButton){
+                    return autoCompletionVariablesCheckBox;
+                }
+                if(aComponent ==  codeCompletionStaticMethodsCheckBox){
+                    return codeCompletionNonStaticMethodsCheckBox;
+                }
+                if(aComponent ==  autoCompletionVariablesCheckBox){
+                    return autoCompletionTypesCheckBox;
+                }
+                if(aComponent ==  codeCompletionNonStaticMethodsCheckBox){
+                    return allVariablesRadioButton;
+                }
+                if(aComponent ==  smartRadioButton){
+                    return fullyQualifiedRadioButton;
+                }
+                if(aComponent ==  currentFileVariablesRadioButton){
+                    return smartRadioButton;
+                }
+                if(aComponent ==  autoCompletionTypesCheckBox){
+                    return autoCompletionNamespacesCheckBox;
+                }
+                if(aComponent ==  fullyQualifiedRadioButton){
+                    return unqualifiedRadioButton;
+                }
+                if(aComponent ==  autoCompletionNamespacesCheckBox){
+                    return codeCompletionStaticMethodsCheckBox;
+                }
+                return autoCompletionFullRadioButton;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  autoCompletionCustomizeRadioButton){
+                    return autoCompletionFullRadioButton;
+                }
+                if(aComponent ==  currentFileVariablesRadioButton){
+                    return allVariablesRadioButton;
+                }
+                if(aComponent ==  autoCompletionVariablesCheckBox){
+                    return autoCompletionCustomizeRadioButton;
+                }
+                if(aComponent ==  codeCompletionNonStaticMethodsCheckBox){
+                    return codeCompletionStaticMethodsCheckBox;
+                }
+                if(aComponent ==  autoCompletionTypesCheckBox){
+                    return autoCompletionVariablesCheckBox;
+                }
+                if(aComponent ==  allVariablesRadioButton){
+                    return codeCompletionNonStaticMethodsCheckBox;
+                }
+                if(aComponent ==  fullyQualifiedRadioButton){
+                    return smartRadioButton;
+                }
+                if(aComponent ==  smartRadioButton){
+                    return currentFileVariablesRadioButton;
+                }
+                if(aComponent ==  autoCompletionNamespacesCheckBox){
+                    return autoCompletionTypesCheckBox;
+                }
+                if(aComponent ==  unqualifiedRadioButton){
+                    return fullyQualifiedRadioButton;
+                }
+                if(aComponent ==  codeCompletionStaticMethodsCheckBox){
+                    return autoCompletionNamespacesCheckBox;
+                }
+                return unqualifiedRadioButton;//end getComponentBefore
+
+            }}
+        );
 
         enableAutocompletionLabel.setLabelFor(autoCompletionFullRadioButton);
         Mnemonics.setLocalizedText(enableAutocompletionLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.enableAutocompletionLabel.text")); // NOI18N
@@ -357,7 +450,7 @@ public class CodeCompletionPanel extends JPanel {
         unqualifiedInfoLabel.setLabelFor(unqualifiedRadioButton);
 
         Mnemonics.setLocalizedText(unqualifiedInfoLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.unqualifiedInfoLabel.text"));
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(

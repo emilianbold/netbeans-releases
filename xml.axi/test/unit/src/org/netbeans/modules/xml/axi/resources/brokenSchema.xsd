@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
- Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+ Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
  SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- 
+
  $Id$
 -->
 
@@ -14,7 +17,7 @@
     elementFormDefault="qualified">
 
     <xsd:element name="address" type="addr:USAddr
-        
+
     <xsd:element name="simpleName" type="xsd:string"/>
     <xsd:element name="fullName" type="xsd:string"/>
     <xsd:attribute name="country" type="xsd:NMTOKEN" fixed="US"/>
@@ -23,7 +26,7 @@
         <xsd:group ref="addr:group"/>
         <xsd:attributeGroup ref="addr:attr-group"/>
     </xsd:complexType>
-    
+
     <xsd:group name="group">
         <xsd:sequence>
             <xsd:element ref="addr:simpleName"/>

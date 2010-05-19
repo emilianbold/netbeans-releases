@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<!-- 
+  * Contents of this template will override any existing attributes in base/config/templates.xml
+  -->
+<templates>
+    <attr attributeName="createDbLink" attributeType="java.lang.String" attributeValue="axion/config/createDbLink.vm" />
+    <attr attributeName="createRemote" attributeType="java.lang.String" attributeValue="axion/config/createExternalRemote.vm" />
+    <attr attributeName="createExternal" attributeType="java.lang.String" attributeValue="axion/config/createExternal.vm" />
+    <attr attributeName="drop" attributeType="java.lang.String" attributeValue="axion/config/drop.vm" />
+    <attr attributeName="dropDbLink" attributeType="java.lang.String" attributeValue="axion/config/dropDbLink.vm" />
+    <attr attributeName="defrag" attributeType="java.lang.String" attributeValue="axion/config/defrag.vm" />
+    <attr attributeName="exceptionWhen" attributeType="java.lang.String" attributeValue="axion/config/exceptionWhen.vm" />
+    <attr attributeName="join" attributeType="java.lang.String" attributeValue="axion/config/join.vm" />
+    <attr attributeName="insertSelect" attributeType="java.lang.String" attributeValue="axion/config/insertSelect.vm" />
+    <attr attributeName="logError" attributeType="java.lang.String" attributeValue="axion/config/logError.vm" />
+    <attr attributeName="merge" attributeType="java.lang.String" attributeValue="axion/config/merge.vm" />
+    <attr attributeName="organization" attributeType="java.lang.String" attributeValue="axion/config/organization.vm" />
+    <attr attributeName="predicateFunction" attributeType="java.lang.String" attributeValue="axion/config/predicateFunction.vm" />
+    <attr attributeName="tableExists" attributeType="java.lang.String" attributeValue="axion/config/tableExists.vm" />
+    <attr attributeName="truncate" attributeType="java.lang.String" attributeValue="axion/config/truncate.vm" />
+    <attr attributeName="update" attributeType="java.lang.String" attributeValue="axion/config/update.vm" />
+    <attr attributeName="createLogSummaryTable" attributeType="java.lang.String" attributeValue="axion/config/createLogSummaryTable.vm" />
+    <attr attributeName="createLogDetailsTable" attributeType="java.lang.String" attributeValue="axion/config/createLogDetailsTable.vm" />
+	<attr attributeName="pipelineInsertSelect" attributeType="java.lang.String" attributeValue="axion/config/pipelineInsertSelect.vm" />
+	<attr attributeName="insertStartDateIntoSummaryTable" attributeType="java.lang.String" attributeValue="axion/config/insertStartDateIntoSummaryTable.vm" />
+	<attr attributeName="select" attributeType="java.lang.String" attributeValue="axion/config/select.vm" />	
+	<attr attributeName="selectRejectedRowsCountFromDetailsTable" attributeType="java.lang.String" attributeValue="axion/config/selectRejectedRowsCountFromDetailsTable.vm" />
+	<attr attributeName="updateEndDateInSummaryTable" attributeType="java.lang.String" attributeValue="axion/config/updateEndDateInSummaryTable.vm" />
+	<attr attributeName="deleteInvalidRowFromSummaryTable" attributeType="java.lang.String" attributeValue="axion/config/deleteInvalidRowFromSummaryTable.vm" />
+	<attr attributeName="selectExecutionIdFromSummaryTable" attributeType="java.lang.String" attributeValue="axion/config/selectExecutionIdFromSummaryTable.vm" />
+	<attr attributeName="createDesignTimeLogDetailsRemoteTable" attributeType="java.lang.String" attributeValue="axion/config/createRemoteLogDetailsTable.vm" />
+	<attr attributeName="remountTable" attributeType="java.lang.String" attributeValue="axion/config/remount.vm" />	
+</templates>

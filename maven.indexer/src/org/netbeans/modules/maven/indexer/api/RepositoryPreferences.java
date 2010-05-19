@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,6 +49,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -149,6 +153,22 @@ public final class RepositoryPreferences {
             }
         }
         return toRet;
+    }
+
+    public Set<String> getKnownRepositoryUrls() {
+        Set<String> urls = new HashSet<String>();
+        for (RepositoryInfo ri : getRepositoryInfos()) {
+            if (ri.getRepositoryUrl() != null) {
+                urls.add(ri.getRepositoryUrl());
+            }
+        }
+        // these urls are essential (together with central) for correct
+        // resolution of maven pom urls in libraries
+        urls.add("http://repo1.maven.org/maven2"); //NOI18N
+        urls.add("http://download.java.net/maven/2");//NOI18N
+        urls.add("http://download.java.net/maven/1");//NOI18N
+        urls.add("http://download.java.net/maven/glassfish");//NOI18N
+        return urls;
     }
 
     /**

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -46,7 +49,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.progress.module.*;
 
 /**
  *
@@ -67,54 +69,58 @@ public final class TaskModel {
     
     public void addHandle(InternalHandle handle) {
         model.addElement(handle);
-        if (handle.isUserInitialized() && explicit == null) {
-            selectionModel.setSelectionInterval(model.size() - 1, model.size() - 1);
-        }
+        updateSelection();
     }
     
     public void removeHandle(InternalHandle handle) {
         if (explicit == handle) {
             explicit = null;
         }
-        int index = model.indexOf(handle);
-        if (selectionModel.getMinSelectionIndex() == index) {
-            // if we are removing the handle that is selected, do tricks with selection
-            // too figure out which one should be sleected now
-            changeSelection(index);
-        }
-        InternalHandle selectedHandle = getSelectedHandle();
         model.removeElement(handle);
-        if (selectedHandle != null) {
-            selectionModel.setSelectionInterval(model.indexOf(selectedHandle), model.indexOf(selectedHandle));
-        } else {
-           //TODO what to do here? 
-            selectionModel.clearSelection();
-        }
-        
+        updateSelection();
     }
     
-    /**
-     * if we are removing the handle that is selected, do tricks with selection
-     * too figure out which one should be sleected no     
+    /** Impl of selection policy. Tasks which are not in sleep mode and
+     * user initiated are preferred for selection.
      */
-    private void changeSelection(int current) {
-        InternalHandle last = null;
+    void updateSelection () {
+        // don't touch selection if explicit
+        if (explicit != null) {
+            return;
+        }
+        InternalHandle oldSelected = getSelectedHandle();
+        // keep selection if possible
+        if (oldSelected != null && !oldSelected.isInSleepMode()) {
+            return;
+        }
+
+        // select last added that is not in sleep mode and preferrably userInitiated
+        InternalHandle toSelect = null;
         for (int i = 0; i < model.size(); i++) {
-            if (current != i) {
-                InternalHandle handle = (InternalHandle)model.getElementAt(i);
-                if (handle.isUserInitialized()) {
-                    last = handle;
-                } else if (last == null) {
-                    last = handle;
-                }
+            InternalHandle curHandle = (InternalHandle)model.getElementAt(i);
+            if (getSelectionRating(curHandle) >= getSelectionRating(toSelect)) {
+                toSelect = curHandle;
             }
         }
-        if (last != null) {
-            selectionModel.setSelectionInterval(model.indexOf(last), model.indexOf(last));
+        if (toSelect != null) {
+            selectionModel.setSelectionInterval(model.indexOf(toSelect), model.indexOf(toSelect));
         } else {
             selectionModel.clearSelection();
         }
-        
+    }
+
+    private int getSelectionRating (InternalHandle handle) {
+        int result = 0;
+        if (handle != null) {
+            if (!handle.isInSleepMode()) {
+                result += 4;
+            }
+            if (handle.isUserInitialized()) {
+                result += 2;
+            }
+            result += 1;
+        }
+        return result;
     }
     
     public void explicitlySelect(InternalHandle handle) {

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -109,7 +112,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     @Override
     public boolean canWrite(File file) {
-         LOG.log(Level.FINE, "canWrite {0}", file);
+        LOG.log(Level.FINE, "canWrite {0}", file);
         if (Utils.canWrite(file)) {
             return true;
         }
@@ -239,12 +242,16 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     @Override
     public void fileFolderCreated(FileEvent fe) {
         LOG.log(Level.FINE, "fileFolderCreated {0}", fe.getFile());
-        fileDataCreated(fe);
+        fileCreated(fe);
     }
 
     @Override
     public void fileDataCreated(FileEvent fe) {
         LOG.log(Level.FINE, "fileDataCreated {0}", fe.getFile());
+        fileCreated(fe);
+    }
+
+    private void fileCreated(FileEvent fe) {
         FileObject fo = fe.getFile();
         FileEx fileEx = new FileEx(fo.getParent(), fo.getNameExt(), fo.isFolder());
         DelegatingInterceptor interceptor = filesBeingCreated.remove(fileEx);
@@ -258,7 +265,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         removeFromDeletedFiles(fe.getFile());
         if(interceptor == null) {
             interceptor = getInterceptor(fe, "afterCreate");                    // NOI18N
-        }   
+        }
         interceptor.afterCreate();
     }
 
@@ -269,15 +276,19 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     @Override
     public IOHandler getMoveHandler(File from, File to) {
         LOG.log(Level.FINE, "getMoveHandler {0}, {1}", new Object[] {from, to});
-        DelegatingInterceptor dic = getInterceptor(from, to, "beforeMove", "doMove"); // NOI18N
-        return dic.beforeMove() ? dic : null;
+        return getMoveHandlerIntern(from, to);
     }
 
     @Override
     public IOHandler getRenameHandler(File from, String newName) {
         LOG.log(Level.FINE, "getRenameHandler {0}, {1}", new Object[] {from, newName});
         File to = new File(from.getParentFile(), newName);
-        return getMoveHandler(from, to);
+        return getMoveHandlerIntern(from, to);
+    }
+
+    private IOHandler getMoveHandlerIntern(File from, File to) {
+        DelegatingInterceptor dic = getInterceptor(from, to, "beforeMove", "doMove"); // NOI18N
+        return dic.beforeMove() ? dic : null;
     }
 
     @Override

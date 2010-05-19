@@ -1,0 +1,35 @@
+<definitions name="dummy" targetNamespace="dummy"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:tns="dummy" 
+    xmlns:jms="http://schemas.sun.com/jbi/wsdl-extensions/jms/">
+    <types/>
+    <message name="JMSInputMessage">
+    </message> 
+    <message name="JMSOutputMessage">
+    </message>       
+    <portType name="JMSOutPortType">
+        <operation name="JMSOutOperation">
+            <input name="input1" message="tns:JMSInputMessage"/>
+            <output name="output1" message="tns:JMSOutputMessage"/>
+        </operation>
+    </portType>
+    <binding name="JMSOutBinding" type="tns:JMSOutPortType">
+        <jms:binding/>
+        <operation name="JMSOutOperation">
+            <jms:operation destination="DefaultQueue" destinationType="Queue"/>
+            <input name="input1">
+                <jms:message messageType="TextMessage" textPart="change me"/>
+            </input>
+            <output name="output1">
+                <jms:message messageType="TextMessage" textPart="change me"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="JMSOutService">
+        <port name="#SERVICE_NAME_OutPort" binding="tns:JMSOutBinding">
+            <jms:address connectionURL="lookup://jms/tx/default"/>
+        </port>
+    </service>
+</definitions>

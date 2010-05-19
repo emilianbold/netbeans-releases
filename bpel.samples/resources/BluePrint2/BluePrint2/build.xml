@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="" default="default" basedir="." xmlns:web="http://www.netbeans.org/ns/j2ee-ejbjarproject/1">
+    <import file="nbproject/build-impl.xml"/>
+    <target name="init-esb-cli" unless="netbeans.home">
+        <property name="from.commandline" value="true"/>
+        <property name="netbeans.dir" value="${esb.netbeans.home}"/>
+        <property name="netbeans.user" value="${esb.netbeans.user}"/>
+        <property file="${basedir}/nbproject/private/private.properties"/>
+        <path id="path.classpath">
+            <pathelement location="${netbeans.dir}/soa/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
+        </path>
+        <taskdef name="copy-path-properties" classname="org.netbeans.modules.bpel.project.anttasks.cli.CliCopyPathFileTask">
+            <classpath refid="path.classpath"/>
+        </taskdef>
+        <copy-path-properties nbprojectDirectory="${basedir}/nbproject"/>
+        <property file="${basedir}/nbproject/path.properties"/>
+        <path id="ant.project.classpath">
+            <pathelement path="${netbeans.classpath}"/>
+        </path>
+    </target>
+    <target name="pre-init" depends="init-esb-cli"/>
+</project>

@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
+Use is subject to license terms.
+ -->
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
+    <title>Connecting a Terminal Emulator to a Remote Development Host</title>
+  </head>
+  <body>
+    <h2>
+       Connecting a Terminal Emulator to a Remote Development Host
+    </h2>
+    <p>
+       <small><a href="#seealso">See Also</a>&nbsp;</small>
+    </p>
+    <p>
+     You can connect the IDE's terminal emulator to a remote host. This remote host
+     does not need to be set up in advance for the IDE, but must be running the SSH daemon.
+     
+
+   
+    <p><b>To connect a terminal emulator to the remote development host:</b></p>
+
+    <ol>
+        <li>Select Window &gt; Output &gt; Terminal from the main menu to open the Terminal window
+        near the Output window.</li>
+         
+         <li>Click the Create New Remote Terminal icon <img src="../images/remote-terminal-icon.png"> in the
+           left margin of the Terminal window.</li>
+         <li>When prompted, enter the user name, host name, and SSH port to connect.</li>
+         <li>Specify the authentication type to use, password or SSH key, and click OK.</li>
+         <li>Enter your password if prompted.</li>
+         <li>When you are successfully authenticated to the remote host using your password or ssh key, a
+         new tab opens in the Terminal window.  This tab runs the user shell for your account on the remote
+         host.</li>
+         <p class="notes">You can also start a terminal session on the local host by clicking the Create
+             New Local Terminal icon: <img src="../images/terminal-icon.png"></p>
+       </ol>
+
+    <p><b>To access your remote project files:</b></p>
+     <ul>
+         <li>If you have used the remote host account for remote development of your C/C++/Fortran projects in the IDE,
+         you can go to your <tt>~/.netbeans/remote</tt> subdirectory and access the source files
+         and build products of projects you have built remotely.</li>
+     </ul>
+
+
+<p><b>To end the terminal session:</b></p>
+     <ul> <li>End the terminal emulator session by typing <tt>exit</tt>, or by closing the tab.</li></ul>
+
+     
+    
+    <table>
+      <tr>
+        <th colspan="2" align="left">
+          <a name="seealso">See also</a> 
+        </th>
+      </tr>
+      <tr>
+        <td width="23">
+          &nbsp;
+        </td>
+        <td>
+            <a href="RemoteDevelopment.html">Overview of C/C++ Remote Development</a><br>
+          <a href="ConfiguringBuildTools.html">Configuring Build Tools</a><br>
+           <a href="ProjectPropsBuild.html">C/C++ Project Properties Dialog Box: Build</a><br>
+               <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/kb/docs/cnd/remotedev-tutorial.html">
+                    <param name="text" value="<html><u>C/C++ Remote
+          Development tutorial (Web document)</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+        </td>
+      </tr>
+    </table>
+    <hr>
+    <p>
+       <small><a href="../credits.html">Legal Notices</a></small>
+    </p>
+    <table border="0" cellpadding="20">
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

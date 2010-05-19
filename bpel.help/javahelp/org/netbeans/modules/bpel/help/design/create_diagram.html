@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>BPEL Designer: Creating a BPEL Diagram</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css"></head>
+<body>
+<h2>BPEL Designer: Creating a BPEL Diagram </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p> This topic describes typical tasks you have to perform to design a BPEL Process diagram.</p>
+<table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
+   process step. The right column contains detail information to accomplish that process.">
+  <tr valign="top"> 
+    <td align="center"><img src="../images/circle1.gif" alt="Number one"><br>
+
+      <b>Create a <br>
+      BPEL 
+      Module project</b></td>
+    <td> 
+      <ul>
+        <li>Create a <a href="../basics/create_project.html" title="Creating BPEL Module Projects">BPEL Module</a> project. <br>
+        You can choose either to create new projects or sample projects that contain skeletal BPEL and WSDL files. </li>
+      </ul>    </td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"> 
+      <p><img src="../images/circle2.gif" alt="Number two"><br>
+
+        <b>Add files to the project</b> </p>    </td>
+    <td> 
+      <ul>
+        <li>Add the following files to your project: </li>
+        <ul>
+                <li><a href="../windows_editors/add_files.html" title="Adding BPEL Files to BPEL Module Projects">BPEL files</a>. Note that the BPEL Design view supports the BPEL 2.0 language  specification.</li>
+                <li>WSDL files. <a href="nbdocs://org.netbeans.modules.xml.wsdlui/org/netbeans/modules/xml/wsdlui/docs/wsdl_editor_creating.html#newwsdl" title="Creating a WSDL File">Create</a> a new WSDL file or <a href="import_wsdl_resources.html">add</a> an existing WSDL file</a>.</li>
+        <li>XML schema files. <a href="nbdocs://org.netbeans.modules.xml.schema/org/netbeans/modules/xml/schema/tasks/creatingxmlschema.html" title="Creating XML Schema Files">Create</a> a new <tt>.xsd</tt> file or <a href="import_wsdl_resources.html">add</a> an existing <tt>.xsd</tt> resource.</li>
+        </ul>
+      </ul>    </td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"> <img src="../images/circle3.gif" alt="Number three"><br>
+      <b>Open  BPEL file</b><b> in the Design view </b> </td>
+
+    <td> 
+      <ul>
+        <li><a href="../design/open_diag.html" title="Opening a BPEL Diagram">Open the 
+  BPEL file</a> in the Design view.</li>
+      </ul>    </td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"> <img src="../images/circle4.gif" alt="Number four" width="21" height="21"><br>
+      <b>Author a business process </b> </td>
+
+    <td> 
+     <ul>
+        <li>In the Design view, author your business process by adding and configuring BPEL activities. You can also use the tips of the <a href="validation.html" title="Validating BPEL Processes">BPEL Validator</a> displayed on the diagram to check the correctness of your business process.<br>
+        See <a href="../windows_editors/design_elements.html" title="Operations with Elements in the Design View">Operations with Elements in the Design View</a> and <a href="../elements/about.html" title="About BPEL Elements">About BPEL Elements</a> for details. </li>
+    </ul>    </td>
+  </tr>
+<tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">    </td>
+  </tr>
+<tr valign="top"> 
+    <td align="center"> <img src="../images/circle5.gif" alt="Number five" width="21" height="21"><br>
+      <b>Verify the BPEL source code</b> </td>
+
+    <td> 
+      <ul>
+        <li>(Optional) In the <a href="../windows_editors/design_src_switch.html" title="Switching Between Design and Source Views">Source view</a>, check the resulting code if necessary. <br>
+        </li>
+     </ul>    </td>
+  </tr>
+<tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"> <img src="../images/circle6.gif" alt="Number six" width="21" height="21"><br>
+      <b>Deploy and perform test runs of your process</b></td>
+
+    <td> 
+     <ul>
+        <li>See 
+        <a href="../test_run/about.html" title="Deploying and Performing Test Runs of BPEL Processes">Deploying and Performing Test Runs of BPEL Processes</a> for details about deploying and performing test runs of BPEL processes.</li>
+      </ul>    </td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">    </td>
+  </tr>
+</table>
+<ul class="note">
+<li>If your process is asynchronous and you need it to manage multiple, 
+stateful, long-running conversations between the process and its partner 
+services, you can define and add one or more 
+<a href="about_correlation_and_wizard.html">correlation sets</a>.</li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../basics/create_project.html" title="Creating BPEL Module Projects">Creating BPEL Module Projects</a></dd>
+  <dd><a href="../windows_editors/design_elements.html" title="Operations with Elements in the Design View">Operations with Elements in the Design View</a></dd>
+  <dd><a href="../elements/about.html" title="About BPEL Elements">About BPEL Elements</a></dd>
+  <dd><a href="../windows_editors/design_view.html" title="About the Design View of the BPEL Designer">About the Design View of the BPEL Designer</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

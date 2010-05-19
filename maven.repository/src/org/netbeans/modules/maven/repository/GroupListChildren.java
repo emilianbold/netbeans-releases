@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,8 +66,10 @@ import org.openide.util.WeakListeners;
  */
 public class GroupListChildren extends Children.Keys implements ChangeListener {
 
+    private static final RequestProcessor RP = new RequestProcessor(GroupListChildren.class);
+
     public static final Object LOADING = new Object();
-   private RepositoryInfo info;
+    private RepositoryInfo info;
     public static Node createLoadingNode() {
         AbstractNode nd = new AbstractNode(Children.LEAF){
 
@@ -105,7 +110,7 @@ public class GroupListChildren extends Children.Keys implements ChangeListener {
     
     public void refreshGroups() {
         setKeys(Collections.singletonList(LOADING));
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 keys = new ArrayList(RepositoryQueries.getGroups(info));
                 setKeys(keys);

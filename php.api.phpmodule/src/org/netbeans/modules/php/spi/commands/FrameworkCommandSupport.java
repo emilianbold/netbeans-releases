@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -42,6 +45,7 @@ package org.netbeans.modules.php.spi.commands;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -73,9 +77,10 @@ import org.openide.util.Utilities;
 public abstract class FrameworkCommandSupport {
 
     // @GuardedBy(COMMANDS_CACHE)
-    private static final Map<PhpModule, List<FrameworkCommand>> COMMANDS_CACHE = new WeakHashMap<PhpModule, List<FrameworkCommand>>();
+    //                      php module     fw name            commands
+    private static final Map<PhpModule, Map<String, List<FrameworkCommand>>> COMMANDS_CACHE = new WeakHashMap<PhpModule, Map<String, List<FrameworkCommand>>>();
 
-    private static final RequestProcessor RP = new RequestProcessor(FrameworkCommandSupport.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(FrameworkCommandSupport.class);
 
     protected final PhpModule phpModule;
 
@@ -164,11 +169,14 @@ public abstract class FrameworkCommandSupport {
      * @return list of {@link FrameworkCommand framework commands} or <code>null</code> if not known already.
      */
     public List<FrameworkCommand> getFrameworkCommands() {
-        List<FrameworkCommand> commands;
+        List<FrameworkCommand> frameworkCommands = null;
         synchronized (COMMANDS_CACHE) {
-            commands = COMMANDS_CACHE.get(phpModule);
+            Map<String, List<FrameworkCommand>> moduleCommands = COMMANDS_CACHE.get(phpModule);
+            if (moduleCommands != null) {
+                frameworkCommands = moduleCommands.get(getFrameworkName());
+            }
         }
-        return commands;
+        return frameworkCommands;
     }
 
     /**
@@ -216,7 +224,12 @@ public abstract class FrameworkCommandSupport {
             }
         }
         synchronized (COMMANDS_CACHE) {
-            COMMANDS_CACHE.put(phpModule, freshCommands);
+            Map<String, List<FrameworkCommand>> moduleCommands = COMMANDS_CACHE.get(phpModule);
+            if (moduleCommands == null) {
+                moduleCommands = new HashMap<String, List<FrameworkCommand>>();
+            }
+            moduleCommands.put(getFrameworkName(), freshCommands);
+            COMMANDS_CACHE.put(phpModule, moduleCommands);
         }
     }
 

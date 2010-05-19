@@ -1,0 +1,38 @@
+<?xml version="1.0" ?>
+<!-- 
+  * Contents of this template will override any existing attributes in config/templates.xml
+  -->
+<templates>
+    <attr attributeName="createDbLink" attributeType="java.lang.String" attributeValue="config/createDbLink.vm" />
+    <attr attributeName="createRemote" attributeType="java.lang.String" attributeValue="config/createExternalRemote.vm" />
+    <attr attributeName="createExternal" attributeType="java.lang.String" attributeValue="config/createExternal.vm" />
+    <attr attributeName="drop" attributeType="java.lang.String" attributeValue="config/drop.vm" />
+    <attr attributeName="dropDbLink" attributeType="java.lang.String" attributeValue="config/dropDbLink.vm" />
+    <attr attributeName="defrag" attributeType="java.lang.String" attributeValue="config/defrag.vm" />
+    <attr attributeName="exceptionWhen" attributeType="java.lang.String" attributeValue="config/exceptionWhen.vm" />
+    <attr attributeName="join" attributeType="java.lang.String" attributeValue="config/join.vm" />
+    <attr attributeName="organization" attributeType="java.lang.String" attributeValue="config/organization.vm" />
+    <attr attributeName="predicateFunction" attributeType="java.lang.String" attributeValue="config/predicateFunction.vm" />
+    <attr attributeName="tableExists" attributeType="java.lang.String" attributeValue="config/tableExists.vm" />
+    <attr attributeName="truncate" attributeType="java.lang.String" attributeValue="config/truncate.vm" />
+	<attr attributeName="select" attributeType="java.lang.String" attributeValue="config/select.vm" />	
+	<attr attributeName="remountTable" attributeType="java.lang.String" attributeValue="config/remount.vm" />	
+        
+            <attr attributeName="caseWhen" attributeType="java.lang.String" attributeValue="config/caseWhen.vm" />
+	<attr attributeName="select" attributeType="java.lang.String" attributeValue="config/select.vm" /> 
+	<attr attributeName="delete" attributeType="java.lang.String" attributeValue="config/delete.vm" /> 
+	<attr attributeName="drop" attributeType="java.lang.String" attributeValue="config/drop.vm" /> 
+	<attr attributeName="truncate" attributeType="java.lang.String" attributeValue="config/truncate.vm" /> 
+	<attr attributeName="rowCount" attributeType="java.lang.String" attributeValue="config/rowCount.vm" /> 
+	<attr attributeName="sourceTable" attributeType="java.lang.String" attributeValue="config/sourceTable.vm" /> 
+	<attr attributeName="literal" attributeType="java.lang.String" attributeValue="config/literal.vm" /> 
+	<attr attributeName="predicate" attributeType="java.lang.String" attributeValue="config/predicate.vm" /> 
+	<attr attributeName="join" attributeType="java.lang.String" attributeValue="config/join.vm" /> 
+	<attr attributeName="where" attributeType="java.lang.String" attributeValue="config/where.vm" /> 
+	<attr attributeName="delete" attributeType="java.lang.String" attributeValue="config/delete.vm" /> 
+	<attr attributeName="create" attributeType="java.lang.String" attributeValue="config/create.vm" />
+	<attr attributeName="rowCount" attributeType="java.lang.String" attributeValue="config/rowCount.vm" />
+	<attr attributeName="drop" attributeType="java.lang.String" attributeValue="config/drop.vm" />
+    <attr attributeName="tableExists" attributeType="java.lang.String" attributeValue="config/tableExists.vm" />	
+	<attr attributeName="selectIntegrityCheck" attributeType="java.lang.String" attributeValue="config/selectIntegrityCheck.vm" />
+</templates>

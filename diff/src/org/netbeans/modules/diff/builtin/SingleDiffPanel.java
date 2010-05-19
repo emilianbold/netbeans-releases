@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,11 +44,13 @@
 package org.netbeans.modules.diff.builtin;
 
 import java.awt.Container;
+import java.awt.EventQueue;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -65,9 +70,12 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.diff.options.DiffOptionsController;
 import org.openide.awt.UndoRedo;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 /**
@@ -84,12 +92,14 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     private Action              nextAction;
     private Action              prevAction;
     private JComponent innerPanel;
+    private FileChangeListener baseFCL, modifiedFCL;
 
     /** Creates new form SingleDiffPanel */
     public SingleDiffPanel(FileObject left, FileObject right, FileObject type) throws IOException {
         this.base = left;
         this.modified = right;
         this.type = type;
+        setListeners();
         initComponents();
         initMyComponents();
         refreshComponents();
@@ -101,6 +111,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         actionsToolbar.add(Box.createHorizontalGlue());
         
         nextAction = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onNext();
             }
@@ -109,6 +120,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         bNext.setAction(nextAction);
             
         prevAction = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onPrev();
             }
@@ -137,6 +149,10 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         innerPanel = controller.getJComponent();
         controllerPanel.add(innerPanel);
         setName(innerPanel.getName());
+        Container c = getParent();
+        if (c != null) {
+            c.setName(getName());
+        }
         activateNodes();
         revalidate();
         repaint();
@@ -181,6 +197,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         refreshComponents();
     }
@@ -188,6 +205,17 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     private void refreshComponents() {
         nextAction.setEnabled(controller.getDifferenceIndex() < controller.getDifferenceCount() - 1);
         prevAction.setEnabled(controller.getDifferenceIndex() > 0);
+    }
+
+    private void setListeners () {
+        FileObject baseParent = base.getParent();
+        FileObject modifiedParent = modified.getParent();
+        if (baseParent != null) {
+            baseParent.addFileChangeListener(WeakListeners.create(FileChangeListener.class, baseFCL = new DiffFileChangeListener(), baseParent));
+        }
+        if (baseParent != modifiedParent && modifiedParent != null) {
+            modifiedParent.addFileChangeListener(WeakListeners.create(FileChangeListener.class, modifiedFCL = new DiffFileChangeListener(), modifiedParent));
+        }
     }
 
     /** This method is called from within the constructor to
@@ -309,10 +337,6 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         modified = temp;
         try {
             refreshController();
-            Container c = getParent();
-            if (c != null) {
-                c.setName(getName());
-            }
         } catch (IOException e) {
             Logger.getLogger(SingleDiffPanel.class.getName()).log(Level.SEVERE, "", e); // elegant, nice and simple exception logging
         }
@@ -341,6 +365,27 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     private javax.swing.JToolBar.Separator jSeparator1;
     // End of variables declaration//GEN-END:variables
 
+    private class DiffFileChangeListener extends FileChangeAdapter {
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            if (fe.getFile() == base || fe.getFile() == modified) {
+                refreshFiles();
+            }
+        }
+
+        private void refreshFiles() {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        refreshController();
+                    } catch (IOException ex) {
+                        Logger.getLogger(SingleDiffPanel.class.getName()).log(Level.SEVERE, "", ex); //NOI18N
+                    }
+                }
+            });
+        }
+    }
 
     private static class DiffStreamSource extends StreamSource {
         
@@ -354,22 +399,27 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
             this.isRight = isRight;
         }
 
+        @Override
         public boolean isEditable() {
             return isRight && fileObject.canWrite();
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookups.fixed(fileObject);
         }
 
+        @Override
         public String getName() {
             return fileObject.getName();
         }
 
+        @Override
         public String getTitle() {
             return FileUtil.getFileDisplayName(fileObject);
         }
 
+        @Override
         public String getMIMEType() {
             if (type != null) {
                 return type.getMIMEType();
@@ -378,6 +428,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
             }
         }
 
+        @Override
         public Reader createReader() throws IOException {
             if (type != null) {
                 return new InputStreamReader(fileObject.getInputStream(), FileEncodingQuery.getEncoding(type));
@@ -386,6 +437,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
             }
         }
 
+        @Override
         public Writer createWriter(Difference[] conflicts) throws IOException {
             return null;
         }

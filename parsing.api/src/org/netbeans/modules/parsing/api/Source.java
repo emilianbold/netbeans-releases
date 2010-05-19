@@ -1,8 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -286,6 +289,11 @@ public final class Source {
         final CharSequence [] text = new CharSequence [] {""}; //NOI18N
         final int [][] lineStartOffsets = new int [][] { new int [] { 0 } };
         Document doc = getDocument (false);
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.log(Level.FINER, null, new Throwable("Creating snapshot: doc=" + doc + ", file=" + fileObject)); //NOI18N
+        } else if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Creating snapshot: doc={0}, file={1}", new Object [] { doc, fileObject }); //NOI18N
+        }
         try {
             if (doc == null) {
                 // Ideally we should use CloneableEditorSupport.getEditorKit (mimeType),
@@ -418,6 +426,7 @@ public final class Source {
     // private implementation
     // ------------------------------------------------------------------------
 
+    // -J-Dorg.netbeans.modules.parsing.api.Source.level=FINE
     private static final Logger LOG = Logger.getLogger(Source.class.getName());
     private static final Map<FileObject, Reference<Source>> instances = new WeakHashMap<FileObject, Reference<Source>>();
 
@@ -686,6 +695,11 @@ public final class Source {
             } else {
                 return snapshot.getText().length();
             }
+        }
+
+        @Override
+        public Snapshot createSnapshot(CharSequence text, int[] lineStartOffsets, Source source, MimePath mimePath, int[][] currentToOriginal, int[][] originalToCurrent) {
+            return new Snapshot(text, lineStartOffsets, source, mimePath, currentToOriginal, originalToCurrent);
         }
 
     } // End of MySourceAccessor class
