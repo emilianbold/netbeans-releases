@@ -225,7 +225,7 @@ public final class ProfilesTracker {
     private Map<String, ProfileDescription> profilesByDisplayName = Collections.<String, ProfileDescription>emptyMap();
     
     private final RequestProcessor.Task task = MimeTypesTracker.RP.create(new Runnable() {
-        public void run() {
+        public @Override void run() {
             rebuild();
         }
     });
@@ -350,6 +350,7 @@ public final class ProfilesTracker {
         public Listener() {
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             rebuild();
         }

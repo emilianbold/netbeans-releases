@@ -46,8 +46,8 @@ made subject to such option by the copyright holder.
 
 <!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.1//EN" "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
 <type
-    name='DisabledNonLineBreakpoint'
-    description_key='HINT_DISABLED_NONLINE_BREAKPOINT'
+    name='DisabledFieldBreakpoint'
+    description_key='HINT_DISABLED_FIELD_BREAKPOINT'
     localizing_bundle='org.netbeans.modules.debugger.jpda.resources.Bundle'
     visible='true'
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpoint.gif'

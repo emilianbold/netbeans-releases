@@ -45,7 +45,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.websvc.editor.hints.common.ProblemContext;
-import org.netbeans.modules.websvc.editor.hints.fixes.AddWSOpeartion;
+import org.netbeans.modules.websvc.editor.hints.fixes.AddWSOperation;
 
 /**
  *
@@ -59,7 +59,7 @@ public class NoOperations extends AbstractWebServiceRule {
     protected ErrorDescription[] apply(TypeElement subject, ProblemContext ctx) {
         if (subject.getKind() == ElementKind.CLASS && !hasWebMethods(subject)) {
             String label = NbBundle.getMessage(NoOperations.class, "MSG_AddOperation");
-            Fix addOperFix = new AddWSOpeartion(ctx.getFileObject());
+            Fix addOperFix = new AddWSOperation(ctx.getFileObject());
             ErrorDescription problem = createProblem(subject, ctx, label, addOperFix);
             return new ErrorDescription[]{problem};
         }
