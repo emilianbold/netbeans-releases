@@ -45,15 +45,8 @@
 <project name="test" default="test" basedir=".">
     <import file="build.pro"/>
 
-    <target name="test" depends="unit-test,sample-test,project-test"/>
+    <target name="test" depends="sample-test,project-test"/>
     
-    <!-- unit test -->
-    <target name="unit-test">
-        <ant target="test" dir="${home}/soa.ui"/>
-        <ant target="test" dir="${home}/bpel.model"/>
-        <ant target="test" dir="${home}/bpel.mapper"/>
-    </target>
-
     <!-- sample test -->
     <target name="sample-test" depends="test-s1,test-s2,test-s3"/>
 
