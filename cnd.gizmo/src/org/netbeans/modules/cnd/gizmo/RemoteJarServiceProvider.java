@@ -113,7 +113,7 @@ public class RemoteJarServiceProvider implements SetupProvider {
         List<String> args = new ArrayList<String>();
         args.add("-cp"); //NOI18N
         if (env.isLocal()) {
-            args.add(localAbsPath == null ? "." : localAbsPath);
+            args.add(localAbsPath == null ? "." : localAbsPath); //NOI18N
         } else {
             String libDir = HostInfoProvider.getLibDir(env); //NB: should contain trailing '/'
             if (!libDir.endsWith("/")) { // NOI18N
