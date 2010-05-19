@@ -92,6 +92,7 @@ public /* final - because of tests */ class Controller {
         eventQueue = new ArrayList<ProgressEvent>();
         dispatchRunning = false;
         timer = new Timer(TIMER_QUANTUM, new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 runNow();
             }
@@ -154,17 +155,20 @@ public /* final - because of tests */ class Controller {
     
     void toIndeterminate(InternalHandle handle) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_SWITCH, isWatched(handle));
+        model.updateSelection();
         postEvent(event);
     }
     
     void toSilent(InternalHandle handle, String message) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_SILENT, isWatched(handle), message);
+        model.updateSelection();
         postEvent(event);
     }
     
     
     void toDeterminate(InternalHandle handle) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_SWITCH, isWatched(handle));
+        model.updateSelection();
         postEvent(event);
     }    
     
@@ -216,6 +220,7 @@ public /* final - because of tests */ class Controller {
            runNow();
         } else {
            SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     runNow();
                 }
