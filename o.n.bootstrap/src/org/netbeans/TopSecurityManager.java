@@ -187,13 +187,16 @@ public class TopSecurityManager extends SecurityManager {
         }
     }
     
-    private static boolean officialExit = false;
+    static boolean officialExit = false;
     /** Can be called from core classes to exit the system.
      * Direct calls to System.exit will not be honored, for safety.
      * @param status the status code to exit with
      * @see "#20751"
      */
     public static void exit(int status) {
+        if (officialExit) {
+            return; // already inside a shutdown hook
+        }
         officialExit = true;
         System.exit(status);
     }

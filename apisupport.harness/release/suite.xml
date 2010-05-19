@@ -131,6 +131,9 @@ made subject to such option by the copyright holder.
         <property name="app.version" value="0.1"/>
         <property name="branding.dir" location="branding"/>
         <property name="dist.dir" location="dist"/>
+        <property name="test.xml.results.dir" value="${basedir}/build/test/xmldata" />
+        <property name="test.report.base.dir" value="build/test/report" />
+        <property name="test.report.html.dir" value="${test.report.base.dir}/html" />
         <condition property="run.branding"> <!-- #84689 -->
             <and>
                 <available file="${branding.dir}" type="dir"/>
@@ -559,6 +562,27 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
             <property name="cluster.path.evaluated" value="${cluster.path.evaluated}"/> <!-- Just for speed of pre-7.0 projects -->
             <property name="continue.after.failing.tests" value="${continue.after.failing.tests}"/>
         </subant>
+    </target>
+
+    <target name="test-generate-html" depends="test" description="Generates test report for entire suite">
+        <delete dir="${test.xml.results.dir}" />
+        <mkdir dir="${test.xml.results.dir}" />
+
+        <delete dir="${test.report.base.dir}" />
+        <mkdir dir="${test.report.base.dir}" />
+
+        <subant target="-copy-testxmlresults" buildpath="${modules.test.sorted}" inheritrefs="false" inheritall="false">
+            <property name="test.xml.results.dir" value="${test.xml.results.dir}"/>
+        </subant>
+
+        <junitreport todir="${test.report.base.dir}">
+            <fileset dir="${test.xml.results.dir}" />
+            <report todir="${test.report.html.dir}" format="frames"/>
+        </junitreport>
+    </target>
+
+    <target name="test-view-html" depends="test-generate-html" description="Generates and displays test report for entire suite">
+        <nbbrowse file="${test.report.html.dir}/index.html"/>
     </target>
 
     <target name="update" depends="-init" description="Updates modules in the suite from an update center.">

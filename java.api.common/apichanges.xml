@@ -178,6 +178,24 @@ is the proper place.
             <class package="org.netbeans.modules.java.api.common.project.ui.customizer" name="SourceRootsUi"/>
             <issue number="150357"/>
         </change>
+        <change id="ProjectInfoImpl">
+            <api name="java-api-common"/>
+            <summary>Reusable implementation of ProjectInformation</summary>
+            <version major="1" minor="18"/>
+            <date day="18" month="5" year="2010"/>
+            <author login="mvfranz"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Created a reusable implementation of ProjectInformation that can be
+                    used within the Java language projects.  Provide two factory methods
+                    for creation in QuerySupport, one that uses AntProjectHelper and one
+                    that uses UpdateHelper. 
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+            <issue number="110886"/>
+        </change>
 
     </changes>
 

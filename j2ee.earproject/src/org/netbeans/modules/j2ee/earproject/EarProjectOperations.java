@@ -53,6 +53,7 @@ import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
@@ -170,9 +171,9 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
         
         EarProjectOperations origOperations = original.getLookup().lookup(EarProjectOperations.class);
         fixLibraryLocation(origOperations);
-	
-	final String oldProjectName = project.getName();
-        
+
+        final String oldProjectName = project.getLookup().lookup(ProjectInformation.class).getName();
+
         project.setName(newName);
 	
         ProjectManager.mutex().writeAccess(new Runnable() {
