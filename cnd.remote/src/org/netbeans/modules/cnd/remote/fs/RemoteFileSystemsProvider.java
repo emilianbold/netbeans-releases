@@ -72,13 +72,27 @@ public class RemoteFileSystemsProvider extends FileSystemsProvider {
     }
 
     @Override
+    protected boolean isMine(CharSequence path) {
+        if (USE_REMOTE_FS) {
+            String prefix = CndUtils.getIncludeFileBase();
+            if (Utilities.isWindows()) {
+                path = path.toString().replace('\\', '/');
+            }
+            if (pathStartsWith(path, prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     protected Data getImpl(CharSequence path) {
         if (USE_REMOTE_FS) {
             String prefix = CndUtils.getIncludeFileBase();
             if (Utilities.isWindows()) {
                 path = path.toString().replace('\\', '/');
             }
-            if (CharSequenceUtils.startsWith(path, prefix)) {
+            if (pathStartsWith(path, prefix)) {
                 CharSequence rest = path.subSequence(prefix.length(), path.length());
                 int slashPos = CharSequenceUtils.indexOf(rest, "/"); // NOI18N
                 if (slashPos >= 0) {
@@ -96,6 +110,14 @@ public class RemoteFileSystemsProvider extends FileSystemsProvider {
         return null;
     }
 
+    private boolean pathStartsWith(CharSequence path, CharSequence prefix) {
+        if (CndFileUtils.isSystemCaseSensitive()) {
+            return CharSequenceUtils.startsWith(path, prefix);
+        } else {
+            return CharSequenceUtils.startsWithIgnoreCase(path, prefix);
+        }
+    }
+
     @Override
     protected String getCaseInsensitivePathImpl(CharSequence path) {
         if (USE_REMOTE_FS) {
@@ -103,7 +125,7 @@ public class RemoteFileSystemsProvider extends FileSystemsProvider {
             if (Utilities.isWindows()) {
                 path = path.toString().replace('\\', '/');
             }
-            if (CharSequenceUtils.startsWith(path, prefix)) {
+            if (pathStartsWith(path, prefix)) {
                 CharSequence start = path.subSequence(0, prefix.length());
                 CharSequence rest = path.subSequence(prefix.length(), path.length());
                 return start + 
