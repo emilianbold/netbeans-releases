@@ -68,7 +68,7 @@ public final class SimpleConverter implements PathConverter {
         if (trgType == PathType.WINDOWS) {
             String prefix = srcType == PathType.CYGWIN ? cygwinPrefix : "/"; // NOI18N
             int plen = prefix.length();
-            if (path.startsWith(prefix) && path.charAt(plen + 1) == '/') { // NOI18N
+            if (path.startsWith(prefix)) {
                 result = path.charAt(plen) + ":"; // NOI18N
                 result += path.substring(plen + 1);
             }
@@ -108,7 +108,7 @@ public final class SimpleConverter implements PathConverter {
             return;
         }
 
-        cygwinPrefix = "/cygdrive"; // NOI18N
+        cygwinPrefix = "/cygdrive/"; // NOI18N
 
         final Shell shell = WindowsSupport.getInstance().getActiveShell();
 
