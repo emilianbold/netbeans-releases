@@ -245,7 +245,13 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     public synchronized static void performInstantRename(JTextComponent target, Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
         if (instance != null) {
-            return;
+            if (instance.target != target) {
+                // cancel rename in other component
+                instance.release();
+            } else {
+                // prohibit two renames in the same component
+                return;
+            }
         }
         instance = new InstantRenamePerformer(target, highlights, caretOffset);
     }
