@@ -300,4 +300,10 @@ made subject to such option by the copyright holder.
         <nbinstaller module="${cluster}/${module.jar}" action="reinstall"/>
     </target>
 
+    <target name="-copy-testxmlresults">
+        <copy todir="${test.xml.results.dir}" flatten="true" failonerror="false">
+            <fileset dir="build/test/" includes="*/results/TEST-*.xml"/>
+        </copy>
+    </target>
+
 </project>
