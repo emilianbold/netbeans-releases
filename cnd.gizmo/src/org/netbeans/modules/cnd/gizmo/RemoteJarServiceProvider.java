@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.gizmo;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +58,7 @@ import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -71,18 +74,27 @@ public class RemoteJarServiceProvider implements SetupProvider {
         if (path.indexOf('!') > 0) {
             path = path.substring(0, path.indexOf('!')); // NOI18N
         }
-        if (path.startsWith("file:")) { // NOI18N
-            path = path.substring(5);
+        URI uri = null;
+        try {
+            uri = new URI(path); 
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        File file = new File(path);
-        localAbsPath = file.getAbsolutePath(); // it should be absolute anyhow
-        relativePath = file.getName();
+        if (uri == null) {
+            localAbsPath = relativePath = null;
+        } else {
+            File file = new File(uri);
+            localAbsPath = file.getAbsolutePath(); // it should be absolute anyhow
+            relativePath = file.getName();
+        }
     }
 
     @Override
     public Map<String, String> getBinaryFiles(ExecutionEnvironment env) {
         Map<String, String> result = new HashMap<String, String>();
-        result.put(relativePath, localAbsPath); // NOI18N
+        if (relativePath != null && localAbsPath != null) {
+            result.put(relativePath, localAbsPath); // NOI18N
+        }
         return result;
     }
 
