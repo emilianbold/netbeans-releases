@@ -512,7 +512,7 @@ public class ModelSupport implements PropertyChangeListener {
 
         private boolean isCndDataObject(FileObject fo) {
             String type = fo.getMIMEType();
-            return MIMENames.isHeaderOrCppOrC(type);
+            return MIMENames.isFortranOrHeaderOrCppOrC(type);
         }
 
         private NativeFileItemSet findCanonicalSet(DataObject curObj) {
@@ -748,7 +748,7 @@ public class ModelSupport implements PropertyChangeListener {
                     System.err.printf("MIME resolved: %s\n", mime);
                 }
             }
-            return MIMENames.isHeaderOrCppOrC(mime);
+            return MIMENames.isFortranOrHeaderOrCppOrC(mime);
         }
     }
 }
