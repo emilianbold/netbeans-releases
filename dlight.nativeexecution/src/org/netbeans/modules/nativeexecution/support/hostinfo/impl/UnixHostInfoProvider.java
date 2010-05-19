@@ -101,7 +101,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         final Map<String, String> environment;
 
         if (execEnv.isLocal()) {
-            environment = new ProcessBuilder("").environment(); // NOI18N
+            environment = System.getenv();
             info = getLocalHostInfo();
         } else {
             environment = new HashMap<String, String>();
