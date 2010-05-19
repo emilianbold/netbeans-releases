@@ -401,7 +401,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             if (path.length() == 0) {
                 return false;
             }
-            File file = new File(path);
+            File file = FileUtil.normalizeFile(new File(path));
             if (!(file.isDirectory() && file.canRead())) {
                 if (file.isDirectory()) {
                     messageKind = cannotReadFolder;

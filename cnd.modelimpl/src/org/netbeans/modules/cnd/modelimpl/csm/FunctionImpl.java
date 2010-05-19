@@ -270,7 +270,40 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }    
-    
+
+    public List<CsmTemplateParameter> getInheritedTemplateParameters() {
+        List<CsmTemplateParameter> allTemplateParams = getTemplateParameters();
+        List<CsmTemplateParameter> params = new ArrayList<CsmTemplateParameter>();
+        if(allTemplateParams != null) {
+            int inheritedTemplateParametersNumber = (templateDescriptor != null) ? templateDescriptor.getInheritedTemplateParametersNumber() : 0;
+            if(allTemplateParams.size() > inheritedTemplateParametersNumber) {
+                Iterator<CsmTemplateParameter> iter = allTemplateParams.iterator();
+                for (int i = 0; i < inheritedTemplateParametersNumber && iter.hasNext(); i++) {
+                    params.add(iter.next());
+                }
+            }
+        }
+        return params;
+    }
+
+    public List<CsmTemplateParameter> getOwnTemplateParameters() {
+        List<CsmTemplateParameter> allTemplateParams = getTemplateParameters();
+        List<CsmTemplateParameter> params = new ArrayList<CsmTemplateParameter>();
+        if(allTemplateParams != null) {
+            int inheritedTemplateParametersNumber = (templateDescriptor != null) ? templateDescriptor.getInheritedTemplateParametersNumber() : 0;
+            if(allTemplateParams.size() > inheritedTemplateParametersNumber) {
+                Iterator<CsmTemplateParameter> iter = allTemplateParams.iterator();
+                for (int i = 0; i < inheritedTemplateParametersNumber && iter.hasNext(); i++) {
+                    iter.next();
+                }
+                for ( ;iter.hasNext();) {
+                    params.add(iter.next());
+                }
+            }
+        }
+        return params;
+    }
+
     public boolean isVoidParameterList(){
         return hasFlags(FLAGS_VOID_PARMLIST);
     }
@@ -684,21 +717,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     private void appendTemplateSignature(StringBuilder sb) {
-        List<CsmTemplateParameter> allTemplateParams = getTemplateParameters();
-        List<CsmTemplateParameter> params = new ArrayList<CsmTemplateParameter>();
-        if(allTemplateParams != null) {
-            int inheritedTemplateParametersNumber = (templateDescriptor != null) ? templateDescriptor.getInheritedTemplateParametersNumber() : 0;
-            if(allTemplateParams.size() > inheritedTemplateParametersNumber) {
-                Iterator<CsmTemplateParameter> iter = allTemplateParams.iterator();
-                for (int i = 0; i < inheritedTemplateParametersNumber && iter.hasNext(); i++) {
-                    iter.next();
-                }
-                for ( ;iter.hasNext();) {
-                    params.add(iter.next());
-                }
-            }
-        }
-        InstantiationProviderImpl.appendTemplateParamsSignature(params, sb);
+        InstantiationProviderImpl.appendTemplateParamsSignature(getOwnTemplateParameters(), sb);
     }
     
     @Override

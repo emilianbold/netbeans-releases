@@ -96,9 +96,15 @@ public class TemplateUtils {
     }
     
     public static final String TYPENAME_STRING = "class"; //NOI18N
+
+    public static void addSpecializationSuffix(AST firstChild, StringBuilder res, List<CsmTemplateParameter> parameters) {
+        addSpecializationSuffix(firstChild, res, parameters, false);
+    }
     
-    public static void addSpecializationSuffix(AST firstChild, StringBuilder sb, List<CsmTemplateParameter> parameters) {
+    public static void addSpecializationSuffix(AST firstChild, StringBuilder res, List<CsmTemplateParameter> parameters, boolean checkForSpecialization) {
         int depth = 0;
+        int paramsNumber = 0;
+        StringBuilder sb = new StringBuilder(res.toString()); // NOI18N
         for (AST child = firstChild; child != null; child = child.getNextSibling()) {
             if (child.getType() == CPPTokenTypes.LESSTHAN) {
                 depth++;
@@ -108,6 +114,7 @@ public class TemplateUtils {
                 AST grandChild = child.getFirstChild();
                 if (grandChild != null) {
                     addSpecializationSuffix(grandChild, sb, parameters);
+                    paramsNumber++;
                 }
             } else if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
                 sb.append(child.getText());
@@ -118,6 +125,7 @@ public class TemplateUtils {
                 }
                 addGREATERTHAN(sb);
                 sb.append(' ');
+                paramsNumber++;
             } else if (child.getType() == CPPTokenTypes.GREATERTHAN) {
                 addGREATERTHAN(sb);
                 depth--;
@@ -130,6 +138,7 @@ public class TemplateUtils {
                     for (CsmTemplateParameter param : parameters) {
                         if (param.getName().toString().equals(text)) {
                             text = TYPENAME_STRING;
+                            paramsNumber++;
                         }
                     }
                 }
@@ -144,6 +153,9 @@ public class TemplateUtils {
                 }
                 sb.append(text);
             }
+        }
+        if(!checkForSpecialization || parameters == null || paramsNumber != parameters.size()) {
+            res.append(sb.toString().substring(res.length()));
         }
     }
 

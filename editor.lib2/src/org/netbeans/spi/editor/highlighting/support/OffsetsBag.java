@@ -100,6 +100,8 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
     private DocL docListener;
     private int lastAddIndex; // Index where last add to marks list was done
     private int lastMoveNextIndex; // Index where last moveNext() with idx=-1 was done
+    private StackTraceElement [] discardCaller = null;
+    private String discardThreadId = null;
     
     /**
      * Creates a new instance of <code>OffsetsBag</code>, which trims highlights
@@ -142,6 +144,14 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
                 version++;
                 docListener = null;
                 document = null;
+
+                boolean ae = false;
+                assert ae = true;
+                if (ae) {
+                    Thread t = Thread.currentThread();
+                    discardCaller = t.getStackTrace();
+                    discardThreadId = t.getName() + ":" + t.getId(); //NOI18N
+                }
             }
         }
     }
@@ -454,6 +464,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
      * @return The <code>HighlightsSequence</code> which iterates through the
      *         highlights in the given area of this bag.
      */
+    @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         if (LOG.isLoggable(Level.FINE) && !(startOffset < endOffset)) {
             LOG.fine("startOffset must be less than endOffset: startOffset = " + //NOI18N
@@ -509,9 +520,12 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
         if (startOffset == endOffset) {
             return null;
         } else {
-            assert document != null : "Can't modify discarded bag."; //NOI18N
+            assert document != null : "Can't modify discarded bag. Called on " + discardThreadId + " by " + printStackTrace(discardCaller); //NOI18N
             assert startOffset < endOffset : "Start offset must be before the end offset. startOffset = " + startOffset + ", endOffset = " + endOffset; //NOI18N
             assert attributes != null : "Highlight attributes must not be null."; //NOI18N
+            if (document == null || startOffset >= endOffset || attributes == null) {
+                return null;
+            }
         }
 
         if (mergeHighlights) {
@@ -786,7 +800,16 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
     private int indexBeforeOffset(int offset) {
         return indexBeforeOffset(offset, 0, marks.size() - 1);
     }
-    
+
+    private static String printStackTrace(StackTraceElement[] stackTrace) {
+        StringBuilder sb = new StringBuilder();
+        for(StackTraceElement e : stackTrace) {
+            sb.append(e);
+            sb.append('\n'); //NOI18N
+        }
+        return sb.toString();
+    }
+
     /* package */ static final class Mark extends OffsetGapList.Offset {
         private AttributeSet attribs;
         
@@ -828,6 +851,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             this.endOffset = endOffset;
         }
 
+        @Override
         public boolean moveNext() {
             synchronized (OffsetsBag.this.marks) {
                 if (checkVersion()) {
@@ -858,6 +882,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             }
         }
 
+        @Override
         public int getStartOffset() {
             synchronized (OffsetsBag.this.marks) {
                 assert idx != -1 : "Sequence not initialized, call moveNext() first."; //NOI18N
@@ -865,6 +890,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             }
         }
 
+        @Override
         public int getEndOffset() {
             synchronized (OffsetsBag.this.marks) {
                 assert idx != -1 : "Sequence not initialized, call moveNext() first."; //NOI18N
@@ -872,6 +898,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             }
         }
 
+        @Override
         public AttributeSet getAttributes() {
             synchronized (OffsetsBag.this.marks) {
                 assert idx != -1 : "Sequence not initialized, call moveNext() first."; //NOI18N
@@ -904,6 +931,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             this.document = bag.getDocument();
         }
         
+        @Override
         public void insertUpdate(DocumentEvent e) {
             OffsetsBag bag = get();
             if (bag != null) {
@@ -921,6 +949,7 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             }
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             OffsetsBag bag = get();
             if (bag != null) {
@@ -938,10 +967,12 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
             }
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             // not interested
         }
 
+        @Override
         public void run() {
             Document d = document;
             if (d != null) {

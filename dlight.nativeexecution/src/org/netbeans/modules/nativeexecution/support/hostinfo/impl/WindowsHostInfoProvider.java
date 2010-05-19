@@ -44,6 +44,7 @@ package org.netbeans.modules.nativeexecution.support.hostinfo.impl;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -87,7 +88,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
         private Map<String, String> environment;
 
         HostInfoImpl() {
-            Map<String, String> env = new ProcessBuilder("").environment(); // NOI18N
+            Map<String, String> env = new HashMap<String, String>(System.getenv());
 
             // Use os.arch to detect bitness.
             // Another way is described in the following article:

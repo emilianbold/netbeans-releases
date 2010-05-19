@@ -994,7 +994,7 @@ public class CopyFinderTest extends NbTestCase {
 
         assertNotNull(tp);
 
-        BlockTree bt = (BlockTree) tp.getLeaf();
+        BlockTree bt = (BlockTree) tp.getParentPath().getLeaf();
         List<TreePath> searchFor = new LinkedList<TreePath>();
 
         for (StatementTree t : bt.getStatements().subList(statements[0], statements[1] + 1)) {
@@ -1041,7 +1041,7 @@ public class CopyFinderTest extends NbTestCase {
 
             assertNotNull(gtp);
 
-            BlockTree b = (BlockTree) gtp.getLeaf();
+            BlockTree b = (BlockTree) gtp.getParentPath().getLeaf();
 
             int startPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), b.getStatements().get(stmts[0]));
             int endPos = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), b.getStatements().get(stmts[1]));

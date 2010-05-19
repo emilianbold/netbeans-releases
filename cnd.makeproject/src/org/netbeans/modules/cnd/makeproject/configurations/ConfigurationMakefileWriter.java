@@ -47,6 +47,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -95,6 +96,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -284,15 +286,6 @@ public class ConfigurationMakefileWriter {
     }
 
     private void writeMakefileConf(MakeConfiguration conf) {
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Makefile-" + conf.getName() + ".mk"; // UNIX path // NOI18N
-
-        FileOutputStream os = null;
-        try {
-            os = new FileOutputStream(outputFileName);
-        } catch (Exception e) {
-            // FIXUP
-        }
-
         // Find MakefileWriter in toolchain.
         MakefileWriter makefileWriter = null;
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
@@ -316,21 +309,26 @@ public class ConfigurationMakefileWriter {
             makefileWriter = new DefaultMakefileWriter();
         }
 
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + "/Makefile-" + conf.getName() + ".mk"; // UNIX path // NOI18N
+
         try {
-            makefileWriter.writePrelude(projectDescriptor, conf, bw);
-            writeBuildTargets(makefileWriter, projectDescriptor, conf, bw);
-            writeBuildTestTargets(makefileWriter, projectDescriptor, conf, bw);
-            makefileWriter.writeRunTestTarget(projectDescriptor, conf, bw);
-            makefileWriter.writeCleanTarget(projectDescriptor, conf, bw);
-            makefileWriter.writeDependencyChecking(projectDescriptor, conf, bw);
-            bw.flush();
-            bw.close();
+            BufferedWriter bw = new BufferedWriter(new FileWriter(outputFileName));
+            try {
+                makefileWriter.writePrelude(projectDescriptor, conf, bw);
+                writeBuildTargets(makefileWriter, projectDescriptor, conf, bw);
+                writeBuildTestTargets(makefileWriter, projectDescriptor, conf, bw);
+                makefileWriter.writeRunTestTarget(projectDescriptor, conf, bw);
+                makefileWriter.writeCleanTarget(projectDescriptor, conf, bw);
+                makefileWriter.writeDependencyChecking(projectDescriptor, conf, bw);
+            } finally {
+                bw.close();
+            }
+
             if (conf.isQmakeConfiguration()) {
                 new QmakeProjectWriter(projectDescriptor, conf).write();
             }
-        } catch (IOException e) {
-            // FIXUP
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 

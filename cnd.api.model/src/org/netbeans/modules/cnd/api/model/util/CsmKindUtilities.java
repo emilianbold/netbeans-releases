@@ -612,10 +612,16 @@ public class CsmKindUtilities {
             if (funDecl != null && funDecl.getName().length() > 0) {
                 return funDecl.getName().charAt(0) == '~'; //NOI18N
             }
+        } else if (isFunctionDefinition(obj)) {
+            CsmFunction fun = (CsmFunction) obj;
+            // check constructor by ~ at the begining of the name
+            if (fun.getName().length() > 0) {
+                return fun.getName().charAt(0) == '~'; //NOI18N
+            }
         }
         return false;
     }     
-    
+
     public static boolean isExpression(CsmObject obj) {
         return obj instanceof CsmExpression;
     }
