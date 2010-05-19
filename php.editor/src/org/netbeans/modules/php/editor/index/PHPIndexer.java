@@ -80,6 +80,7 @@ import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
@@ -183,7 +184,9 @@ public final class PHPIndexer extends EmbeddingIndexer {
             }
             String processedFileURL = null;
             try {
-                processedFileURL = r.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
+                final FileObject fileObject = r.getSnapshot().getSource().getFileObject();
+                assert r.getDiagnostics().isEmpty() || !PhpSourcePath.FileType.INTERNAL.equals(PhpSourcePath.getFileType(fileObject)) : fileObject.getPath();
+                processedFileURL = fileObject.getURL().toExternalForm();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
