@@ -265,7 +265,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         }
         String compilerSetName = panel.getCompilerSetName().trim();
         CompilerSetImpl cs = ((CompilerSetImpl) selectedCompilerSet).createCopy(
-                selectedCompilerSet.getCompilerFlavor(), selectedCompilerSet.getDirectory(), compilerSetName, false, selectedCompilerSet.getEncoding());
+                selectedCompilerSet.getCompilerFlavor(), selectedCompilerSet.getDirectory(), compilerSetName, false, selectedCompilerSet.getEncoding(), true);
         csm.add(cs);
         changed = true;
         update(false, cs, null);
