@@ -91,6 +91,15 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     private NbMavenProjectImpl project;
     private static final String POM_XML = "pom.xml"; //NOI18N
     
+    /**
+     * ClassPath for compiling only, but not running. In practice this means that scope
+     * for the artefacts with this classpath will be set to <code>provided</code>
+     * if added to a source group, and <code>test</code> if added to test source group.
+     * This constant is in practice a friend API, even if it is hardcoded in the
+     * consuming module (see e.g. bug 186221).
+     */
+    public static final String CLASSPATH_COMPILE_ONLY = "classpath/compile_only";
+
     /** Creates a new instance of CPExtender */
     public CPExtender(NbMavenProjectImpl project) {
         this.project = project;
@@ -275,7 +284,8 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     public String[] getExtensibleClassPathTypes(SourceGroup arg0) {
         return new String[] {
             ClassPath.COMPILE,
-            ClassPath.EXECUTE
+            ClassPath.EXECUTE,
+            CLASSPATH_COMPILE_ONLY
         };
     }
 
@@ -287,6 +297,9 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         String name = grp.getName();
         if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
             scope = "test"; //NOI18N
+        }
+        if (scope == null && CLASSPATH_COMPILE_ONLY.equals(type)) {
+            scope = Artifact.SCOPE_PROVIDED;
         }
         final String fScope = scope;
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
@@ -387,6 +400,11 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
                         dependency.setVersion(mp.getVersion());
                         if (fScope != null) {
                             dependency.setScope(fScope);
+                        } else {
+                            if (NbMavenProject.TYPE_EJB.equals(nbprj.getPackagingType()) ||
+                                NbMavenProject.TYPE_WAR.equals(nbprj.getPackagingType())) {
+                                dependency.setScope(Artifact.SCOPE_PROVIDED);
+                            }
                         }
                         added[0] = true;
                     } else {

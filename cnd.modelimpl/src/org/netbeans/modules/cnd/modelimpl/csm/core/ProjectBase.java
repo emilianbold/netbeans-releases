@@ -47,7 +47,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +58,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
@@ -123,6 +123,7 @@ import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
+import org.openide.windows.OutputWriter;
 
 /**
  * Base class for CsmProject implementation
@@ -2703,10 +2704,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return fc != null ? fc : FileContainer.empty();
     }
 
-    public void traceContainer(PrintStream err){
-        err.println("FileContainer for project "+toString()); //NOI18N
+    public void traceContainer(OutputWriter err){
         FileContainer container = getFileContainer();
-        for(Map.Entry<CharSequence, FileEntry> entry : container.getFileStorage().entrySet()){
+        Set<Entry<CharSequence, FileEntry>> entrySet = container.getFileStorage().entrySet();
+        err.printf("FileContainer (%d) for project %s\n", entrySet.size(), toString()); //NOI18N
+        for(Map.Entry<CharSequence, FileEntry> entry : entrySet){
             err.println("\tEntry "+entry.getKey()); //NOI18N
             if (entry.getValue().getStatePairs().isEmpty()) {
                 err.println("\t\tState EMPTY"); //NOI18N
