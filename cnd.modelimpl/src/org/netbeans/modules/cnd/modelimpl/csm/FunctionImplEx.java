@@ -74,7 +74,9 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
     public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         super(ast, file, scope, false, global);
-        classOrNspNames = CastUtils.isCast(ast) ? getClassOrNspNames(ast) : initClassOrNspNames(ast);
+        classOrNspNames = CastUtils.isCast(ast) ?
+            getClassOrNspNames(ast) :
+            initClassOrNspNames(ast);
         if (register) {
             registerInProject();
         }
@@ -130,7 +132,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	return null;
     }
 
-    private static CharSequence[] initClassOrNspNames(AST node) {
+    private CharSequence[] initClassOrNspNames(AST node) {
         //qualified id
         AST qid = AstUtil.findMethodName(node);
         if( qid == null ) {
@@ -140,23 +142,27 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         if( cnt >= 1 ) {
             List<CharSequence> l = new ArrayList<CharSequence>();
             APTStringManager manager = NameCache.getManager();
-            String id = null;
+            StringBuilder id = new StringBuilder(""); // NOI18N
             int level = 0;
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 int type2 = token.getType();
                 switch (type2) {
                     case CPPTokenTypes.ID:
-                        id = token.getText();
+                        id = new StringBuilder(token.getText());
                         break;
                     case CPPTokenTypes.GREATERTHAN:
                         level--;
                         break;
                     case CPPTokenTypes.LESSTHAN:
+                        // getTemplateParameters does not work for constructors and destructors...
+                        if(!CsmKindUtilities.isConstructor(this) && !CsmKindUtilities.isDestructor(this)) {
+                            TemplateUtils.addSpecializationSuffix(token, id, getInheritedTemplateParameters().size() != 0 ? getInheritedTemplateParameters() : getTemplateParameters(), true);
+                        }
                         level++;
                         break;
                     case CPPTokenTypes.SCOPE:
                         if (id != null && level == 0) {
-                            l.add(manager.getString(id));
+                            l.add(manager.getString(id.toString()));
                         }
                         break;
                     default:
