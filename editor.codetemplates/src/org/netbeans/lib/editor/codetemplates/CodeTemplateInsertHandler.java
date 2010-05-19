@@ -143,12 +143,13 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
 
         this.request = CodeTemplateSpiPackageAccessor.get().createInsertRequest(this);
 
+        setParametrizedText(codeTemplate.getParametrizedText());
+
         processors = new ArrayList<CodeTemplateProcessor>();
         for (CodeTemplateProcessorFactory factory : processorFactories) {
             processors.add(factory.createProcessor(this.request));
         }
 
-        setParametrizedText(codeTemplate.getParametrizedText());
         if (TIMERS.isLoggable(Level.FINE)) {
             LogRecord rec = new LogRecord(Level.FINE, "CodeTemplateInsertHandler"); // NOI18N
             rec.setParameters(new Object[] { this });
