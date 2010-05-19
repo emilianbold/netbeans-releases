@@ -1983,6 +1983,10 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     public void printComment(Comment comment, boolean preceding, boolean printWhitespace) {
+        printComment(comment, preceding, printWhitespace, false);
+    }
+
+    public void printComment(Comment comment, boolean preceding, boolean printWhitespace, boolean preventClosingWhitespace) {
         boolean onlyWhitespaces = out.isWhitespaceLine();
         if (Comment.Style.WHITESPACE == comment.style()) {
             if (false && printWhitespace) {
@@ -2073,11 +2077,13 @@ public final class VeryPretty extends JCTree.Visitor {
                     break;
             }
         }
-        if (onlyWhitespaces || comment.style() == Style.LINE) {
+        if ((onlyWhitespaces && !preventClosingWhitespace) || comment.style() == Style.LINE) {
             newline();
             toLeftMargin();
         } else {
-            needSpace();
+            if (!preventClosingWhitespace) {
+                needSpace();
+            }
         }
     }
 
