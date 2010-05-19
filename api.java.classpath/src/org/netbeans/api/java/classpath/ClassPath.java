@@ -957,7 +957,9 @@ public final class ClassPath {
                 try {
                     if (f != null) {
                         String path = FileUtil.getRelativePath(roots[ridx], f);
-                        assert path != null;
+                        assert path != null : String.format("FileUtil.getRelativePath(%s,%s) returned null",
+                                FileUtil.getFileDisplayName(roots[ridx]),
+                                FileUtil.getFileDisplayName(f));
                         if (f.isFolder()) {
                             path += "/"; // NOI18N
                         }
