@@ -144,6 +144,9 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     private static final String OVERVIEW = "Overview"; //NOI18N
     private static final String CMP_RELATIONSHIPS = "CmpRelationships"; //NOI18N
     
+    private static final RequestProcessor rp = new RequestProcessor();
+    private transient RequestProcessor.Task refreshSourcesTask;
+
     public EjbJarMultiViewDataObject(FileObject pf, EjbJarDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         
@@ -425,8 +428,19 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     public void fileAttributeChanged(FileAttributeEvent fileAttributeEvent) {
     }
     
+    @Override
     public void stateChanged(javax.swing.event.ChangeEvent e) {
-        refreshSourceFolders();
+        if (refreshSourcesTask != null){
+            refreshSourcesTask.schedule(100);
+            return;
+        }
+        //#181904 break the thread stack chain
+        refreshSourcesTask = rp.post(new Runnable() {
+            @Override
+            public void run() {
+                refreshSourceFolders ();
+            }
+        }, 100);
     }
     
     protected void parseDocument() throws IOException {
