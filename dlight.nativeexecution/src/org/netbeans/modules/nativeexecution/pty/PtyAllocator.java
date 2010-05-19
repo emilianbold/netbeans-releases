@@ -93,17 +93,15 @@ public final class PtyAllocator {
 
         try {
             if (env.isLocal()) {
-                String shell = "/bin/sh"; // NOI18N
                 if (Utilities.isWindows()) {
                     // Only works with cygwin...
                     if (hostInfo.getShell() == null || WindowsSupport.getInstance().getActiveShell().type != Shell.ShellType.CYGWIN) {
                         throw new IOException("terminal support requires Cygwin to be installed"); // NOI18N
                     }
                     ptyOpenUtilityPath = WindowsSupport.getInstance().convertToCygwinPath(ptyOpenUtilityPath);
-                    shell = hostInfo.getShell();
                 }
 
-                ProcessBuilder pb = new ProcessBuilder(shell, "-s"); // NOI18N
+                ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
                 Process pty = pb.start();
                 output = pty.getOutputStream();
                 input = pty.getInputStream();

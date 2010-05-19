@@ -113,6 +113,8 @@ public interface HostInfo {
 
     public String getHostname();
 
+    public String getLoginShell();
+
     public String getShell();
 
     public Map<String, String> getEnvironment();

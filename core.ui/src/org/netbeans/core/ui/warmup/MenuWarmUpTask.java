@@ -48,6 +48,7 @@ import java.lang.reflect.*;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
@@ -254,10 +255,16 @@ public final class MenuWarmUpTask implements Runnable {
 
                 @Override
                 public void run() {
-                    h.suspend(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh_Suspend"));
+                    if (EventQueue.isDispatchThread()) {
+                        h.suspend(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh_Suspend"));
+                    } else {
+                        EventQueue.invokeLater(this);
+                    }
                 }
             }
-            ActionEvent handleBridge = new HandleBridge(this);
+            HandleBridge handleBridge = new HandleBridge(this);
+            // preinitialize
+            handleBridge.run();
 
             try {
                 File userDir = new File(System.getProperty("netbeans.user")); // NOI18N

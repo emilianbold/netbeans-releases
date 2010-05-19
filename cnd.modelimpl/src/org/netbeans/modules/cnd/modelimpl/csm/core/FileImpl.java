@@ -892,7 +892,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         // ask for concurrent entry if absent
         APTFileCacheEntry cacheEntry = getAPTCacheEntry(preprocHandler, Boolean.FALSE);
         APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler, false, pcBuilder,cacheEntry);
-        tsCache.addNewPair(pcBuilder, walker.getTokenStream(false), languageFilter);
+        FilePreprocessorConditionState pcState = pcBuilder.build();
+        tsCache.addNewPair(pcState, walker.getTokenStream(false), languageFilter);
         // remember walk info
         setAPTCacheEntry(preprocHandler, cacheEntry, false);
         return true;
