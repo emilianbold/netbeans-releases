@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
@@ -61,7 +62,12 @@ public class ToolTipTreeModelFilter implements TreeModelFilter {
     @Override
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
         if (parent == TreeModel.ROOT) {
-            return new Object[] { ToolTipView.getVariable() };
+            ObjectVariable tooltipVar = ToolTipView.getVariable();
+            if (tooltipVar != null) {
+                return new Object[] { tooltipVar };
+            } else {
+                return new Object[] { };
+            }
         } else {
             return original.getChildren(parent, from, to);
         }

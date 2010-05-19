@@ -462,12 +462,16 @@ public final class JaxWsModelImpl implements JaxWsModel {
     
     void fireServiceAdded(String name, String implementationClass) {
         Iterator<ServiceListener> it = serviceListeners.iterator();
-        while (it.hasNext()) it.next().serviceAdded(name, implementationClass);
+        synchronized (this) {
+            while (it.hasNext()) it.next().serviceAdded(name, implementationClass);
+        }
     }
     
     void fireServiceRemoved(String name) {
         Iterator<ServiceListener> it = serviceListeners.iterator();
-        while (it.hasNext()) it.next().serviceRemoved(name);
+        synchronized (this) {
+            while (it.hasNext()) it.next().serviceRemoved(name);
+        }
     }
     
     private class JaxWsPCL implements PropertyChangeListener {
