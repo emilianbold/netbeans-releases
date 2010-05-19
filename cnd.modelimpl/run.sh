@@ -203,4 +203,4 @@ else
     NBDIST="${NB_COPY}"
 fi
 
-${NBDIST}/bin/netbeans -J-ea -J-server -J-DSUNW_NO_UPDATE_NOTIFY=true ${USERDIR} ${DEBUG} ${PROFILE} ${DEFS} ${PARAMS}
+"${NBDIST}/bin/netbeans" -J-ea -J-server -J-DSUNW_NO_UPDATE_NOTIFY=true ${USERDIR} ${DEBUG} ${PROFILE} ${DEFS} ${PARAMS}

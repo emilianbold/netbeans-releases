@@ -95,6 +95,7 @@ public class PackageViewTest extends NbTestCase {
         super.setUp();
         MockLookup.setInstances(new VQImpl());
         root = TestUtil.makeScratchDir(this);
+        System.setProperty("PackageView.unitTest", "true");     //NOI18N
     }
 
     @Override
