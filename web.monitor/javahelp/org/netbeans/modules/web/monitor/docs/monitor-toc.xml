@@ -1,6 +1,9 @@
 <?xml version='1.0' encoding='ISO-8859-1'  ?>
 <!--
-*     Copyright (c) 2009 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE toc
@@ -18,10 +21,10 @@
     <tocitem text="About" target="ctx_monitorintro" />
     <tocitem text="Working with the HTTP Server-Side Monitor" target="monitor_process" />
     <tocitem text="Setting Up the HTTP Server-Side Monitor" target="monitor_display" />
-    <tocitem text="Analyzing Session Data" target="monitor_view" />  
+    <tocitem text="Analyzing Session Data" target="monitor_view" />
     <!-- monitor_resend is csh for Help button on Edit and replay dialog -->
     <tocitem text="Saving Session Data" target="monitor_store" />
-    <tocitem text="Replaying Session Data" target="monitor_resend" /> 
+    <tocitem text="Replaying Session Data" target="monitor_resend" />
 </tocitem>
 </tocitem>
 </tocitem>

@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -248,37 +251,45 @@ public class HtmlParserResult extends ParserResult {
 
     private List<Error> findErrors() {
         final List<Error> _errors = new ArrayList<Error>();
-        AstNodeUtils.visitChildren(root(),
-                new AstNodeVisitor() {
 
-                    public void visit(AstNode node) {
-                        if (node.type() == AstNode.NodeType.OPEN_TAG ||
-                                node.type() == AstNode.NodeType.ENDTAG ||
-                                node.type() == AstNode.NodeType.UNKNOWN_TAG) {
+        AstNodeVisitor errorsCollector = new AstNodeVisitor() {
 
-                            for (Description desc : node.getDescriptions()) {
-                                if (desc.getType() < Description.WARNING) {
-                                    continue;
-                                }
-                                //some error in the node, report
-                                DefaultError error =
-                                        new DefaultError(desc.getKey(), //NOI18N
-                                        desc.getText(),
-                                        desc.getText(),
-                                        getSnapshot().getSource().getFileObject(),
-                                        desc.getFrom(),
-                                        desc.getTo(),
-                                        false /* not line error */,
-                                        desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
+            @Override
+            public void visit(AstNode node) {
+                if (node.type() == AstNode.NodeType.OPEN_TAG
+                        || node.type() == AstNode.NodeType.ENDTAG
+                        || node.type() == AstNode.NodeType.UNKNOWN_TAG) {
 
-                                error.setParameters(new Object[]{node});
-
-                                _errors.add(error);
-
-                            }
+                    for (Description desc : node.getDescriptions()) {
+                        if (desc.getType() < Description.WARNING) {
+                            continue;
                         }
+                        //some error in the node, report
+                        DefaultError error =
+                                new DefaultError(desc.getKey(), //NOI18N
+                                desc.getText(),
+                                desc.getText(),
+                                getSnapshot().getSource().getFileObject(),
+                                desc.getFrom(),
+                                desc.getTo(),
+                                false /* not line error */,
+                                desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
+
+                        error.setParameters(new Object[]{node});
+
+                        _errors.add(error);
+
                     }
-                });
+                }
+            }
+        };
+
+        Collection<AstNode> roots = new ArrayList<AstNode>();
+        roots.addAll(roots().values());
+        roots.add(root(SyntaxParserResult.UNDECLARED_TAGS_NAMESPACE));
+        for(AstNode root : roots) {
+            AstNodeUtils.visitChildren(root, errorsCollector);
+        }
 
         return _errors;
 
@@ -300,6 +311,7 @@ public class HtmlParserResult extends ParserResult {
 
     private static class Accessor extends HtmlParserResultAccessor {
 
+        @Override
         public HtmlParserResult createInstance(Snapshot snapshot, SyntaxParserResult result) {
             return new HtmlParserResult(snapshot, result);
         }

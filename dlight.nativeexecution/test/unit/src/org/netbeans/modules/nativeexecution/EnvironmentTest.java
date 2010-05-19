@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,19 +43,23 @@ package org.netbeans.modules.nativeexecution;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
@@ -87,7 +94,11 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
         _testVars(execEnv, false, true, null);
         _testVars(execEnv, false, false, null);
 
-        for (String terminalID : ExternalTerminalProvider.getSupportedTerminalIDs()) {
+        Collection<String> supportedTerminalIDs = Utilities.isWindows()
+                ? Arrays.asList("cmd.exe") // NOI18N
+                : ExternalTerminalProvider.getSupportedTerminalIDs();
+
+        for (String terminalID : supportedTerminalIDs) {
             ExternalTerminal terminal = ExternalTerminalProvider.getTerminal(execEnv, terminalID);
             if (terminal != null && terminal.isAvailable(execEnv)) {
                 terminal = terminal.setPrompt("NO");
@@ -118,14 +129,16 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
 
         System.out.println("=== START " + id);
 
+        boolean isWindows = execEnv.isLocal() && Utilities.isWindows();
+
         try {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             MacroMap env = npb.getEnvironment();
 
-            String home = env.get("HOME");
+            String home = isWindows ? env.get("USERPROFILE") : env.get("HOME");
             String path = env.get("PATH");
 
-            assertNotNull("Initially environment should be filled with user's env", home);
+            assertNotNull("Initially environment should be filled with user's home", home);
             assertNotNull("Initially environment should be filled with user's env", path);
 
             assertNull("Will use var " + nonexistentVarName + " for testing. Should not exist in initial user's env", env.get(nonexistentVarName));
@@ -150,7 +163,7 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
                 tmpFile = tmpFileFile.getAbsolutePath();
                 tmpFileFile.deleteOnExit();
 
-                if (Utilities.isWindows()) {
+                if (isWindows) {
                     tmpFile = WindowsSupport.getInstance().convertToShellPath(tmpFile);
                 }
 
@@ -158,8 +171,9 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
 
                 cmd = "(" + cmd + ") | tee " + tmpFile;
             }
-
-            npb.setExecutable("/bin/sh").setArguments("-c", cmd);
+            
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+            npb.setExecutable(hostInfo.getShell()).setArguments("-c", cmd);
             npb.setUsePty(inPtyMode);
             npb.unbufferOutput(unbufferOutput);
             if (terminal != null) {
@@ -188,7 +202,11 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
             assertEquals(nonexistentVarName + "=test value", line);
             line = it.next();
             System.out.println(line);
-            assertEquals("PATH=" + env.get("PATH"), line);
+            if (isWindows) {
+                assertTrue(line.startsWith("PATH=additional path"));
+            } else {
+                assertEquals("PATH=" + env.get("PATH"), line);
+            }
 
         } finally {
             System.out.println("=== DONE " + id);

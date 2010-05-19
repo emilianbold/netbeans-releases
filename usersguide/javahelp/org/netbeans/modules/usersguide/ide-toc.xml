@@ -1,6 +1,9 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright (©) 2009 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (ï¿½) 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 *     Use is subject to license terms.
 -->
 
@@ -18,10 +21,10 @@
 
 
   </tocitem>
-  
+
 
   <tocitem text="Basic File Features" >
-    <tocitem text="Source Editor General Tasks: Quick Reference" target="editor.quickref"/>  
+    <tocitem text="Source Editor General Tasks: Quick Reference" target="editor.quickref"/>
     <tocitem text="Searching Files" target="files.search" />
     <tocitem text="Comparing Two Files in the IDE" target="files.diff" />
     <tocitem text="Accessing Files Outside of a Project" target="files_favorite" />

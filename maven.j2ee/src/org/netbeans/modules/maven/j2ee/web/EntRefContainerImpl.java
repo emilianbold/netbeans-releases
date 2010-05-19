@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -47,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
@@ -116,7 +120,7 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
         FileObject ejbReferenceEjbClassFO = SourceUtils.getFileObject(ejbReference.getComponentName(refType), ejbReference.getClasspathInfo());
         assert ejbReferenceEjbClassFO != null : "Reference FileObject not found: " + ejbReference.getComponentName(refType);
         Project otherPrj = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
-        NbMavenProject oprj = otherPrj.getLookup().lookup(NbMavenProject.class);
+        final NbMavenProject oprj = otherPrj.getLookup().lookup(NbMavenProject.class);
         String jarName = "";
         if (oprj != null) {
             jarName = oprj.getMavenProject().getBuild().getFinalName();  //NOI18N
@@ -131,11 +135,18 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
                     project.getProjectDirectory().getFileObject("pom.xml"),//NOI18N
                     Collections.<ModelOperation<POMModel>>singletonList(new ModelOperation<POMModel>() {
 
+                @Override
                 public void performOperation(POMModel model) {
                     //add as dependency
-                    Dependency d = ModelUtils.checkModelDependency(model, grId, artId, true);
-                    if (d != null) {
-                        d.setVersion(version);
+                    if (!ModelUtils.hasModelDependency(model, grId, artId)) {
+                        Dependency d = ModelUtils.checkModelDependency(model, grId, artId, true);
+                        if (d != null) {
+                            d.setVersion(version);
+                            if (NbMavenProject.TYPE_EJB.equals(oprj.getPackagingType()) ||
+                                NbMavenProject.TYPE_WAR.equals(oprj.getPackagingType())) {
+                                d.setScope(Artifact.SCOPE_PROVIDED);
+                            }
+                        }
                     }
                 }
             }));

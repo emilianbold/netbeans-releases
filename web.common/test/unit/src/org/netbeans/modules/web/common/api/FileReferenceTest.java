@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -111,7 +114,6 @@ public class FileReferenceTest extends CslTestBase {
         assertNotNull(fourth);
         FileObject fifth =  getTestFile("folder/innerfolder2/fifth.txt");
         assertNotNull(fifth);
-        assertNotNull(fifth);
 
         FileObject folder = getTestFile("folder");
         assertTrue(folder.isFolder());
@@ -141,7 +143,6 @@ public class FileReferenceTest extends CslTestBase {
         assertNotNull(fourth);
         FileObject fifth =  getTestFile("folder/innerfolder2/fifth.txt");
         assertNotNull(fifth);
-        assertNotNull(fifth);
 
         FileObject folder = getTestFile("folder");
         assertTrue(folder.isFolder());
@@ -166,6 +167,33 @@ public class FileReferenceTest extends CslTestBase {
 
         modif.rename(innerfolder2, "superinner");
         assertEquals("../superinner/fifth.txt", modif.getModifiedReferencePath());
+
+    }
+
+    public void testFileReferenceModificationFolderWithDot() {
+        FileObject one = getTestFile("one.txt");
+        FileObject fourth = getTestFile("folder/inner.folder/fourth.txt");
+        assertNotNull(fourth);
+
+        FileObject folder = getTestFile("folder");
+        assertTrue(folder.isFolder());
+        FileObject innerfolder = getTestFile("folder/inner.folder");
+        assertTrue(innerfolder.isFolder());
+
+        FileReference resolved = WebUtils.resolveToReference(one, "folder/inner.folder/fourth.txt");
+        assertNotNull(resolved);
+        assertEquals("folder/inner.folder/fourth.txt", resolved.optimizedLinkPath());
+
+        FileReferenceModification modif = resolved.createModification();
+        assertEquals("folder/inner.folder/fourth.txt", modif.getModifiedReferencePath());
+        
+        //the unmodified ref. path should be the same
+        assertEquals(resolved.optimizedLinkPath(), modif.getModifiedReferencePath());
+
+        //test modify
+        modif.rename(folder, "renamed"); //should have no effect, the .. is not refactored
+
+        assertEquals("renamed/inner.folder/fourth.txt", modif.getModifiedReferencePath());
 
     }
 

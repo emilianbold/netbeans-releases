@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,6 +44,9 @@ package org.netbeans.modules.cnd.gizmo;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,6 +59,7 @@ import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -64,22 +71,28 @@ public class RemoteJarServiceProvider implements SetupProvider {
     private static final String relativePath;
     private static final String localAbsPath;
     static {
-        String path = service.getProtectionDomain().getCodeSource().getLocation().getPath();
-        if (path.indexOf('!') > 0) {
-            path = path.substring(0, path.indexOf('!')); // NOI18N
+        URL url = service.getProtectionDomain().getCodeSource().getLocation();
+        URI uri = null;
+        try {
+            uri = url.toURI();
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        if (path.startsWith("file:")) { // NOI18N
-            path = path.substring(5);
+        if (uri == null) {
+            localAbsPath = relativePath = null;
+        } else {
+            File file = new File(uri);
+            localAbsPath = file.getAbsolutePath(); // it should be absolute anyhow
+            relativePath = file.getName();
         }
-        File file = new File(path);
-        localAbsPath = file.getAbsolutePath(); // it should be absolute anyhow
-        relativePath = file.getName();
     }
 
     @Override
     public Map<String, String> getBinaryFiles(ExecutionEnvironment env) {
         Map<String, String> result = new HashMap<String, String>();
-        result.put(relativePath, localAbsPath); // NOI18N
+        if (relativePath != null && localAbsPath != null) {
+            result.put(relativePath, localAbsPath); // NOI18N
+        }
         return result;
     }
 

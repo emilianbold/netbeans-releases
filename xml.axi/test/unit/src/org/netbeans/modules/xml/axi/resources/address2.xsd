@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
- Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+ Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
  SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- 
+
  $Id$
 -->
 
 
-<xsd:schema 
+<xsd:schema
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns="http://xml.netbeans.org/examples/targetNS/Address"
     targetNamespace="http://xml.netbeans.org/examples/targetNS/Address">
 
     <xsd:element name="address" type="USAddress"/>
-        
+
     <xsd:element name="simpleName" type="xsd:string"/>
 
     <xsd:group name="group">
@@ -26,7 +29,7 @@
             <xsd:element name="zip"    type="xsd:decimal"/>
         </xsd:sequence>
     </xsd:group>
-            
+
     <xsd:attributeGroup name="attr-group">
         <xsd:attribute name="countryToken" type="xsd:NMTOKEN" fixed="US"/>
         <xsd:attribute name="language" type="xsd:string" fixed="EN"/>

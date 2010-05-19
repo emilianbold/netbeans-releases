@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -55,7 +58,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -107,6 +112,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -117,6 +123,7 @@ import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
+import org.openide.windows.OutputWriter;
 
 /**
  * Base class for CsmProject implementation
@@ -233,6 +240,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 time = System.currentTimeMillis() - time;
                 System.err.printf("Project %s: loaded. %d ms\n", name, time);
             }
+            UIDManager.instance().clearProjectCache(key);
             if (impl.checkConsistency()) {
                 return impl;
             }
@@ -2694,6 +2702,32 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     FileContainer getFileContainer() {
         FileContainer fc = weakFileContainer.getContainer();
         return fc != null ? fc : FileContainer.empty();
+    }
+
+    public void traceContainer(OutputWriter err){
+        FileContainer container = getFileContainer();
+        Set<Entry<CharSequence, FileEntry>> entrySet = container.getFileStorage().entrySet();
+        err.printf("FileContainer (%d) for project %s\n", entrySet.size(), toString()); //NOI18N
+        for(Map.Entry<CharSequence, FileEntry> entry : entrySet){
+            err.println("\tEntry "+entry.getKey()); //NOI18N
+            if (entry.getValue().getStatePairs().isEmpty()) {
+                err.println("\t\tState EMPTY"); //NOI18N
+                continue;
+            }
+            for(PreprocessorStatePair pair : entry.getValue().getStatePairs()) {
+                err.println("\t\tState"); //NOI18N
+                String text = pair.toString();
+                StringTokenizer st = new StringTokenizer(text,"\n"); //NOI18N
+                while(st.hasMoreTokens()) {
+                    String s = st.nextToken();
+                    if ("Snapshot".equals(s)) { //NOI18N
+                        err.println("\t\t\t"+s+"{...}"); //NOI18N
+                        break;
+                    }
+                    err.println("\t\t\t"+s); //NOI18N
+                }
+            }
+        }
     }
 
     private final WeakContainer<GraphContainer> weakGraphContainer;

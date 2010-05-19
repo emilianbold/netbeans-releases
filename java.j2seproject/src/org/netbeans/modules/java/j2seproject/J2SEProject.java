@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -43,7 +46,6 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.Reference;
@@ -71,7 +73,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -97,9 +98,7 @@ import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -130,7 +129,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -146,7 +144,7 @@ import org.w3c.dom.NodeList;
     privateName=J2SEProjectType.PRIVATE_CONFIGURATION_NAME,
     privateNamespace= J2SEProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
-public final class J2SEProject implements Project, AntProjectListener {
+public final class J2SEProject implements Project {
     
     private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
@@ -194,7 +192,6 @@ public final class J2SEProject implements Project, AntProjectListener {
         final J2SEActionProvider actionProvider = new J2SEActionProvider( this, this.updateHelper );
         lookup = createLookup(aux, actionProvider);
         actionProvider.startFSListener();
-        helper.addAntProjectListener(this);
     }
     
     private ClassPathModifier.Callback createClassPathModifierCallback() {
@@ -319,7 +316,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         J2SESources srcs = new J2SESources(this, helper, eval, getSourceRoots(), getTestSourceRoots());
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
-            new Info(),
+            QuerySupport.createProjectInformation(updateHelper, this, J2SE_PROJECT_ICON),
             aux,
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
@@ -372,19 +369,6 @@ public final class J2SEProject implements Project, AntProjectListener {
         return this.cpMod;
     }
 
-    public void configurationXmlChanged(AntProjectEvent ev) {
-        if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
-            // Could be various kinds of changes, but name & displayName might have changed.
-            Info info = (Info)getLookup().lookup(ProjectInformation.class);
-            info.firePropertyChange(ProjectInformation.PROP_NAME);
-            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
-        }
-    }
-
-    public void propertiesChanged(AntProjectEvent ev) {
-        // currently ignored (probably better to listen to evaluator() if you need to)
-    }
-    
     // Package private methods -------------------------------------------------
     
     /**
@@ -452,73 +436,6 @@ public final class J2SEProject implements Project, AntProjectListener {
     }
     
     // Private innerclasses ----------------------------------------------------
-    //when #110886 gets implemented, this class is obsolete
-    private final class Info implements ProjectInformation {
-        
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        private WeakReference<String> cachedName = null;
-        
-        Info() {}
-        
-        void firePropertyChange(String prop) {
-            pcs.firePropertyChange(prop, null, null);
-            synchronized (pcs) {
-                cachedName = null;
-            }
-        }
-        
-        public String getName() {
-            return PropertyUtils.getUsablePropertyName(getDisplayName());
-        }
-        
-        public String getDisplayName() {
-            synchronized (pcs) {
-                if (cachedName != null) {
-                    String dn = cachedName.get();
-                    if (dn != null) {
-                        return dn;
-                    }
-                }
-            }
-            String dn = ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-                public String run() {
-                    Element data = updateHelper.getPrimaryConfigurationData(true);
-                    // XXX replace by XMLUtil when that has findElement, findText, etc.
-                    NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                    if (nl.getLength() == 1) {
-                        nl = nl.item(0).getChildNodes();
-                        if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                            String val = ((Text) nl.item(0)).getNodeValue();
-                            return val != null ? val : "???";   //NOI18N
-                        }
-                    }
-                    return "???"; // NOI18N
-                }
-            });
-            synchronized (pcs) {
-                cachedName = new WeakReference<String>(dn);
-            }
-            return dn;
-        }
-        
-        public Icon getIcon() {
-            return J2SE_PROJECT_ICON;
-        }
-        
-        public Project getProject() {
-            return J2SEProject.this;
-        }
-        
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            pcs.addPropertyChangeListener(listener);
-        }
-        
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            pcs.removePropertyChangeListener(listener);
-        }
-        
-    }
-    
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
         
         ProjectXmlSavedHookImpl() {}

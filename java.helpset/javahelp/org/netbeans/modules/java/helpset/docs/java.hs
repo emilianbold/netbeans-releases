@@ -1,6 +1,9 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright (c) 2009 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE helpset
@@ -11,29 +14,29 @@
 
   <!-- title -->
   <title>Java Development Help</title>
-  
+
   <!-- maps -->
   <maps>
      <homeID>javadev_about</homeID>
      <mapref location="javadev-map.jhm" />
   </maps>
-  
+
   <!-- views -->
   <view>
     <name>TOC</name>
     <label>Table Of Contents</label>
     <type>javax.help.TOCView</type>
-    <data>javadev-toc.xml</data> 
+    <data>javadev-toc.xml</data>
   </view>
 
 
   <view>
     <name>Search</name>
     <label>Search</label>
-    <type>javax.help.SearchView</type> 
-    <data engine="com.sun.java.help.search.DefaultSearchEngine">      
+    <type>javax.help.SearchView</type>
+    <data engine="com.sun.java.help.search.DefaultSearchEngine">
       JavaHelpSearch
-    </data>  
+    </data>
   </view>
 
 </helpset>

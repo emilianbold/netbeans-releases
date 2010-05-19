@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Java Persistence API object-relational mapping file schema -->
-<xsd:schema targetNamespace="http://java.sun.com/xml/ns/persistence/orm" 
-  xmlns:orm="http://java.sun.com/xml/ns/persistence/orm" 
-  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-  elementFormDefault="qualified" 
-  attributeFormDefault="unqualified" 
+<xsd:schema targetNamespace="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:orm="http://java.sun.com/xml/ns/persistence/orm"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="qualified"
+  attributeFormDefault="unqualified"
   version="1.0">
 
   <xsd:annotation>
@@ -18,7 +18,10 @@
 
       DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-      Copyright 2005-2007 Sun Microsystems, Inc. All rights reserved.
+      Copyright 2005-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
 
       The contents of this file are subject to the terms of either the
       GNU General Public License Version 2 only ("GPL") or the Common
