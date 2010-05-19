@@ -189,6 +189,24 @@ public class CharSequenceUtils {
         return true;
     }
 
+    /** Same as startsWith, but ignores case */
+    public static boolean startsWithIgnoreCase(CharSequence text, CharSequence prefix) {
+        int p_length = prefix.length();
+        if (p_length > text.length()) {
+            return false;
+        }
+        for (int x = 0; x < p_length; x++) {
+            final char c1 = text.charAt(x);
+            final char c2 = prefix.charAt(x);
+            if (c1 != c2) {
+                if (Character.toLowerCase(c1) != Character.toLowerCase(c2)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     /**
      * Implementation of {@link String#endsWith(String)} for character sequences.
      */
