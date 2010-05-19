@@ -46,10 +46,8 @@ package org.netbeans.modules.j2ee.clientproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -63,8 +61,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
@@ -109,14 +107,11 @@ import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -137,14 +132,11 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  * Represents one plain Application Client project.
@@ -156,7 +148,7 @@ import org.w3c.dom.Text;
     sharedNamespace=AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=AppClientProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
-public final class AppClientProject implements Project, AntProjectListener, FileChangeListener {
+public final class AppClientProject implements Project, FileChangeListener {
     
     private final Icon CAR_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif", false); // NOI18N
     
@@ -219,7 +211,6 @@ public final class AppClientProject implements Project, AntProjectListener, File
             getClassPathUiSupportCallback());
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
-        helper.addAntProjectListener(this);
     }
     
     private ClassPathModifier.Callback createClassPathModifierCallback() {
@@ -301,7 +292,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING);
         AppClientSources sources = new AppClientSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         Lookup base = Lookups.fixed(new Object[] {
-            new Info(),
+            QuerySupport.createProjectInformation(helper, this, CAR_PROJECT_ICON),
             aux,
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
@@ -355,19 +346,6 @@ public final class AppClientProject implements Project, AntProjectListener, File
     
     public ClassPathProviderImpl getClassPathProvider () {
         return this.cpProvider;
-    }
-    
-    public void configurationXmlChanged(AntProjectEvent ev) {
-        if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
-            // Could be various kinds of changes, but name & displayName might have changed.
-            Info info = (Info)getLookup().lookup(ProjectInformation.class);
-            info.firePropertyChange(ProjectInformation.PROP_NAME);
-            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
-        }
-    }
-    
-    public void propertiesChanged(AntProjectEvent ev) {
-        // currently ignored (probably better to listen to evaluator() if you need to)
     }
     
     // Package private methods -------------------------------------------------
@@ -425,20 +403,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
     
     /** Return configured project name. */
     public String getName() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-            public String run() {
-                Element data = updateHelper.getPrimaryConfigurationData(true);
-                // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                if (nl.getLength() == 1) {
-                    nl = nl.item(0).getChildNodes();
-                    if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                        return ((Text) nl.item(0)).getNodeValue();
-                    }
-                }
-                return "CAR???"; // NOI18N
-            }
-        });
+        return ProjectUtils.getInformation(this).getName();
     }
 
     public void fileAttributeChanged (FileAttributeEvent fe) {
@@ -591,73 +556,6 @@ public final class AppClientProject implements Project, AntProjectListener, File
     }
     
     // Private innerclasses ----------------------------------------------------
-    //when #110886 gets implemented, this class is obsolete    
-    private final class Info implements ProjectInformation {
-        
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        
-        private WeakReference<String> cachedName = null;
-        
-        Info() {}
-        
-        void firePropertyChange(String prop) {
-            pcs.firePropertyChange(prop, null, null);
-            synchronized (pcs) {
-                cachedName = null;
-            }
-        }
-        
-        public String getName() {
-            return PropertyUtils.getUsablePropertyName(getDisplayName());
-        }
-        
-        public String getDisplayName() {
-            synchronized (pcs) {
-                if (cachedName != null) {
-                    String dn = cachedName.get();
-                    if (dn != null) {
-                        return dn;
-                    }
-                }
-            }
-            String dn = ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-                public String run() {
-                    Element data = updateHelper.getPrimaryConfigurationData(true);
-                    // XXX replace by XMLUtil when that has findElement, findText, etc.
-                    NodeList nl = data.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                    if (nl.getLength() == 1) {
-                        nl = nl.item(0).getChildNodes();
-                        if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                            return ((Text) nl.item(0)).getNodeValue();
-                        }
-                    }
-                    return "???"; // NOI18N
-                }
-            });
-            synchronized (pcs) {
-                cachedName = new WeakReference<String>(dn);
-            }
-            return dn;
-        }
-        
-        public Icon getIcon() {
-            return CAR_PROJECT_ICON;
-        }
-        
-        public Project getProject() {
-            return AppClientProject.this;
-        }
-        
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            pcs.addPropertyChangeListener(listener);
-        }
-        
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            pcs.removePropertyChangeListener(listener);
-        }
-        
-    }
-    
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
         
         ProjectXmlSavedHookImpl() {}
