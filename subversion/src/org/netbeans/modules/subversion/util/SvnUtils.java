@@ -59,6 +59,8 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.FileInformation;
 import java.io.*;
 import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.*;
 import java.text.ParseException;
@@ -126,6 +128,9 @@ public class SvnUtils {
         SVN_ENTRIES_DIR = SVN_ADMIN_DIR + "/entries";
         metadataPattern = Pattern.compile(".*\\" + File.separatorChar + SVN_ADMIN_DIR + "(\\" + File.separatorChar + ".*|$)");
     }
+
+    private static Reference<Context>  contextCached = new WeakReference<Context>(null);
+    private static Reference<Node[]> contextNodesCached = new WeakReference<Node []>(null);
 
     private static final FileFilter svnFileFilter = new FileFilter() {
         public boolean accept(File pathname) {
@@ -197,8 +202,15 @@ public class SvnUtils {
         if (nodes == null) {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
-        VCSContext ctx = VCSContext.forNodes(nodes);
-        return new Context(new ArrayList(ctx.computeFiles(svnFileFilter)), new ArrayList(ctx.getRootFiles()), new ArrayList(ctx.getExclusions()));
+        if (Arrays.equals(contextNodesCached.get(), nodes)) {
+            Context ctx = contextCached.get();
+            if (ctx != null) return ctx;
+        }
+        VCSContext vcsCtx = VCSContext.forNodes(nodes);
+        Context ctx = new Context(new ArrayList(vcsCtx.computeFiles(svnFileFilter)), new ArrayList(vcsCtx.getRootFiles()), new ArrayList(vcsCtx.getExclusions()));
+        contextCached = new WeakReference<Context>(ctx);
+        contextNodesCached = new WeakReference<Node []>(nodes);
+        return ctx;
     }
 
 
@@ -222,14 +234,16 @@ public class SvnUtils {
             File file = files[i];
             FileInformation fi = fromCache ? cache.getCachedStatus(file) : cache.getStatus(file);
             int status;
+            Boolean isDirectory = null;
             if (fi != null) {
                 // status got from the cache and is known or got through I/O
                 status = fi.getStatus();
+                isDirectory = fi.isDirectory();
             } else {
                 // tried to get the cached value but it was not present in the cache
                 status = FileInformation.STATUS_VERSIONED_UPTODATE;
             }
-            if (file.isDirectory()) {
+            if (isDirectory == null && file.isDirectory() || isDirectory) {
                 if ((status & includingFolderStatus) == 0) return Context.Empty;
             } else {
                 if ((status & includingFileStatus) == 0) return Context.Empty;
