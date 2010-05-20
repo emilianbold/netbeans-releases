@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.dlight.fops
 OpenIDE-Module-Layer: org/netbeans/modules/dlight/fops/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/dlight/fops/resources/Bundle.properties
 OpenIDE-Module-Provides: org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider
-OpenIDE-Module-Specification-Version: 1.3
+OpenIDE-Module-Specification-Version: 1.3.1
 
