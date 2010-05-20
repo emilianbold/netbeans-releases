@@ -118,6 +118,7 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
             }
         }
         params.putAll(CppUnitCodeGenerator.generateTemplateParamsForFunctions(
+                getTestClassName(),
                 getRootFolder().getPath(),
                 fs));
 
