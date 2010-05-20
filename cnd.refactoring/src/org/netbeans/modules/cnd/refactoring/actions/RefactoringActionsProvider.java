@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -92,13 +93,16 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
+                    UIGesturesSupport.submit("USG_CND_REFACTORING", "FIND_USAGES", "FROM_EDITOR"); // NOI18N
                     return new WhereUsedQueryUI(selectedElement);
                 }
             };
         } else {
             task = new NodeToElementTask(lookup) {
 
+                @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
+                    UIGesturesSupport.submit("USG_CND_REFACTORING", "FIND_USAGES"); // NOI18N
                     return new WhereUsedQueryUI(selectedElement);
                 }
             };
@@ -133,6 +137,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
+                    UIGesturesSupport.submit("USG_CND_REFACTORING", "RENAME", "FROM_EDITOR"); // NOI18N
                     return new RenameRefactoringUI(selectedElement);
                 }
             };
@@ -141,6 +146,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
+                    UIGesturesSupport.submit("USG_CND_REFACTORING", "RENAME"); // NOI18N
                     return new RenameRefactoringUI(selectedElement);
                 }
             };

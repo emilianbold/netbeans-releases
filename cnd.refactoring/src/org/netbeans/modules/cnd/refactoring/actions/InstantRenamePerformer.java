@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
@@ -253,6 +254,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 return;
             }
         }
+        UIGesturesSupport.submit("USG_CND_REFACTORING", "INSTANT_RENAME"); // NOI18N
         instance = new InstantRenamePerformer(target, highlights, caretOffset);
     }
 

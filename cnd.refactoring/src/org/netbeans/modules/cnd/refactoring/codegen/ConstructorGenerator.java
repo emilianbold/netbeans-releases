@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ConstructorPanel;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -75,6 +76,7 @@ public class ConstructorGenerator implements CodeGenerator {
 
     public static class Factory implements CodeGenerator.Factory {
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             if (!CsmRefactoringUtils.REFACTORING_EXTRA) {
@@ -147,11 +149,14 @@ public class ConstructorGenerator implements CodeGenerator {
         this.fieldsDescription = fieldsDescription;
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(ConstructorGenerator.class, "LBL_constructor"); //NOI18N
     }
 
+    @Override
     public void invoke() {
+        UIGesturesSupport.submit("USG_CND_REFACTORING", "GENERATE", "CONSTRUCTOR"); // NOI18N
         final List<CsmField> fieldHandles;
         final List<CsmConstructor> constrHandles;
         if (constructorDescription != null || fieldsDescription != null) {
