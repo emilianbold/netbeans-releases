@@ -53,6 +53,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyOpenUtility.PtyInfo;
@@ -93,15 +94,18 @@ public final class PtyAllocator {
 
         try {
             if (env.isLocal()) {
+                ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
+
                 if (Utilities.isWindows()) {
                     // Only works with cygwin...
                     if (hostInfo.getShell() == null || WindowsSupport.getInstance().getActiveShell().type != Shell.ShellType.CYGWIN) {
                         throw new IOException("terminal support requires Cygwin to be installed"); // NOI18N
                     }
                     ptyOpenUtilityPath = WindowsSupport.getInstance().convertToCygwinPath(ptyOpenUtilityPath);
+                    String path = MacroMap.forExecEnv(env).get("PATH"); // NOI18N
+                    pb.environment().put("Path", path); // NOI18N
                 }
 
-                ProcessBuilder pb = new ProcessBuilder(hostInfo.getShell(), "-s"); // NOI18N
                 Process pty = pb.start();
                 output = pty.getOutputStream();
                 input = pty.getInputStream();
@@ -119,7 +123,7 @@ public final class PtyAllocator {
                 error = streams.err;
             }
 
-            output.write(("exec " + ptyOpenUtilityPath + "\n").getBytes()); // NOI18N
+            output.write(("exec \"" + ptyOpenUtilityPath + "\"\n").getBytes()); // NOI18N
             output.flush();
 
             PtyInfo ptyInfo = PtyOpenUtility.getInstance().readSatelliteOutput(input);
