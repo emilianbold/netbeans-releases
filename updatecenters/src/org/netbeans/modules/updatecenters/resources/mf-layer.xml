@@ -53,21 +53,41 @@ made subject to such option by the copyright holder.
       <file name="standard-update-provider.instance">
         <attr name="displayName" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#Services/AutoupdateType/standard-update-provider.instance"/>
         <attr name="iconBase" stringvalue="org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
-        <attr name="url" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#URL_LatestBuild"/>
+        <attr name="url" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#URL_Standard"/>
         <attr name="category" stringvalue="STANDARD"/>
         <attr name="enabled" boolvalue="true"/>
         <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
-        <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />        
+        <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />
       </file>
-    
-      <file name="dev-update-provider.instance">
-          <attr name="displayName" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#Services/AutoupdateType/dev-update-provider.instance"/>
-          <attr name="iconBase" stringvalue="org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
-          <attr name="url" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#URL_Default_N"/>
-          <attr name="category" stringvalue="STANDARD"/> 
-          <attr name="enabled" boolvalue="true"/>
-          <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
-          <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />                
+
+      <file name="beta-update-provider.instance">
+        <attr name="displayName" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#Services/AutoupdateType/beta-update-provider.instance"/>
+        <attr name="iconBase" stringvalue="org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
+        <attr name="url" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#URL_Beta"/>
+        <attr name="category" stringvalue="BETA"/>
+        <attr name="enabled" boolvalue="true"/>
+        <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
+        <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />
+      </file>
+
+      <file name="thirdparty-update-provider.instance">
+        <attr name="displayName" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#Services/AutoupdateType/thirdparty-update-provider.instance"/>
+        <attr name="iconBase" stringvalue="org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
+        <attr name="url" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#URL_ThirdParty"/>
+        <attr name="category" stringvalue="COMMUNITY"/>
+        <attr name="enabled" boolvalue="true"/>
+        <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
+        <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />
+      </file>
+
+      <file name="pluginportal-update-provider.instance">
+        <attr name="displayName" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#Services/AutoupdateType/pluginportal-update-provider.instance"/>
+        <attr name="iconBase" stringvalue="org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
+        <attr name="url" bundlevalue="org.netbeans.modules.updatecenters.resources.Bundle#URL_PluginPortal"/>
+        <attr name="category" stringvalue="COMMUNITY"/>
+        <attr name="enabled" boolvalue="true"/>
+        <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
+        <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />
       </file>
       
    </folder>
