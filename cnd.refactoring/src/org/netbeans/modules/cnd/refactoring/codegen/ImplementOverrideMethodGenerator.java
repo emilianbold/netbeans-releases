@@ -51,6 +51,7 @@ import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.ImplementOverridePanel;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -143,7 +144,7 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
 
     @Override
     public void invoke() {
-        UIGesturesSupport.submit("USG_CND_REFACTORING", "GENERATE", "IMPLEMENTE_OVERRIDE_METHOD"); // NOI18N
+        UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CsmRefactoringUtils.GENERATE_TRACKING, "IMPLEMENTE_OVERRIDE_METHOD"); // NOI18N
         final ImplementOverridePanel panel = new ImplementOverridePanel(description, isImplement);
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel,
                 NbBundle.getMessage(ConstructorGenerator.class, isImplement ? "LBL_generate_implement" : "LBL_generate_override")); //NOI18N  //NOI18N

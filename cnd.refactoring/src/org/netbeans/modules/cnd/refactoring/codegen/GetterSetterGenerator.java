@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.GetterSetterPanel;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -210,7 +211,7 @@ public class GetterSetterGenerator implements CodeGenerator {
 
     @Override
     public void invoke() {
-        UIGesturesSupport.submit("USG_CND_REFACTORING", "GENERATE", "GETTER_SETTER"); // NOI18N
+        UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CsmRefactoringUtils.GENERATE_TRACKING, "GETTER_SETTER"); // NOI18N
         final GetterSetterPanel panel = new GetterSetterPanel(description, type);
         String title = GeneratorUtils.getGetterSetterDisplayName(type);
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);
