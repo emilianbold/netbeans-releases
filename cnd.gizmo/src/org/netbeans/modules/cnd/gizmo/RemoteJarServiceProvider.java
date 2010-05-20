@@ -44,9 +44,6 @@ package org.netbeans.modules.cnd.gizmo;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,9 +53,11 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 /**
@@ -68,22 +67,33 @@ import org.openide.util.Exceptions;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.SetupProvider.class)
 public class RemoteJarServiceProvider implements SetupProvider {
     private static final Class<?> service = Offset2LineService.class;
+    private static final String prefix = "/modules/"; // NOI18N
     private static final String relativePath;
     private static final String localAbsPath;
     static {
-        URL url = service.getProtectionDomain().getCodeSource().getLocation();
-        URI uri = null;
+        String[] paths = findPaths();
+        relativePath = paths[0];
+        localAbsPath = paths[1];
+    }
+
+    private static String[] findPaths() {
         try {
-            uri = url.toURI();
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if (uri == null) {
-            localAbsPath = relativePath = null;
-        } else {
-            File file = new File(uri);
-            localAbsPath = file.getAbsolutePath(); // it should be absolute anyhow
-            relativePath = file.getName();
+            String path = service.getProtectionDomain().getCodeSource().getLocation().getPath();
+            path = path.replace('\\', '/'); // NOI18N
+            path = path.substring(path.lastIndexOf(prefix)+1); // NOI18N
+            if (path.indexOf('!') > 0) {
+                path = path.substring(0, path.indexOf('!')); // NOI18N
+            }
+            String relPath = path;
+            String absPath = null;
+            File file = InstalledFileLocator.getDefault().locate(relPath, null, false);
+            if (file != null) {
+                absPath = file.getAbsolutePath();
+            }
+            return new String[] { relPath, absPath };
+        } catch (Throwable thr) {
+            Exceptions.printStackTrace(thr);
+            return new String[] { null, null };
         }
     }
 
@@ -103,7 +113,7 @@ public class RemoteJarServiceProvider implements SetupProvider {
         List<String> args = new ArrayList<String>();
         args.add("-cp"); //NOI18N
         if (env.isLocal()) {
-            args.add(clazz.getProtectionDomain().getCodeSource().getLocation().getPath());
+            args.add(localAbsPath == null ? "." : localAbsPath);
         } else {
             String libDir = HostInfoProvider.getLibDir(env); //NB: should contain trailing '/'
             if (!libDir.endsWith("/")) { // NOI18N

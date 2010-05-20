@@ -300,12 +300,8 @@ public final class CndFileUtils {
         files.put(path, Flags.INDEXED_DIRECTORY);
     }
 
-    private static String changeStringCaseIfNeeded(String in) {
-        if (TRUE_CASE_SENSITIVE_SYSTEM) {
-            return in;
-        } else {
-            return in.toLowerCase();
-        }
+    private static String changeStringCaseIfNeeded(String path) {
+        return FileSystemsProvider.lowerPathCaseIfNeeded(path).toString();
     }
     
 //    public static String getHitRate() {

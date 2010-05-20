@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.spi.utils;
 
 import java.io.File;
 import java.util.Collection;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 
@@ -68,14 +70,18 @@ public abstract class FileSystemsProvider {
         }
     }
 
-    private static final FileSystemsProvider DEFAULT = new DefaultProvider();
+    private static final DefaultProvider DEFAULT = new DefaultProvider();
 
-    private static FileSystemsProvider getDefault() {
+    private static DefaultProvider getDefault() {
         return DEFAULT;
     }
 
     public static String getCaseInsensitivePath(CharSequence path) {
         return getDefault().getCaseInsensitivePathImpl(path);
+    }
+
+    public static CharSequence lowerPathCaseIfNeeded(CharSequence path) {
+        return getDefault().lowerPathCaseIfNeededImpl(path);
     }
 
     /** It can return null */
@@ -91,6 +97,7 @@ public abstract class FileSystemsProvider {
     protected abstract Data getImpl(File file);
     protected abstract Data getImpl(CharSequence path);
     protected abstract String getCaseInsensitivePathImpl(CharSequence path);
+    protected abstract boolean isMine(CharSequence path);
 
     private static class DefaultProvider extends FileSystemsProvider {
 
@@ -130,6 +137,29 @@ public abstract class FileSystemsProvider {
                 }
             }
             return path.toString();
+        }
+
+        protected CharSequence lowerPathCaseIfNeededImpl(CharSequence path) {
+            if (CndFileUtils.isSystemCaseSensitive()) {
+                return path;
+            } else {
+                for (FileSystemsProvider provider : cache) {
+                    if (provider.isMine(path)) {
+                        return path;
+                    }
+                }
+                return path.toString().toLowerCase();
+            }
+        }
+
+        @Override
+        protected boolean isMine(CharSequence path) {
+            for (FileSystemsProvider provider : cache) {
+                if (provider.isMine(path)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
