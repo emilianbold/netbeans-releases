@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
+import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.StepControllerProvider.StepController;
@@ -91,6 +92,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
@@ -115,6 +117,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
@@ -130,6 +133,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -756,21 +760,43 @@ public final class MakeActionProvider implements ActionProvider {
             actionEvents.clear();
             return true;
         }
-        String buildCommand;
-        String args;
-        if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-            buildCommand = "cmd.exe"; // NOI18N
-            args = "/c sh "; // NOI18N
-        } else {
-            buildCommand = "bash"; // NOI18N
-            args = "";
-        }
+        
+        String buildCommand = null;
+        String args = ""; // NOI18N
+
         if (conf.getPackagingConfiguration().getVerbose().getValue()) {
             args += " -x "; // NOI18N
         }
-        args += "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
+
+        String script = "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
+
         RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform());
-        profile.setArgs(args);
+
+        if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+            HostInfo hostInfo = null;
+            try {
+                hostInfo = HostInfoUtils.getHostInfo(conf.getDevelopmentHost().getExecutionEnvironment());
+                buildCommand = hostInfo.getShell();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            if (buildCommand == null) {
+                buildCommand = "sh.exe"; // NOI18N
+            }
+
+            // Bug 186289 - Windows: 'Build Package' breaks the project
+            // do error redirection. Otherwise read-out of process output hangs (?!)
+            // TODO: need more investigation
+
+            profile.setArgs(new String[] {"-c", "sh " + args + script + " 2>&1"}); // NOI18N
+        } else {
+            buildCommand = "bash"; // NOI18N
+            profile.setArgs(args + script);
+        }
+        
         ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
         actionEvents.add(projectActionEvent);
         return true;
