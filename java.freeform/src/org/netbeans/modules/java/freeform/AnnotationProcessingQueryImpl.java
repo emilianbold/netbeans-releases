@@ -234,7 +234,7 @@ class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplemen
         public @Override URL sourceOutputDirectory() {
             List<URL> result = sourceOutputCache;
             if (result != null) {
-                return result.get(0);
+                return result.isEmpty() ? null : result.get(0);
             }
             result = new ArrayList<URL>(1);
             if (ap != null) {
@@ -255,7 +255,7 @@ class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplemen
                     sourceOutputCache = result;
                 }
             }
-            return result.get(0);
+            return result.isEmpty() ? null : result.get(0);
         }
 
         public @Override Map<? extends String, ? extends String> processorOptions() {

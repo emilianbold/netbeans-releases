@@ -265,7 +265,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         }
         String compilerSetName = panel.getCompilerSetName().trim();
         CompilerSetImpl cs = ((CompilerSetImpl) selectedCompilerSet).createCopy(
-                selectedCompilerSet.getCompilerFlavor(), selectedCompilerSet.getDirectory(), compilerSetName, false, selectedCompilerSet.getEncoding());
+                selectedCompilerSet.getCompilerFlavor(), selectedCompilerSet.getDirectory(), compilerSetName, false, selectedCompilerSet.getEncoding(), true);
         csm.add(cs);
         changed = true;
         update(false, cs, null);
@@ -317,10 +317,15 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                 }
             }
             if (index >= 0 && index < csm.getCompilerSets().size()) {
-                update(false, csm.getCompilerSets().get(index), null);
+                final CompilerSet def = csm.getCompilerSets().get(index);
+                csm.completeCompilerSets();
+                update(false, def, null);
             } else if (index > 0) {
-                update(false, csm.getCompilerSets().get(index - 1), null);
+                final CompilerSet def = csm.getCompilerSets().get(index - 1);
+                csm.completeCompilerSets();
+                update(false, def, null);
             } else {
+                csm.completeCompilerSets();
                 getToolCollectionPanel().removeCompilerSet();
                 update(false);
             }

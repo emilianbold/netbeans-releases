@@ -89,8 +89,12 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         <folder name="AnnotationTypes">  <!-- Editor gutter popup menu -->
-            <file name="DisabledNonLineBreakpoint.xml" url="DisabledNonLineBreakpoint.xml"/>
-            <file name="NonLineBreakpoint.xml" url="NonLineBreakpoint.xml"/>
+            <file name="DisabledFieldBreakpoint.xml" url="DisabledFieldBreakpoint.xml"/>
+            <file name="DisabledMethodBreakpoint.xml" url="DisabledMethodBreakpoint.xml"/>
+            <file name="DisabledClassBreakpoint.xml" url="DisabledClassBreakpoint.xml"/>
+            <file name="FieldBreakpoint.xml" url="FieldBreakpoint.xml"/>
+            <file name="MethodBreakpoint.xml" url="MethodBreakpoint.xml"/>
+            <file name="ClassBreakpoint.xml" url="ClassBreakpoint.xml"/>
             <folder name="OtherThreadActions">
                 <file name="org-netbeans-modules-debugger-jpda-ui-actions-SetAsCurrentThreadGutterAction.instance">
                     <attr name="position" intvalue="100"/>

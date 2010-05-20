@@ -288,9 +288,6 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     public void processProgressEvent(ProgressEvent event) {
         if (event.getType() == ProgressEvent.TYPE_START) {
             createListItem(event.getSource());
-            if (handle != null && handle.isInSleepMode()) {
-                initiateComponent(event);
-            }
         } else if (event.getType() == ProgressEvent.TYPE_PROGRESS || 
                    event.getType() == ProgressEvent.TYPE_SWITCH || 
                    event.getType() == ProgressEvent.TYPE_SILENT) {
@@ -332,11 +329,9 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             return;
         } else {
             if (event.getSource() != handle || event.isSwitched() || 
-                    // the following condition re-initiates the bar when going from/to sleep mode..
+                event.getType() == ProgressEvent.TYPE_SILENT ||                    // the following condition re-initiates the bar when going from/to sleep mode..
                     (event.getSource().isInSleepMode() != (bar.getClientProperty(NbProgressBar.SLEEPY) != null))) { //NIO18N
-                if (!event.getSource().isInSleepMode()) {
-                    initiateComponent(event);
-                }
+                initiateComponent(event);
             }
             if (event.getWorkunitsDone() > 0) {
                bar.setValue(event.getWorkunitsDone());
@@ -348,7 +343,6 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             if (event.getSource().isInSleepMode()) {
                 bar.setString(event.getMessage());
             }
-            
         } 
     }
     

@@ -1214,6 +1214,12 @@ When property 'continue.after.failing.tests' is set to 'false', this target fail
 immediately after tests in some module fail and does not continue testing the rest
 of the suite (this was the default up to version 6.7).
 
+test-generate-html - similar to the module-level target of the same name, only this 
+executes and reports on all unit and functional tests for all suite modules. [since 7.0]
+
+test-view-html - tests all modules in the suite, then opens the browser to display 
+the report generated from the results of those tests. [since 7.0]
+
 testuserdir-delete - deletes just the testing user directory (if not currently in use).
 
 CONTENTS OF YOUR manifest.mf

@@ -42,8 +42,12 @@
 
 package org.netbeans.modules.java.api.common.queries;
 
+import javax.swing.Icon;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
@@ -51,12 +55,15 @@ import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplemen
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
+import org.w3c.dom.Element;
 
 /**
  * Support class for creating different types of queries implementations.
@@ -304,5 +311,51 @@ public final class QuerySupport {
     public static AnnotationProcessingQueryImplementation createAnnotationProcessingQuery(AntProjectHelper helper, PropertyEvaluator evaluator,
             String annotationProcessingEnabledProperty, String annotationProcessingEnabledInEditorProperty, String runAllAnnotationProcessorsProperty, String annotationProcessorsProperty, String sourceOutputProperty, String processorOptionsProperty) {
         return new AnnotationProcessingQueryImpl(helper, evaluator, annotationProcessingEnabledProperty, annotationProcessingEnabledInEditorProperty, runAllAnnotationProcessorsProperty, annotationProcessorsProperty, sourceOutputProperty, processorOptionsProperty);
+    }
+
+    public static ProjectInformation createProjectInformation(AntProjectHelper projectHelper, Project project, Icon icon) {
+        return new QuerySupport.AntHelper(projectHelper, project, icon, ProjectInfoImpl.DEFAULT_ELEMENT_NAME);
+    }
+
+    public static ProjectInformation createProjectInformation(UpdateHelper updateHelper, Project project, Icon icon) {
+        return new QuerySupport.AntUpdateHelper(updateHelper, project, icon, ProjectInfoImpl.DEFAULT_ELEMENT_NAME);
+    }
+    
+    private static class AntHelper extends ProjectInfoImpl {
+
+        private final AntProjectHelper projectHelper;
+
+        @SuppressWarnings("LeakingThisInConstructor")
+        public AntHelper(AntProjectHelper projectHelper, Project project, Icon icon, String elementName) {
+            super(project, icon, elementName);
+            this.projectHelper = projectHelper;
+
+            projectHelper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, this, projectHelper));
+        }
+
+
+        @Override
+        protected Element getPrimaryConfigurationData() {
+            return projectHelper.getPrimaryConfigurationData(true);
+        }
+    }
+
+    private static class AntUpdateHelper extends ProjectInfoImpl {
+
+        private final UpdateHelper updateHelper;
+
+        @SuppressWarnings("LeakingThisInConstructor")
+        public AntUpdateHelper(UpdateHelper updateHelper, Project project, Icon icon, String elementName) {
+            super(project, icon, elementName);
+            this.updateHelper = updateHelper;
+
+            AntProjectHelper projectHelper = updateHelper.getAntProjectHelper();
+            projectHelper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, this, projectHelper));
+        }
+
+        @Override
+        protected Element getPrimaryConfigurationData() {
+            return updateHelper.getPrimaryConfigurationData(true);
+        }
     }
 }

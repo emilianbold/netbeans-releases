@@ -152,7 +152,16 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
             //Remove all step requests -- TODO: Do we want it?
             List<StepRequest> stepRequests = EventRequestManagerWrapper.stepRequests(erm);
-            EventRequestManagerWrapper.deleteEventRequests(erm, stepRequests);
+            try {
+                EventRequestManagerWrapper.deleteEventRequests(erm, stepRequests);
+            } catch (InvalidRequestStateExceptionWrapper irex) {
+                List<StepRequest> assureDeletedAllstepRequests = new ArrayList<StepRequest>(stepRequests);
+                for (StepRequest sr : assureDeletedAllstepRequests) {
+                    try {
+                        EventRequestManagerWrapper.deleteEventRequest(erm, sr);
+                    } catch (InvalidRequestStateExceptionWrapper ex) {}
+                }
+            }
             for (StepRequest stepRequest : stepRequests) {
                 //SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
                 debuggerImpl.getOperator().unregister(stepRequest);
@@ -464,7 +473,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             try {
                 EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
                 EventRequest eventRequest = EventWrapper.request(event);
-                EventRequestManagerWrapper.deleteEventRequest(erm, eventRequest);
+                try {
+                    EventRequestManagerWrapper.deleteEventRequest(erm, eventRequest);
+                } catch (InvalidRequestStateExceptionWrapper ex) {}
                 debuggerImpl.getOperator().unregister(eventRequest);
                 /*if (eventRequest instanceof StepRequest) {
                     SingleThreadedStepWatch.stepRequestDeleted((StepRequest) eventRequest);
@@ -529,13 +540,21 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             if (operationBreakpoints != null) {
                 for (Iterator<BreakpointRequest> it = operationBreakpoints.iterator(); it.hasNext(); ) {
                     BreakpointRequest br = it.next();
-                    EventRequestManagerWrapper.deleteEventRequest(erm, br);
+                    try {
+                        EventRequestManagerWrapper.deleteEventRequest(erm, br);
+                    } catch (InvalidRequestStateExceptionWrapper ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                     debuggerImpl.getOperator().unregister(br);
                 }
                 this.operationBreakpoints = null;
             }
             if (boundaryStepRequest != null) {
-                EventRequestManagerWrapper.deleteEventRequest(erm, boundaryStepRequest);
+                try {
+                    EventRequestManagerWrapper.deleteEventRequest(erm, boundaryStepRequest);
+                } catch (InvalidRequestStateExceptionWrapper ex) {
+                    Exceptions.printStackTrace(ex);
+                }
                 //SingleThreadedStepWatch.stepRequestDeleted(boundaryStepRequest);
                 debuggerImpl.getOperator().unregister(boundaryStepRequest);
             }
@@ -764,7 +783,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         try {
             EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
             for (EventRequest er : requestsToCancel) {
-                EventRequestManagerWrapper.deleteEventRequest(erm, er);
+                try {
+                    EventRequestManagerWrapper.deleteEventRequest(erm, er);
+                } catch (InvalidRequestStateExceptionWrapper ex) {}
                 debuggerImpl.getOperator ().unregister (er);
             }
         } catch (VMDisconnectedExceptionWrapper e) {

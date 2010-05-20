@@ -813,9 +813,9 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             }
         }
         // "OracleSolarisStudio" and "SunStudio" compiler sets must exist
-        if (getCompilerSet("OracleSolarisStudio") != null && getCompilerSet("SunStudio") != null) { // NOI18N
-            return;
-        }
+        //if (getCompilerSet("OracleSolarisStudio") != null && getCompilerSet("SunStudio") != null) { // NOI18N
+        //    return;
+        //}
         // if one or both are missing, find the 'best' Sun set and copy it
         if (bestCandidate == null) {
             bestCandidate = (CompilerSetImpl) getCompilerSet("OracleSolarisStudio_12.2"); // NOI18N
@@ -854,15 +854,21 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             return;
         }
         CompilerFlavor flavor = CompilerFlavorImpl.toFlavor("OracleSolarisStudio", platform); // NOI18N
-        if (flavor != null && getCompilerSet("OracleSolarisStudio") == null) { // #158084 NPE // NOI18N
+        if (flavor != null) {
+            if (getCompilerSet("OracleSolarisStudio") != null) { // NOI18N
+                remove(getCompilerSet("OracleSolarisStudio")); // NOI18N
+            }
             CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
-                    flavor, bestCandidate.getDirectory(), "OracleSolarisStudio", true, bestCandidate.getEncoding()); // NOI18N
+                    flavor, bestCandidate.getDirectory(), "OracleSolarisStudio", true, bestCandidate.getEncoding(), true); // NOI18N
             addUnsafe(bestCandidateCopy);
         }
         flavor = CompilerFlavorImpl.toFlavor("SunStudio", platform); // NOI18N
-        if (flavor != null && getCompilerSet("SunStudio") == null) { // #158084 NPE // NOI18N
+        if (flavor != null) {
+            if (getCompilerSet("SunStudio") != null) { // NOI18N
+                remove(getCompilerSet("SunStudio")); // NOI18N
+            }
             CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
-                    flavor, bestCandidate.getDirectory(), "SunStudio", true, bestCandidate.getEncoding()); // NOI18N
+                    flavor, bestCandidate.getDirectory(), "SunStudio", true, bestCandidate.getEncoding(), true); // NOI18N
             addUnsafe(bestCandidateCopy);
         }
     }

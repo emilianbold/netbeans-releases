@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -29,7 +29,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -44,9 +44,16 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!-- This document is used as source for generating www/dev/todo.html.
-     When you change this, please regenerate result document by 'ant todo' in www directory.
-  -->
-
-<list module="catalog">
-</list>
+<!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.1//EN" "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
+<type
+    name='DisabledMethodBreakpoint'
+    description_key='HINT_DISABLED_METHOD_BREAKPOINT'
+    localizing_bundle='org.netbeans.modules.debugger.jpda.resources.Bundle'
+    visible='true'
+    glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpoint.gif'
+    type='line'
+    actions='BreakpointActions'
+    severity='ok'
+    priority='100'
+    custom_sidebar_color='0xFF8FD5'
+/>

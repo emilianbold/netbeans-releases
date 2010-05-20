@@ -111,6 +111,10 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug180828.cpp", 7, 44, "bug180828.cpp", 4, 5);
     }
 
+    public void testBug186388() throws Exception {
+        // Bug 186388 - Unresolved ids in template specialization function definition
+        performTest("bug186388.cpp", 14, 22, "bug186388.cpp", 9, 4);
+    }
 
     public static class Failed extends HyperlinkBaseTestCase {
 
