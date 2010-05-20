@@ -164,14 +164,14 @@
     <target name="clean" depends="clean-01, clean-02, clean-03"/>
     <target name="build" depends="build-01, build-02, build-03"/>
 
-    <target name="clean-00" depends="clean-platform, clean-ide"/>
-    <target name="build-00" depends="build-platform, build-ide"/>
+    <target name="clean-01" depends="clean-platform, clean-ide"/>
+    <target name="build-01" depends="build-platform, build-ide"/>
 
-    <target name="clean-01" depends="clean-xml, clean-libs, clean-soa, clean-compapp, clean-bpel, clean-xslt, clean-wlm"/>
-    <target name="build-01" depends="build-xml, build-libs, build-soa, build-compapp, build-bpel, build-xslt, build-wlm"/>
+    <target name="clean-02" depends="clean-xml, clean-libs, clean-soa, clean-compapp, clean-bpel, clean-xslt, clean-wlm"/>
+    <target name="build-02" depends="build-xml, build-libs, build-soa, build-compapp, build-bpel, build-xslt, build-wlm"/>
 
-    <target name="clean-02" depends="clean-iep, clean-sql, clean-dm, clean-edm, clean-etl, clean-wsdlextensions"/>
-    <target name="build-02" depends="build-iep, build-sql, build-dm, build-edm, build-etl, build-wsdlextensions"/>
+    <target name="clean-03" depends="clean-iep, clean-sql, clean-dm, clean-edm, clean-etl, clean-wsdlextensions"/>
+    <target name="build-03" depends="build-iep, build-sql, build-dm, build-edm, build-etl, build-wsdlextensions"/>
 
     <!-- platform -->
     <target name="build-platform"><antcall target="do-platform"><param name="action" value="netbeans"/></antcall></target>
