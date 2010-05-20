@@ -56,9 +56,6 @@
         </tstamp>
 
         <ant dir="${home}/nbbuild" target="download-all-extbins"/>
-
-        <delete dir="${cache}/nbm"/>
-        <mkdir dir="${cache}/nbm"/>
     </target>
 
     <!-- netbeans -->
@@ -84,6 +81,9 @@
         <echo file="${build.number}" message="repository: ${repository}" append="true"/>
         
         <chmod file="${home}/nbbuild/netbeans/bin/netbeans" perm="ugo+rx"/>
+
+        <delete dir="${cache}/nbm"/>
+        <mkdir dir="${cache}/nbm"/>
     </target>
 
     <!-- sierra -->
@@ -161,17 +161,8 @@
     </target>
 
     <!-- clean, build, nbm -->
-    <target name="clean">
-        <antcall target="clean-00"/>
-        <antcall target="clean-01"/>
-        <antcall target="clean-02"/>
-    </target>
-
-    <target name="build">
-        <antcall target="build-00"/>
-        <antcall target="build-01"/>
-        <antcall target="build-02"/>
-    </target>
+    <target name="clean" depends="clean-01, clean-02, clean-03"/>
+    <target name="build" depends="build-01, build-02, build-03"/>
 
     <target name="clean-00" depends="clean-platform, clean-ide"/>
     <target name="build-00" depends="build-platform, build-ide"/>
