@@ -199,7 +199,7 @@ public class ArchetypeWizardUtils {
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_APP_ARCH.setVersion("1.3"); //NOI18N
+        NB_APP_ARCH.setVersion("1.3.1"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
         NB_APP_ARCH.setRepository("http://repository.codehaus.org/");
 
