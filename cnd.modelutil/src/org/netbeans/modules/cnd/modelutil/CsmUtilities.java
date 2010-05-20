@@ -408,7 +408,7 @@ public class CsmUtilities {
                         if (csmProject != null) {
                             CsmFile file = csmProject.findFile(item, snapShot);
                             if (file != null) {
-                                if (item.getClass().getName().contains("StandaloneFileProvider")) {
+                                if (item.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
                                     saFiles.add(file);
                                 } else {
                                     files.add(file);
