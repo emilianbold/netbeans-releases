@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,6 +68,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -239,7 +239,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 if (nativeProject.getProjectRoot().equals(closedFilePath)) {
                     for (CsmFile csmf : csmProject.getAllFiles()) {
                         File f = ((FileImpl) csmf).getFile();
-                        DataObject dao = NativeProjectImpl.getDataObject(f);
+                        DataObject dao = NativeProjectProvider.getDataObject(f);
                         if (dao != null) {
                             NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
                             if (set != null) {
@@ -305,7 +305,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         private final Object listenersLock = new Lock();
 
         static NativeProject getNativeProjectImpl(File file) {
-            DataObject dao = getDataObject(file);
+            DataObject dao = NativeProjectProvider.getDataObject(file);
             if (dao == null) {
                 return null;
             }
@@ -396,31 +396,12 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         private void addFile(File file) {
-            DataObject dobj = getDataObject(file);
+            DataObject dobj = NativeProjectProvider.getDataObject(file);
             NativeFileItem.Language lang = NativeProjectProvider.getLanguage(file, dobj);
             NativeFileItem item = new NativeFileItemImpl(file, this, lang);
             //TODO: put item in loockup of DataObject
             // registerItemInDataObject(dobj, item);
             this.files.add(item);
-        }
-
-        private static DataObject getDataObject(File file) {
-
-            DataObject dobj = null;
-            try {
-                FileObject fo = FileUtil.toFileObject(file.getCanonicalFile());
-                if (fo != null) {
-                    try {
-                        dobj = DataObject.find(fo);
-                    } catch (DataObjectNotFoundException ex) {
-                        // skip;
-                    }
-                }
-            } catch (IOException ioe) {
-                // skip;
-            }
-
-            return dobj;
         }
 
         @Override

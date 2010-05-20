@@ -399,6 +399,8 @@ public class CsmUtilities {
         if (dobj != null && dobj.isValid()) {
             try {
                 List<CsmFile> files = new ArrayList<CsmFile>();
+                // put standalone files into separate collection
+                List<CsmFile> saFiles = new ArrayList<CsmFile>();
                 NativeFileItemSet set = dobj.getLookup().lookup(NativeFileItemSet.class);
                 if (set != null && !set.isEmpty()) {
                     for (NativeFileItem item : set.getItems()) {
@@ -406,10 +408,16 @@ public class CsmUtilities {
                         if (csmProject != null) {
                             CsmFile file = csmProject.findFile(item, snapShot);
                             if (file != null) {
-                                files.add(file);
+                                if (item.getClass().getName().contains("StandaloneFileProvider")) {
+                                    saFiles.add(file);
+                                } else {
+                                    files.add(file);
+                                }
                             }
                         }
                     }
+                    // append stand alone files always at the end of collection
+                    files.addAll(saFiles);
                 }
                 if (files.isEmpty()) {
                     FileObject fo = dobj.getPrimaryFile();

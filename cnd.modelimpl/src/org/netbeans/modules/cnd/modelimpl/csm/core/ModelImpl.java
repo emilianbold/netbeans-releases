@@ -51,6 +51,7 @@ import java.util.*;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
@@ -370,13 +371,17 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     @Override
     public CsmFile findFile(CharSequence absPath, boolean snapShot) {
         Collection<CsmProject> projects = projects();
+        CsmFile ret = null;
         for (CsmProject curPrj : projects) {
             if (curPrj instanceof ProjectBase) {
                 ProjectBase ownerPrj = ((ProjectBase) curPrj).findFileProject(absPath);
                 if (ownerPrj != null) {
                     CsmFile csmFile = ownerPrj.findFile(absPath, snapShot);
                     if (csmFile != null) {
-                        return csmFile;
+                        ret = csmFile;
+                        if (!CsmStandaloneFileProvider.getDefault().isStandalone(csmFile)) {
+                            return ret;
+                        }
                     }
                 }
             }
@@ -389,9 +394,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             canonical = null;
         }
         if (canonical != null && !canonical.equals(absPath)) {
-            return findFile(canonical, snapShot);
+            CsmFile out = findFile(canonical, snapShot);
+            if (out != null) {
+                ret = out;
+            }
         }
-        return null;
+        return ret;
     }
 
     @Override

@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,6 +53,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
@@ -121,6 +121,21 @@ public final class NativeProjectProvider {
         return NativeFileItem.Language.OTHER;
     }
 
+    public static DataObject getDataObject(File file) {
+        CndUtils.assertNormalized(file);
+        DataObject dobj = null;
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo != null) {
+            try {
+                dobj = DataObject.find(fo);
+            } catch (DataObjectNotFoundException ex) {
+                // skip;
+            }
+        }
+
+        return dobj;
+    }
+    
     public static final class NativeProjectImpl implements NativeProject {
 	
 	private final List<String> sysIncludes;
@@ -285,6 +300,7 @@ public final class NativeProjectProvider {
         }
         
 	private NativeFileItem addFile(File file) {
+            file = CndFileUtils.normalizeFile(file);
             DataObject dobj = getDataObject(file);
 	    NativeFileItem.Language lang = getLanguage(file, dobj);
 	    NativeFileItem item = new NativeFileItemImpl(file, this, lang);
@@ -314,26 +330,6 @@ public final class NativeProjectProvider {
             return null;
         }
     }    
-
-
-    private static DataObject getDataObject(File file) {
-
-        DataObject dobj = null;
-        try {
-            FileObject fo = FileUtil.toFileObject(file.getCanonicalFile());
-            if (fo != null) {
-                try {
-                    dobj = DataObject.find(fo);
-                } catch (DataObjectNotFoundException ex) {
-                    // skip;
-                }
-            }
-        } catch (IOException ioe) {
-            // skip;
-        }
-
-        return dobj;
-    }
         
     /*package*/ static void registerItemInDataObject(DataObject obj, NativeFileItem item) {
         if (obj != null) {
