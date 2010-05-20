@@ -62,15 +62,17 @@ public final class ZendGoToViewAction extends GoToViewAction {
     }
 
     @Override
-    public void actionPerformedInternal() {
+    public boolean goToView() {
         EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
         PhpBaseElement phpElement = editorSupport.getElement(fo, offset);
         if (phpElement == null) {
-            return;
+            return false;
         }
         FileObject view = ZendUtils.getView(fo, phpElement);
         if (view != null) {
             UiUtils.open(view, DEFAULT_OFFSET);
+            return true;
         }
+        return false;
     }
 }

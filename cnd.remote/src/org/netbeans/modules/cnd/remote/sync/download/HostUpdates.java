@@ -273,7 +273,7 @@ public class HostUpdates {
         for (FileDownloadInfo info : infos) {
             handle.progress(NbBundle.getMessage(getClass(), "RemoteUpdatesProgress_Message", info.getLocalFile().getName()), cnt++);
             File dirToRefresh = info.getLocalFile().getParentFile();
-            while (!dirToRefresh.exists() && dirToRefresh != null) {
+            while (dirToRefresh != null && !dirToRefresh.exists()) {
                 dirToRefresh = dirToRefresh.getParentFile();
             } // no need to create here, info.download() will do this; but we need to refresh on previously existing ones
             info.download();
