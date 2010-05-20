@@ -54,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -80,7 +81,10 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
     public Element getConfigurationFragment(final String elementName, final String namespace, final boolean shared) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
             public Element run() {
-                AuxiliaryConfiguration delegate = project.getLookup().lookup(AuxiliaryConfiguration.class);
+                assert project != null;
+                Lookup lookup = project.getLookup();
+                assert lookup != null : project.getClass().getName() + " violates #185464";
+                AuxiliaryConfiguration delegate = lookup.lookup(AuxiliaryConfiguration.class);
                 if (delegate != null) {
                     Element fragment = delegate.getConfigurationFragment(elementName, namespace, shared);
                     if (fragment != null) {
