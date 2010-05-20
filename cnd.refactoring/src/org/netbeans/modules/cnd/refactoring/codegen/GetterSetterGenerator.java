@@ -63,6 +63,8 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.codegen.ui.GetterSetterPanel;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
@@ -78,6 +80,7 @@ public class GetterSetterGenerator implements CodeGenerator {
 
         private static final String ERROR = "<error>"; //NOI18N
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             JTextComponent component = context.lookup(JTextComponent.class);
@@ -195,6 +198,7 @@ public class GetterSetterGenerator implements CodeGenerator {
         this.isUpperCase = isUpperCase;
     }
 
+    @Override
     public String getDisplayName() {
         if (type == GeneratorUtils.Kind.GETTERS_ONLY) {
             return org.openide.util.NbBundle.getMessage(GetterSetterGenerator.class, "LBL_getter"); //NOI18N
@@ -205,7 +209,9 @@ public class GetterSetterGenerator implements CodeGenerator {
         return org.openide.util.NbBundle.getMessage(GetterSetterGenerator.class, "LBL_getter_and_setter"); //NOI18N
     }
 
+    @Override
     public void invoke() {
+        UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CsmRefactoringUtils.GENERATE_TRACKING, "GETTER_SETTER"); // NOI18N
         final GetterSetterPanel panel = new GetterSetterPanel(description, type);
         String title = GeneratorUtils.getGetterSetterDisplayName(type);
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);

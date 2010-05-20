@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -84,21 +85,26 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         return false;
     }
 
+    private static final String FIND_USAGES_TRACKING = "FIND_USAGES"; // NOI18N
+    private static final String RENAME_TRACKING = "RENAME"; // NOI18N
+
     @Override
     public void doFindUsages(final Lookup lookup) {
         Runnable task;
         if (isFromEditor(lookup)) {
             task = new TextComponentTask(lookup) {
-
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, FIND_USAGES_TRACKING, CsmRefactoringUtils.FROM_EDITOR_TRACKING); // NOI18N
                     return new WhereUsedQueryUI(selectedElement);
                 }
             };
         } else {
             task = new NodeToElementTask(lookup) {
 
+                @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, FIND_USAGES_TRACKING); // NOI18N
                     return new WhereUsedQueryUI(selectedElement);
                 }
             };
@@ -133,6 +139,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, RENAME_TRACKING, CsmRefactoringUtils.FROM_EDITOR_TRACKING);
                     return new RenameRefactoringUI(selectedElement);
                 }
             };
@@ -141,6 +148,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, RENAME_TRACKING);
                     return new RenameRefactoringUI(selectedElement);
                 }
             };

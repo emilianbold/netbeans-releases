@@ -68,7 +68,7 @@ public final class SimpleConverter implements PathConverter {
         if (trgType == PathType.WINDOWS) {
             String prefix = srcType == PathType.CYGWIN ? cygwinPrefix : "/"; // NOI18N
             int plen = prefix.length();
-            if (path.startsWith(prefix)) {
+            if (path.length() > plen && path.startsWith(prefix)) {
                 result = path.charAt(plen) + ":"; // NOI18N
                 result += path.substring(plen + 1);
             }

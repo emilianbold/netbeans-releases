@@ -191,7 +191,7 @@ public class FileStatusCache {
                         break;
                     }
                 } else {
-                    if (Utils.isParentOrEqual(root, file)) {
+                    if (org.netbeans.modules.versioning.util.Utils.isAncestorOrEqual(root, file)) {
                         set.add(file);
                         break;
                     }
@@ -203,7 +203,7 @@ public class FileStatusCache {
                 File excluded = (File) i.next();
                 for (Iterator j = set.iterator(); j.hasNext();) {
                     File file = (File) j.next();
-                    if (Utils.isParentOrEqual(excluded, file)) {
+                    if (org.netbeans.modules.versioning.util.Utils.isAncestorOrEqual(excluded, file)) {
                         j.remove();
                     }
                 }

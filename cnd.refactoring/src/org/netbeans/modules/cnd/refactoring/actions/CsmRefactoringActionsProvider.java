@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.ui.ChangeParametersUI;
 import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldUI;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -67,6 +68,8 @@ import org.openide.util.Lookup;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider.class, position=100)
 public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvider {
+    private static final String CHANGE_PARAMETERS_TRACKING = "CHANGE_PARAMETERS"; // NOI18N
+    private static final String ENCAPSULATE_FIELDS_TRACKING = "ENCAPSULATE_FIELDS"; // NOI18N
     
     public CsmRefactoringActionsProvider() {
     }
@@ -96,7 +99,9 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
         Runnable task;
         if (RefactoringActionsProvider.isFromEditor(lookup)) {
             task = new RefactoringActionsProvider.TextComponentTask(lookup) {
+                @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CHANGE_PARAMETERS_TRACKING, CsmRefactoringUtils.FROM_EDITOR_TRACKING);
                     return ChangeParametersUI.create(selectedElement, editorContext);
                 }
             };
@@ -105,6 +110,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
 
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CHANGE_PARAMETERS_TRACKING);
                     return ChangeParametersUI.create(selectedElement, null);
                 }
             };
@@ -139,6 +145,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
             task = new RefactoringActionsProvider.TextComponentTask(lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, ENCAPSULATE_FIELDS_TRACKING, CsmRefactoringUtils.FROM_EDITOR_TRACKING);
                     return EncapsulateFieldUI.create(selectedElement, editorContext);
                 }
             };
@@ -146,6 +153,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
             task = new RefactoringActionsProvider.NodeToElementTask(lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, ENCAPSULATE_FIELDS_TRACKING);
                     return EncapsulateFieldUI.create(selectedElement, null);
                 }
             };

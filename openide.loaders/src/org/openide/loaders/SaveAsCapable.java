@@ -54,7 +54,7 @@ import org.openide.filesystems.FileObject;
  * editor support inherits from <code>DataEditorSupport</code> you can implement "Save As" feature
  * for your documents by adding the following lines into your {@link DataObject}'s constructor:
  * 
- <code><pre>
+<code><pre>
         getCookieSet().assign(SaveAsCapable.class, new SaveAsCapable() {
             public void saveAs(FileObject folder, String fileName) throws IOException {
                 getDataEditorSupport().saveAs( folder, fileName );
@@ -64,8 +64,8 @@ import org.openide.filesystems.FileObject;
  *
  * If you have {@link Node}, you may use the following code:
  * 
- <code><pre>
-    public class MyNode extends AbstractNode implements Node.Cookie {
+<code><pre>
+    public class MyNode extends AbstractNode {
         
         public MyNode() {
             getCookieSet().assign(SaveAsCapable.class, new MySaveAsCapable());

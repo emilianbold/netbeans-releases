@@ -49,6 +49,8 @@ import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
@@ -83,6 +85,9 @@ public class Utils {
 
     private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "CVS(\\" + File.separatorChar + ".*|$)");    
     
+    private static Reference<Context>  contextCached = new WeakReference<Context>(null);
+    private static Reference<Node[]> contextNodesCached = new WeakReference<Node []>(null);
+
     private static final FileFilter cvsFileFilter = new FileFilter() {
         public boolean accept(File pathname) {
             if (CvsVersioningSystem.FILENAME_CVS.equals(pathname.getName())) return false;
@@ -138,8 +143,15 @@ public class Utils {
         if (nodes == null) {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
-        VCSContext ctx = VCSContext.forNodes(nodes);
-        return new Context(new HashSet(ctx.computeFiles(cvsFileFilter)), new HashSet(ctx.getRootFiles()), new HashSet(ctx.getExclusions()));  
+        if (Arrays.equals(contextNodesCached.get(), nodes)) {
+            Context ctx = contextCached.get();
+            if (ctx != null) return ctx;
+        }
+        VCSContext vcsCtx = VCSContext.forNodes(nodes);
+        Context ctx = new Context(new HashSet(vcsCtx.computeFiles(cvsFileFilter)), new HashSet(vcsCtx.getRootFiles()), new HashSet(vcsCtx.getExclusions()));
+        contextCached = new WeakReference<Context>(ctx);
+        contextNodesCached = new WeakReference<Node []>(nodes);
+        return ctx;
     }
 
     
