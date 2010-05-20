@@ -156,7 +156,7 @@ public class ConstructorGenerator implements CodeGenerator {
 
     @Override
     public void invoke() {
-        UIGesturesSupport.submit("USG_CND_REFACTORING", "GENERATE", "CONSTRUCTOR"); // NOI18N
+        UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CsmRefactoringUtils.GENERATE_TRACKING, "CONSTRUCTOR"); // NOI18N
         final List<CsmField> fieldHandles;
         final List<CsmConstructor> constrHandles;
         if (constructorDescription != null || fieldsDescription != null) {

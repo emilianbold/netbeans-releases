@@ -68,6 +68,8 @@ import org.openide.util.Lookup;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider.class, position=100)
 public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvider {
+    private static final String CHANGE_PARAMETERS_TRACKING = "CHANGE_PARAMETERS"; // NOI18N
+    private static final String ENCAPSULATE_FIELDS_TRACKING = "ENCAPSULATE_FIELDS"; // NOI18N
     
     public CsmRefactoringActionsProvider() {
     }
@@ -99,7 +101,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
             task = new RefactoringActionsProvider.TextComponentTask(lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
-                    UIGesturesSupport.submit("USG_CND_REFACTORING", "CHANGE_PARAMETERS", "FROM_EDITOR"); // NOI18N
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CHANGE_PARAMETERS_TRACKING, CsmRefactoringUtils.FROM_EDITOR_TRACKING);
                     return ChangeParametersUI.create(selectedElement, editorContext);
                 }
             };
@@ -108,7 +110,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
 
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
-                    UIGesturesSupport.submit("USG_CND_REFACTORING", "CHANGE_PARAMETERS"); // NOI18N
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CHANGE_PARAMETERS_TRACKING);
                     return ChangeParametersUI.create(selectedElement, null);
                 }
             };
@@ -143,7 +145,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
             task = new RefactoringActionsProvider.TextComponentTask(lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
-                    UIGesturesSupport.submit("USG_CND_REFACTORING", "ENCAPSULATE_FIELDS", "FROM_EDITOR"); // NOI18N
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, ENCAPSULATE_FIELDS_TRACKING, CsmRefactoringUtils.FROM_EDITOR_TRACKING);
                     return EncapsulateFieldUI.create(selectedElement, editorContext);
                 }
             };
@@ -151,7 +153,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
             task = new RefactoringActionsProvider.NodeToElementTask(lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
-                    UIGesturesSupport.submit("USG_CND_REFACTORING", "ENCAPSULATE_FIELDS"); // NOI18N
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, ENCAPSULATE_FIELDS_TRACKING);
                     return EncapsulateFieldUI.create(selectedElement, null);
                 }
             };

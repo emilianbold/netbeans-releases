@@ -82,6 +82,10 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 public final class CsmRefactoringUtils {
+    public static final String USG_CND_REFACTORING = "USG_CND_REFACTORING"; // NOI18N
+    public static final String GENERATE_TRACKING = "GENERATE"; // NOI18N
+    public static final String FROM_EDITOR_TRACKING = "FROM_EDITOR"; // NOI18N
+
     public static final boolean REFACTORING_EXTRA = CndUtils.getBoolean("cnd.refactoring.extra", false); // NOI18N
     
     private CsmRefactoringUtils() {
