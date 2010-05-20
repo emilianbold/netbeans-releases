@@ -254,7 +254,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 return;
             }
         }
-        UIGesturesSupport.submit("USG_CND_REFACTORING", "INSTANT_RENAME"); // NOI18N
+        UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, "INSTANT_RENAME"); // NOI18N
         instance = new InstantRenamePerformer(target, highlights, caretOffset);
     }
 
