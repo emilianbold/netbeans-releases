@@ -51,6 +51,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -356,6 +358,9 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     public String getIconBase (final NodeModel original, final Object node) 
     throws UnknownTypeException {
+        Logger.getLogger(VariablesTreeModelFilter.class.getName()).log(Level.WARNING,
+                "Obsolete getIconBase() method was called!",
+                new IllegalStateException("getIconBaseWithExtension() should be called!"));
         final String[] unfilteredIconBase = new String[] { null };
         VariablesFilter vf = getFilter (node, true, new Runnable() {
             public void run() {
