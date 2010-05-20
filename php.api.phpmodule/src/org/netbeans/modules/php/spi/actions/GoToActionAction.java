@@ -43,6 +43,8 @@ package org.netbeans.modules.php.spi.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -50,12 +52,15 @@ import org.openide.util.RequestProcessor;
  * Base Go To Action action.
  * <p>
  * This implementation just sets the correct name and runs the method
- * {@link #actionPerformedInternal() actionPerformedInternal()} in its
+ * {@link #goToAction() goToAction()} in its
  * own {@link RequestProcessor request processor}.
  * @author Tomas Mysik
  * @since 1.29
  */
 public abstract class GoToActionAction extends AbstractAction {
+    /**
+     * Default offset ({@value #DEFAULT_OFFSET}) that can be used when opening an Action.
+     */
     protected static final int DEFAULT_OFFSET = 0;
 
     private static final RequestProcessor RP = new RequestProcessor(GoToActionAction.class);
@@ -65,17 +70,23 @@ public abstract class GoToActionAction extends AbstractAction {
     }
 
     /**
-     * Method where the navigation itself happens. It is run in its
-     * own {@link RequestProcessor request processor}.
+     * Method where the navigation itself happens. A message is displayed
+     * if no Action is found (it means that this method returns {@code false}).
+     * <p>
+     * It is run in its own {@link RequestProcessor request processor}.
+     * @return {@code true} if successful (typically the Action is found and opened)
+     * @since 1.31
      */
-    public abstract void actionPerformedInternal();
+    public abstract boolean goToAction();
 
     @Override
     public final void actionPerformed(ActionEvent e) {
         RP.execute(new Runnable() {
             @Override
             public void run() {
-                actionPerformedInternal();
+                if (!goToAction()) {
+                    DialogDisplayer.getDefault().notifyLater(new DialogDescriptor.Message(NbBundle.getMessage(GoToActionAction.class, "MSG_ActionNotFound")));
+                }
             }
         });
     }

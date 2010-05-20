@@ -278,6 +278,11 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
                         setErrorMessage(wizardDescriptor, controller.getErrorMessage());
                     }
                     return false;
+                } else if (extender != null && extender.isValid()) {
+                    String message = (String) controller.getProperties().getProperty(WizardDescriptor.PROP_INFO_MESSAGE);
+                    if (controller.getErrorMessage()==null && message != null) {
+                        setInfoMessage(wizardDescriptor, message);
+                    }
                 }
             }
         }

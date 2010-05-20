@@ -104,7 +104,7 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
         public void propertyChange(PropertyChangeEvent evt) {
             Object newV = evt.getNewValue();
             if (Boolean.TRUE.equals(newV)) {
-                //puChanged();//see issue #183473
+                puChanged();
             }
         }
     };

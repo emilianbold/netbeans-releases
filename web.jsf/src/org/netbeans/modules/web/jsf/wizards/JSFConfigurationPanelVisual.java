@@ -94,7 +94,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private final List<String> preferredLanguages = new ArrayList<String>();
     private String currentServerInstanceID;
     private final List<String> excludeLibs = Arrays.asList("javaee-web-api-6.0", "javaee-api-6.0"); //NOI18N
-    
+    private boolean isWebLogicServer = false;
     /** Creates new form JSFConfigurationPanelVisual */
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
         this.panel = panel;
@@ -577,6 +577,12 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
             return true;
         }
 
+        if (rbNoneLibrary.isSelected() && isWebLogicServer){
+            controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Weblogic_Warning"));
+        } else {
+            controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
+        }
+
         if (rbRegisteredLibrary.isSelected()) {
             if (jsfLibraries == null || jsfLibraries.size() == 0) {
                 controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF")); //NOI18N
@@ -730,6 +736,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                 if (libName != null) {
                     if (!rbNoneLibrary.isVisible()) {
                         rbNoneLibrary.setVisible(true);
+                        repaint();
                     }
                     rbNoneLibrary.setText(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Any_Library", libName)); //NOI18N
                     rbNoneLibrary.setSelected(true);
@@ -737,6 +744,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                         panel.setLibraryType(JSFConfigurationPanel.LibraryType.NONE);
                     enableNewLibraryComponent(false);
                     enableDefinedLibraryComponent(false);
+                    isWebLogicServer = isWebLogic(serverInstanceID);
                 }
 
             } catch (IOException exception) {

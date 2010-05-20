@@ -63,11 +63,13 @@ public final class SymfonyGoToActionAction extends GoToActionAction {
     }
 
     @Override
-    public void actionPerformedInternal() {
+    public boolean goToAction() {
         FileObject action = SymfonyUtils.getAction(fo);
         if (action != null) {
             UiUtils.open(action, getActionMethodOffset(action));
+            return true;
         }
+        return false;
     }
 
     private int getActionMethodOffset(FileObject action) {

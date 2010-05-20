@@ -86,7 +86,7 @@ public class RemoteFileSearcherImpl implements FileSearcher {
             }
 
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable("/bin/sh").setArguments("-s"); // NOI18N
+            npb.setExecutable(hostInfo.getShell()).setArguments("-s"); // NOI18N
 
             Process p = npb.call();
 
