@@ -806,6 +806,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         try {
             return file.getCanonicalFile();
         } catch (IOException e) {
+            e.printStackTrace();
             return null;
         }
     }
