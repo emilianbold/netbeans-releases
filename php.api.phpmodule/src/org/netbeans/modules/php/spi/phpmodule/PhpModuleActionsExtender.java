@@ -91,6 +91,8 @@ public abstract class PhpModuleActionsExtender {
      * ({@link IllegalStateException} is thrown in such case).
      * <p>
      * The default implementation returns {@code false}.
+     * <p>
+     * <b>This method should be as fast as possible.</b>
      * @param fo file object to check (the currently opened file in editor)
      * @return {@code true} if the given FileObject is a <em>view</em> (or a <em>template</em>)
      * @see #getGoToActionAction(FileObject, int)
@@ -107,6 +109,8 @@ public abstract class PhpModuleActionsExtender {
      * ({@link IllegalStateException} is thrown in such case).
      * <p>
      * The default implementation returns {@code false}.
+     * <p>
+     * <b>This method should be as fast as possible.</b>
      * @param fo file object to check (the currently opened file in editor)
      * @return {@code true} if the given FileObject is an <em>action</em> (or a <em>controller</em>)
      * @see #getGoToViewAction(FileObject, int)

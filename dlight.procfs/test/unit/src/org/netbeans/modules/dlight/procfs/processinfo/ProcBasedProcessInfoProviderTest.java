@@ -89,7 +89,10 @@ public class ProcBasedProcessInfoProviderTest extends NativeExecutionBaseTestCas
         // Be sure that Factory returns not null value and
         // that provider returns not null info
         long timeBefore = System.nanoTime();
-        Process p = new ProcessBuilder("/bin/sh", "-c", "/bin/echo $$ && sleep 100").start();
+        HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+        assertNotNull(hostInfo);
+
+        Process p = new ProcessBuilder(hostInfo.getShell(), "-c", "/bin/echo $$ && sleep 100").start();
         try {
             int pid = new Scanner(p.getInputStream()).nextInt();
 
@@ -113,7 +116,9 @@ public class ProcBasedProcessInfoProviderTest extends NativeExecutionBaseTestCas
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         ProcBasedProcessInfoProviderFactory instance = new ProcBasedProcessInfoProviderFactory();
 
-        if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() != HostInfo.OSFamily.SUNOS) {
+        HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
+        
+        if (hostInfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
             ProcessInfoProvider pip = instance.getProvider(execEnv, 0);
             assertNull(pip);
             return;
@@ -123,7 +128,7 @@ public class ProcBasedProcessInfoProviderTest extends NativeExecutionBaseTestCas
 
         for (int i = 0; i < 3; i++) {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable("/bin/sh").setArguments("-c", "/bin/echo $$ && sleep 100");
+            npb.setExecutable(hostInfo.getShell()).setArguments("-c", "/bin/echo $$ && sleep 100");
             Process p = npb.call();
             try {
                 int pid = new Scanner(p.getInputStream()).nextInt();
