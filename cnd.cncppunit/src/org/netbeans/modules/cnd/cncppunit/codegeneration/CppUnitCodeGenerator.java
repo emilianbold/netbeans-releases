@@ -60,7 +60,7 @@ public class CppUnitCodeGenerator {
     private CppUnitCodeGenerator() {
     }
 
-    public static Map<String, Object> generateTemplateParamsForFunctions(String testFilePath, List<CsmFunction> functions) {
+    public static Map<String, Object> generateTemplateParamsForFunctions(String testClassName, String testFilePath, List<CsmFunction> functions) {
         Map<String, Object> templateParams = new HashMap<String, Object>();
 
         if (functions != null) {
@@ -100,6 +100,8 @@ public class CppUnitCodeGenerator {
                 }
                 testFunctionsNames.add(testFunctionName);
                 testFunctions.append("void ") // NOI18N
+                        .append(testClassName) // NOI18N
+                        .append("::") // NOI18N
                         .append(testFunctionName) // NOI18N
                         .append("() {\n"); // NOI18N
                 Collection<CsmParameter> params = fun.getParameters();
@@ -114,7 +116,7 @@ public class CppUnitCodeGenerator {
                 testFunctions.append(CodeGenerationUtils.generateFunctionCall(fun));
 
                 testFunctions.append("    if(true /*check result*/) {\n"); // NOI18N
-                testFunctions.append("        CPPUNIT_ASSERT(false);"); // NOI18N
+                testFunctions.append("        CPPUNIT_ASSERT(false);\n"); // NOI18N
                 testFunctions.append("    }\n"); // NOI18N
                 
                 testFunctions.append("}\n\n"); // NOI18N
