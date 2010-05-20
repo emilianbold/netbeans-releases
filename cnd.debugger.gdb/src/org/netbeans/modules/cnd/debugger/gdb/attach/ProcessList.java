@@ -197,6 +197,7 @@ final class ProcessList {
                         if (isSolaris && !DISABLE_PARGS) {
                             NativeProcessBuilder pargsBuilder = NativeProcessBuilder.newProcessBuilder(exEnv);
                             pargsBuilder.setExecutable("/usr/bin/pargs").redirectError(); // NOI18N
+                            pargsBuilder.getEnvironment().put("LC_ALL", "C"); // NOI18N
                             String[] pargs_args = new String[proclist.size()+1];
                             pargs_args[0] = "-Fl"; // NOI18N
                             int idx = 1;
