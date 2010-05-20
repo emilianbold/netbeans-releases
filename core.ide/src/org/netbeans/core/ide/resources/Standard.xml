@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
     <Toolbar name="UndoRedo" />
     <Toolbar name="Build" />
     <Toolbar name="Debug" visible="false" />
-    <Toolbar name="Memory"/>
+    <Toolbar name="Memory" visible="false" />
     <Toolbar name="QuickSearch" align="right" />
   </Row>
 
