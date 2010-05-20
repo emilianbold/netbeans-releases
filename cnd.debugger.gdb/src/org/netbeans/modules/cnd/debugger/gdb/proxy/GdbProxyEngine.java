@@ -213,6 +213,48 @@ public class GdbProxyEngine {
     }
 
     private static PrintStream getPrintStream(final OutputStream os, boolean remote) {
+        /*
+         * There is an issue with gdb on Windows when application that we want
+         * to debug is located in path that conatins non-latin characters.
+         *
+         * See:
+         * Bug 186424 - Windows: gdb doesn't work in case debugged application
+         *              is located in directory with non-latin characters
+         *
+         * There are two problems:
+         *
+         * 1. Current implementation always uses default charset to communicate
+         * with gdb in case of localhost. This is not correct, as in latest
+         * cygwin, for example, UTF-8 should be used (this is gdb/shell -
+         * specific). But even if correct encoding is used, gdb doesn't work.
+         *
+         * See https://netbeans.org/bugzilla/show_bug.cgi?id=186424
+         *
+         */
+
+        // The use of shell-specific encoding following code may be used:
+
+//        String charset;
+//
+//        if (remote) {
+//            charset = ProcessUtils.getRemoteCharSet();
+//        } else {
+//            if (Utilities.isWindows()) {
+//                charset = WindowsSupport.getInstance().getShellCharset().name();
+//            } else {
+//                charset = Charset.defaultCharset().name();
+//            }
+//        }
+//
+//        try {
+//            return new PrintStream(os, true, charset);
+//        } catch (UnsupportedEncodingException ex) {
+//            // this is possible situation
+//        }
+//
+//        return new PrintStream(os, true);
+
+
         if (remote) {
             // set charset
             try {
