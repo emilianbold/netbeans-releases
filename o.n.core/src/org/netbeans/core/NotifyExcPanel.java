@@ -148,7 +148,8 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
             }
         };
         output.setEditable(false);
-        output.setFont(new Font("Monospaced", Font.PLAIN, output.getFont().getSize() + 1)); // NOI18N
+        Font f = output.getFont();
+        output.setFont(new Font("Monospaced", Font.PLAIN, null == f ? 12 : f.getSize() + 1)); // NOI18N
         output.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
         output.setBackground(UIManager.getColor("Label.background")); // NOI18N
 
