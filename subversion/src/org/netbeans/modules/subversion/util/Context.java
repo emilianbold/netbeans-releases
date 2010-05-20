@@ -49,6 +49,7 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 import java.io.File;
 import java.io.Serializable;
 import java.util.*;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Encapsulates context of an action. There are two ways in which context may be defined:
@@ -92,7 +93,7 @@ public class Context implements Serializable {
             File root = i.next();
             for (Iterator<File> j = exclusions.iterator(); j.hasNext();) {
                 File exclusion = j.next();
-                if (SvnUtils.isParentOrEqual(exclusion, root)) {
+                if (Utils.isAncestorOrEqual(exclusion, root)) {
                     j.remove();
                     exclusionRemoved(exclusion, root);
                     return true;
@@ -110,8 +111,8 @@ public class Context implements Serializable {
             File file = i.next();
             for (Iterator<File> j = newFiles.iterator(); j.hasNext();) {
                 File includedFile = j.next();
-                if (SvnUtils.isParentOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) continue outter;
-                if (SvnUtils.isParentOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
+                if (Utils.isAncestorOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) continue outter;
+                if (Utils.isAncestorOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
                     j.remove();
                 }
             }
@@ -126,7 +127,7 @@ public class Context implements Serializable {
         if (exclusionChildren == null) return;
         for (int i = 0; i < exclusionChildren.length; i++) {
             File child = exclusionChildren[i];
-            if (!SvnUtils.isParentOrEqual(root, child)) {
+            if (!Utils.isAncestorOrEqual(root, child)) {
                 exclusions.add(child);
             }
         }
@@ -161,7 +162,7 @@ public class Context implements Serializable {
             if (SvnUtils.isParentOrEqual(root, file)) {
                 for (Iterator j = exclusions.iterator(); j.hasNext();) {
                     File excluded = (File) j.next();
-                    if (SvnUtils.isParentOrEqual(excluded, file)) {
+                    if (Utils.isAncestorOrEqual(excluded, file)) {
                         continue outter;
                     }
                 }
