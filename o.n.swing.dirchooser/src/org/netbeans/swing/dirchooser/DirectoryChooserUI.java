@@ -1789,7 +1789,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
             
             // create File instances of each directory leading up to the top
-            File sf = getShellFolderForFile(canonical);
+            File sf = useShellFolder? getShellFolderForFile(canonical) : canonical;
             File f = sf;
             Vector<File> path = new Vector<File>(10);
 
