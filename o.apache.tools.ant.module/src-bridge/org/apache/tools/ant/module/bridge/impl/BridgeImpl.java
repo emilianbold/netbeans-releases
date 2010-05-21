@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -402,32 +403,38 @@ public class BridgeImpl implements BridgeInterface {
         try {
             String s = p.getName();
             AntModule.err.log("Gutting extra references in project \"" + s + "\"");
-            Field[] fs = Project.class.getDeclaredFields();
-            for (int i = 0; i < fs.length; i++) {
-                if (Modifier.isStatic(fs[i].getModifiers())) {
+            for (Field f : Project.class.getDeclaredFields()) {
+                if (Modifier.isStatic(f.getModifiers())) {
                     continue;
                 }
-                if (fs[i].getType().isPrimitive()) {
+                if (f.getType().isPrimitive()) {
                     continue;
                 }
-                fs[i].setAccessible(true);
-                Object o = fs[i].get(p);
+                f.setAccessible(true);
+                Object o = f.get(p);
+                if (o == null) {
+                    continue;
+                }
                 try {
-                    if (o instanceof Collection) {
-                        ((Collection) o).clear();
+                    if (o instanceof Collection<?>) {
+                        ((Collection<?>) o).clear();
                         // #69727: do not null out the field (e.g. Project.listeners) in this case.
                         continue;
-                    } else if (o instanceof Map) {
-                        ((Map) o).clear();
+                    } else if (o instanceof Map<?,?>) {
+                        ((Map<?,?>) o).clear();
                         continue;
                     }
                 } catch (UnsupportedOperationException e) {
                     // ignore
                 }
-                if (Modifier.isFinal(fs[i].getModifiers())) {
+                if (Modifier.isFinal(f.getModifiers())) {
                     continue;
                 }
-                fs[i].set(p, null);
+                if (o.getClass().isArray()) {
+                    f.set(p, Array.newInstance(o.getClass().getComponentType(), 0));
+                    continue;
+                }
+                f.set(p, null);
             }
             // #43113: IntrospectionHelper can hold strong refs to dynamically loaded classes
             Field helpersF;
@@ -438,7 +445,7 @@ public class BridgeImpl implements BridgeInterface {
             }
             helpersF.setAccessible(true);
             Object helpersO = helpersF.get(null);
-            Map helpersM = (Map) helpersO;
+            Map<?,?> helpersM = (Map<?,?>) helpersO;
             helpersM.clear();
             // #46532: java.beans.Introspector caches not cleared well in all cases.
             Introspector.flushCaches();

@@ -606,39 +606,43 @@ public abstract class GlassfishConfiguration implements
 
     @Override
     public void setContextRoot(final String contextRoot) throws ConfigurationException {
-        if (J2eeModule.Type.WAR.equals(module.getType())) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        FileObject primarySunDDFO = getSunDD(primarySunDD, true);
-                        if (primarySunDDFO != null) {
-                            RootInterface rootDD = DDProvider.getDefault().getDDRoot(primarySunDDFO);
-                            if (rootDD instanceof SunWebApp) {
-                                SunWebApp swa = (SunWebApp) rootDD;
-                                if (contextRoot == null || contextRoot.trim().length() == 0) {
-                                    swa.setContextRoot("/"); //NOI18N
-                                } else {
-                                    swa.setContextRoot(contextRoot);
+        try {
+            if (J2eeModule.Type.WAR.equals(module.getType())) {
+                final FileObject primarySunDDFO = getSunDD(primarySunDD, true);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (primarySunDDFO != null) {
+                                RootInterface rootDD = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+                                if (rootDD instanceof SunWebApp) {
+                                    SunWebApp swa = (SunWebApp) rootDD;
+                                    if (contextRoot == null || contextRoot.trim().length() == 0) {
+                                        swa.setContextRoot("/"); //NOI18N
+                                    } else {
+                                        swa.setContextRoot(contextRoot);
+                                    }
+                                    swa.write(primarySunDDFO);
                                 }
-                                swa.write(primarySunDDFO);
                             }
+                        } catch (IOException ex) {
+                            Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                            String defaultMessage = " trying set context-root in sun-web.xml";
+                            displayError(ex, defaultMessage);
+                        } catch (Exception ex) {
+                            Logger.getLogger("glassfish-eecommon").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                            String defaultMessage = " trying set context-root in sun-web.xml";
+                            displayError(ex, defaultMessage);
                         }
-                    } catch (IOException ex) {
-                        Logger.getLogger("glassfish-eecommon").log(Level.WARNING, ex.getLocalizedMessage(), ex);
-                        String defaultMessage = " trying set context-root in sun-web.xml";
-                        displayError(ex, defaultMessage);
-                    } catch (Exception ex) {
-                        Logger.getLogger("glassfish-eecommon").log(Level.WARNING, ex.getLocalizedMessage(), ex);
-                        String defaultMessage = " trying set context-root in sun-web.xml";
-                        displayError(ex, defaultMessage);
                     }
-                }
-            });
-        } else {
-            Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
-                    "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: " + module.getType());
-        }
+                });
+            } else {
+                Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
+                        "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: " + module.getType());
+            }
+        } catch (IOException ex) {
+            throw new ConfigurationException("",ex);
+        } 
     }
 
 
