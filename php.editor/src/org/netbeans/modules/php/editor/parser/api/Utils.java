@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
@@ -76,13 +77,31 @@ public class Utils {
             }
             if (possible != null && (possible.getEndOffset() + 1 < node.getStartOffset())) {
                 List<ASTNode> nodes = (new NodeRangeLocator()).locate(root, new OffsetRange(possible.getEndOffset() + 1, node.getStartOffset() - 1));
-                if (nodes.size() != 0) {
-                    possible = null;
+                if (!nodes.isEmpty()) {
+                    boolean isConstant = isConstantDeclaration(nodes, node);
+                    if (!isConstant) {
+                        possible = null;
+                    }
                 }
             }
         }
 
         return possible;
+    }
+
+    private static boolean isConstantDeclaration(List<ASTNode> nodes, ASTNode node) {
+        boolean isConstantDeclaration = false;
+        if (nodes.size() == 1 && (node instanceof Scalar)) {
+            ASTNode next = nodes.iterator().next();
+            if (next instanceof FunctionName) {
+                FunctionName fnc = (FunctionName) next;
+                String functionName = CodeUtils.extractFunctionName(fnc);
+                if (functionName != null && "define".equalsIgnoreCase(functionName)) {//NOI18N
+                    isConstantDeclaration = true;
+                }
+            }
+        }
+        return isConstantDeclaration;
     }
 
     public static Program getRoot(ParserResult result) {
