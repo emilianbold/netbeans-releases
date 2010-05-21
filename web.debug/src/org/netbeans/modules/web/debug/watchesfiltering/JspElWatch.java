@@ -106,8 +106,10 @@ public class JspElWatch implements PropertyChangeListener {
     private synchronized void evaluate() {
         String text = watch.getExpression ();
         text = text.replace("\"", "\\\"");
-        text = "pageContext.getExpressionEvaluator().evaluate(\"" + text +
-                            "\", java.lang.String.class, (javax.servlet.jsp.PageContext)pageContext, null)";
+        text = "pageContext.getExpressionEvaluator().evaluate(\"" + text + "\", "+
+                        "java.lang.String.class, "+
+                        "((javax.servlet.jsp.PageContext) pageContext).getVariableResolver(), "+
+                        "null)";
         try {
             variable = debugger.evaluate(text);
             exception = null;
