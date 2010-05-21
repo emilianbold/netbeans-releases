@@ -46,11 +46,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyUtility;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -125,17 +130,46 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         }
 
         setErrorStream(delegate.getErrorStream());
-        tty = readTTYLine(delegate.getInputStream());
-        ByteArrayInputStream bis = new ByteArrayInputStream(("" + delegate.getPID()).getBytes()); // NOI18N
+
+        String pidLine = null;
+        String ttyLine = null;
+
+        String line = readLine(delegate.getInputStream());
+
+        if (line != null && line.startsWith("PID=")) { // NOI18
+            pidLine = line.substring(4);
+        }
+
+        line = readLine(delegate.getInputStream());
+
+        if (line != null && line.startsWith("TTY=")) { // NOI18
+            ttyLine = line.substring(4);
+        }
+
+        if (pidLine == null || ttyLine == null) {
+            String error = ProcessUtils.readProcessErrorLine(this);
+            throw new IOException("Unable to start pty process: " + error); // NOI18N
+        }
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(pidLine.getBytes());
         readPID(bis);
     }
 
     @Override
-    protected void cancel() {
-        cancelled = true;
+    protected synchronized void cancel() {
+        int pid = 0;
 
-        if (delegate != null) {
-            delegate.destroy();
+        try {
+            pid = getPID();
+        } catch (IOException ex) {
+        }
+
+        if (pid > 0) {
+            try {
+                CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGKILL, null).get();
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+            }
         }
     }
 
@@ -154,7 +188,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         return result;
     }
 
-    private String readTTYLine(final InputStream is) throws IOException {
+    private String readLine(final InputStream is) throws IOException {
         int c = -1;
         StringBuilder sb = new StringBuilder(20);
 
