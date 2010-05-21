@@ -133,13 +133,13 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         String line = readLine(delegate.getInputStream());
 
-        if (line != null && line.startsWith("PID=")) { // NOI18
+        if (line != null && line.startsWith("PID=")) { // NOI18N
             pidLine = line.substring(4);
         }
 
         line = readLine(delegate.getInputStream());
 
-        if (line != null && line.startsWith("TTY=")) { // NOI18
+        if (line != null && line.startsWith("TTY=")) { // NOI18N
             ttyLine = line.substring(4);
         }
 
