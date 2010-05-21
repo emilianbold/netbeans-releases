@@ -129,8 +129,10 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
             }
             textForTooltip = text;
             String textEscaped = text.replace("\"", "\\\"");
-            text = "pageContext.getExpressionEvaluator().evaluate(\"" + textEscaped +
-                                "\", java.lang.String.class, (javax.servlet.jsp.PageContext)pageContext, null)";
+            text = "pageContext.getExpressionEvaluator().evaluate(\"" + textEscaped + "\", "+
+                        "java.lang.String.class, "+
+                        "((javax.servlet.jsp.PageContext) pageContext).getVariableResolver(), "+
+                        "null)";
         }
         
         Utils.log("JspTooltip: fullWatch = " + text);
