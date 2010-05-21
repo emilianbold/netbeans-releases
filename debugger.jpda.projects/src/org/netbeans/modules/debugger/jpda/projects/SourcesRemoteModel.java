@@ -506,6 +506,10 @@ NodeActionsProvider {
 
                 });
             }
+            File currentSourceRoot = SourcesCurrentModel.getCurrentSourceRoot();
+            if (currentSourceRoot != null) {
+                newSourceFileChooser.setSelectedFile(currentSourceRoot);
+            }
             int state = newSourceFileChooser.showDialog(org.openide.windows.WindowManager.getDefault().getMainWindow(),
                                       NbBundle.getMessage(SourcesRemoteModel.class, "CTL_SourcesModel_AddSrc_Btn"));
             if (state == JFileChooser.APPROVE_OPTION) {
