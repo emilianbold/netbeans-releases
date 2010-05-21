@@ -117,32 +117,35 @@ public final class PrintAction extends IconAction {
     private PrintProvider[] getPrintProviders() {
 //out();
 //out("GET PRINT PROVIDERS");
-        PrintProvider[] providers;
         TopComponent top = getActiveTopComponent();
 //out("Top: " + top);
 
-        if (top != null) {
-            providers = getComponentProviders(top);
+        PrintProvider[] providers = getComponentProviders(top);
 //out("Component providers: " + providers);
 
-            if (providers != null) {
-                return providers;
-            }
-            providers = getLookupProviders(top);
+        if (providers != null) {
+            return providers;
+        }
+        providers = getLookupProviders(top);
 //out("Lookup providers: " + providers);
 
-            if (providers != null) {
-                return providers;
-            }
+        if (providers != null) {
+            return providers;
         }
         return getCookieProviders(getSelectedNodes());
     }
 
     private PrintProvider[] getLookupProviders(TopComponent top) {
+        if (top == null) {
+            return null;
+        }
         return getProviders((PrintProvider) top.getLookup().lookup(PrintProvider.class));
     }
 
     private PrintProvider[] getComponentProviders(JComponent top) {
+        if (top == null) {
+            return null;
+        }
         List<JComponent> printable = new ArrayList<JComponent>();
         findPrintable(top, printable);
 
