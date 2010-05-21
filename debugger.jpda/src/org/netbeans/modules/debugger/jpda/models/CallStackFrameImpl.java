@@ -447,7 +447,7 @@ public class CallStackFrameImpl implements CallStackFrame {
             Location l = getStackFrameLocation();
             MethodArgument[] argumentNames = EditorContextBridge.getContext().getArguments(url, LocationWrapper.lineNumber(l));
             int n = argValues.size();
-            argumentNames = checkArgumentCount(argumentNames, n);
+            argumentNames = checkArgumentCount(argumentNames, argValues, n);
             //int n = Math.min(argValues.size(), argumentNames.length);
             LocalVariable[] arguments = new LocalVariable[n];
             for (int i = 0; i < n; i++) {
@@ -570,9 +570,10 @@ public class CallStackFrameImpl implements CallStackFrame {
                         ErrorManager.getDefault().notify(itsex);
                         return null;
                     }
-                    argumentNames = checkArgumentCount(argumentNames, arguments.size());
-                    List<LocalVariable> argumentList = new ArrayList<LocalVariable>(arguments.size());
-                    for (int i = 0; i < arguments.size(); i++) {
+                    int n = arguments.size();
+                    argumentNames = checkArgumentCount(argumentNames, arguments, n);
+                    List<LocalVariable> argumentList = new ArrayList<LocalVariable>(n);
+                    for (int i = 0; i < n; i++) {
                         com.sun.jdi.Value value = arguments.get(i);
                         if (value instanceof ObjectReference) {
                             argumentList.add(
@@ -613,11 +614,18 @@ public class CallStackFrameImpl implements CallStackFrame {
         return null;
     }
     
-    private static MethodArgument[] checkArgumentCount(MethodArgument[] argumentNames, int size) {
+    private static MethodArgument[] checkArgumentCount(MethodArgument[] argumentNames, List<Value> argValues, int size) {
         if (argumentNames == null || argumentNames.length != size) {
             argumentNames = new MethodArgument[size];
             for (int i = 0; i < argumentNames.length; i++) {
-                argumentNames[i] = new MethodArgument(NbBundle.getMessage(CallStackFrameImpl.class, "CTL_MethodArgument", (i+1)), null, null, null);
+                Value v = argValues.get(i);
+                String type;
+                if (v != null) {
+                    type = v.type().name();
+                } else {
+                    type = Object.class.getName();
+                }
+                argumentNames[i] = new MethodArgument(NbBundle.getMessage(CallStackFrameImpl.class, "CTL_MethodArgument", (i+1)), type, null, null);
             }
         }
         return argumentNames;
