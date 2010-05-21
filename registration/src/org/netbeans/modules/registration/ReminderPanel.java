@@ -7,6 +7,7 @@
 package org.netbeans.modules.registration;
 
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -19,6 +20,28 @@ import org.openide.util.Utilities;
  * @author  mslama
  */
 public class ReminderPanel extends javax.swing.JPanel {
+
+    class BackgroundPanel extends javax.swing.JPanel {
+        Image backgroundImage;
+        public BackgroundPanel() {
+            backgroundImage = ImageUtilities.loadImage("org/netbeans/modules/registration/resources/background.png");
+        }
+
+          @Override
+          protected void paintComponent(Graphics graphics)
+          {
+                super.paintComponent(graphics);
+                if (backgroundImage != null) {
+                    graphics.drawImage(
+                            backgroundImage,
+                            0, 1,
+                            this.getWidth(), this.getHeight() - 1,
+                            0, 0,
+                            backgroundImage.getWidth(this), backgroundImage.getHeight(this),
+                            this);
+                }
+          }
+    }
     
     /** Creates new form ReminderPanel */
     public ReminderPanel() {
@@ -31,11 +54,11 @@ public class ReminderPanel extends javax.swing.JPanel {
         Image img; 
         ImageIcon icon;
         
-        img = ImageUtilities.loadImage("org/netbeans/modules/registration/resources/sun.png");
+        img = ImageUtilities.loadImage("org/netbeans/modules/registration/resources/netbeans.png");
         icon = new ImageIcon(img);
         jLeftLabel.setIcon(icon);
         
-        img = ImageUtilities.loadImage("org/netbeans/modules/registration/resources/netbeans.png");
+        img = ImageUtilities.loadImage("org/netbeans/modules/registration/resources/oracle.png");
         icon = new ImageIcon(img);
         jRightLabel.setIcon(icon);
         
@@ -81,7 +104,7 @@ public class ReminderPanel extends javax.swing.JPanel {
         jTopPanel = new javax.swing.JPanel();
         jLeftLabel = new javax.swing.JLabel();
         jRightLabel = new javax.swing.JLabel();
-        jInnerPanel = new javax.swing.JPanel();
+        jInnerPanel = new BackgroundPanel();
         jTopLabel1 = new javax.swing.JLabel();
         jTopLabel2 = new javax.swing.JLabel();
         jBottomPanel = new javax.swing.JPanel();
@@ -99,17 +122,14 @@ public class ReminderPanel extends javax.swing.JPanel {
         jTopPanel.setFocusable(false);
         jTopPanel.setLayout(new java.awt.BorderLayout());
 
-        jLeftLabel.setBackground(java.awt.Color.white);
         jLeftLabel.setFocusable(false);
         jLeftLabel.setOpaque(true);
         jTopPanel.add(jLeftLabel, java.awt.BorderLayout.WEST);
 
-        jRightLabel.setBackground(java.awt.Color.white);
         jRightLabel.setFocusable(false);
         jRightLabel.setOpaque(true);
         jTopPanel.add(jRightLabel, java.awt.BorderLayout.EAST);
 
-        jInnerPanel.setBackground(java.awt.Color.white);
         jInnerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 20, 10, 10));
         jInnerPanel.setFocusable(false);
         jInnerPanel.setLayout(new javax.swing.BoxLayout(jInnerPanel, javax.swing.BoxLayout.Y_AXIS));
