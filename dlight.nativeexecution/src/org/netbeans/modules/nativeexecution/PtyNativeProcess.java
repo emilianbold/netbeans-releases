@@ -55,7 +55,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyUtility;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -65,11 +64,9 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
     private String tty;
     private AbstractNativeProcess delegate = null;
-    private volatile boolean cancelled;
 
     public PtyNativeProcess(NativeProcessInfo info) {
         super(info);
-        cancelled = false;
     }
 
     public String getTTY() {
@@ -151,6 +148,8 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
             throw new IOException("Unable to start pty process: " + error); // NOI18N
         }
 
+        tty = ttyLine;
+
         ByteArrayInputStream bis = new ByteArrayInputStream(pidLine.getBytes());
         readPID(bis);
     }
@@ -175,10 +174,6 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
     @Override
     protected int waitResult() throws InterruptedException {
-        if (cancelled) {
-            throw new InterruptedException();
-        }
-
         if (delegate == null) {
             return 1;
         }
