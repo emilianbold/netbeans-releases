@@ -78,7 +78,7 @@ public class ConditionsPanel extends JPanel {
         //Add JEditorPane and context
         JComponent [] editorComponents = Utilities.createSingleLineEditor(mimeType);
         conditionPane = (JTextComponent) editorComponents[1];
-        if (file != null) {
+        if (file != null && line >= 0) {
             DialogBinding.bindComponentToFile(file, line, 0, 0, conditionPane);
         }
 
