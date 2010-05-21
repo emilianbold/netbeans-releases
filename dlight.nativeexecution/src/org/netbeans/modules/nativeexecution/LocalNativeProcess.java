@@ -292,7 +292,9 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             return exitcode;
         } finally {
             try {
-                errorPipedOutputStream.close();
+                if (errorPipedOutputStream != null) {
+                    errorPipedOutputStream.close();
+                }
             } catch (IOException ex) {
                 // Exceptions.printStackTrace(ex);
             }
