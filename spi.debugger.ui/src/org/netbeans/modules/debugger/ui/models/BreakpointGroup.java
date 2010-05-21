@@ -58,6 +58,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -374,7 +375,7 @@ public class BreakpointGroup {
     private static boolean isOpened(Project[] projects) {
         if (projects != null && projects.length > 0) {
             for (Project p : projects) {
-                if (OpenProjects.getDefault().isProjectOpen(p)) {
+                if (OpenProjects.getDefault().isProjectOpen(p) || isDependentOnAnOpened(p)) {
                     return true;
                 }
             }
@@ -382,6 +383,28 @@ public class BreakpointGroup {
         } else {
             return true;
         }
+    }
+
+    private static boolean isDependentOnAnOpened(Project p) {
+        for (Project op : OpenProjects.getDefault().getOpenProjects()) {
+            if (isSubProjectOf(p, op)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isSubProjectOf(Project p, Project op) {
+        SubprojectProvider spp = op.getLookup().lookup(SubprojectProvider.class);
+        if (spp == null) {
+            return false;
+        }
+        for (Project sp : spp.getSubprojects()) {
+            if (p.equals(sp) || isSubProjectOf(p, sp)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean contains(Set<Project> openProjects, Project[] projects) {
