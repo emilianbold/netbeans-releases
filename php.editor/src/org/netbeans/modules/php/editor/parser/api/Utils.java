@@ -76,7 +76,7 @@ public class Utils {
             }
             if (possible != null && (possible.getEndOffset() + 1 < node.getStartOffset())) {
                 List<ASTNode> nodes = (new NodeRangeLocator()).locate(root, new OffsetRange(possible.getEndOffset() + 1, node.getStartOffset() - 1));
-                if (nodes.size() != 0) {
+                if (nodes.size() > 1 || (nodes.size() == 1 && !(node instanceof Scalar))) {
                     possible = null;
                 }
             }
