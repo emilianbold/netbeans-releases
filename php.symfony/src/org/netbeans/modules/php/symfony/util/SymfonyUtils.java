@@ -62,7 +62,6 @@ public final class SymfonyUtils {
     private static final String DIR_TEMPLATES = "templates"; // NOI18N
     private static final String VIEW_FILE_SUFFIX = "Success.php"; // NOI18N
     private static final String FILE_VIEW = "../" + DIR_TEMPLATES + "/%s" + VIEW_FILE_SUFFIX; // NOI18N
-    private static final String FILE_DEFAULT_VIEW = "index"; // NOI18N
 
     private SymfonyUtils() {
     }
@@ -102,14 +101,7 @@ public final class SymfonyUtils {
                 view = getView(fo, partName.substring(0, 1).toLowerCase() + partName.substring(1));
             }
         }
-        if (view == null) {
-            view = getDefaultView(fo);
-        }
         return view;
-    }
-
-    private static FileObject getDefaultView(FileObject fo) {
-        return getView(fo, FILE_DEFAULT_VIEW);
     }
 
     private static FileObject getView(FileObject fo, String viewName) {
