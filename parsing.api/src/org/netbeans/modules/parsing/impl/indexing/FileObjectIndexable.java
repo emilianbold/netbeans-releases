@@ -60,6 +60,7 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
     private Object url;
     private String mimeType;
     private FileObject file;
+    private int hashCode;
 
     public FileObjectIndexable (FileObject root, FileObject file) {
         this(root, FileUtil.getRelativePath(root, file));
@@ -130,10 +131,13 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 83 * hash + (this.root != null ? this.root.hashCode() : 0);
-        hash = 83 * hash + (this.relativePath != null ? this.relativePath.hashCode() : 0);
-        return hash;
+        if (hashCode == 0) {
+            int hash = 7;
+            hash = 83 * hash + (this.root != null ? this.root.hashCode() : 0);
+            hash = 83 * hash + (this.relativePath != null ? this.relativePath.hashCode() : 0);
+            hashCode = hash;
+        }
+        return hashCode;
     }
 
     @Override
