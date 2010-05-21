@@ -761,16 +761,10 @@ public final class MakeActionProvider implements ActionProvider {
             return true;
         }
         
+        final String script = "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
+        final RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform());
+        
         String buildCommand = null;
-        String args = ""; // NOI18N
-
-        if (conf.getPackagingConfiguration().getVerbose().getValue()) {
-            args += " -x "; // NOI18N
-        }
-
-        String script = "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
-
-        RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform());
 
         if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
             HostInfo hostInfo = null;
@@ -786,17 +780,16 @@ public final class MakeActionProvider implements ActionProvider {
             if (buildCommand == null) {
                 buildCommand = "sh.exe"; // NOI18N
             }
-
-            // Bug 186289 - Windows: 'Build Package' breaks the project
-            // do error redirection. Otherwise read-out of process output hangs (?!)
-            // TODO: need more investigation
-
-            profile.setArgs(new String[] {"-c", "sh " + args + script + " 2>&1"}); // NOI18N
         } else {
             buildCommand = "bash"; // NOI18N
-            profile.setArgs(args + script);
         }
-        
+
+        if (conf.getPackagingConfiguration().getVerbose().getValue()) {
+            profile.setArgs(new String[] {"-x", script}); // NOI18N
+        } else {
+            profile.setArgs(new String[] {script});
+        }
+
         ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
         actionEvents.add(projectActionEvent);
         return true;
