@@ -103,7 +103,7 @@ public class DtraceParser {
                 if (stringValue != null && 2 <= stringLength &&
                         (stringValue.charAt(0) == SQUOTE && stringValue.charAt(stringLength - 1) == SQUOTE
                         || stringValue.charAt(0) == DQUOTE && stringValue.charAt(stringLength - 1) == DQUOTE)) {
-                    stringValue = stringValue.substring(1, stringLength - 2);
+                    stringValue = stringValue.substring(1, stringLength - 1);
                 }
 
                 Class<?> columnClass = columns.get(i).getColumnClass();
