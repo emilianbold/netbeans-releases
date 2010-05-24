@@ -6,9 +6,12 @@
 
 package org.netbeans.modules.registration;
 
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import org.openide.util.ImageUtilities;
@@ -22,9 +25,17 @@ import org.openide.util.Utilities;
 public class ReminderPanel extends javax.swing.JPanel {
 
     class BackgroundPanel extends javax.swing.JPanel {
-        Image backgroundImage;
-        public BackgroundPanel() {
-            backgroundImage = ImageUtilities.loadImage("org/netbeans/modules/registration/resources/background.png");
+        ImageIcon backgroundImage;
+        boolean resize;
+        public BackgroundPanel(String image, boolean resize) {
+            backgroundImage = ImageUtilities.loadImageIcon(
+                    image, false);
+            this.resize = resize;
+            if(!resize) {
+                this.setSize(backgroundImage.getIconWidth(), backgroundImage.getIconHeight());
+                this.setPreferredSize(new Dimension(backgroundImage.getIconWidth(), backgroundImage.getIconHeight()));
+            }
+
         }
 
           @Override
@@ -33,11 +44,12 @@ public class ReminderPanel extends javax.swing.JPanel {
                 super.paintComponent(graphics);
                 if (backgroundImage != null) {
                     graphics.drawImage(
-                            backgroundImage,
-                            0, 1,
-                            this.getWidth(), this.getHeight() - 1,
+                            backgroundImage.getImage(),
                             0, 0,
-                            backgroundImage.getWidth(this), backgroundImage.getHeight(this),
+                            resize ? backgroundImage.getIconWidth() : this.getWidth(),
+                            backgroundImage.getIconHeight(),
+                            0, 0,
+                            backgroundImage.getIconWidth(), backgroundImage.getIconHeight(),
                             this);
                 }
           }
@@ -54,13 +66,13 @@ public class ReminderPanel extends javax.swing.JPanel {
         Image img; 
         ImageIcon icon;
         
-        img = ImageUtilities.loadImage("org/netbeans/modules/registration/resources/netbeans.png");
-        icon = new ImageIcon(img);
-        jLeftLabel.setIcon(icon);
+        //img = ImageUtilities.loadImage("org/netbeans/modules/registration/resources/netbeans.png");
+        //icon = new ImageIcon(img);
+        //jLeftLabel.setIcon(icon);
         
-        img = ImageUtilities.loadImage("org/netbeans/modules/registration/resources/oracle.png");
-        icon = new ImageIcon(img);
-        jRightLabel.setIcon(icon);
+        //img = ImageUtilities.loadImage("org/netbeans/modules/registration/resources/oracle.png");
+        //icon = new ImageIcon(img);
+        //jRightLabel.setIcon(icon);
         
         img = Utilities.loadImage("org/netbeans/modules/registration/resources/dot.png");
         icon = new ImageIcon(img);
@@ -102,9 +114,9 @@ public class ReminderPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jTopPanel = new javax.swing.JPanel();
-        jLeftLabel = new javax.swing.JLabel();
-        jRightLabel = new javax.swing.JLabel();
-        jInnerPanel = new BackgroundPanel();
+        jLeftLabel = new BackgroundPanel("org/netbeans/modules/registration/resources/netbeans.png", false);
+        jRightLabel = new BackgroundPanel("org/netbeans/modules/registration/resources/oracle.png", false);
+        jInnerPanel = new BackgroundPanel("org/netbeans/modules/registration/resources/background.png", true);
         jTopLabel1 = new javax.swing.JLabel();
         jTopLabel2 = new javax.swing.JLabel();
         jBottomPanel = new javax.swing.JPanel();
@@ -118,16 +130,15 @@ public class ReminderPanel extends javax.swing.JPanel {
         setFocusable(false);
         setLayout(new java.awt.BorderLayout());
 
-        jTopPanel.setBorder(null);
         jTopPanel.setFocusable(false);
         jTopPanel.setLayout(new java.awt.BorderLayout());
 
+        jLeftLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 20, 10, 10));
         jLeftLabel.setFocusable(false);
-        jLeftLabel.setOpaque(true);
         jTopPanel.add(jLeftLabel, java.awt.BorderLayout.WEST);
 
+        jRightLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 20, 10, 10));
         jRightLabel.setFocusable(false);
-        jRightLabel.setOpaque(true);
         jTopPanel.add(jRightLabel, java.awt.BorderLayout.EAST);
 
         jInnerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 20, 10, 10));
@@ -152,7 +163,7 @@ public class ReminderPanel extends javax.swing.JPanel {
 
         jBottomPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         jBottomPanel.setFocusable(false);
-        jBottomPanel.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        jBottomPanel.setFont(new java.awt.Font("Dialog", 0, 12));
         jBottomPanel.setLayout(new javax.swing.BoxLayout(jBottomPanel, javax.swing.BoxLayout.Y_AXIS));
 
         jBottomLabel1.setText("<html>Register the NetBeans IDE to get the following benefits:</html>"); // NOI18N
@@ -198,8 +209,8 @@ public class ReminderPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jBottomLabel6;
     private javax.swing.JPanel jBottomPanel;
     private javax.swing.JPanel jInnerPanel;
-    private javax.swing.JLabel jLeftLabel;
-    private javax.swing.JLabel jRightLabel;
+    private javax.swing.JPanel jLeftLabel;
+    private javax.swing.JPanel jRightLabel;
     private javax.swing.JLabel jTopLabel1;
     private javax.swing.JLabel jTopLabel2;
     private javax.swing.JPanel jTopPanel;
