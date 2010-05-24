@@ -165,9 +165,7 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
             return;
 
         List<ClassSource.ProjectEntry> entries = new ArrayList<ClassSource.ProjectEntry>();
-        for (AntArtifact aa : AntArtifactQuery.findArtifactsByType(project, /* XXX JavaProjectConstants.ARTIFACT_TYPE_JAR */ "jar")) { // NOI18N
-            entries.add(new ClassSource.ProjectEntry(aa));
-        }
+        entries.add(new ClassSource.ProjectEntry(project));
         settings.setJARFiles(entries);
     }
 
