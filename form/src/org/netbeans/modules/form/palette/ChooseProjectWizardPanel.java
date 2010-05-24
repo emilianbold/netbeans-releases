@@ -54,7 +54,6 @@ import java.util.*;
 import org.openide.WizardDescriptor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
-import org.netbeans.api.project.ant.*;
 import org.netbeans.api.project.*;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
