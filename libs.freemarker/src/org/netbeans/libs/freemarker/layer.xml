@@ -5,6 +5,7 @@
         <folder name="MIMEResolver">
             <file name="FreemarkerResolver.xml" url="FreemarkerResolver.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.libs.freemarker.Bundle#ResolverName"/>
+                <attr name="position" intvalue="60378"/>
             </file>
         </folder>
     </folder>
