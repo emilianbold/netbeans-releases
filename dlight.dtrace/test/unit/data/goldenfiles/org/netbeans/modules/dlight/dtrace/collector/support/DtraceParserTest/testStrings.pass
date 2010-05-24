@@ -1,0 +1,10 @@
+ *timestamp* | *filename* | *
+100 | myfile | 
+ *timestamp* | *filename* | *
+200 | myfile | 
+ *timestamp* | *filename* | *
+300 | myfile | 
+ *timestamp* | *filename* | *
+400 | my'file | 
+ *timestamp* | *filename* | *
+500 | my"file | 
