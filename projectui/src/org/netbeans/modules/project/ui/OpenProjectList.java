@@ -1499,13 +1499,11 @@ public final class OpenProjectList {
                 recentProjectsInfos.clear();
             }
             // register project delete listener to all open projects
-            synchronized (this) {
                 for (Project p : openProjects) {
                     assert p != null : "There is null in " + openProjects;
                     assert p.getProjectDirectory() != null : "Project " + p + " has null project directory";
                     p.getProjectDirectory().addFileChangeListener(nbprojectDeleteListener);
                 }
-            }
         }
         
         public void save() {
@@ -1516,13 +1514,14 @@ public final class OpenProjectList {
                     URLs.add( pURL );
                 }
             }
+            List<UnloadedProjectInformation> _recentProjectsInfos = getRecentProjectsInfo();
             LOGGER.log(Level.FINE, "save recent project list: recentProjects={0} recentProjectsInfos={1} URLs={2}",
-                    new Object[] {recentProjects, recentProjectsInfos, URLs});
+                    new Object[] {recentProjects, _recentProjectsInfos, URLs});
             OpenProjectListSettings.getInstance().setRecentProjectsURLs( URLs );
-            int listSize = recentProjectsInfos.size();
+            int listSize = _recentProjectsInfos.size();
             List<String> names = new ArrayList<String>(listSize);
             List<ExtIcon> icons = new ArrayList<ExtIcon>(listSize);
-            for (UnloadedProjectInformation prjInfo : recentProjectsInfos) {
+            for (UnloadedProjectInformation prjInfo : _recentProjectsInfos) {
                 names.add(prjInfo.getDisplayName());
                 ExtIcon extIcon = new ExtIcon();
                 extIcon.setIcon(prjInfo.getIcon());
@@ -1559,10 +1558,10 @@ public final class OpenProjectList {
             return -1;
         }
         
-        private List<UnloadedProjectInformation> getRecentProjectsInfo() {
+        private synchronized List<UnloadedProjectInformation> getRecentProjectsInfo() {
             // #166408: refreshing is too time expensive and we want to be fast, not correct
             //refresh();
-            return recentProjectsInfos;
+            return new ArrayList<UnloadedProjectInformation>(recentProjectsInfos);
         }
         
         private class ProjectReference {
