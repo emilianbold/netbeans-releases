@@ -91,6 +91,17 @@ public class DtraceParserTest extends NbTestCase {
     }
 
     @Test
+    public void testStrings() throws IOException {
+        DataTableMetadata metadata = new DataTableMetadata(
+                "strings",
+                Arrays.asList(
+                        new Column("timestamp", Long.class),
+                        new Column("filename", String.class)),
+                null);
+        doTest(getDataFile(), new DtraceParser(metadata));
+    }
+
+    @Test
     public void testMemD() throws IOException {
         DataTableMetadata metadata = new DataTableMetadata(
                 "mem",

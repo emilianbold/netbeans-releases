@@ -54,10 +54,8 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.*;
-import org.netbeans.api.project.ant.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 
 /**
  * Utility methods related to classpath in projects.
@@ -195,39 +193,8 @@ public class ClassPathUtils {
         if (project == null)
             return null; // the file is not in any project
 
-        // find the project output (presumably a JAR file) where the given
-        // source file is compiled (packed) to
-        AntArtifact[] artifacts =
-            AntArtifactQuery.findArtifactsByType(project, "jar"); // NOI18N
-        if (artifacts.length == 0)
-            return null; // there is no project output
-
-        for (AntArtifact aa : artifacts) {
-            ClassSource.Entry entry = new ClassSource.ProjectEntry(aa);
-            for (URL binaryRoot : entry.getClasspath()) {
-                for (FileObject sourceRoot : SourceForBinaryQuery.findSourceRoots(binaryRoot).getRoots()) {
-                    if (FileUtil.isParentOf(sourceRoot, fileInProject)) {
-                        // Looks like the one.
-                        return new ClassSource(classname, entry);
-                    }
-                }
-            }
-        }
-
-        // no output found for given source file - the file might not be
-        // a source file ... but a binary output file - in this case return
-        // simply all project outputs as there is no good way to recognize
-        // the right one (and j2se project has just one output anyway)
-
-        if (!fileInProject.getExt().equals("class")) // NOI18N
-            return null; // not interested in other than .class binary files
-
-        List<ClassSource.Entry> entries = new ArrayList<ClassSource.Entry>();
-        for (AntArtifact aa : artifacts) {
-            ClassSource.Entry entry = new ClassSource.ProjectEntry(aa);
-            entries.add(entry);
-        }
-        return new ClassSource(classname, entries);
+        ClassSource.Entry entry = new ClassSource.ProjectEntry(project);
+        return new ClassSource(classname, entry);
     }
     
     public static boolean isOnClassPath(FileObject fileInProject, String className) {
