@@ -47,7 +47,6 @@ package org.netbeans.modules.apisupport.project.layers;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ManifestManager;
@@ -80,12 +79,10 @@ public class PickNameAction extends CookieAction {
             return null;
         }
         Project p = FileOwnerQuery.getOwner(URI.create(location[0].toExternalForm()));
-        if (p == null) { // e.g. [jar:file:.../ide/modules/org-netbeans-modules-projectui.jar!/org/netbeans/modules/project/ui/resources/layer.xml]
+        if (p == null) {
             return null;
         }
-        NbModuleProvider prov = p.getLookup().lookup(NbModuleProvider.class);
-        assert prov != null : Arrays.asList(location);
-        return prov;
+        return p.getLookup().lookup(NbModuleProvider.class);
     }
     
     private static String findBundlePath(NbModuleProvider p) {
