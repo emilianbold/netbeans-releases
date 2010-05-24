@@ -125,7 +125,7 @@ public final class APTFileCacheEntry {
         PostIncludeData data = cache.get(key);
         if (data == null) {
             // create empty object
-            data = new PostIncludeData(null);
+            data = new PostIncludeData();
             PostIncludeData prev = serial ? cache.put(key, data) : ((ConcurrentMap<Integer, PostIncludeData>)cache).putIfAbsent(key, data);
             if (prev != null) {
                 data = prev;
