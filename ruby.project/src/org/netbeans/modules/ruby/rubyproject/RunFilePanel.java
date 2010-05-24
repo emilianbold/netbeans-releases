@@ -199,15 +199,14 @@ final class RunFilePanel extends javax.swing.JPanel {
                             .add(jvmArgsLabel))
                         .add(16, 16, 16)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jvmArgsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                            .add(jvmArgsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(platformCombo, 0, 212, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(managePlatformsButton))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, runArgsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-                            .add(workDirField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-                            .add(rubyOptionsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, runArgsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                            .add(workDirField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                            .add(rubyOptionsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)))
                     .add(displayDialog))
                 .addContainerGap())
         );
@@ -239,6 +238,7 @@ final class RunFilePanel extends javax.swing.JPanel {
                 .add(displayDialog)
                 .add(18, 18, 18))
         );
+
         displayDialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.displayDialog.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
