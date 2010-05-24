@@ -163,7 +163,7 @@ public class FileChangedManager extends SecurityManager {
         }
     }
 
-    private static boolean isIdleIO() {
+    static boolean isIdleIO() {
         return IDLE_IO.get() != null;
     }
 
