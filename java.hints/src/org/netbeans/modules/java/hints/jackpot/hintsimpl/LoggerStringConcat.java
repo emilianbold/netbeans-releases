@@ -50,6 +50,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -229,11 +230,28 @@ public class LoggerStringConcat {
                         workingLiteral.delete(0, workingLiteral.length());
                     }
 
-                    for (TreePath tp : element) {
-                        String literalValue = (String) ((LiteralTree) tp.getLeaf()).getValue();
+                    for (Iterator<TreePath> it = element.iterator(); it.hasNext(); ) {
+                        TreePath tp = it.next();
+                        
+                        if (tp.getLeaf().getKind() == Kind.STRING_LITERAL) {
+                            String literalValue = (String) ((LiteralTree) tp.getLeaf()).getValue();
 
-                        if (literalValue.contains("'")) {
-                            newMessage.add(make.Literal(literalValue.replaceAll("'", "''")));
+                            if (literalValue.contains("'") || literalValue.contains("{") || literalValue.contains("}")) {
+                                literalValue = literalValue.replaceAll("'", "''");
+                                literalValue = literalValue.replaceAll(Pattern.quote("{"), Matcher.quoteReplacement("'{'"));
+                                literalValue = literalValue.replaceAll(Pattern.quote("}"), Matcher.quoteReplacement("'}'"));
+                                if (it.hasNext()) {
+                                    newMessage.add(make.Literal(literalValue));
+                                } else {
+                                    workingLiteral.append(literalValue);
+                                }
+                            } else {
+                                if (it.hasNext()) {
+                                    newMessage.add(tp.getLeaf());
+                                } else {
+                                    workingLiteral.append(literalValue);
+                                }
+                            }
                         } else {
                             newMessage.add(tp.getLeaf());
                         }

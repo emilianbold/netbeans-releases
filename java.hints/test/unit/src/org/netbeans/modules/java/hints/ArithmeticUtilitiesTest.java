@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2007-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,27 +34,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.profiler.charts;
+package org.netbeans.modules.java.hints;
+
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Scope;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
+import java.util.regex.Pattern;
+import static org.junit.Assert.*;
+import org.netbeans.modules.java.hints.jackpot.impl.TestBase;
 
 /**
  *
- * @author Jiri Sedlacek
+ * @author lahvac
  */
-public interface ChartItemChange {
+public class ArithmeticUtilitiesTest extends TestBase {
 
-    public ChartItem getItem();
+    public ArithmeticUtilitiesTest(String name) {
+        super(name);
+    }
 
+    public void test186347() throws Exception {
+        performTest("package test; public class Test { private static final short A = 0, B = 1; | }", "A + B", 1);
+    }
 
-    public static class Default implements ChartItemChange {
+    private void performTest(String context, String expression, Number golden) throws Exception {
+        int pos = context.indexOf('|');
+        prepareTest("test/Test.java", context.replaceAll(Pattern.quote("|"), ""));
 
-        private ChartItem item;
+        ExpressionTree expr = info.getTreeUtilities().parseExpression(expression, new SourcePositions[1]);
+        TreePath tp = info.getTreeUtilities().pathFor(pos);
+        Scope scope = info.getTrees().getScope(tp);
 
-        public Default(ChartItem item) { this.item = item; }
+        info.getTreeUtilities().attributeTree(expr, scope);
 
-        public ChartItem getItem() { return item; }
+        Number real = ArithmeticUtilities.compute(info, new TreePath(tp, expr), true);
 
+        assertEquals(golden, real);
     }
 
 }

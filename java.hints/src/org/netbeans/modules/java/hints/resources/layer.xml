@@ -117,20 +117,20 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="RefactoringActions">
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.shadow">
-                        <attr name="originalFile" stringvalue="Editors/text/x-java/Actions/org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance"/>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createVariableGlobal"/>
                         <attr name="position" intvalue="1400"/>
                     </file>
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.shadow">
-                        <attr name="originalFile" stringvalue="Editors/text/x-java/Actions/org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance"/>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createConstantGlobal"/>
                         <attr name="position" intvalue="1500"/>
                     </file>
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.shadow">
-                        <attr name="originalFile" stringvalue="Editors/text/x-java/Actions/org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance"/>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createFieldGlobal"/>
                         <attr name="position" intvalue="1600"/>
                     </file>
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.shadow">
-                        <attr name="originalFile" stringvalue="Editors/text/x-java/Actions/org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance"/>
+                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMethodGlobal"/>
                         <attr name="position" intvalue="1700"/>
                     </file>
                     <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance">

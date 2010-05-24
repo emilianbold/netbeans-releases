@@ -63,6 +63,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.pty.PtyUtility;
 import org.netbeans.modules.nativeexecution.support.Win32APISupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -251,11 +252,20 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                         String exec;
 
                         if (info.isPtyMode()) {
-                            String s = iterator.next(); // pty wrapper
-                            s = iterator.next(); // quoted executable
-                            s = s.substring(1, s.length() - 1); // remove quotes before converting
-                            // remove quotes before converting
-                            exec = WindowsSupport.getInstance().convertToWindowsPath(s);
+                            exec = iterator.next();
+                            String ptyUtilityPath = null;
+
+                            try {
+                                ptyUtilityPath = PtyUtility.getInstance().getPath(ExecutionEnvironmentFactory.getLocal());
+                            } catch (IOException ex) {
+                            }
+
+                            if (ptyUtilityPath != null && exec.equals(ptyUtilityPath)) {
+                                exec = iterator.next(); // quoted executable
+                                exec = exec.substring(1, exec.length() - 1); // remove quotes before converting
+                                // remove quotes before converting
+                                exec = WindowsSupport.getInstance().convertToWindowsPath(exec);
+                            }
                         } else {
                             exec = iterator.next();
                         }
