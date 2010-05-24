@@ -51,9 +51,17 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
 public final class PostIncludeData {
 
     private final APTMacroMap.State postIncludeMacroState;
+    private volatile int[]          deadBlocks;
 
-    /*package*/ PostIncludeData(APTMacroMap.State state) {
-        this.postIncludeMacroState = state;
+    /*package*/ PostIncludeData() {
+        // clean entry
+        this.postIncludeMacroState = null;
+        this.deadBlocks = null;
+    }
+
+    public PostIncludeData(State postIncludeMacroState, int[] deadBlocks) {
+        this.postIncludeMacroState = postIncludeMacroState;
+        this.deadBlocks = deadBlocks;
     }
 
     public State getPostIncludeMacroState() {
@@ -62,5 +70,19 @@ public final class PostIncludeData {
 
     public boolean hasPostIncludeMacroState() {
         return postIncludeMacroState != null;
+    }
+
+    public int[] getDeadBlocks() {
+        // TODO: return copy?
+        return deadBlocks;
+    }
+
+    public void setDeadBlocks(int[] deadBlocks) {
+        // TODO: make a copy?
+        this.deadBlocks = deadBlocks;
+    }
+
+    public boolean hasDeadBlocks() {
+        return deadBlocks != null;
     }
 }
