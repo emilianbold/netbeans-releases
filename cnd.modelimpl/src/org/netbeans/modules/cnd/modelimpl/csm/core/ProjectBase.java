@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
+import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -1190,16 +1191,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @return true if it's first time of file including
      *          false if file was included before
      */
-    public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, APTMacroMap.State postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
+    public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, PostIncludeData postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
         FileImpl csmFile = null;
         if (isDisposing()) {
             return null;
         }
         csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
-        if (postIncludeState != null) {
+        if (postIncludeState != null && postIncludeState.hasPostIncludeMacroState()) {
             // we have post include state => no need to spend time in include walkers
-            preprocHandler.getMacroMap().setState(postIncludeState);
+            preprocHandler.getMacroMap().setState(postIncludeState.getPostIncludeMacroState());
             return csmFile;
         }
         if (isDisposing()) {
