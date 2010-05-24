@@ -1198,22 +1198,33 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
 
-        if (postIncludeState != null && postIncludeState.hasPostIncludeMacroState()) {
-            // we have post include state => no need to spend time in include walkers
-            preprocHandler.getMacroMap().setState(postIncludeState.getPostIncludeMacroState());
-            return csmFile;
-        }
         if (isDisposing()) {
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
         PreprocessorStatePair cachedOut = null;
         APTFileCacheEntry aptCacheEntry = null;
-        FilePreprocessorConditionState pcState;
-        if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
-            cachedOut = csmFile.getCachedVisitedState(newState);
+        FilePreprocessorConditionState pcState = null;
+        boolean foundInCache = false;
+        // check post include cache
+        if (postIncludeState != null && postIncludeState.hasDeadBlocks()) {
+            assert postIncludeState.hasPostIncludeMacroState() : "how could it be? " + file;
+            pcState = FilePreprocessorConditionState.Builder.build(file, postIncludeState.getDeadBlocks());
+            preprocHandler.getMacroMap().setState(postIncludeState.getPostIncludeMacroState());
+            foundInCache = true;
         }
-        if (cachedOut == null) {
+        // check visited file cache
+        boolean isFileCacheApplicable = (mode == ProjectBase.GATHERING_TOKENS) && !APTHandlersSupport.extractIncludeStack(newState).isEmpty();
+        if (!foundInCache && isFileCacheApplicable) {
+            cachedOut = csmFile.getCachedVisitedState(newState);
+            if (cachedOut != null) {
+                preprocHandler.getMacroMap().setState(APTHandlersSupport.extractMacroMapState(cachedOut.state));
+                pcState = cachedOut.pcState;
+                foundInCache = true;
+            }
+        }
+        // if not found in caches => visit include file
+        if (!foundInCache) {
             APTFile aptLight = getAPTLight(csmFile);
             if (aptLight == null) {
                 // in the case file was just removed
@@ -1228,12 +1239,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, triggerParsingActivity, pcBuilder,aptCacheEntry);
             walker.visit();
             pcState = pcBuilder.build();
-            if (mode == ProjectBase.GATHERING_TOKENS && !APTHandlersSupport.extractIncludeStack(newState).isEmpty()) {
-                csmFile.cacheVisitedState(newState, preprocHandler, pcState);
-            }
-        } else {
-            preprocHandler.getMacroMap().setState(APTHandlersSupport.extractMacroMapState(cachedOut.state));
-            pcState = cachedOut.pcState;
+        }
+        // updated caches
+        // update post include cache
+        if (postIncludeState != null && !postIncludeState.hasDeadBlocks()) {
+            // cache info
+            postIncludeState.setDeadBlocks(FilePreprocessorConditionState.Builder.getDeadBlocks(pcState));
+        }
+        // updated visited file cache
+        if (cachedOut == null && isFileCacheApplicable) {
+            csmFile.cacheVisitedState(newState, preprocHandler, pcState);
         }
         boolean updateFileContainer = false;
         try {

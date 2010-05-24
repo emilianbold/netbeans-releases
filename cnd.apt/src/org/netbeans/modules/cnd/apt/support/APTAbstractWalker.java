@@ -245,7 +245,7 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
         if (include(resolvedPath, aptInclude, postIncludeData)) {
             APTMacroMap.State postIncludeMacroState = getPreprocHandler().getMacroMap().getState();
-            PostIncludeData newData = new PostIncludeData(postIncludeMacroState);
+            PostIncludeData newData = new PostIncludeData(postIncludeMacroState, postIncludeData.getDeadBlocks());
             cacheEntry.setIncludeData(aptInclude, newData);
         }
     }
