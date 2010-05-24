@@ -6,7 +6,7 @@ javacard.device.corSize=4K
 javacard.device.proxy2idePort=7020
 javacard.device.contactedPort=9025
 javacard.device.contactedProtocol=T=1
-javacard.device.apdutool.contactedProtocol=-t0
+javacard.device.apdutool.contactedProtocol=
 javacard.device.ramSize=1M
 javacard.device.httpPort=8019
 javacard.device.proxy2cjcrePort=7019
