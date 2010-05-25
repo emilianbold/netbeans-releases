@@ -104,13 +104,13 @@ public class IncludeMappingsTestCase extends RemoteTestBase {
             assertEquals("Local path ", referenceLocalPath, localPath);
         } else {
             String referenceLocalPath = "/home/username/temp.tmp";
-            if (Utilities.isWindows()) {
-                referenceLocalPath = new File(referenceLocalPath).getAbsolutePath();
-            }
             remotePath = remoteSyncRoot + referenceLocalPath;
             localPath = mapper.getLocalPath(remotePath).replace('\\', '/');
             System.err.printf("Mapped %s:%s to %s\n", execEnv, remotePath, localPath);
             assertNotNull("Mapper returned null for " + remotePath, localPath);
+            if (Utilities.isWindows()) {
+                referenceLocalPath = new File(referenceLocalPath).getAbsolutePath();
+            }
             assertEquals("Local path ", referenceLocalPath, localPath);
         }
     }

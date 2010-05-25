@@ -150,6 +150,9 @@ import org.openide.util.Exceptions;
     
     @Override
     public File getParentDirectory(File dir) {
+        if (dir == null) {
+            return null;
+        }
         File parentFile = dir.getParentFile();
         return parentFile == null ? null : createFileObject(parentFile.getPath());
     }
