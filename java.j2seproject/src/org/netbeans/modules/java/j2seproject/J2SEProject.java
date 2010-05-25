@@ -125,6 +125,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
@@ -132,6 +133,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_MODIFIED;
+import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_PROJECT_XML;
+import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_STYLESHEET;
+import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_UNKNOWN;
 /**
  * Represents one plain J2SE project.
  * @author Jesse Glick, et al.
@@ -170,7 +175,12 @@ public final class J2SEProject implements Project {
     private final ThreadLocal<Boolean> projectPropertiesSave;
 
     public J2SEProject(AntProjectHelper helper) throws IOException {
-        this.projectPropertiesSave = new ThreadLocal<Boolean>();
+        this.projectPropertiesSave = new ThreadLocal<Boolean>() {
+            @Override
+            protected Boolean initialValue() {
+                return Boolean.FALSE;
+            }
+        };
         this.helper = helper;
         aux = helper.createAuxiliaryConfiguration();
         UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux);
@@ -442,44 +452,54 @@ public final class J2SEProject implements Project {
         
         protected void projectXmlSaved() throws IOException {
             //May be called by {@link AuxiliaryConfiguration#putConfigurationFragment}
-            //which didn't affect the j2seproject 
-            if (updateHelper.isCurrent()) {
-                //Refresh build-impl.xml only for j2seproject/2
-                final Boolean projectPropertiesSave = J2SEProject.this.projectPropertiesSave.get();
-                if (projectPropertiesSave != null &&
-                    projectPropertiesSave.booleanValue() &&
-                    (genFilesHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,J2SEProject.class.getResource("resources/build-impl.xsl")) & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
-                    //When the project.xml was changed from the customizer and the build-impl.xml was modified
-                    //move build-impl.xml into the build-impl.xml~ to force regeneration of new build-impl.xml.
-                    //Never do this if it's not a customizer otherwise user modification of build-impl.xml will be deleted
-                    //when the project is opened.
-                    final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
-                    final FileObject buildImpl = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                    if (buildImpl  != null) {
-                        final String name = buildImpl.getName();
-                        final String backupext = String.format("%s~",buildImpl.getExt());   //NOI18N
-                        final FileObject oldBackup = buildImpl.getParent().getFileObject(name, backupext);
-                        if (oldBackup != null) {
-                            oldBackup.delete();
+            //which didn't affect the j2seproject
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        if (updateHelper.isCurrent()) {
+                            //Refresh build-impl.xml only for j2seproject/2
+                            final int state = genFilesHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,J2SEProject.class.getResource("resources/build-impl.xsl"));   //NOI18N
+                            final Boolean projectPropertiesSave = J2SEProject.this.projectPropertiesSave.get();
+                            if ((projectPropertiesSave.booleanValue() && (state & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) ||
+                                state == (FLAG_UNKNOWN | FLAG_MODIFIED | FLAG_OLD_PROJECT_XML | FLAG_OLD_STYLESHEET)) {  //missing genfiles.properties
+                                //When the project.xml was changed from the customizer and the build-impl.xml was modified
+                                //move build-impl.xml into the build-impl.xml~ to force regeneration of new build-impl.xml.
+                                //Never do this if it's not a customizer otherwise user modification of build-impl.xml will be deleted
+                                //when the project is opened.
+                                final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
+                                final FileObject buildImpl = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+                                if (buildImpl  != null) {
+                                    final String name = buildImpl.getName();
+                                    final String backupext = String.format("%s~",buildImpl.getExt());   //NOI18N
+                                    final FileObject oldBackup = buildImpl.getParent().getFileObject(name, backupext);
+                                    if (oldBackup != null) {
+                                        oldBackup.delete();
+                                    }
+                                    FileLock lock = buildImpl.lock();
+                                    try {
+                                        buildImpl.rename(lock, name, backupext);
+                                    } finally {
+                                        lock.releaseLock();
+                                    }
+                                }
+                            }
+                            genFilesHelper.refreshBuildScript(
+                                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                                J2SEProject.class.getResource("resources/build-impl.xsl"),
+                                false);
+                            genFilesHelper.refreshBuildScript(
+                                J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
+                                J2SEProject.class.getResource("resources/build.xsl"),
+                                false);
                         }
-                        FileLock lock = buildImpl.lock();
-                        try {
-                            buildImpl.rename(lock, name, backupext);
-                        } finally {
-                            lock.releaseLock();
-                        }
-                    }
-                }
-                genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    J2SEProject.class.getResource("resources/build-impl.xsl"),
-                    false);
-                genFilesHelper.refreshBuildScript(
-                    J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
-                    J2SEProject.class.getResource("resources/build.xsl"),
-                    false);
+                        return null;
+                    }});
+            } catch (MutexException e) {
+                final Exception inner = e.getException();
+                throw inner instanceof IOException ? (IOException) inner : new IOException(inner);
             }
-        }    
+        }
     }
     
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
