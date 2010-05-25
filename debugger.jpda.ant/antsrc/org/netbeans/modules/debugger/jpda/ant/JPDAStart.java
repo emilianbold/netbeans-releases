@@ -152,6 +152,7 @@ public class JPDAStart extends Task implements Runnable {
     /** The class debugger should stop in, or null. */
     private String                  stopClassName = null;
     private String                  listeningCP = null;
+    private RequestProcessor        rp = new RequestProcessor("JPDAStart", 1);
 
     
     // properties ..............................................................
@@ -275,7 +276,7 @@ public class JPDAStart extends Task implements Runnable {
             lock[0] = lock[1] = null;
             synchronized (lock) {
                 debug ("Entered synch lock"); // NOI18N
-                RequestProcessor.getDefault ().post (this);
+                rp.post (this);
                 try {
                     debug ("Entering wait"); // NOI18N
                     lock.wait ();
@@ -494,12 +495,12 @@ public class JPDAStart extends Task implements Runnable {
 
                 DebuggerManager.getDebuggerManager().addDebuggerListener(
                         DebuggerManager.PROP_DEBUGGER_ENGINES,
-                        new Listener(first, artificialBreakpoints, listeners, startedSessionRef));
+                        new Listener(first, artificialBreakpoints, listeners, startedSessionRef, rp));
 
                 // Let it start asynchronously so that the script can go on and start the debuggee
                 final Thread[] listeningThreadPtr = new Thread[] { null };
                 final boolean[] listeningStarted = new boolean[] { false };
-                RequestProcessor.getDefault().post(new Runnable() {
+                rp.post(new Runnable() {
                     public void run() {
                         synchronized (listeningStarted) {
                             listeningThreadPtr[0] = Thread.currentThread();
@@ -869,15 +870,18 @@ public class JPDAStart extends Task implements Runnable {
         private final Map<URL, ArtifactsUpdated> listeners;
         private final WeakReference<Session> startedSessionRef[];
         private boolean enginesCheckDone = false;
+        private final RequestProcessor rp;
 
         private Listener(Breakpoint first,
                          List<Breakpoint> artificalBreakpoints,
                          Map<URL, ArtifactsUpdated> listeners,
-                         WeakReference<Session> startedSessionRef[]) {
+                         WeakReference<Session> startedSessionRef[],
+                         RequestProcessor rp) {
             this.first = first;
             this.artificalBreakpoints = artificalBreakpoints;
             this.listeners = listeners;
             this.startedSessionRef = startedSessionRef;
+            this.rp = rp;
         }
 
         @Override
@@ -885,7 +889,7 @@ public class JPDAStart extends Task implements Runnable {
             if (JPDADebugger.PROP_STATE.equals(e.getPropertyName ())) {
                 int state = ((Integer) e.getNewValue ()).intValue ();
                 if (state == JPDADebugger.STATE_STOPPED || state == JPDADebugger.STATE_DISCONNECTED) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    rp.post(new Runnable() {
                         public void run() {
                             if (first != null) {
                                 DebuggerManager.getDebuggerManager().removeBreakpoint(first);
@@ -904,7 +908,7 @@ public class JPDAStart extends Task implements Runnable {
                 DebuggerManager.PROP_DEBUGGER_ENGINES,
                 this
             );
-            RequestProcessor.getDefault().post (new Runnable () {
+            rp.post (new Runnable () {
                 public void run () {
                     if (artificalBreakpoints != null) {
                         for (Breakpoint b : artificalBreakpoints) {

@@ -49,6 +49,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URLConnection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -71,9 +73,7 @@ import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.project.uiapi.SavingProjectDataPanel;
 import org.netbeans.test.ide.WatchProjects;
 
 /**
@@ -82,6 +82,7 @@ import org.netbeans.test.ide.WatchProjects;
  * @author Jiri.Skrivanek@sun.com
  */
 public class J2EEValidation extends JellyTestCase {
+    static Logger LOG = Logger.getLogger("org.netbeans.test.j2ee.J2EEValidation");
 
     static final String [] tests = {
                 "testWebApplication"
@@ -216,9 +217,11 @@ public class J2EEValidation extends JellyTestCase {
         // Run project
         try {
             // "Run Project"
-            String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
+            String runProjectItem = Bundle.getString("org.netbeans.modules.apisupport.project.ui.Bundle", "ACTION_run");
             new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
             waitText(SAMPLE_WEB_PROJECT_NAME, 240000, "JSP Page");
+        } catch (Exception ex) {
+            LOG.log(Level.INFO, "=== Run Project failed:", ex);
         } finally {
             // log messages from output
             getLog("RunOutput").print(new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME).getText()); // NOI18N

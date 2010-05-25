@@ -118,7 +118,7 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
         } else if (LIBRARIES.equals(nm)) {
             CustomizerProviderImpl.SubCategoryProvider prov = context.lookup(CustomizerProviderImpl.SubCategoryProvider.class);
             assert prov != null : "Assuming CustomizerProviderImpl.SubCategoryProvider in customizer context";
-            return new CustomizerLibraries(uiProps, prov);
+            return new CustomizerLibraries(uiProps, prov, category);
         } else if (BUILD.equals(nm)) {
             return new CustomizerCompile(uiProps);
         } else if (JAR.equals(nm)) {
