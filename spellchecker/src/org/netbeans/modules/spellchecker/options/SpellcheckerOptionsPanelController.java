@@ -102,7 +102,7 @@ public class SpellcheckerOptionsPanelController extends OptionsPanelController {
     }
 
     public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+        return null;
     }
 
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);

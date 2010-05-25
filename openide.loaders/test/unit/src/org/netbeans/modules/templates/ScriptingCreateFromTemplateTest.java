@@ -86,8 +86,11 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         OutputStream os = fo.getOutputStream();
         os.write("${encoding}".getBytes());
         os.close();
+        assertEquals("content/unknown", fo.getMIMEType());
         fo.setAttribute ("template", Boolean.TRUE);
+        assertEquals("content/unknown", fo.getMIMEType());
         fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+        assertEquals("text/x-freemarker", fo.getMIMEType());
         
         DataObject obj = DataObject.find(fo);
         DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));

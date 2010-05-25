@@ -146,7 +146,7 @@ public class ArithmeticUtilities {
                                 result = left.floatValue() * right.floatValue();
                             } else if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() * right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() * right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -160,7 +160,7 @@ public class ArithmeticUtilities {
                                 result = left.floatValue() / right.floatValue();
                             } else if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() / right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() / right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -174,7 +174,7 @@ public class ArithmeticUtilities {
                                 result = left.floatValue() % right.floatValue();
                             } else if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() % right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() % right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -188,7 +188,7 @@ public class ArithmeticUtilities {
                                 result = left.floatValue() + right.floatValue();
                             } else if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() + right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() + right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -202,7 +202,7 @@ public class ArithmeticUtilities {
                                 result = left.floatValue() - right.floatValue();
                             } else if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() - right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() - right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -212,7 +212,7 @@ public class ArithmeticUtilities {
                     case LEFT_SHIFT:
                             if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() << right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() << right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -222,7 +222,7 @@ public class ArithmeticUtilities {
                     case RIGHT_SHIFT:
                             if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() >> right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() >> right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -232,7 +232,7 @@ public class ArithmeticUtilities {
                     case UNSIGNED_RIGHT_SHIFT:
                             if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() >>> right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() >>> right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -242,7 +242,7 @@ public class ArithmeticUtilities {
                     case AND:
                             if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() & right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() & right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -252,7 +252,7 @@ public class ArithmeticUtilities {
                     case XOR:
                             if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() ^ right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() ^ right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -262,7 +262,7 @@ public class ArithmeticUtilities {
                     case OR:
                             if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() | right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() | right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -305,6 +305,10 @@ public class ArithmeticUtilities {
             }
 
             return super.visitUnary(node, p);
+        }
+
+        private static boolean integerLike(Number n) {
+            return n instanceof Integer || n instanceof Short || n instanceof Byte;
         }
     }
 }

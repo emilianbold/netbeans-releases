@@ -1216,6 +1216,9 @@ final class XMLMapAttr implements Map {
 
         @Override
         public Object get(Object key) {
+            if (key == FileObject.class) {
+                return fo;
+            }
             return key instanceof String ? fo.getAttribute((String)key) : null;
         }
 
@@ -1234,8 +1237,9 @@ final class XMLMapAttr implements Map {
             if (!(obj instanceof Map)) {
                 return false;
             }
-            if (obj instanceof FileMap) {
-                return fo.equals(((FileMap)obj).fo);
+            Object o = ((Map)obj).get(FileObject.class);
+            if (o != null) {
+                return fo.equals(o);
             }
             return obj.equals(this);
         }
