@@ -183,13 +183,13 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         return aptOptions.annotationProcessingEnabled().contains(Trigger.IN_EDITOR);
     }
 
-    public Collection<? extends Processor> resolveProcessors() {
+    public Collection<? extends Processor> resolveProcessors(boolean onScan) {
         List<URL> urls = new LinkedList<URL>();
         for (Entry e : processorPath.entries()) {
             urls.add(e.getURL());
         }
         ClassLoader cl = new URLClassLoader(urls.toArray(new URL[0]), new BypassOpenIDEUtilClassLoader(Context.class.getClassLoader()));
-        Collection<Processor> result = lookupProcessors(cl);
+        Collection<Processor> result = lookupProcessors(cl, onScan);
         return result;
     }
 
@@ -207,7 +207,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         verifyAttributes(root, false);
     }
 
-    private Collection<Processor> lookupProcessors(ClassLoader cl) {
+    private Collection<Processor> lookupProcessors(ClassLoader cl, boolean onScan) {
         Iterable<? extends String> processorNames = aptOptions.annotationProcessorsToRun();
         if (processorNames == null) {
             processorNames = getProcessorNames(cl);
@@ -226,7 +226,8 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 LOG.log(Level.FINE, null, t);
             }
         }
-        result.addAll(HARDCODED_PROCESSORS.lookupAll(Processor.class));
+        if (!onScan)
+            result.addAll(HARDCODED_PROCESSORS.lookupAll(Processor.class));
         return result;
     }
 

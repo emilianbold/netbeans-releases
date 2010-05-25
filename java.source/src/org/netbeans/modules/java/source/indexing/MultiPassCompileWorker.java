@@ -66,6 +66,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -121,6 +122,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         final LinkedList<CompileTuple> bigFiles = new LinkedList<CompileTuple>();
         JavacTaskImpl jt = null;
         CompileTuple active = null;
+        boolean aptEnabled = false;
         int state = 0;
         boolean isBigFile = false;
 
@@ -159,6 +161,8 @@ final class MultiPassCompileWorker extends CompileWorker {
                             return context.isCancelled();
                         }
                     }, APTUtils.get(context.getRoot()));
+                    Iterable<? extends Processor> processors = jt.getProcessors();
+                    aptEnabled = processors != null && processors.iterator().hasNext();
                     if (JavaIndex.LOG.isLoggable(Level.FINER)) {
                         JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.cpInfo.toString()); //NOI18N
                     }
@@ -241,7 +245,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                     continue;
                 }
                 jt.analyze(types);
-                JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated);
+                if (aptEnabled) {
+                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated);
+                }
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt);
                     mem.isLowMemory();
