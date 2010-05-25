@@ -58,7 +58,9 @@ import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -69,16 +71,18 @@ final class ProcessorClasspathImpl implements ClassPathImplementation {
     private final JCProject project;
     private final PlatformResource pformResource;
     private final PropertyResource propResource;
+    private final HardcodedAPResource currJarResource;
 
     ProcessorClasspathImpl(JCProject project) {
         this.project = project;
         this.pformResource = new PlatformResource(project);
         this.propResource = new PropertyResource();
+        this.currJarResource = new HardcodedAPResource();
     }
 
     @Override
     public List<? extends PathResourceImplementation> getResources() {
-        return Arrays.asList(propResource, pformResource);
+        return Arrays.asList(propResource, pformResource, currJarResource);
     }
 
     @Override
@@ -213,6 +217,34 @@ final class ProcessorClasspathImpl implements ClassPathImplementation {
             }
             return f.getAbsolutePath();
         }
+    }
+
+    private class HardcodedAPResource implements PathResourceImplementation {
+        private final URL[] roots;
+
+        public HardcodedAPResource() {
+            File utilFile = InstalledFileLocator.getDefault().locate("lib/org-openide-util.jar", "org.openide.util", false);
+            File utilLookupFile = InstalledFileLocator.getDefault().locate("lib/org-openide-util-lookup.jar", "org.openide.util.lookup", false);
+            File projectFile = InstalledFileLocator.getDefault().locate("modules/org-netbeans-modules-javacard-project.jar", "org.netbeans.modules.javacard.project", false);
+
+            roots = new URL[] {FileUtil.urlForArchiveOrDir(utilFile), FileUtil.urlForArchiveOrDir(utilLookupFile), FileUtil.urlForArchiveOrDir(projectFile)};
+        }
+
+        @Override
+        public URL[] getRoots() {
+            return roots;
+        }
+
+        @Override
+        public ClassPathImplementation getContent() {
+            return ProcessorClasspathImpl.this;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {}
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {}
     }
 
     private static URL[] getURLs(String[] entries) {
