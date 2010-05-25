@@ -72,7 +72,6 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
@@ -133,7 +132,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                         try {
                             PropertyUtils.putGlobalProperties(loadWithProcessing());
                         } catch (IOException e) {
-                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                            LOG.log(Level.INFO, null, e);
                         }
                         inited = true;
                     }
@@ -238,9 +237,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                         platforms.add(new NbPlatform(PLATFORM_ID_DEFAULT, null, loc, findHarness(loc), new URL[0], new URL[0]));
                     }
                 }
-                if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    Util.err.log("NbPlatform initial list: " + platforms);
-                }
+                LOG.log(Level.FINE, "NbPlatform initial list: {0}", platforms);
             }
         }
         return platforms;
@@ -262,29 +259,24 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         // Semi-arbitrary platform* component.
         File bootJar = InstalledFileLocator.getDefault().locate("core/core.jar", "org.netbeans.core.startup", false); // NOI18N
         if (bootJar == null) {
-            if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                Util.err.log("no core/core.jar");
-            }
+            LOG.warning("no core/core.jar");
             return null;
         }
         // Semi-arbitrary harness component.
         File harnessJar = InstalledFileLocator.getDefault().locate("modules/org-netbeans-modules-apisupport-harness.jar", "org.netbeans.modules.apisupport.harness", false); // NOI18N
         if (harnessJar == null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot resolve default platform. " + // NOI18N
-                    "Probably either \"org.netbeans.modules.apisupport.harness\" module is missing or is corrupted."); // NOI18N
+            LOG.warning("Cannot resolve default platform. Probably either \"org.netbeans.modules.apisupport.harness\" module is missing or is corrupted.");
             return null;
         }
         File loc = harnessJar.getParentFile().getParentFile().getParentFile();
         try {
             if (!loc.getCanonicalFile().equals(bootJar.getParentFile().getParentFile().getParentFile().getCanonicalFile())) {
                 // Unusual installation structure, punt.
-                if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    Util.err.log("core.jar & harness.jar locations do not match: " + bootJar + " vs. " + harnessJar);
-                }
+                LOG.log(Level.WARNING, "core.jar & harness.jar locations do not match: {0} vs. {1}", new Object[] {bootJar, harnessJar});
                 return null;
             }
         } catch (IOException x) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, x);
+            LOG.log(Level.INFO, null, x);
         }
         // Looks good.
         return FileUtil.normalizeFile(loc);
@@ -428,9 +420,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         NbPlatform plaf = new NbPlatform(id, label, FileUtil.normalizeFile(destdir), harness,
                 Util.findURLs(null), Util.findURLs(null));
         getPlatformsInternal().add(plaf);
-        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            Util.err.log("NbPlatform added: " + plaf);
-        }
+        LOG.log(Level.FINE, "NbPlatform added: {0}", plaf);
         return plaf;
     }
     
@@ -468,9 +458,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         }
         getPlatformsInternal().remove(plaf);
         ModuleList.refresh(); // #97262
-        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            Util.err.log("NbPlatform removed: " + plaf);
-        }
+        LOG.log(Level.FINE, "NbPlatform removed: {0}", plaf);
     }
     
     private final String id;
@@ -933,9 +921,9 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                     jf.close();
                 }
             } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                LOG.log(Level.INFO, null, e);
             } catch (NumberFormatException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                LOG.log(Level.INFO, null, e);
             }
         }
         return harnessVersion = HarnessVersion.UNKNOWN;
