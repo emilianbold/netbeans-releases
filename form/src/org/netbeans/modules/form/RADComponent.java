@@ -1087,7 +1087,7 @@ public class RADComponent {
     }
 
     static final boolean SUPPRESS_PROPERTY_TABS = Boolean.getBoolean(
-            "nb.form.suppressTabs");
+            "nb.form.suppressTabs"); // NOI18N
 
     protected void createPropertySets(List<Node.PropertySet> propSets) {
         if (beanProperties1 == null)
