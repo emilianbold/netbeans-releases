@@ -161,17 +161,20 @@
     </target>
 
     <!-- clean, build, nbm -->
-    <target name="clean" depends="clean-01, clean-02, clean-03"/>
-    <target name="build" depends="build-01, build-02, build-03"/>
+    <target name="clean" depends="clean-01, clean-02, clean-03, clean-04"/>
+    <target name="build" depends="build-01, build-02, build-03, build-04"/>
 
     <target name="clean-01" depends="clean-platform, clean-ide"/>
     <target name="build-01" depends="build-platform, build-ide"/>
 
-    <target name="clean-02" depends="clean-xml, clean-libs, clean-soa, clean-compapp, clean-bpel, clean-xslt, clean-wlm"/>
-    <target name="build-02" depends="build-xml, build-libs, build-soa, build-compapp, build-bpel, build-xslt, build-wlm"/>
+    <target name="clean-02" depends="clean-xml, clean-libs, clean-soa, clean-compapp, clean-bpel, clean-xslt"/>
+    <target name="build-02" depends="build-xml, build-libs, build-soa, build-compapp, build-bpel, build-xslt"/>
 
-    <target name="clean-03" depends="clean-iep, clean-sql, clean-dm, clean-edm, clean-etl, clean-wsdlextensions"/>
-    <target name="build-03" depends="build-iep, build-sql, build-dm, build-edm, build-etl, build-wsdlextensions"/>
+    <target name="clean-03" depends="clean-wlm, clean-iep, clean-sql, clean-dm, clean-edm, clean-etl"/>
+    <target name="build-03" depends="build-wlm, build-iep, build-sql, build-dm, build-edm, build-etl"/>
+
+    <target name="clean-04" depends="clean-wsdlextensions, clean-c.s, clean-encoder"/>
+    <target name="build-04" depends="build-wsdlextensions, build-c.s, build-encoder"/>
 
     <!-- platform -->
     <target name="build-platform"><antcall target="do-platform"><param name="action" value="netbeans"/></antcall></target>
@@ -386,5 +389,26 @@
         <antcall target="do-module"><param name="module" value="wsdlextensions.smtp"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.snmp"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.swift"/></antcall>
+    </target>
+
+    <!-- c.s -->
+    <target name="build-c.s"><antcall target="do-c.s"><param name="action" value="nbm"/></antcall></target>
+    <target name="clean-c.s"><antcall target="do-c.s"><param name="action" value="clean"/></antcall></target>
+    <target name=   "do-c.s">
+        <antcall target="do-module"><param name="module" value="c.s.encoder"/></antcall>
+        <antcall target="do-module"><param name="module" value="c.s.encoder.custom"/></antcall>
+        <antcall target="do-module"><param name="module" value="c.s.encoder.hl7"/></antcall>
+        <antcall target="do-module"><param name="module" value="c.s.encoder.coco"/></antcall>
+    </target>
+
+    <!-- encoder -->
+    <target name="build-encoder"><antcall target="do-encoder"><param name="action" value="nbm"/></antcall></target>
+    <target name="clean-encoder"><antcall target="do-encoder"><param name="action" value="clean"/></antcall></target>
+    <target name=   "do-encoder">
+        <antcall target="do-module"><param name="module" value="encoder.ui.basic"/></antcall>
+        <antcall target="do-module"><param name="module" value="encoder.custom.aip"/></antcall>
+        <antcall target="do-module"><param name="module" value="encoder.hl7.aip"/></antcall>
+        <antcall target="do-module"><param name="module" value="encoder.coco.ui"/></antcall>
+        <antcall target="do-module"><param name="module" value="encoder.ui.tester"/></antcall>
     </target>
 </project>
