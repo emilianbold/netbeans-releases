@@ -132,7 +132,7 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
             return getSubTypes2(referencedClass, map);
         }
         Set<CsmUID<CsmClass>> antiLoop = new HashSet<CsmUID<CsmClass>>();
-        Set<CsmUID<CsmClass>> res = getSubTypes2(referencedClass, map);
+        Set<CsmUID<CsmClass>> res = new HashSet<CsmUID<CsmClass>>(getSubTypes2(referencedClass, map));
         antiLoop.add(UIDs.get(referencedClass));
         while(true) {
             int size = res.size();
