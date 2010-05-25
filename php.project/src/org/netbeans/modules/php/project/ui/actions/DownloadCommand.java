@@ -129,10 +129,19 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
             Set<TransferFile> forDownload = transferFilesToDownload != null ? transferFilesToDownload : remoteClient.prepareDownload(sources, filesToDownload);
 
             if (showDownloadDialog) {
-                // avoid timeout errors
-                remoteClient.disconnect();
-                long timestamp = project != null ? ProjectSettings.getLastDownload(project) : -1;
-                forDownload = TransferFilesChooser.forDownload(forDownload, timestamp).showDialog();
+                boolean reallyShowDialog = true;
+                if (forDownload.size() == 1
+                        && forDownload.iterator().next().isFile()) {
+                    // do not show transfer dialog for exactly one file (not folder!)
+                    reallyShowDialog = false;
+                }
+
+                if (reallyShowDialog) {
+                    // avoid timeout errors
+                    remoteClient.disconnect();
+                    long timestamp = project != null ? ProjectSettings.getLastDownload(project) : -1;
+                    forDownload = TransferFilesChooser.forDownload(forDownload, timestamp).showDialog();
+                }
             }
 
             if (forDownload.size() > 0) {
