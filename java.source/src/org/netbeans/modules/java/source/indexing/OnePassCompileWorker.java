@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -172,6 +173,8 @@ final class OnePassCompileWorker extends CompileWorker {
         }
 
         CompileTuple active = null;
+        Iterable<? extends Processor> processors = jt != null ? jt.getProcessors() : null;
+        boolean aptEnabled = processors != null && processors.iterator().hasNext();
         try {
             while(!units.isEmpty()) {
                 if (context.isCancelled()) {
@@ -227,7 +230,9 @@ final class OnePassCompileWorker extends CompileWorker {
                     return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 jt.analyze(types);
-                JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
+                if (aptEnabled) {
+                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
+                }
                 if (mem.isLowMemory()) {
                     units = null;
                     System.gc();
