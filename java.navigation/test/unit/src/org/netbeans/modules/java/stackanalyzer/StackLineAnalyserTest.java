@@ -68,6 +68,7 @@ public class StackLineAnalyserTest extends NbTestCase {
         assertTrue(StackLineAnalyser.matches("at org.netbeans.modules.x.SessionNode.<clinit>(SessionNode.java:131)"));
         assertTrue(StackLineAnalyser.matches("at javaapplication8.Main$1.run(Main.java:32)"));
         assertTrue(StackLineAnalyser.matches("at javaapplication8.Main$Inner.go(Main.java:40)"));
+        assertTrue(StackLineAnalyser.matches("             [exec]     at org.openide.filesystems.FileUtil.normalizeFileOnMac(FileUtil.java:1714)"));
     }
     @Test
     public void testAnalyse() throws Exception {
@@ -135,6 +136,13 @@ public class StackLineAnalyserTest extends NbTestCase {
                       "at java.lang.String.lastIn\ndexOf(String.java:1627)",
         new String[] {"asdf a sdfasdf asdf a fafd",
                       "at java.lang.String.lastIndexOf(String.java:1627)"});
+    }
+    @Test
+    public void testFillListModelNonMatchingLine3() throws Exception {
+        testFillListModelSkeleton(
+                      "             [exec]     at\n" +
+                      "org.openide.filesystems.FileUtil.normalizeFileOnMac(FileUtil.java:1714)",
+        new String[] {"[exec]     at org.openide.filesystems.FileUtil.normalizeFileOnMac(FileUtil.java:1714)"});
     }
     @Test
     public void testFillListModelInner() throws Exception {
