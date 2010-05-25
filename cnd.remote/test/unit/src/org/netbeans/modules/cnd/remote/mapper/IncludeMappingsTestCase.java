@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.remote.mapper;
 
+import java.io.File;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -54,6 +55,7 @@ import org.netbeans.modules.cnd.remote.sync.SharedSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.openide.util.Utilities;
 
 /**
  * @author Vladimir Kvashin
@@ -102,6 +104,9 @@ public class IncludeMappingsTestCase extends RemoteTestBase {
             assertEquals("Local path ", referenceLocalPath, localPath);
         } else {
             String referenceLocalPath = "/home/username/temp.tmp";
+            if (Utilities.isWindows()) {
+                referenceLocalPath = new File(referenceLocalPath).getAbsolutePath();
+            }
             remotePath = remoteSyncRoot + referenceLocalPath;
             localPath = mapper.getLocalPath(remotePath).replace('\\', '/');
             System.err.printf("Mapped %s:%s to %s\n", execEnv, remotePath, localPath);
