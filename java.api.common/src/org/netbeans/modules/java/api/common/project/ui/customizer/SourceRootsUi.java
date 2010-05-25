@@ -616,6 +616,9 @@ out:            for( int i = 0; i < files.length; i++ ) {
             }
 
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (" ".equals(value)) { // NOI18N
+                    return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                }
                 File f = (File) value;
                 String message = f.getAbsolutePath();
                 if (projectConflict) {
