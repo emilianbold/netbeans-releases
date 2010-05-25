@@ -299,7 +299,7 @@ public class RADVisualComponent extends RADComponent {
         return constraintsProperties;
     }
 
-    public void resetConstraintsProperties() {
+    public synchronized void resetConstraintsProperties() {
         if (constraintsProperties != null) {
             for (int i=0; i < constraintsProperties.length; i++)
                 nameToProperty.remove(constraintsProperties[i].getName());
