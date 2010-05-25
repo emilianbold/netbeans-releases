@@ -136,7 +136,15 @@ public class UploadCommand extends RemoteCommand implements Displayable {
                 }
             }
 
-            forUpload = TransferFilesChooser.forUpload(forUpload, ProjectSettings.getLastUpload(getProject())).showDialog();
+            boolean showDialog = true;
+            if (forUpload.size() == 1
+                    && forUpload.iterator().next().isFile()) {
+                // do not show transfer dialog for exactly one file (not folder!)
+                showDialog = false;
+            }
+            if (showDialog) {
+                forUpload = TransferFilesChooser.forUpload(forUpload, ProjectSettings.getLastUpload(getProject())).showDialog();
+            }
             if (forUpload.isEmpty()) {
                 return;
             }
