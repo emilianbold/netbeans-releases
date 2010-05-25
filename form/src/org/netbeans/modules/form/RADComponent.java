@@ -641,7 +641,7 @@ public class RADComponent {
         return NO_NEW_TYPES;
     }
 
-    public Node.PropertySet[] getProperties() {
+    public synchronized Node.PropertySet[] getProperties() {
         if (propertySets == null) {
             List<Node.PropertySet> propSets = new ArrayList<Node.PropertySet>(5);
             createPropertySets(propSets);
@@ -1070,7 +1070,7 @@ public class RADComponent {
     // -----------------------------------------------------------------------------
     // Properties
 
-    protected void clearProperties() {
+    protected synchronized void clearProperties() {
         if (nameToProperty != null)
             nameToProperty.clear();
         else nameToProperty = new HashMap<String,Node.Property>();
