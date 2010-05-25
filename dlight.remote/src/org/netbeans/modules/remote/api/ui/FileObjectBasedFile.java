@@ -80,7 +80,7 @@ import org.openide.util.Utilities;
     public FileObjectBasedFile(ExecutionEnvironment env, FileObject fo) {
         super( fo == null || "".equals(fo.getPath()) ? "/" : fo.getPath()); // NOI18N
         this.fo = fo;
-        this.path = null;
+        this.path = fo.getPath();
         this.env = env;
     }
 
@@ -197,7 +197,7 @@ import org.openide.util.Utilities;
     @Override
     public String getParent() {
 	int index = path.lastIndexOf('/');
-	return path.substring(0, index);
+	return (index < 0) ? null : path.substring(0, index);
     }
 
     @Override
