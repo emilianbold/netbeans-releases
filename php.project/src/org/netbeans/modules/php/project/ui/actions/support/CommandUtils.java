@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -472,7 +475,12 @@ public final class CommandUtils {
             relativePath = FileUtil.getRelativePath(webRoot, file);
             assert relativePath != null : String.format("WebRoot %s must be parent of file %s", webRoot, file);
         }
-        URL retval = new URL(getBaseURL(project), relativePath);
+        URL retval = null;
+        try {
+            retval = new URL(getBaseURL(project), URLEncoder.encode(relativePath, "UTF-8")); // NOI18N
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         String arguments = ProjectPropertiesSupport.getArguments(project);
         return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }
