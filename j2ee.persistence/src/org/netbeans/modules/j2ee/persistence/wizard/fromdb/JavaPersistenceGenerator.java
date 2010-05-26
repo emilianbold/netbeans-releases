@@ -229,7 +229,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         }
         
         Project project = FileOwnerQuery.getOwner(entities.iterator().next());
-        if (project != null && !Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {
+        if (project != null && !(Util.isSupportedJavaEEVersion(project) && Util.isContainerManaged(project)) && ProviderUtil.getDDFile(project) != null) {
             try {
                 PUDataObject pudo = ProviderUtil.getPUDataObject(project);
                 // no persistence unit was provider, we'll try find one
