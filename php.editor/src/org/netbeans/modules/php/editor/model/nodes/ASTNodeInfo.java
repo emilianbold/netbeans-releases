@@ -130,7 +130,13 @@ public class ASTNodeInfo<T extends ASTNode> {
         }
         if (retval == null) {
             String toName = toName(node);
-            retval = QualifiedName.createUnqualifiedName(toName);
+            if (toName == null) {
+                //#185702 - NullPointerException at org.netbeans.modules.php.editor.api.QualifiedNameKind.resolveKind
+                //$this->{'_find' . ucfirst($type)}('before', $query);
+                retval = QualifiedName.createUnqualifiedName("");//NOI18N
+            } else {
+                retval = QualifiedName.createUnqualifiedName(toName);
+            }
         }
         return retval;
     }
