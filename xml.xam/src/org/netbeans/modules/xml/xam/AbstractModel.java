@@ -352,7 +352,8 @@ public abstract class AbstractModel<T extends Component<T>>
     
     protected synchronized void endTransaction(boolean quiet) {
         if (transaction == null) return;  // just no-op when not in transaction
-        validateWrite(); // ensures that the releasing thread really owns trnx
+        if (!transaction.currentThreadIsTransactionThread()) return; // the thread isn't the owner of the transaciton
+        //
         try {
             if (! quiet) {
                 transaction.fireEvents();
@@ -423,9 +424,14 @@ public abstract class AbstractModel<T extends Component<T>>
         return true;
     }
     
+    /**
+     * The method does nothing if the transaction hasn't been started or 
+     * started by another thread.
+     */
     public synchronized void rollbackTransaction() {
         if (transaction == null) return;  // just no-op when not in transaction
-        validateWrite(); // ensures that the releasing thread really owns trnx
+        if (!transaction.currentThreadIsTransactionThread()) return; // the thread isn't the owner of the transaciton
+        //
         try {
             if (inSync() || inUndoRedo()) {
                 throw new IllegalArgumentException(
@@ -444,7 +450,8 @@ public abstract class AbstractModel<T extends Component<T>>
     // # 121042
     protected synchronized void finishTransaction() {
         if (transaction == null) return;  // just no-op when not in transaction
-        validateWrite(); // ensures that the releasing thread really owns trnx
+        if (!transaction.currentThreadIsTransactionThread()) return; // the thread isn't the owner of the transaciton
+        //
         try {
             if (inSync() || inUndoRedo()) {
                 throw new IllegalArgumentException(
@@ -464,10 +471,13 @@ public abstract class AbstractModel<T extends Component<T>>
      * that the current thread is able to write. 
      */
     public synchronized void validateWrite() {
-        if (transaction == null || 
-            !transaction.currentThreadIsTransactionThread()) {
+        if (transaction == null) {
             throw new IllegalStateException("attempted model write without " +
                     "invoking startTransaction");
+        }
+        if (!transaction.currentThreadIsTransactionThread()) {
+            throw new IllegalStateException("attempted model write " +
+                    "while a transaction is started by another thread");
         }
     }
     
