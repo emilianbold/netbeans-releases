@@ -107,7 +107,7 @@ public class IncludeMappingsTestCase extends RemoteTestBase {
             String convertedReferenceLocalPath;
             if (Utilities.isWindows()) {
                 referenceLocalPath = "C:\\Documents and Settings\\User\\temp.tmp";
-                convertedReferenceLocalPath = "C/Documents and Settings/User/temp.tmp";
+                convertedReferenceLocalPath = "/C/Documents and Settings/User/temp.tmp";
             } else {
                 referenceLocalPath = "/home/username/temp.tmp";
                 convertedReferenceLocalPath = referenceLocalPath;
