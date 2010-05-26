@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -88,7 +89,7 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         CsmFile file = referencedClass.getContainingFile();
         long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
         CsmProject project = file.getProject();
-        Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> fullMap = getOrCreateFullMap2(project, fileVersion);
+        Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> fullMap = getOrCreateFullMap(project, fileVersion);
         Collection<CsmReference> res = new ArrayList<CsmReference>();
         for(CsmUID<CsmClass> cls : getSubTypesImpl(referencedClass, fullMap, directSubtypesOnly)) {
             res.add(CsmReferenceSupport.createObjectReference(cls.getObject()));
@@ -156,7 +157,7 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         return res;
     }
 
-    private synchronized Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>> getOrCreateFullMap2(CsmProject project, long version) {
+    private synchronized Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>> getOrCreateFullMap(CsmProject project, long version) {
         if (lastVersion != version) {
             cache.clear();
         }
@@ -165,7 +166,7 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         Reference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>> outRef = cache.get(prjUID);
         Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>> out = (outRef == null) ? null : outRef.get();
         if (out == null) {
-            out = new HashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>>();
+            out = new ConcurrentHashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>>();
             cache.put(prjUID, new SoftReference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>>(out));
         }
         return out;
