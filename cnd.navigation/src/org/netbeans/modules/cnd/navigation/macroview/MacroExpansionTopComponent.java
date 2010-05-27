@@ -67,7 +67,6 @@ public final class MacroExpansionTopComponent extends TopComponent {
     public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/macroview/resources/macroexpansion.png"; // NOI18N
     private static final String PREFERRED_ID = "MacroExpansionTopComponent"; // NOI18N
     private MacroExpansionPanel panel = null;
-    private int lastDividerLocation = -1;
     private boolean lastSyncCaretAndContext = true;
     private boolean lastLocalContext = true;
     private Document lastExpandedContextDoc = null;
@@ -82,28 +81,24 @@ public final class MacroExpansionTopComponent extends TopComponent {
     /**
      * Initializes documents of the panel.
      */
-    public void setDocuments(Document expandedContextDoc, Document expandedMacroDoc) {
+    public void setDocuments(Document expandedContextDoc) {
         lastExpandedContextDoc = expandedContextDoc;
         if (panel != null) {
-            lastDividerLocation = panel.getDividerLocation();
             lastSyncCaretAndContext = panel.isSyncCaretAndContext();
             lastLocalContext = panel.isLocalContext();
+        } else {
+            panel = new MacroExpansionPanel(true);
+            removeAll();
+            add(panel, BorderLayout.CENTER);
         }
 
-        panel = new MacroExpansionPanel(true);
         panel.setContextExpansionDocument(expandedContextDoc);
-        panel.setMacroExpansionDocument(expandedMacroDoc);
-        if (lastDividerLocation != -1) {
-            panel.setDividerLocation(lastDividerLocation);
-        }
         panel.setLocalContext(isLocalContext());
         panel.setSyncCaretAndContext(lastSyncCaretAndContext);
         panel.setLocalContext(lastLocalContext);
         if (panel.isSyncCaretAndContext()) {
             panel.updateCaretPosition();
         }
-        removeAll();
-        add(panel, BorderLayout.CENTER);
         validate();
         OpenedEditors.getDefault().fireStateChanged();
     }
@@ -222,17 +217,20 @@ public final class MacroExpansionTopComponent extends TopComponent {
         removeAll();
         initComponents();
         if (panel != null) {
-            lastDividerLocation = panel.getDividerLocation();
             lastSyncCaretAndContext = panel.isSyncCaretAndContext();
             lastLocalContext = panel.isLocalContext();
 
             Document doc = getExpandedContextDoc();
             if (doc != null) {
+                // clean reference on expanded document from real document
                 Document doc2 = (Document) doc.getProperty(Document.class);
                 if (doc2 != null) {
                     doc2.putProperty(Document.class, null);
                 }
+                MacroExpansionViewUtils.closeMemoryBasedDocument(doc);
             }
+            lastExpandedContextDoc = null;
+            panel.removeAll();
             panel = null;
         }
     }
