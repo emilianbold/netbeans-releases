@@ -202,14 +202,30 @@ public final class NativeExecutionService {
         FutureTask<Integer> runTask = new FutureTask<Integer>(callable) {
 
             @Override
+            /**
+             * @return <tt>true</tt>
+             */
             public boolean cancel(boolean mayInterruptIfRunning) {
                 synchronized (processRef) {
-                    boolean ret = super.cancel(mayInterruptIfRunning);
+                    /* *** Bug 186172 ***
+                     *
+                     * Do NOT call super.cancel() here as it will interrupt
+                     * waiting thread (see callable's that this task is created
+                     * from) and will initiate a postExecutionTask BEFORE the
+                     * process is terminated.
+                     * Just need to terminate the process. The process.waitFor()
+                     * will naturally return then.
+                     *
+                     */
+//                    boolean ret = super.cancel(mayInterruptIfRunning);
+
                     NativeProcess process = processRef.get();
+
                     if (process != null) {
                         process.destroy();
                     }
-                    return ret;
+
+                    return true;
                 }
             }
         };
