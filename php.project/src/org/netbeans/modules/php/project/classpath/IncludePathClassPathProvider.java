@@ -55,35 +55,42 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.WeakSet;
 
 /**
- * Provides ClassPath for php files on include path.
+ * Provides ClassPath for php files on include path or without a project.
  */
 @org.openide.util.lookup.ServiceProvider(service = ClassPathProvider.class, position = 200)
 public class IncludePathClassPathProvider implements ClassPathProvider {
-    static Set<ClassPath> projectIncludes = new WeakSet<ClassPath>();
+    private static final Set<ClassPath> PROJECT_INCLUDES = new WeakSet<ClassPath>();
 
     /** Default constructor for lookup. */
     public IncludePathClassPathProvider() {
     }
 
-    public static void addProjectIncludePath(ClassPath cp) {
-        projectIncludes.add(cp);
+    public static synchronized void addProjectIncludePath(ClassPath cp) {
+        PROJECT_INCLUDES.add(cp);
+    }
+
+    public static synchronized void removeProjectIncludePath(ClassPath classPath) {
+        PROJECT_INCLUDES.remove(classPath);
     }
 
     @Override
+    @SuppressWarnings("fallthrough")
     public ClassPath findClassPath(FileObject file, String type) {
         if (FileUtils.isPhpFile(file)) {
             FileType fileType = PhpSourcePath.getFileType(file);
-            if (fileType.equals(FileType.INCLUDE)) {
-                /*for global include path*/
-                List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
-                return ClassPathSupport.createClassPath(includePath.toArray(new FileObject[includePath.size()]));
-            } else if (fileType.equals(FileType.UNKNOWN)) {
-                /*include pathes for individual projects*/
-                for (ClassPath classPath : projectIncludes) {
-                    if (classPath.contains(file)) {
-                        return classPath;
+            switch (fileType) {
+                case UNKNOWN:
+                    synchronized (IncludePathClassPathProvider.class) {
+                        for (ClassPath classPath : PROJECT_INCLUDES) {
+                            if (classPath.contains(file)) {
+                                return classPath;
+                            }
+                        }
                     }
-                }
+                    // break; // intentionally commented out! if not found, then return CP for include path
+                case INCLUDE:
+                    List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
+                    return ClassPathSupport.createClassPath(includePath.toArray(new FileObject[includePath.size()]));
             }
         }
         return null;
