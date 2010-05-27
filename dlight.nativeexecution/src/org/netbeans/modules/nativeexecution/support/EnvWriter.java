@@ -42,6 +42,7 @@
 package org.netbeans.modules.nativeexecution.support;
 
 import java.io.OutputStreamWriter;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -65,7 +66,7 @@ public final class EnvWriter {
 
     public EnvWriter(final OutputStream os, final boolean remote) {
         OutputStreamWriter w = null;
-        
+
         if (remote) {
             try {
                 String charSet = ProcessUtils.getRemoteCharSet();
@@ -110,12 +111,21 @@ public final class EnvWriter {
             for (String name : env.getExportVariablesSet()) {
                 // check capitalized key by pattern
                 if (!pattern.matcher(name.toUpperCase(java.util.Locale.ENGLISH)).matches()) {
+                    Logger.getInstance().log(Level.WARNING,
+                            "Will not pass environment variable named {0} as it contains non alpha-numeric characters", name); // NOI18N
                     continue;
                 }
 
                 value = env.get(name);
 
-                if (value != null && value.indexOf('"') < 0) {
+                // As value will be enclosed in quotes, will escape all
+                // existent quotes.
+
+                if (value != null) {
+                    if (value.indexOf('"') >= 0) { // NOI18N
+                        value = value.replace("\"", "\\\""); // NOI18N
+                    }
+
                     writer.write(name + "=\"" + value + "\" && export " + name + "\n"); // NOI18N
                 }
             }
