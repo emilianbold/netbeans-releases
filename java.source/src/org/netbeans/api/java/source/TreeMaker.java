@@ -419,6 +419,10 @@ public final class TreeMaker {
     public ContinueTree Continue(CharSequence label) {
         return delegate.Continue(label);
     }
+
+    public DisjointTypeTree DisjointType(List<? extends Tree> typeComponents) {
+        return delegate.DisjointType(typeComponents);
+    }
     
     /** Creates a new DoWhileLoopTree.
      *

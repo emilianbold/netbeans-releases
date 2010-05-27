@@ -358,6 +358,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public Tree visitBlock(BlockTree tree, Object p) {
 	return rewriteChildren(tree);
     }
+    public Tree visitDisjointType(DisjointTypeTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
     public Tree visitDoWhileLoop(DoWhileLoopTree tree, Object p) {
 	return rewriteChildren(tree);
     }
@@ -620,6 +623,17 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
                 model.setPos(topLevel, NOPOS);
             } else
                 copyPosTo(tree,n);
+	    tree = n;
+	}
+	return tree;
+    }
+
+    protected final DisjointTypeTree rewriteChildren(DisjointTypeTree tree) {
+	List<? extends Tree> newComponents = translate(tree.getTypeComponents());
+	if (newComponents!=tree.getTypeComponents()) {
+	    DisjointTypeTree n = make.DisjointType(newComponents);
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
 	    tree = n;
 	}
 	return tree;

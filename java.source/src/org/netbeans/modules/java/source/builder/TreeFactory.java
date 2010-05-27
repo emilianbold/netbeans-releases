@@ -288,6 +288,13 @@ public class TreeFactory {
         return make.at(NOPOS).Continue(n);
     }
     
+    public DisjointTypeTree DisjointType(List<? extends Tree> typeComponents) {
+        ListBuffer<JCExpression> components = new ListBuffer<JCExpression>();
+        for (Tree t : typeComponents)
+            components.append((JCExpression)t);
+        return make.at(NOPOS).TypeDisjoint(components.toList());
+    }
+
     public DoWhileLoopTree DoWhileLoop(ExpressionTree condition, StatementTree statement) {
         return make.at(NOPOS).DoLoop((JCStatement)statement, (JCExpression)condition);
     }

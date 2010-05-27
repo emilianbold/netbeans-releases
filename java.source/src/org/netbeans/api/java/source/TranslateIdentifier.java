@@ -290,6 +290,19 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
         return node;
     }
 
+    @Override
+    public Tree visitDisjointType(DisjointTypeTree node, Boolean p) {
+        List<? extends Tree> typeComponents = translateTree(node.getTypeComponents());
+
+        if (make == null) return node;
+
+        if (typeComponents != node.getTypeComponents())
+        {
+            node = make.DisjointType(typeComponents);
+        }
+        return node;
+    }
+
     public Tree visitDoWhileLoop(DoWhileLoopTree node, Boolean p) {
         StatementTree statement = (StatementTree) translateTree(node.getStatement());
         ExpressionTree condition = (ExpressionTree) translateTree(node.getCondition());
