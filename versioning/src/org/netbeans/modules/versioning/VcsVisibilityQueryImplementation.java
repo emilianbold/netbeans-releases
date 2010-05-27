@@ -48,12 +48,17 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  * Delegates the work to the owner of files in query.
@@ -63,8 +68,14 @@ import org.openide.filesystems.FileUtil;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.VisibilityQueryImplementation.class)
 public class VcsVisibilityQueryImplementation implements VisibilityQueryImplementation2 {
 
+    private final InvisibleFiles cache = new InvisibleFiles(25);
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private static VcsVisibilityQueryImplementation instance;
+    private static RequestProcessor rp = new RequestProcessor(VcsVisibilityQueryImplementation.class.getName(), 1, false, false);
+    private RequestProcessor.Task refreshTask = rp.create(new RefreshTask());
+    private RequestProcessor.Task vsChangedTask = rp.create(new VisibilityChangedTask());
+    private final HashMap<File, Boolean> refreshedFiles = new HashMap<File, Boolean>(20);
+    private static final int MAX_CACHE_SIZE = 500;
 
     public VcsVisibilityQueryImplementation() {
         instance = this;
@@ -74,15 +85,25 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
         return instance;
     }
 
+    @Override
     public boolean isVisible(File file) {
-        VersioningSystem system = VersioningManager.getInstance().getOwner(file);
-        if(system == null) {
-            return true;
+        boolean visible;
+        synchronized (cache) {
+            cache.clearOldValues();
+            visible = !cache.keySet().contains(file); // get cached value
         }
-        VCSVisibilityQuery vqi = system.getVisibilityQuery();
-        return vqi == null ? true : vqi.isVisible(file);
+        boolean refresh;
+        synchronized (refreshedFiles) {
+            refresh = refreshedFiles.isEmpty();
+            refreshedFiles.put(file, visible);
+        }
+        if (refresh) {
+            refreshTask.schedule(100);
+        }
+        return visible;
     }
 
+    @Override
     public boolean isVisible(FileObject fileObject) {
         File file = FileUtil.toFile(fileObject);
         if(file == null) {
@@ -91,12 +112,14 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
         return isVisible(file);
     }
 
+    @Override
     public synchronized void addChangeListener(ChangeListener l) {
         ArrayList<ChangeListener> newList = new ArrayList<ChangeListener>(listeners);
         newList.add(l);
         listeners = newList;
     }
 
+    @Override
     public synchronized void removeChangeListener(ChangeListener l) {
         ArrayList<ChangeListener> newList = new ArrayList<ChangeListener>(listeners);
         newList.remove(l);
@@ -114,4 +137,69 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
         }
     }
 
+    private class VisibilityChangedTask implements Runnable {
+        @Override
+        public void run() {
+            fireVisibilityChanged();
+        }
+    }
+
+    private class RefreshTask implements Runnable {
+        @Override
+        public void run() {
+            File file = null;
+            boolean originalValue = false;
+            // get another file
+            synchronized (refreshedFiles) {
+                Iterator<Entry<File, Boolean>> it = refreshedFiles.entrySet().iterator();
+                if (it.hasNext()) {
+                    Entry<File, Boolean> e = it.next();
+                    file = e.getKey();
+                    originalValue = e.getValue();
+                    it.remove();
+                }
+            }
+            if (file == null) {
+                return; // no files to refresh, finish
+            }
+            boolean visible = true;
+            VersioningSystem system = VersioningManager.getInstance().getOwner(file);
+            if (system != null) {
+                VCSVisibilityQuery vqi = system.getVisibilityQuery();
+                visible = vqi == null ? true : vqi.isVisible(file);
+            }
+            synchronized (cache) {
+                cache.remove(file);
+                if (!visible) {
+                    cache.put(file, System.currentTimeMillis());
+                }
+            }
+            if (originalValue != visible) {
+                vsChangedTask.schedule(1000);
+            }
+            refreshTask.schedule(0);
+        }
+    }
+
+    private static class InvisibleFiles extends LinkedHashMap<File, Long> {
+
+        public InvisibleFiles (int initialCapacity) {
+            super(initialCapacity);
+        }
+
+        @Override
+        protected boolean removeEldestEntry(Entry<File, Long> eldest) {
+            return size() >= MAX_CACHE_SIZE;
+        }
+
+        public void clearOldValues () {
+            if (size() > MAX_CACHE_SIZE >> 2) { // remove old entries only for the size being 1/4 it's max capacity
+                Iterator<Entry<File, Long>> it = entrySet().iterator();
+                long threshold = System.currentTimeMillis() - 30 * 60 * 1000; // default max age is 30 minutes
+                while (it.hasNext() && it.next().getValue() < threshold) {
+                    it.remove();
+                }
+            }
+        }
+    }
 }
