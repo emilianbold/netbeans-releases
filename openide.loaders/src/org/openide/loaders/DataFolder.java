@@ -1446,8 +1446,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             try {
                 if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
                     //windows & mac
-                    @SuppressWarnings("rawtypes")  // checked later
-                    List fileList = (List) t.getTransferData(DataFlavor.javaFileListFlavor);
+                    List<?> fileList = (List<?>) t.getTransferData(DataFlavor.javaFileListFlavor);
                     //#92812 - make sure mac os does not return null value
                     if( null != fileList ) {
                         return NbCollections.checkedListByCopy(fileList, File.class, true);
