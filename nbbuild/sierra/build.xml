@@ -124,7 +124,7 @@
     </target>
 
     <!-- daily -->
-    <target name="get-daily-test" depends="check-daily,do-daily"/>
+    <target name="get-daily-test" depends="check-daily,get-test"/>
     
     <target name="check-daily">
         <mkdir dir="${cache}/test/lock"/>
@@ -136,7 +136,7 @@
         <available property="lock.available" file="${cache}/test/lock/${daily}"/>
     </target>
 
-    <target name="do-daily" unless="lock.available">
+    <target name="get-test" unless="lock.available">
         <delete>
             <fileset dir="${cache}/test/lock" includes="*"/>
         </delete>
