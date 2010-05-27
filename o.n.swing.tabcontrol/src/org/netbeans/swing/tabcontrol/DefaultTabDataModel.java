@@ -431,86 +431,85 @@ public class DefaultTabDataModel implements TabDataModel {
     }
 
     private void fireIntervalAdded(ListDataEvent event) {
+        List<ComplexListDataListener> listeners = null;
         synchronized( LOCK ) {
             if (listenerList == null) {
                 return;
             }
-            int max = listenerList.size();
-            for (int i = 0; i < max; i++) {
-                ComplexListDataListener l = (ComplexListDataListener) listenerList.get(
-                        i);
-                l.intervalAdded(event);
-            }
+            listeners = new ArrayList<ComplexListDataListener>(listenerList);
+        }
+        for( ComplexListDataListener l : listeners ) {
+            l.intervalAdded(event);
         }
         cs.fireChange();
     }
 
     private void fireIntervalRemoved(ListDataEvent event) {
+        List<ComplexListDataListener> listeners = null;
         synchronized( LOCK ) {
-            if (listenerList == null)
+            if (listenerList == null) {
                 return;
-            int max = listenerList.size();
-            for (int i = 0; i < max; i++) {
-                ComplexListDataListener l = (ComplexListDataListener) listenerList.get(
-                        i);
-                l.intervalRemoved(event);
             }
+            listeners = new ArrayList<ComplexListDataListener>(listenerList);
+        }
+        for( ComplexListDataListener l : listeners ) {
+            l.intervalRemoved(event);
         }
         cs.fireChange();
     }
 
     private void fireContentsChanged(ListDataEvent event) {
+        List<ComplexListDataListener> listeners = null;
         synchronized( LOCK ) {
-            if (listenerList == null)
+            if (listenerList == null) {
                 return;
-            int max = listenerList.size();
-            for (int i = 0; i < max; i++) {
-                ComplexListDataListener l = (ComplexListDataListener) listenerList.get(
-                        i);
-                l.contentsChanged(event);
             }
+            listeners = new ArrayList<ComplexListDataListener>(listenerList);
+        }
+        for( ComplexListDataListener l : listeners ) {
+            l.contentsChanged(event);
         }
         cs.fireChange();
     }
 
     private void fireIndicesAdded(ComplexListDataEvent event) {
+        List<ComplexListDataListener> listeners = null;
         synchronized( LOCK ) {
-            if (listenerList == null)
+            if (listenerList == null) {
                 return;
-            int max = listenerList.size();
-            for (int i = 0; i < max; i++) {
-                ComplexListDataListener l = (ComplexListDataListener) listenerList.get(
-                        i);
-                l.indicesAdded(event);
             }
+            listeners = new ArrayList<ComplexListDataListener>(listenerList);
+        }
+        for( ComplexListDataListener l : listeners ) {
+            l.indicesAdded(event);
         }
         cs.fireChange();
     }
 
     private void fireIndicesRemoved(ComplexListDataEvent event) {
+        List<ComplexListDataListener> listeners = null;
         synchronized( LOCK ) {
-            if (listenerList == null)
+            if (listenerList == null) {
                 return;
-            int max = listenerList.size();
-            for (int i = 0; i < max; i++) {
-                ComplexListDataListener l = (ComplexListDataListener) listenerList.get(
-                        i);
-                l.indicesRemoved(event);
             }
+            listeners = new ArrayList<ComplexListDataListener>(listenerList);
+        }
+        for( ComplexListDataListener l : listeners ) {
+            l.indicesRemoved(event);
         }
         cs.fireChange();
     }
 
     private void fireIndicesChanged(ComplexListDataEvent event) {
+        List<ComplexListDataListener> listeners = null;
         synchronized( LOCK ) {
-            if (listenerList == null)
+            if (listenerList == null) {
                 return;
-            int max = listenerList.size();
-            for (int i = 0; i < max; i++) {
-                ComplexListDataListener l = (ComplexListDataListener) listenerList.get(
-                        i);
-                l.indicesChanged(event);
             }
+            listeners = new ArrayList<ComplexListDataListener>(listenerList);
+        }
+        for( ComplexListDataListener l : listeners ) {
+            l.indicesChanged(event);
         }
         cs.fireChange();
     }
