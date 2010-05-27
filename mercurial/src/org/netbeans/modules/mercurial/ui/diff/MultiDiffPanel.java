@@ -666,6 +666,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
+                dividerSet = false;
                 displayStatuses = localDisplayStatuses;
                 setSetups(localSetups, cookies);
                 boolean propertyColumnVisible = false;
@@ -809,7 +810,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                                 setDiffIndex(currentIndex, 0, false);
                             }
                             if (splitPane != null) {
-                                dividerSet = false;
                                 updateSplitLocation();
                             }
                         }
