@@ -37,61 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.editor.actions;
+package org.netbeans.modules.php.project.ui.actions.support;
 
-import java.awt.event.ActionEvent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.text.JTextComponent;
-import org.netbeans.spi.editor.AbstractEditorAction;
-import org.netbeans.api.editor.EditorActionRegistration;
-import org.netbeans.api.editor.EditorActionRegistrations;
-import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.api.editor.EditorActionNames;
+import org.netbeans.junit.NbTestCase;
 
-/**
- * Toggle toolbar/lines visibility.
- *
- * @author Miloslav Metelka
- */
-@EditorActionRegistrations({
-    @EditorActionRegistration(
-        name = EditorActionNames.toggleToolbar,
-        menuPath = "View",
-        menuPosition = 800,
-        menuText = "#" + EditorActionNames.toggleToolbar + "_menu_text",
-        preferencesKey = SimpleValueNames.TOOLBAR_VISIBLE_PROP
-    ),
-    @EditorActionRegistration(
-        name = EditorActionNames.toggleLineNumbers,
-        menuPath = "View",
-        menuPosition = 850,
-        menuText = "#" + EditorActionNames.toggleLineNumbers + "_menu_text",
-        preferencesKey = SimpleValueNames.LINE_NUMBER_VISIBLE
-    )
-//    @EditorActionRegistration(
-//        name = EditorActionNames.toggleNonPrintableCharacters,
-//        menuPath = "View",
-//        menuPosition = 870,
-//        menuText = "#" + EditorActionNames.toggleNonPrintableCharacters + "_menu_text",
-//        preferencesKey = SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE
-//    )
-})
-public final class ToggleAction extends AbstractEditorAction {
+public class CommandUtilsTest extends NbTestCase {
 
-    private static final Logger LOG = Logger.getLogger(ToggleAction.class.getName());
-
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    public void actionPerformed(ActionEvent evt, JTextComponent component) {
-        // Leave empty - AlwaysEnabledAction toggles state in preferences by default
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("actionPerformed: actionName=" + actionName());
-        }
+    public CommandUtilsTest(String name) {
+        super(name);
     }
 
+    public void testEncodeRelativeUrl() {
+        assertEquals("a+b", CommandUtils.encodeRelativeUrl("a b"));
+        assertEquals("a/b/c+d/e", CommandUtils.encodeRelativeUrl("a/b/c d/e"));
+    }
 }
