@@ -47,7 +47,6 @@ import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import javax.tools.FileObject;
 import org.netbeans.modules.cnd.model.tasks.OpenedEditors;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.ImageUtilities;
