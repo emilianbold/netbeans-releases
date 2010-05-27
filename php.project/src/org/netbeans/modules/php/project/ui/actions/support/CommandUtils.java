@@ -475,14 +475,29 @@ public final class CommandUtils {
             relativePath = FileUtil.getRelativePath(webRoot, file);
             assert relativePath != null : String.format("WebRoot %s must be parent of file %s", webRoot, file);
         }
-        URL retval = null;
-        try {
-            retval = new URL(getBaseURL(project), URLEncoder.encode(relativePath, "UTF-8")); // NOI18N
-        } catch (UnsupportedEncodingException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        URL retval = new URL(getBaseURL(project), encodeRelativeUrl(relativePath));
         String arguments = ProjectPropertiesSupport.getArguments(project);
         return (arguments != null) ? appendQuery(retval, arguments) : retval;
+    }
+
+    // because of unit tests
+    static String encodeRelativeUrl(String relativeUrl) {
+        if (!StringUtils.hasText(relativeUrl)) {
+            return relativeUrl;
+        }
+        StringBuilder sb = new StringBuilder(relativeUrl.length() * 2);
+        try {
+            for (String part : StringUtils.explode(relativeUrl, "/")) { // NOI18N
+                if (sb.length() > 0) {
+                    sb.append('/'); // NOI18N
+                }
+                sb.append(URLEncoder.encode(part, "UTF-8")); // NOI18N
+            }
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+            return relativeUrl;
+        }
+        return sb.toString();
     }
 
     private static URL appendQuery(URL originalURL, String queryWithoutQMark) throws MalformedURLException {
