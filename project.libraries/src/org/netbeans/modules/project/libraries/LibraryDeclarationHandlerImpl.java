@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -69,43 +70,45 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     private LibraryImplementation library;
 
     private String libraryType;
-    
     private String libraryDescription;
-    
     private String libraryName;
-
     private String localizingBundle;
-
     private Map<String,List<URL>> contentTypes = new HashMap<String,List<URL>>();
-    
+
     // last volume
     private List<URL> cpEntries;
-    
     //last volume type
     private String contentType;
-    
     //parsing volume?
     private boolean inVolume = false;
-    
-    public static final boolean DEBUG = false;
+    //Used flag preventing from being reused
+    private final AtomicBoolean used = new AtomicBoolean();
 
-
-    /**
-     */
-    public LibraryDeclarationHandlerImpl() {
+    @Override
+    public void startDocument() {
+        if (used.getAndSet(true)) {
+            throw new IllegalStateException("The LibraryDeclarationHandlerImpl was already used, create a new instance");   //NOI18N
+        }
     }
-    
+
+    @Override
+    public void endDocument() {
+    }
+
+    @Override
     public void start_volume(final Attributes meta) throws SAXException {
         cpEntries = new ArrayList<URL>();
         this.inVolume = true;
     }
-    
+
+    @Override
     public void end_volume() throws SAXException {
         contentTypes.put (contentType, cpEntries);
         this.inVolume = false;
         this.contentType = null;
     }
-    
+
+    @Override
     public void handle_type(final String data, final Attributes meta) throws SAXException {
 		if (data == null || data.length () == 0) {
 			throw new SAXException ("Empty value of type element");	//NOI18N
@@ -117,26 +120,16 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
             this.libraryType = data;
         }        
     }
-        
+
+    @Override
     public void start_library(final Attributes meta) throws SAXException {
         if ("1.0".equals(meta.getValue("version")) == false) {  // NOI18N
             throw new SAXException("Invalid librray descriptor version"); // NOI18N
         }
-        cleanUp();
     }
-    
-    /**
-     * Sets preconditions
-     */
-    private void cleanUp () {
-        this.libraryName = null;
-        this.libraryDescription = null;
-        this.libraryType = null;
-        this.localizingBundle = null;
-        this.contentTypes.clear ();
-    }
-    
-    public void end_library() throws SAXException {        
+
+    @Override
+    public void end_library() throws SAXException {
         boolean update;
         if (this.library != null) {
             if (this.libraryType == null || !this.libraryType.equals(this.library.getType())) {
@@ -179,20 +172,24 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         }        
     }
 
+    @Override
     public void handle_resource(URL data, final Attributes meta) throws SAXException {
         if (data != null) {
             cpEntries.add(data);
         }
     }
-        
+
+    @Override
     public void handle_name(final String data, final Attributes meta) throws SAXException {
         this.libraryName = data;
     }
-    
+
+    @Override
     public void handle_description (final String data, final Attributes meta) throws SAXException {
         libraryDescription = data;
     }
 
+    @Override
     public void handle_localizingBundle (final String data, final Attributes meta) throws SAXException {
         this.localizingBundle = data;
     }
@@ -202,9 +199,7 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     }
 
     public LibraryImplementation getLibrary () {
-        LibraryImplementation lib = this.library;
-        this.library = null;
-        return lib;
+        return this.library;
     }
 
 

@@ -247,7 +247,8 @@ public class MakeOSGi extends Task {
             }
             String pp = attr.getValue("OpenIDE-Module-Public-Packages");
             String implVersion = attr.getValue("OpenIDE-Module-Implementation-Version");
-            if (implVersion != null && implVersion.matches("\\d+")) {
+            if (implVersion != null && implVersion.matches("\\d+") &&
+                    /* not just e.g. 201005242201 */ attr.getValue("OpenIDE-Module-Build-Version") != null) {
                 // Since we have no idea who might be using these packages, have to make everything public.
                 info.exportedPackages.addAll(availablePackages);
                 pp = null;

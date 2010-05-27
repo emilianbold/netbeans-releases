@@ -80,6 +80,7 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
         setName(NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_HierarchyTopComponent")); // NOI18N
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
     }
 
     void setClass(CsmClass decl, boolean setClose) {

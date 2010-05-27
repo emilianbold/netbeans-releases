@@ -4,7 +4,7 @@
     <folder name="Templates">
         <attr name="Classes/Encoder" boolvalue="true"/>
         <attr name="Encoder/GUIForms" boolvalue="true"/>
-        <folder name="SOA">
+        <folder name="ESB">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.encoder.coco.ui.wizard.Bundle"/>
             <file name="retrieveCopybookResource">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/encoder/coco/ui/wizard/xmlObject.gif"/>
