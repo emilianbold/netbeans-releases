@@ -1188,10 +1188,37 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         
         @Override
         public String toString() {
-            return "Event[target=" + getTargetName() + ",task=" + getTaskName() + ",message=" + getMessage() + ",scriptLocation=" + getScriptLocation() + ",exception=" + exception + ",level=" + level + ",consumed=" + consumed + "]"; // NOI18N
+            StringBuilder b = new StringBuilder("Event"); // NOI18N
+            String s = getTargetName();
+            if (s != null) {
+                b.append(";targ=").append(s); // NOI18N
+            }
+            s = getTaskName();
+            if (s != null) {
+                b.append(";task=").append(s); // NOI18N
+            }
+            if (exception != null) {
+                b.append(";exc=").append(exception); // NOI18N
+            }
+            if (level != -1) {
+                b.append(";lvl=").append(LEVEL_NAMES[level]); // NOI18N
+            }
+            if (consumed) {
+                b.append(";consumed"); // NOI18N
+            }
+            s = getMessage();
+            if (s != null) {
+                b.append(";msg=").append(s); // NOI18N
+            }
+            File f = getScriptLocation();
+            if (f != null) {
+                b.append(";scrLoc=").append(f); // NOI18N
+            }
+            return b.toString();
         }
         
     }
+    private static final String[] LEVEL_NAMES = {"ERR", "WARN", "INFO", "VERBOSE", "DEBUG"}; // NOI18N
     
     /**
      * Reposted event delegating to an original one except for message and level.
