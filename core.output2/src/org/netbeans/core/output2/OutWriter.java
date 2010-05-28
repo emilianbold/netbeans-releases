@@ -180,6 +180,7 @@ class OutWriter extends PrintWriter {
         } catch (java.nio.channels.AsynchronousCloseException ace) {
             //Execution termination has sent ThreadDeath to the process in the
             //middle of a write
+            Exceptions.printStackTrace(ace);
             onWriteException();
         } catch (IOException ioe) {
             //Out of disk space

@@ -233,6 +233,7 @@ class FileMapStorage implements Storage {
         bb.flip();
         FileChannel channel = writeChannel();
         if (channel.isOpen()) { //If a thread was terminated while writing, it will be closed
+            Thread.interrupted(); // #186629: must clear interrupt flag or channel will be broken
             channel.write (bb);
             synchronized (this) {
                 bytesWritten += byteCount;
