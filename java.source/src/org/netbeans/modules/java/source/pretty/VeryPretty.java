@@ -1268,6 +1268,17 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     @Override
+    public void visitTypeDisjoint(JCTypeDisjoint that) {
+        boolean first = true;
+
+        for (JCExpression c : that.getTypeComponents()) {
+            if (!first) print(" | ");
+            print(c);
+            first = false;
+        }
+    }
+
+    @Override
     public void visitTypeTest(JCInstanceOf tree) {
 	printExpr(tree.expr, TreeInfo.ordPrec);
 	print(" instanceof ");
