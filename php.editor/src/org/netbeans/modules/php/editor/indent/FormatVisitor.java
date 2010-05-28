@@ -136,9 +136,13 @@ public class FormatVisitor extends DefaultVisitor {
 	    addFormatToken(beforeTokens);
 	    if (ts.token().id() == PHPTokenId.PHPDOC_COMMENT_START
 		    || (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
-		    && "//".equals(ts.token().text().toString())
-		    && indexBeforeLastComment == -1)) {
-		indexBeforeLastComment = beforeTokens.size() - 1;
+		    && "//".equals(ts.token().text().toString()))
+		    && indexBeforeLastComment == -1) {
+                if (ts.movePrevious() && ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) > 0) {
+                    // don't change if the line comment or a comment starts on the same line
+                    indexBeforeLastComment = beforeTokens.size() - 1;
+                }
+                ts.moveNext();
 	    }
 	}
 	if (indexBeforeLastComment > 0) { // if there is a comment, put the new lines befere the comment, not directly before the node.
@@ -154,7 +158,9 @@ public class FormatVisitor extends DefaultVisitor {
 		includeWSBeforePHPDoc = false;
 	    } else if (node instanceof FieldsDeclaration) {
 		if (isPreviousNodeTheSameInBlock(path.get(0), (Statement) node)) {
-		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
+//                    if (beforeTokens.get(indexBeforeLastComment).getId() != FormatToken.Kind.LINE_COMMENT) {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
+//                    }
 		} else {
 		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELD, ts.offset()));
 		}
