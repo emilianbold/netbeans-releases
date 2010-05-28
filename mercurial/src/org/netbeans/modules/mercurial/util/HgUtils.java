@@ -718,6 +718,7 @@ public class HgUtils {
 
         if (entries.size() == 0) {
             if (fo != null) fo.delete();
+            resetIgnorePatterns(directory);
             return;
         }
 

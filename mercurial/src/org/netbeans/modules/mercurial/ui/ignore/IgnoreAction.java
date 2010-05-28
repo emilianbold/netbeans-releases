@@ -88,13 +88,12 @@ public class IgnoreAction extends ContextAction {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         for (int i = 0; i < files.length; i++) {
             if (files[i].getName().equals(".hg") || // NOI18N
-                    files[i].isDirectory() ||
                     SharabilityQuery.getSharability(files[i])== SharabilityQuery.NOT_SHARABLE) { 
                 actionStatus = UNDEFINED;
                 break;
             }
             FileInformation info = cache.getStatus(files[i]);
-            if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+            if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || info.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE && info.isDirectory()) {
                 if (actionStatus == UNIGNORING) {
                     actionStatus = UNDEFINED;
                     break;
@@ -160,7 +159,7 @@ public class IgnoreAction extends ContextAction {
                     Mercurial.LOG.log(Level.FINE, "IgnoreAction(): File {0} - {1}", new Object[]{repository.getAbsolutePath(), ex.toString()});
                 }
                 for (File file : files) {
-                    Mercurial.getInstance().getFileStatusCache().refresh(file);
+                    Mercurial.getInstance().getFileStatusCache().refreshIgnores(file);
                     logger.output("\t" + file.getAbsolutePath());
                 }
                 if (mActionStatus == IGNORING) {
