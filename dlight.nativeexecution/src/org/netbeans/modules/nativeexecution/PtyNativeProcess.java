@@ -99,6 +99,9 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         // TODO: Clone Info!!!!
         info.setExecutable(executable);
         info.setArguments(newArgs.toArray(new String[0]));
+        
+        // no need to preload unbuffer in case of running in internal terminal
+        info.setUnbuffer(false);
 
         // Listeners...
         // listeners are copied already in super()

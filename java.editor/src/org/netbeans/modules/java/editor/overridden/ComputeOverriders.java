@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -384,6 +385,16 @@ public class ComputeOverriders {
 
         if (sourceRoots == null) {
             return null;
+        }
+
+        baseHandles = new HashSet<ElementHandle<TypeElement>>(baseHandles);
+
+        for (Iterator<ElementHandle<TypeElement>> it = baseHandles.iterator(); it.hasNext(); ) {
+            if (cancel.get()) return null;
+            if (it.next().getBinaryName().contentEquals("java.lang.Object")) {
+                it.remove();
+                break;
+            }
         }
 
         Map<ElementHandle<TypeElement>, Set<ElementHandle<TypeElement>>> auxHandles = new HashMap<ElementHandle<TypeElement>, Set<ElementHandle<TypeElement>>>();

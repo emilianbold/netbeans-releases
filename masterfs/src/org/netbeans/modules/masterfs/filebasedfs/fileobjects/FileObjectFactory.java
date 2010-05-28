@@ -509,15 +509,12 @@ public final class FileObjectFactory {
                 continue;
             }
             if (slow != null) {
-                slow.before();
-            }
-            fo.refresh(expected);
-            if (slow != null) {
-                if (!slow.after()) {
+                if (!slow.refreshFileObject(fo, expected, add)) {
                     return false;
                 }
-                slow.progress(add, fo);
                 add = 0;
+            } else {
+                fo.refresh(expected);
             }
         }
         return true;
