@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -99,6 +99,10 @@ final class CopyFiles extends Object {
 
     private void copyFolder(File sourceFolder) throws IOException {
         File[] srcChildren = sourceFolder.listFiles();
+        if (srcChildren == null) {
+            LOGGER.info(sourceFolder + " is not a directory or is invalid.");  //NOI18N
+            return ;
+        }
         for (File child : srcChildren) {
             if (child.isDirectory()) {
                 copyFolder(child);
