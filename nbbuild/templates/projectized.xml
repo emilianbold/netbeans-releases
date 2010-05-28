@@ -84,12 +84,6 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
     </target>
 
     <target name="build-init" depends="basic-init,jdk-6-check,set-buildnumber">
-        <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
-            <manifest dir=".">
-                <include name="external/binaries-list"/>
-            </manifest>
-        </downloadbinaries>
         <property name="public.package.jar.dir" location="${nb_all}/nbbuild/build/public-package-jars"/>
         <mkdir dir="${public.package.jar.dir}"/>
         <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
@@ -211,6 +205,12 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
 
     <!-- See: http://wiki.netbeans.org/wiki/view/DevFaqExternalLibrariesUpdated -->
     <target name="-release.files" depends="projectized-common.-release.files">
+        <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+            <manifest dir=".">
+                <include name="external/binaries-list"/>
+            </manifest>
+        </downloadbinaries>
         <taskdef name="releasefilesextra" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesExtra" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <releasefilesextra property="release.files.extra"/>
     </target>
