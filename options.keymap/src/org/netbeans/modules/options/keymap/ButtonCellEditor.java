@@ -40,15 +40,14 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.EventObject;
 import java.util.Set;
 import javax.swing.DefaultCellEditor;
-import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -73,19 +72,16 @@ public class ButtonCellEditor extends DefaultCellEditor {
     private Object              action;
     private KeymapViewModel     model;
     private String              orig;
-    private FocusManager        focusManager;
+    private FocusListener       focusListener = new FocusListener () {
 
-    private PropertyChangeListener
-                                focusListener = new PropertyChangeListener () {
         @Override
-        public void propertyChange (PropertyChangeEvent evt) {
-            Component c = focusManager.getFocusOwner ();
-            if (c != null &&
-                !SwingUtilities.isDescendingFrom (c, cell)
-            ) {
-                cancelCellEditing();
-                return;
-            }
+        public void focusGained (FocusEvent e) {
+        }
+
+        @Override
+        public void focusLost (FocusEvent e) {
+            if (!SwingUtilities.isDescendingFrom (e.getOppositeComponent (), cell))
+                cancelCellEditing ();
         }
     };
 
@@ -133,7 +129,7 @@ public class ButtonCellEditor extends DefaultCellEditor {
         ShortcutAction sca = (ShortcutAction) action;
         Set<ShortcutAction> conflictingAction = model.findActionForShortcutPrefix(s);
         conflictingAction.remove(sca); //remove the original action
-        if (!conflictingAction.isEmpty()) {//there is a conflicting action, show err dialog
+        if (!conflictingAction.isEmpty()) {
             //there is a conflicting action, show err dialog
             Object overrride = overrride(conflictingAction);
             if (overrride.equals(DialogDescriptor.YES_OPTION)) {
@@ -156,16 +152,14 @@ public class ButtonCellEditor extends DefaultCellEditor {
         }
         cell.getTextField().removeActionListener(delegate);
         cell.getTextField().removeKeyListener(escapeAdapter);
+        cell.getTextField().removeFocusListener (focusListener);
+        cell.getButton ().removeFocusListener (focusListener);
         model.removeShortcut((ShortcutAction) action, orig);
         if (!(s.length() == 0)) // do not add empty shortcuts
             model.addShortcut((ShortcutAction) action, s);
         fireEditingStopped();
         setBorderEmpty();
         model.update();
-        if (focusManager != null) {
-            focusManager.removePropertyChangeListener (focusListener);
-            focusManager = null;
-        }
         return true;
     }
 
@@ -174,10 +168,6 @@ public class ButtonCellEditor extends DefaultCellEditor {
         cell.getTextField().setText(orig);
         fireEditingCanceled();
         setBorderEmpty();
-        if (focusManager != null) {
-            focusManager.removePropertyChangeListener (focusListener);
-            focusManager = null;
-        }
     }
 
     @Override
@@ -190,11 +180,11 @@ public class ButtonCellEditor extends DefaultCellEditor {
         JTextField textField = cell.getTextField();
         textField.addActionListener(delegate);
         textField.setBorder(new LineBorder(Color.BLACK));
+        textField.addFocusListener (focusListener);
+        cell.getButton ().addFocusListener (focusListener);
         if(!Arrays.asList(textField.getKeyListeners()).contains(escapeAdapter)) {
             textField.addKeyListener(escapeAdapter);
         }
-        focusManager = FocusManager.getCurrentManager ();
-        focusManager.addPropertyChangeListener (focusListener);
         return cell;
     }
 
@@ -209,14 +199,14 @@ public class ButtonCellEditor extends DefaultCellEditor {
     }
 
     /**
-     * Shows dialog where user chooses whether SC of confl. action should be overriden
+     * Shows dialog where user chooses whether SC of conflicting action should be overridden
      * @param displayName name of conflicting action
      * @return dialog result
      */
     private Object overrride(Set<ShortcutAction> conflictingActions) {
         StringBuffer conflictingActionList = new StringBuffer();
         for (ShortcutAction sa : conflictingActions) {
-            conflictingActionList.append(" '" + sa.getDisplayName() + "'<br>"); //NOI18N
+            conflictingActionList.append(" '").append (sa.getDisplayName()).append ("'<br>"); //NOI18N
         }
         JPanel innerPane = new JPanel();
         innerPane.add(new JLabel(NbBundle.getMessage(ButtonCellEditor.class, "Override_Shortcut", conflictingActionList))); //NOI18N

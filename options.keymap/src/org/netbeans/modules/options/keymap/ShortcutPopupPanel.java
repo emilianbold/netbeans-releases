@@ -252,10 +252,12 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
             elms[0], elms[2], elms[3]
         };
 
+        @Override
         public int getSize() {
             return displayAlternative == true ? elms.length : elms0.length;
         }
 
+        @Override
         public Object getElementAt(int index) {
             return displayAlternative == true ? elms[index] : elms0[index];
         }
