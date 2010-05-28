@@ -65,6 +65,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 
 /**
@@ -160,6 +161,10 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             }
             // list only projects which have java source root
             if (ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length == 0) {
+                continue;
+            }
+            // skip the j2ee projects
+            if (p.getLookup().lookup(J2eeModuleProvider.class) != null){
                 continue;
             }
             names.add(p);
