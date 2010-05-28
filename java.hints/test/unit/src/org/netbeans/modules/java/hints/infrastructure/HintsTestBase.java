@@ -176,6 +176,10 @@ public class HintsTestBase extends NbTestCase {
     }
     
     protected void prepareTest(String capitalizedName) throws Exception {
+        prepareTest(capitalizedName, "1.5");
+    }
+
+    protected void prepareTest(String capitalizedName, String sourceLevel) throws Exception {
         File workFolder = new File(getWorkDir(), "work");
         FileObject workFO = FileUtil.createFolder(workFolder);
         
@@ -193,6 +197,7 @@ public class HintsTestBase extends NbTestCase {
         
         packageRoot = FileUtil.createFolder(sourceRoot, DATA_EXTENSION);
 
+        SourceUtilsTestUtil.setSourceLevel(packageRoot, sourceLevel);
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[]{
                     new JavaCustomIndexer.Factory()});
 
@@ -417,7 +422,12 @@ public class HintsTestBase extends NbTestCase {
     
     protected void performTest(String className, String modifiedClassName,
             String performHint, int line, int column, boolean checkHintList) throws Exception {
-        prepareTest(className);
+        performTest(className, modifiedClassName, performHint, line, column, checkHintList, "1.5");
+    }
+
+    protected void performTest(String className, String modifiedClassName,
+            String performHint, int line, int column, boolean checkHintList, String sourceLevel) throws Exception {
+        prepareTest(className, sourceLevel);
         DataObject od = DataObject.find(testSource);
         EditorCookie ec = od.getCookie(EditorCookie.class);
         
