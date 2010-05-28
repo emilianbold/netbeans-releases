@@ -60,7 +60,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyUtility;
@@ -82,19 +81,10 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     protected void create() throws Throwable {
-        boolean isWindows = hostInfo.getOSFamily() == OSFamily.WINDOWS;
-
-        try {
-            if (isWindows) {
-                createWin();
-            } else {
-                createNonWin();
-            }
-        } catch (Throwable ex) {
-            if (process != null) {
-                process.destroy();
-            }
-            throw ex;
+        if (hostInfo.getOSFamily() == OSFamily.WINDOWS) {
+            createWin();
+        } else {
+            createNonWin();
         }
     }
 
@@ -312,10 +302,13 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
     }
 
     @Override
-    protected final synchronized void cancel() {
+    protected int destroyImpl() {
         if (process != null) {
-            ProcessUtils.destroy(process);
+            process.destroy();
+            return 1;
         }
+
+        return 0;
     }
 
     private static String loc(String key, String... params) {
