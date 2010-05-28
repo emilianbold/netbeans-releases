@@ -112,6 +112,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
     private Set<VariableElement> variablesWithAllowedRemap = Collections.emptySet();
     private State bindState = State.empty();
     private boolean allowVariablesRemap = false;
+    private boolean nocheckOnAllowVariablesRemap = false;
     private AtomicBoolean cancel;
 
 
@@ -178,6 +179,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
     }
 
     public static boolean isDuplicate(final CompilationInfo info, TreePath one, TreePath second, boolean fullElementVerify, HintContext inVariables, boolean fillInVariables, AtomicBoolean cancel) {
+        return isDuplicate(info, one, second, fullElementVerify, inVariables, fillInVariables, null, cancel);
+    }
+
+    public static boolean isDuplicate(final CompilationInfo info, TreePath one, TreePath second, boolean fullElementVerify, HintContext inVariables, boolean fillInVariables, Set<VariableElement> variablesWithAllowedRemap, AtomicBoolean cancel) {
         if (one.getLeaf().getKind() != second.getLeaf().getKind()) {
             return false;
         }
@@ -208,6 +213,9 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         }
 
         f.allowGoDeeper = false;
+        f.variablesWithAllowedRemap = new HashSet<VariableElement>(variablesWithAllowedRemap);
+        f.allowVariablesRemap = variablesWithAllowedRemap != null;
+        f.nocheckOnAllowVariablesRemap = variablesWithAllowedRemap != null;
 
         return f.scan(second, one);
     }
@@ -418,7 +426,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 TypeMirror currType = info.getTrees().getTypeMirror(currPath);
                 TypeMirror pType = ((VariableElement) remappable).asType();
 
-                if (currType != null && pType != null && isSameTypeForVariableRemap(currType, pType)) {
+                if (currType != null && pType != null && (nocheckOnAllowVariablesRemap || isSameTypeForVariableRemap(currType, pType))) {
                     bindState.variablesRemapToTrees.put(remappable, currPath);
                     return true;
                 }
