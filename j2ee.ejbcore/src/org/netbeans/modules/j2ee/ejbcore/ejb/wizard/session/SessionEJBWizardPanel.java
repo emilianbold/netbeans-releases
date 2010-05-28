@@ -130,22 +130,23 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             List<Project> projects = getProjectsList();
             projectsList = new DefaultComboBoxModel(projects.toArray(new Project[projects.size()]));
             final ListCellRenderer defaultRenderer = inProjectCombo.getRenderer();
-            inProjectCombo.setRenderer(new ListCellRenderer() {
-                @Override
-                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                    String name = ProjectUtils.getInformation((Project)value).getDisplayName();
-                    return defaultRenderer.getListCellRendererComponent(list, name, index, isSelected, cellHasFocus);
-                }
-            });
-            inProjectCombo.setModel(projectsList);
-            inProjectCombo.setSelectedIndex(0);
+            if (!projects.isEmpty()){
+                inProjectCombo.setRenderer(new ListCellRenderer() {
+                    @Override
+                    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                        String name = ProjectUtils.getInformation((Project)value).getDisplayName();
+                        return defaultRenderer.getListCellRendererComponent(list, name, index, isSelected, cellHasFocus);
+                    }
+                });
+                inProjectCombo.setModel(projectsList);
+                inProjectCombo.setSelectedIndex(0);
+            }
             listener.stateChanged(null);
         }
     }
 
     private List<Project> getProjectsList() {
         List<Project> names = new ArrayList<Project>();
-        names.add(project);
         for (Project p : OpenProjects.getDefault().getOpenProjects()) {
             if (p.equals(project)) {
                 continue;
