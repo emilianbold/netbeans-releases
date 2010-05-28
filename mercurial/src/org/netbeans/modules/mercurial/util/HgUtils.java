@@ -347,7 +347,7 @@ public class HgUtils {
         if (patterns == null) {
             patterns = new HashSet<Pattern>(5);
         }
-        if (patterns.size() == 0) {
+        if (patterns.isEmpty()) {
             addIgnorePatterns(patterns, file);
             ignorePatterns.put(key, patterns);
         }
@@ -716,8 +716,9 @@ public class HgUtils {
         File hgIgnore = new File(directory, FILENAME_HGIGNORE);
         FileObject fo = FileUtil.toFileObject(hgIgnore);
 
-        if (entries.size() == 0) {
+        if (entries.isEmpty()) {
             if (fo != null) fo.delete();
+            resetIgnorePatterns(directory);
             return;
         }
 
@@ -1350,6 +1351,7 @@ itor tabs #66700).
             } else {
                 final org.openide.text.CloneableEditorSupport support = ces;
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         javax.swing.JEditorPane[] panes = support.getOpenedPanes();
                         if (panes != null) {
@@ -1373,6 +1375,7 @@ itor tabs #66700).
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */
     public static class ByImportanceComparator<T> implements Comparator<FileInformation> {
+        @Override
         public int compare(FileInformation i1, FileInformation i2) {
             return getComparableStatus(i1.getStatus()) - getComparableStatus(i2.getStatus());
         }
@@ -1462,7 +1465,7 @@ itor tabs #66700).
         for (String s : new String[] {lbChangeset, lbUser, lbDate, lbSummary}) {
             if(l < s.length()) l = s.length();
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(formatlabel(lbChangeset, l));
         sb.append(log.getRevision());
         sb.append(":"); // NOI18N
@@ -1488,7 +1491,7 @@ itor tabs #66700).
     }
 
     private static String spaces(int l) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < l + 3; i++) {
             sb.append(" ");
         }
