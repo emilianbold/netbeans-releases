@@ -72,12 +72,13 @@ public class IgnoreAction extends ContextAction {
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.isEmpty()) {
             return false;
         }
         return true;
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Ignore";                                   //NOI18N
     }
@@ -117,14 +118,15 @@ public class IgnoreAction extends ContextAction {
     protected void performContextAction(Node[] nodes) {
         final VCSContext context = HgUtils.getCurrentContext(nodes);
         final Set<File> repositories = HgUtils.getRepositoryRoots(context);
-        if(repositories == null || repositories.size() == 0) return;
+        if(repositories == null || repositories.isEmpty()) return;
 
         final Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(ctxFiles == null || ctxFiles.size() == 0) return;        
+        if(ctxFiles == null || ctxFiles.isEmpty()) return;
 
         File repository = repositories.iterator().next();
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
                 for (File repository : repositories) {
                     final File[] files = HgUtils.filterForRepository(context, repository, true);

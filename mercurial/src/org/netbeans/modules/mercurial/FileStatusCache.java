@@ -112,6 +112,7 @@ public class FileStatusCache {
      */
     private void handleIgnoredFiles(final Set<File> files) {
         Runnable outOfAWT = new Runnable() {
+            @Override
             public void run() {
                 for (File f : files) {
                     if (HgUtils.isIgnored(f, true)) {
