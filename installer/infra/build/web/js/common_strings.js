@@ -75,8 +75,8 @@ BUNDLE_LONG_NAMES[4] = "C/C++";
 BUNDLE_LONG_NAMES[5] = "PHP";
 BUNDLE_LONG_NAMES[6] = "All";
 
-var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/68/relnotes.html";
-var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/68/install.html";
+var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/69/relnotes.html";
+var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/69/install.html";
 
 var LEGAL_INFO_HEADER = "Important Legal Information:";
 
