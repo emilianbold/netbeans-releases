@@ -530,7 +530,7 @@ public class FileStatusCache {
         fireFileStatusChanged(file, current, fi);
     }
 
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         listenerSupport.addPropertyChangeListener(listener);
     }
 
