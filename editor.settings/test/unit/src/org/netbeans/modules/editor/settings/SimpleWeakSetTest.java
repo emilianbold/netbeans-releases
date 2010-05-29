@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,67 +40,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.options.keymap;
+package org.netbeans.modules.editor.settings;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import javax.swing.JTable;
-import javax.swing.UIManager;
-import javax.swing.table.TableCellRenderer;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.editor.util.random.RandomTestContainer;
 
 /**
- * Renderer for table cells customizing shortcut.
+ * Test of SimpleWeakSet functionality.
  *
- * @author Max Sauer
+ *  @author Miloslav Metelka
  */
-public class ButtonCellRenderer implements TableCellRenderer {
+public class SimpleWeakSetTest extends NbTestCase {
 
-    private TableCellRenderer defaultRenderer;
-
-    private static ShortcutCellPanel panel;
-
-    public ButtonCellRenderer (TableCellRenderer defaultRenderer) {
-        this.defaultRenderer = defaultRenderer;
+    public SimpleWeakSetTest(String testName) {
+        super(testName);
     }
 
     @Override
-    public Component getTableCellRendererComponent (
-        JTable table, Object value,
-        boolean isSelected, boolean hasFocus, int row, int column
-    ) {
-        if (value instanceof String) {
-            Rectangle cellRect = table.getCellRect(row, column, false);
-            String scCell = (String) value;
-            Dimension d = new Dimension((int) cellRect.getWidth(), (int) cellRect.getHeight());
-            if (panel == null)
-                panel = new ShortcutCellPanel(scCell);
-            panel.setText(scCell);
-            panel.setSize(d);
+    protected Level logLevel() {
+        return Level.INFO;
+    }
 
-            if (isSelected) {
-                panel.setBgColor(table.getSelectionBackground());
-                if (UIManager.getLookAndFeel ().getID ().equals ("GTK"))
-                    panel.setFgCOlor(table.getForeground());
-                else
-                    panel.setFgCOlor(table.getSelectionForeground());
-            } else {
-                panel.setBgColor(table.getBackground());
-                panel.setFgCOlor(table.getForeground());
-            }
+    public void testRandom() throws Exception {
+        RandomTestContainer container = SimpleWeakSetTesting.createContainer();
+        container.setLogOp(true);
+        int opCount = 1000;
+        SimpleWeakSetTesting.addRoundPreferAdd(container, opCount);
+        SimpleWeakSetTesting.addRoundPreferRemove(container, opCount);
+        container.runInit(1274381066314L);
+        container.runOps(20);
+//        container.runOps(1);
+        container.runOps(0); // till end
 
-            return panel;
-        }
-        else {
-            return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        }
+        container.run(0L); // Run till end
     }
 
 }
