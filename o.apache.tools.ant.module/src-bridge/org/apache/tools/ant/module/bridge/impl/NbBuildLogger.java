@@ -141,6 +141,11 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private boolean stop = false;
     /** whether this process is thought to be still running */
     private boolean running = true;
+    private static final ThreadLocal<Boolean> insideToString = new ThreadLocal<Boolean>() {
+        protected @Override Boolean initialValue() {
+            return false;
+        }
+    };
     
     /**
      * Map from master build scripts to maps from imported target names to imported locations.
@@ -215,7 +220,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     }
     
     private void verifyRunning() {
-        if (!running) {
+        if (!running && !insideToString.get()) {
             throw new IllegalStateException("AntSession/AntEvent/TaskStructure method called after completion of Ant process"); // NOI18N
         }
     }
@@ -1188,6 +1193,9 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         
         @Override
         public String toString() {
+            assert !insideToString.get();
+            insideToString.set(true);
+            try {
             StringBuilder b = new StringBuilder("Event"); // NOI18N
             String s = getTargetName();
             if (s != null) {
@@ -1215,6 +1223,9 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                 b.append(";scrLoc=").append(f); // NOI18N
             }
             return b.toString();
+            } finally {
+                insideToString.set(false);
+            }
         }
         
     }
