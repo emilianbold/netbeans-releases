@@ -104,11 +104,11 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/multiline_function_header.php");
     }
 
-    public void etestLineSplitting1() throws Exception {
+    public void testLineSplitting1() throws Exception {
         reformatFileContents("testfiles/formatting/line_splitting1.php");
     }
 
-    public void etestLineSplitting2() throws Exception {
+    public void testLineSplitting2() throws Exception {
         reformatFileContents("testfiles/formatting/line_splitting2.php");
     }
 
