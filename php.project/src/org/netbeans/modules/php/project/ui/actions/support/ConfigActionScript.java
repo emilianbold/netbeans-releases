@@ -46,24 +46,19 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.regex.Pattern;
+import java.util.List;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.print.LineConvertor;
-import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -72,7 +67,6 @@ import org.openide.util.Lookup;
  * @author Tomas Mysik
  */
 class ConfigActionScript extends ConfigAction {
-    static final ExecutionDescriptor.LineConvertorFactory PHP_LINE_CONVERTOR_FACTORY = new PhpLineConvertorFactory();
     private final FileObject sourceRoot;
 
     protected ConfigActionScript(PhpProject project) {
@@ -121,43 +115,39 @@ class ConfigActionScript extends ConfigAction {
 
     @Override
     public void runProject() {
-        new RunScript(new ScriptProvider()).run();
+        new RunScript(new ScriptProvider(getStartFile(null))).run();
     }
 
     @Override
     public void debugProject() {
-        new DebugScript(new ScriptProvider()).run();
+        new DebugScript(new ScriptProvider(getStartFile(null))).run();
     }
 
     @Override
     public void runFile(Lookup context) {
-        new RunScript(new ScriptProvider(context)).run();
+        new RunScript(new ScriptProvider(getStartFile(context))).run();
     }
 
     @Override
     public void debugFile(Lookup context) {
-        new DebugScript(new ScriptProvider(context)).run();
+        new DebugScript(new ScriptProvider(getStartFile(context))).run();
     }
 
-    private final class ScriptProvider implements DebugScript.Provider {
-        private final PhpProgram program;
-        private final File startFile;
-
-        public ScriptProvider() {
-            this(null);
+    private File getStartFile(Lookup context) {
+        FileObject file = null;
+        if (context == null) {
+            file = CommandUtils.fileForProject(project, sourceRoot);
+        } else {
+            file = CommandUtils.fileForContextOrSelectedNodes(context, sourceRoot);
         }
+        assert file != null : "Start file must be found";
+        return FileUtil.toFile(file);
+    }
 
-        public ScriptProvider(Lookup context) {
-            PhpProgram prg = null;
-            try {
-                prg = ProjectPropertiesSupport.getPhpInterpreter(project);
-            } catch (InvalidPhpProgramException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            assert prg.isValid() : String.format("php program %s must be valid", prg);
+    private final class ScriptProvider extends DefaultScriptProvider implements DebugScript.Provider {
 
-            program = prg;
-            startFile = getStartFile(context);
+        public ScriptProvider(File file) {
+            super(file);
         }
 
         @Override
@@ -167,71 +157,48 @@ class ConfigActionScript extends ConfigAction {
 
         @Override
         public FileObject getStartFile() {
-            assert startFile != null;
-            return FileUtil.toFileObject(startFile);
+            assert file != null;
+            return FileUtil.toFileObject(file);
         }
 
         @Override
         public ExecutionDescriptor getDescriptor() throws IOException {
-            assert startFile != null;
-            RunScript.InOutPostRedirector redirector = new RunScript.InOutPostRedirector(startFile);
-            return PhpProgram.getExecutionDescriptor()
-                    .frontWindow(PhpOptions.getInstance().isOpenResultInOutputWindow())
-                    .optionsPath(UiUtils.OPTIONS_PATH)
-                    .outConvertorFactory(PHP_LINE_CONVERTOR_FACTORY)
-                    .outProcessorFactory(redirector)
-                    .postExecution(redirector)
+            assert file != null;
+            return super.getDescriptor()
                     .charset(Charset.forName(ProjectPropertiesSupport.getEncoding(project)));
         }
 
         @Override
         public ExternalProcessBuilder getProcessBuilder() {
-            assert startFile != null;
-            ExternalProcessBuilder builder = program.getProcessBuilder()
-                    .addArgument(startFile.getName());
+            assert file != null;
+            ExternalProcessBuilder builder = super.getProcessBuilder();
             String argProperty = ProjectPropertiesSupport.getArguments(project);
             if (StringUtils.hasText(argProperty)) {
                 for (String argument : Arrays.asList(argProperty.split(" "))) { // NOI18N
                     builder = builder.addArgument(argument);
                 }
             }
-            builder = builder.workingDirectory(startFile.getParentFile());
             return builder;
         }
 
         @Override
-        public String getOutputTabTitle() {
-            assert startFile != null;
-            return String.format("%s - %s", program.getProgram(), startFile.getName()); // NOI18N
-        }
-
-        @Override
         public boolean isValid() {
-            return program.isValid() && startFile != null;
+            return super.isValid() && file != null;
         }
-
-        private File getStartFile(Lookup context) {
-            FileObject file = null;
-            if (context == null) {
-                file = CommandUtils.fileForProject(project, sourceRoot);
-            } else {
-                file = CommandUtils.fileForContextOrSelectedNodes(context, sourceRoot);
-            }
-            assert file != null : "Start file must be found";
-            return FileUtil.toFile(file);
-        }
-    }
-
-    static final class PhpLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
 
         @Override
-        public LineConvertor newLineConvertor() {
-            LineConvertor[] lineConvertors = new LineConvertor[PhpInterpreter.LINE_PATTERNS.length];
-            int i = 0;
-            for (Pattern linePattern : PhpInterpreter.LINE_PATTERNS) {
-                lineConvertors[i++] = LineConvertors.filePattern(null, linePattern, null, 1, 2);
-            }
-            return LineConvertors.proxy(lineConvertors);
+        protected PhpProgram getPhpProgram() throws InvalidPhpProgramException {
+            return ProjectPropertiesSupport.getPhpInterpreter(project);
+        }
+
+        @Override
+        public List<Pair<String, String>> getDebugPathMapping() {
+            return ProjectPropertiesSupport.getDebugPathMapping(project);
+        }
+
+        @Override
+        public Pair<String, Integer> getDebugProxy() {
+            return ProjectPropertiesSupport.getDebugProxy(project);
         }
     }
 }
