@@ -89,31 +89,6 @@ public class ZendEditorExtender extends EditorExtender {
         return Collections.emptyList();
     }
 
-    @Override
-    public PhpClass getClass(FileObject fo, String variableName) {
-        if (ZendUtils.isView(fo)) {
-            List<PhpBaseElement> elements = new ArrayList<PhpBaseElement>(parseAction(fo));
-
-            for (PhpBaseElement element : elements) {
-                if (element.getName().equals(variableName)) {
-                    PhpClass phpClass = getPhpClass(element);
-                    if (phpClass != null) {
-                        return phpClass;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private PhpClass getPhpClass(PhpBaseElement element) {
-        String fqn = element.getFullyQualifiedName();
-        if (fqn == null) {
-            return null;
-        }
-        return new PhpClass(element.getName(), fqn);
-    }
-
     private Set<PhpVariable> parseAction(final FileObject view) {
         assert ZendUtils.isView(view) : "Not a view: " + view;
 
@@ -129,7 +104,7 @@ public class ZendEditorExtender extends EditorExtender {
                     ParserResult parseResult = (ParserResult) resultIterator.getParserResult();
                     final ZendControllerVisitor controllerVisitor = new ZendControllerVisitor(view, (PHPParseResult) parseResult);
                     controllerVisitor.scan(Utils.getRoot(parseResult));
-                    phpVariables.addAll(controllerVisitor.getPhpVariables());
+                    phpVariables.add(controllerVisitor.getView());
                 }
             });
         } catch (ParseException ex) {
@@ -142,7 +117,7 @@ public class ZendEditorExtender extends EditorExtender {
         private final String actionName;
         private final FileObject action;
         private final PHPParseResult actionParseResult;
-        private final Set<PhpVariable> fields = new HashSet<PhpVariable>();
+        private final PhpVariable view = new PhpVariable("$this", new PhpClass("Zend_View_Interface", "Zend_View_Interface")); // NOI18N
 
         private String className = null;
         private String methodName = null;
@@ -185,15 +160,22 @@ public class ZendEditorExtender extends EditorExtender {
                             if (fieldAccess.getDispatcher() instanceof Variable) {
                                 Variable var = (Variable) fieldAccess.getDispatcher();
                                 if ("$this".equals(CodeUtils.extractVariableName(var))) { // NOI18N
+
+                                    String name = null;
                                     String fqn = null;
                                     for (TypeScope typeScope : ModelUtils.resolveType(actionParseResult.getModel(), assignment)) {
+                                        name = typeScope.getName();
                                         fqn = typeScope.getFullyQualifiedName().toString();
                                         break;
                                     }
                                     Variable field = node.getField();
-                                    synchronized (fields) {
-                                        fields.add(new PhpVariable("$" + CodeUtils.extractVariableName(field), fqn, action, ASTNodeInfo.toOffsetRangeVar(field).getStart())); // NOI18N
-                                    }
+
+                                    PhpClass type = view.getType();
+                                    type.addField(
+                                            "$" + CodeUtils.extractVariableName(field), // NOI18N
+                                            new PhpClass(name, fqn),
+                                            action,
+                                            ASTNodeInfo.toOffsetRangeVar(field).getStart());
                                 }
                             }
                         }
@@ -202,12 +184,8 @@ public class ZendEditorExtender extends EditorExtender {
             }
         }
 
-        public Set<PhpVariable> getPhpVariables() {
-            Set<PhpVariable> phpVariables = new HashSet<PhpVariable>();
-            synchronized (fields) {
-                phpVariables.addAll(fields);
-            }
-            return phpVariables;
+        public PhpVariable getView() {
+            return view;
         }
     }
 }
