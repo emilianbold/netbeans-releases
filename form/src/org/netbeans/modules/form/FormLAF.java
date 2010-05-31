@@ -341,6 +341,14 @@ public class FormLAF {
         });
     }
 
+    public static void executeWithLAFLocks(Runnable runnable) {
+        synchronized (Introspector.class) {
+            synchronized (UIManager.getDefaults()) {
+                runnable.run();
+            }
+        }
+    }
+
     private static void useDesignerLookAndFeel(FormModel formModel) {
         if (!initialized) {
             try {

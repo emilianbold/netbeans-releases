@@ -715,7 +715,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                 } else {
                     rbNoneLibrary.setVisible(false);
                     Library preferredLibrary = null;
-                    if (profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
+                    if (profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB) || profile.equals(Profile.JAVA_EE_5)) {
                         preferredLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_2_0_NAME);
                     } else {
                         preferredLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_2_NAME);

@@ -1,0 +1,5 @@
+100 myfile
+200 "myfile"
+300 'myfile'
+400 "my'file"
+500 'my"file'

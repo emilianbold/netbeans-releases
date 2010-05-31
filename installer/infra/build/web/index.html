@@ -1,9 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-  
-  Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
-  
+
+  Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+  Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+  Other names may be trademarks of their respective owners.
+
   The contents of this file are subject to the terms of either the GNU General Public
   License Version 2 only ("GPL") or the Common Development and Distribution
   License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -11,9 +14,9 @@
   http://www.netbeans.org/cddl-gplv2.html or nbbuild/licenses/CDDL-GPL-2-CP. See the
   License for the specific language governing permissions and limitations under the
   License.  When distributing the software, include this License Header Notice in
-  each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Sun
+  each file and include the License file at nbbuild/licenses/CDDL-GPL-2-CP.  Oracle
   designates this particular file as subject to the "Classpath" exception as provided
-  by Sun in the GPL Version 2 section of the License file that accompanied this code.
+  by Oracle in the GPL Version 2 section of the License file that accompanied this code.
   If applicable, add the following below the License Header, with the fields enclosed
   by brackets [] replaced by your own identifying information:
   "Portions Copyrighted [year] [name of copyright owner]"
@@ -154,9 +157,9 @@
                         </table>
                         
                         <noscript>
-                            <div class="noscript_warning">
+                            <div class="noscript_warning" style="text-align:center;"><br/><br/><br/><br/>
                                 In order to download NetBeans installers, Javascript must be switched on in your 
-                                browser.<br> Please switch it on before proceeding.
+                                browser.<br> Please switch it on before proceeding.<br/><br/><br/><br/>
                             </div>
                             <style type="text/css">
                                 table.l_p_select {
@@ -174,14 +177,14 @@
 					<table class="subscription">
 						<tr>
 							<td><script type="text/javascript">message(EMAIL_LABEL)</script></td>
-  				        		<td><input type="text" name="email" id="emailfield" class="field" style="width:190px;"/></td>
+  				        		<td><script type="text/javascript">document.write('<input type="text" name="email" id="emailfield" class="field" style="width:190px;"/></td>')</script>
 						</tr>
   						<tr>
   							<td class="valign-top"><script type="text/javascript">message(SUBSCRIBE_LABEL)</script></td>
 	  						<td>
-								<input type="checkbox" id="monthlycb" name="monthly" value="1" checked/><script type="text/javascript">message(MONTHLY_LABEL)</script>
-  								<input type="checkbox" id="weeklycb" name="weekly" value="1" /><script type="text/javascript">message(WEEKLY_LABEL)</script>
-  								<br/><input type="checkbox" id="contactcb" name="contact" value="1" checked/><script type="text/javascript">message(CONTACT_LABEL)</script>
+								<script type="text/javascript">document.write('<input type="checkbox" id="monthlycb" name="monthly" value="1" checked/>');message(MONTHLY_LABEL)</script>
+  								<script type="text/javascript">document.write('<input type="checkbox" id="weeklycb" name="weekly" value="1" />');message(WEEKLY_LABEL)</script>
+  								<br/><script type="text/javascript">document.write('<input type="checkbox" id="contactcb" name="contact" value="1" checked/>');message(CONTACT_LABEL)</script>
   							</td>
   						</tr>
 					</table>
@@ -230,7 +233,7 @@
 				     <table>
 				     <tr>
 					<td width="10px" style="vertical-align:top;">
-						<span style="font-size:1.2em;color: #333333; margin: 0px 4px 0px 1px; font-weight: bold">*</span>
+						<span style="font-size:1.2em;color: #333333; margin: 0px 4px 0px 1px; font-weight: bold"><script type="text/javascript">document.write('*');</script></span>
 					</td>
 					<td>
 			                        <div style="">

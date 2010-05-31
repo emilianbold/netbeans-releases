@@ -80,6 +80,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -351,6 +352,7 @@ public final class GeneratorUtilities {
         List<StatementTree> statements = new ArrayList<StatementTree>();
         ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
         List<ExpressionTree> throwsList = new LinkedList<ExpressionTree>();
+        List<TypeParameterTree> typeParams = new LinkedList<TypeParameterTree>();
         if (constructor != null) {
             ExecutableType constructorType = clazz.getSuperclass().getKind() == TypeKind.DECLARED ? (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) clazz.getSuperclass(), constructor) : null;
             if (!constructor.getParameters().isEmpty()) {
@@ -371,6 +373,13 @@ public final class GeneratorUtilities {
             for (TypeMirror th : constructorType.getThrownTypes()) {
                 throwsList.add((ExpressionTree) make.Type(th));
             }
+            for (TypeParameterElement typeParameterElement : constructor.getTypeParameters()) {
+                List<ExpressionTree> boundsList = new LinkedList<ExpressionTree>();
+                for (TypeMirror bound : typeParameterElement.getBounds()) {
+                    boundsList.add((ExpressionTree) make.Type(bound));
+                }
+                typeParams.add(make.TypeParameter(typeParameterElement.getSimpleName(), boundsList));
+            }
         }
         for (VariableElement ve : fields) {
             TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), ve);
@@ -378,7 +387,7 @@ public final class GeneratorUtilities {
             statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
         }
         BlockTree body = make.Block(statements, false);
-        return make.Method(make.Modifiers(mods), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, throwsList, body, null); //NOI18N
+        return make.Method(make.Modifiers(mods), "<init>", null, typeParams, parameters, throwsList, body, null); //NOI18N
     }
 
     /**

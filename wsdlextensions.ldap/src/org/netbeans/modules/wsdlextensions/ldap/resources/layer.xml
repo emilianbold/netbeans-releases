@@ -89,7 +89,7 @@
         </folder>
     </folder>
     <folder name="Templates">
-        <folder name="SOA_BPEL">
+        <folder name="ESB">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ldap.resources.Bundle"/>
             <attr name="position" intvalue="110"/>
 
@@ -97,18 +97,8 @@
                 <attr name="position" intvalue="110"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ldap.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="SOA_BPEL"/>
+                <attr name="templateCategory" stringvalue="ESB"/>
             </file>
-            
-            <!--file name="serverBrowser">
-                <attr name="position" intvalue="120"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ldap/resources/ldapfile16x16.png"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ldap.resources.Bundle"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.wsdlextensions.ldap.LDAPServerBrowserWizardIterator"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="SOA_BPEL"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ldap/serverBrowser.html"/>
-            </file-->
         </folder>
     </folder>
     <folder name="WSDLEditor">
@@ -184,83 +174,83 @@
             <attr name="display-name" stringvalue="LDAP BC"/>
             <folder name="ldap-outbound">
                 <attr name="display-name" stringvalue="Outbound"/>
-					<file name="enable-dynamic-endpoint">
-						<attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.use.dynamic.endpoint"/>
-						<attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
-						<attr name="display-name" stringvalue="Enable Dynamic Endpoint"/>
-					</file>
-				    <file name="location">
+                    <file name="enable-dynamic-endpoint">
+                        <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.use.dynamic.endpoint"/>
+                        <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
+                        <attr name="display-name" stringvalue="Enable Dynamic Endpoint"/>
+                    </file>
+                    <file name="location">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.location"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="Location"/>
                     </file>
-				    <file name="principal">
+                    <file name="principal">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.principal"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="Principal"/>
                     </file>
-				    <file name="credential">
+                    <file name="credential">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.credential"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="Credential"/>
                     </file>
-				    <file name="ssltype">
+                    <file name="ssltype">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.ssltype"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="Ssl Type"/>
                     </file>
-				    <file name="authentication">
+                    <file name="authentication">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.authentication"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="Authentication"/>
                     </file>
-				    <file name="protocol">
+                    <file name="protocol">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.protocol"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="Protocol"/>
                     </file>
-				    <file name="truststore">
+                    <file name="truststore">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.truststore"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="Truststore"/>
                     </file>
-				    <file name="truststorepassword">
+                    <file name="truststorepassword">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.truststorepassword"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="Truststore Password"/>
                     </file>
-				    <file name="truststoretype">
+                    <file name="truststoretype">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.truststoretype"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="Truststore Type"/>
                     </file>
-				    <file name="keystore">
+                    <file name="keystore">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.keystore"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="Keystore"/>
                     </file>
-				    <file name="keystorepassword">
+                    <file name="keystorepassword">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.keystorepassword"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="Keystore Password"/>
                     </file>
-				    <file name="keystoreusername">
+                    <file name="keystoreusername">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.keystoreusername"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="Keystore Username"/>
                     </file>
-				    <file name="keystoretype">
+                    <file name="keystoretype">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.keystoretype"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="Keystore Type"/>
                     </file>
-				    <file name="tlssecurity">
+                    <file name="tlssecurity">
                         <attr name="nmproperty" stringvalue="org.glassfish.openesb.ldap.tlssecurity"/>
                         <attr name="type" stringvalue="{http://www.w3.org/2001/XMLSchema}string"/>
                         <attr name="display-name" stringvalue="TLS Security"/>
                     </file>
             </folder>
-		</folder>
-	</folder>
+        </folder>
+    </folder>
     
 </filesystem>

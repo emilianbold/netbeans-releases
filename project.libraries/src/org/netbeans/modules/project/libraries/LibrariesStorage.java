@@ -151,14 +151,13 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         if (storage == null) {
             return;
         }
-        LibraryDeclarationHandlerImpl handler = new LibraryDeclarationHandlerImpl();
-        LibraryDeclarationConvertorImpl convertor = new LibraryDeclarationConvertorImpl();
-        LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,convertor);
+        final LibraryDeclarationConvertorImpl convertor = new LibraryDeclarationConvertorImpl();    //Immutable
         // parse
         for (FileObject descriptorFile : storage.getChildren()) {
             if (XML_EXT.equalsIgnoreCase(descriptorFile.getExt())) {
                 try {
-                    handler.setLibrary (null);
+                    final LibraryDeclarationHandlerImpl handler = new LibraryDeclarationHandlerImpl();
+                    final LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,convertor);
                     readLibrary (descriptorFile, parser);
                     LibraryImplementation impl = handler.getLibrary ();
                     if (impl != null) {
@@ -231,9 +230,9 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     }
 
     private static LibraryImplementation readLibrary (FileObject descriptorFile, LibraryImplementation impl) throws SAXException, ParserConfigurationException, IOException {
-        LibraryDeclarationHandlerImpl handler = new LibraryDeclarationHandlerImpl();
-        LibraryDeclarationConvertorImpl convertor = new LibraryDeclarationConvertorImpl();
-        LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,convertor);
+        final LibraryDeclarationHandlerImpl handler = new LibraryDeclarationHandlerImpl();
+        final LibraryDeclarationConvertorImpl convertor = new LibraryDeclarationConvertorImpl();
+        final LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,convertor);
         handler.setLibrary (impl);
         readLibrary (descriptorFile, parser);
         LibrariesCustomizer.registerSource(impl, descriptorFile);

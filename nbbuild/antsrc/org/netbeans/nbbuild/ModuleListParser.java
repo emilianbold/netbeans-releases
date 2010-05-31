@@ -190,7 +190,7 @@ final class ModuleListParser {
                             @SuppressWarnings("unchecked") Map<String,Entry> _entries = (Map) oi.readObject();
                             entries = _entries;
                             if (project != null) {
-                                project.log("Loaded modules: " + entries.keySet(), Project.MSG_VERBOSE);
+                                project.log("Loaded modules: " + entries.keySet(), Project.MSG_DEBUG);
                             }
                         }
                     } finally {

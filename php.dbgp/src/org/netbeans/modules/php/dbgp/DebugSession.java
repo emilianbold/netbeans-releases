@@ -51,6 +51,8 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -114,13 +116,20 @@ public class DebugSession extends SingleThread {
 
     public void startProcessing(Socket socket) {
         synchronized (getSync()) {
-            Status stat = getStatus();
-            detachRequest.set(true);
-            if (stat != null) {
-                waitFinished();
+            try {
+                Status stat = getStatus();
+                detachRequest.set(true);
+                if (stat != null) {
+                    waitFinished();
+                }
+                this.sessionSocket = socket;
+                FutureTask invokeLater = invokeLater();
+                invokeLater.get();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            this.sessionSocket = socket;
-            invokeLater();
         }
     }
     /* (non-Javadoc)
