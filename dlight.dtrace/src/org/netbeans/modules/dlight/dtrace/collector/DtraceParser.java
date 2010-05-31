@@ -45,8 +45,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
@@ -58,11 +56,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
  */
 public class DtraceParser {
 
-    private static final Logger log =
-            DLightLogger.getLogger(DtraceParser.class);
-    private static final Pattern regex = Pattern.compile("[^\\s\"']+|\"[^\"]*\"|'[^']*'"); // NOI18N
-    private static final char DQUOTE = '"'; // NOI18N
-    private static final char SQUOTE = '\''; // NOI18N
+    private static final Logger log = DLightLogger.getLogger(DtraceParser.class);
     private final DataTableMetadata metadata;
 
     public DtraceParser(DataTableMetadata metadata) {
@@ -76,34 +70,18 @@ public class DtraceParser {
 
     /** parses first colCount columns, leaves the rest */
     protected List<Object> parse(String line, int colCount) {
-        List<String> matchList = new ArrayList<String>();
-        Matcher regexMatcher = regex.matcher(line);
-        while (regexMatcher.find()) {
-            matchList.add(regexMatcher.group());
-        }
-
-//    String[] lines = line.split("[ \t]+");
-//    if (lines.length != metadata.getColumnsCount()-reservedColCount) {
-        if (matchList.size() < colCount && log.isLoggable(Level.INFO)) {
-            log.info("^^^^^Line:" + line + " lines array size is " + // NOI18N
-                    "less than medatadat.getCoulmnsCount() columnsCount=" + //NOI18N
-                    metadata.getColumnsCount() + " lines splited=" + // NOI18N
-                    matchList.size());
-            return null;
-        }
+        List<Column> columns = metadata.getColumns();
+        List<Object> data = new ArrayList<Object>(columns.size());
+        StringScanner scanner = new StringScanner(line);
 
         try {
-            List<Column> columns = metadata.getColumns();
-            List<Object> data = new ArrayList<Object>(columns.size());
-
             for (int i = 0; i < colCount; i++) {
+                String stringValue = scanner.next();
 
-                String stringValue = matchList.get(i);
-                int stringLength = stringValue.length();
-                if (stringValue != null && 2 <= stringLength &&
-                        (stringValue.charAt(0) == SQUOTE && stringValue.charAt(stringLength - 1) == SQUOTE
-                        || stringValue.charAt(0) == DQUOTE && stringValue.charAt(stringLength - 1) == DQUOTE)) {
-                    stringValue = stringValue.substring(1, stringLength - 1);
+                if (stringValue == null && log.isLoggable(Level.INFO)) {
+                    log.log(Level.INFO, "Line \"{0}\" was split into {1} values while {2} expected", // NOI18N
+                            new Object[] {line, colCount, columns.size()});
+                    return null;
                 }
 
                 Class<?> columnClass = columns.get(i).getColumnClass();
@@ -146,5 +124,69 @@ public class DtraceParser {
 
     public DataRow processClose(){
         return null;
+    }
+
+
+    private final class StringScanner {
+
+        private final String str;
+        private int pos;
+
+        private StringScanner(String string) {
+            this.str = string;
+            this.pos = 0;
+        }
+
+        private String next() {
+            while (pos < str.length()) {
+                char c = str.charAt(pos);
+                switch (c) {
+                    case '\'':
+                    case '"':
+                        ++pos;
+                        return next(c);
+                    default:
+                        return next(' ');
+                }
+            }
+            return null;
+        }
+
+        private String next(char barrier) {
+            StringBuilder buf = new StringBuilder(16);
+            while (pos < str.length()) {
+                char c = str.charAt(pos++);
+                if (c == barrier || barrier == ' ' && Character.isWhitespace(c)) {
+                    break;
+                }
+
+                if (c == '\\' && pos < str.length()) {
+                    char c2 = str.charAt(pos++);
+                    int r = -1;
+                    switch (c2) {
+                        case 'r':
+                            r = '\r';
+                            break;
+                        case 'n':
+                            r = '\n';
+                            break;
+                        case 't':
+                            r = '\t';
+                            break;
+                        case '0':
+                            // DTrace %S puts \0 at the end of every line. Strip it here.
+                            break;
+                        default:
+                            r = c2;
+                    }
+                    if (0 < r) {
+                        buf.append((char) r);
+                    }
+                } else {
+                    buf.append(c);
+                }
+            }
+            return buf.toString();
+        }
     }
 }
