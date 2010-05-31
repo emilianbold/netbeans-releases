@@ -81,9 +81,9 @@ import org.openide.filesystems.FileObject;
 public class SymfonyEditorExtender extends EditorExtender {
     static final Logger LOGGER = Logger.getLogger(SymfonyEditorExtender.class.getName());
     private static final List<PhpBaseElement> ELEMENTS = Arrays.<PhpBaseElement>asList(
-            new PhpVariable("$sf_user", "sfUser"), // NOI18N
-            new PhpVariable("$sf_request", "sfWebRequest"), // NOI18N
-            new PhpVariable("$sf_response", "sfWebResponse")); // NOI18N
+            new PhpVariable("$sf_user", new PhpClass("sfUser", "sfUser")), // NOI18N
+            new PhpVariable("$sf_request", new PhpClass("sfWebRequest", "sfWebRequest")), // NOI18N
+            new PhpVariable("$sf_response", new PhpClass("sfWebResponse", "sfWebResponse"))); // NOI18N
 
     @Override
     public List<PhpBaseElement> getElementsForCodeCompletion(FileObject fo) {
@@ -93,24 +93,6 @@ public class SymfonyEditorExtender extends EditorExtender {
             return elements;
         }
         return Collections.emptyList();
-    }
-
-    @Override
-    public PhpClass getClass(FileObject fo, String variableName) {
-        if (SymfonyUtils.isView(fo)) {
-            List<PhpBaseElement> elements = new LinkedList<PhpBaseElement>(ELEMENTS);
-            elements.addAll(parseAction(fo));
-
-            for (PhpBaseElement element : elements) {
-                if (element.getName().equals(variableName)) {
-                    PhpClass phpClass = getPhpClass(element);
-                    if (phpClass != null) {
-                        return phpClass;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     private PhpClass getPhpClass(PhpBaseElement element) {
@@ -188,14 +170,19 @@ public class SymfonyEditorExtender extends EditorExtender {
                     if (node.getDispatcher() instanceof Variable
                             && "$this".equals(CodeUtils.extractVariableName((Variable) node.getDispatcher()))) { // NOI18N
 
+                        String name = null;
                         String fqn = null;
                         for (TypeScope typeScope : ModelUtils.resolveType(actionParseResult.getModel(), assignment)) {
+                            name = typeScope.getName();
                             fqn = typeScope.getFullyQualifiedName().toString();
                             break;
                         }
                         Variable field = node.getField();
                         synchronized (fields) {
-                            fields.add(new PhpVariable("$" + CodeUtils.extractVariableName(field), fqn, action, ASTNodeInfo.toOffsetRangeVar(field).getStart())); // NOI18N
+                            fields.add(new PhpVariable(
+                                    "$" + CodeUtils.extractVariableName(field), // NOI18N
+                                    new PhpClass(name, fqn),
+                                    action, ASTNodeInfo.toOffsetRangeVar(field).getStart()));
                         }
                     }
                 }

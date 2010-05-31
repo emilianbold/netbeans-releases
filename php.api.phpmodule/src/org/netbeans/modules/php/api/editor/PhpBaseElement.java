@@ -14,6 +14,14 @@ public abstract class PhpBaseElement {
     private final FileObject file;
     private final int offset;
     private final String description;
+    private final PhpClass type;
+
+    /**
+     * @since 1.32
+     */
+    protected PhpBaseElement(String name, PhpClass type) {
+        this(name, null, type, null, -1, null);
+    }
 
     protected PhpBaseElement(String name, String fullyQualifiedName) {
         this(name, fullyQualifiedName, -1, null);
@@ -42,10 +50,18 @@ public abstract class PhpBaseElement {
      * @since 1.25
      */
     protected PhpBaseElement(String name, String fullyQualifiedName, FileObject file, int offset, String description) {
+        this(name, fullyQualifiedName, null, file, offset, description);
+    }
+
+    /**
+     * @since 1.32
+     */
+    protected PhpBaseElement(String name, String fullyQualifiedName, PhpClass type, FileObject file, int offset, String description) {
         Parameters.notEmpty("name", name);
 
         this.name = name;
         this.fullyQualifiedName = fullyQualifiedName;
+        this.type = type;
         this.file = file;
         this.offset = offset;
         this.description = description;
@@ -57,6 +73,13 @@ public abstract class PhpBaseElement {
 
     public String getFullyQualifiedName() {
         return fullyQualifiedName;
+    }
+
+    /**
+     * @since 1.32
+     */
+    public PhpClass getType() {
+        return type;
     }
 
     /**

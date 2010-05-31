@@ -43,7 +43,6 @@
 package org.netbeans.modules.php.spi.editor;
 
 import java.util.List;
-import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.openide.filesystems.FileObject;
 
@@ -60,21 +59,9 @@ public abstract class EditorExtender {
     /**
      * Get the list of {@link PhpElement PHP elements} to be added to the code completion.
      * <p>
-     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
      * Future changes to be more general are probable.
      * @param fo {@link FileObject file object} in which the code completion is invoked
      * @return list of {@link PhpElement PHP elements} to be added to the code completion.
      */
     public abstract List<PhpBaseElement> getElementsForCodeCompletion(FileObject fo);
-
-    /**
-     * Get the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known.
-     * <p>
-     * <i>Notice:</i> This method is currently optimized for Symfony PHP Framework only.
-     * Future changes to be more general are probable.
-     * @param fo {@link FileObject file object} in which the code completion is invoked
-     * @param variableName the name of a variable
-     * @return the {@link PhpClass PHP class} of the variable, returns <code>null</code> if not known
-     */
-    public abstract PhpClass getClass(FileObject fo, String variableName);
 }

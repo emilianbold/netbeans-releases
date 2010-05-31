@@ -69,8 +69,22 @@ public final class PhpVariable extends PhpBaseElement {
         super(name, fullyQualifiedName, file, offset, null);
     }
 
+    /**
+     * @since 1.32
+     */
+    public PhpVariable(String name, PhpClass type, FileObject file, int offset) {
+        super(name, null, type, file, offset, null);
+    }
+
     public PhpVariable(String name, String fullyQualifiedName) {
         super(name, fullyQualifiedName);
+    }
+
+    /**
+     * @since 1.32
+     */
+    public PhpVariable(String name, PhpClass type) {
+        super(name, type);
     }
 
     public PhpVariable(String name, String fullyQualifiedName, int offset, String description) {

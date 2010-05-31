@@ -45,6 +45,7 @@ package org.netbeans.modules.php.api.editor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import org.openide.filesystems.FileObject;
 
 /**
  * Class representing a PHP class.
@@ -89,6 +90,14 @@ public final class PhpClass extends PhpBaseElement {
         return addField(name, fullyQualifiedName, -1, description);
     }
 
+    /**
+     * @since 1.32
+     */
+    public PhpClass addField(String name, PhpClass type, FileObject file, int offset) {
+        fields.add(new Field(name, type, file, offset));
+        return this;
+    }
+
     public PhpClass addMethod(String name, String fullyQualifiedName, int offset, String description) {
         methods.add(new Method(name, fullyQualifiedName, offset, description));
         return this;
@@ -122,6 +131,13 @@ public final class PhpClass extends PhpBaseElement {
     public final class Field extends PhpBaseElement {
         Field(String name, String fullyQualifiedName, int offset, String description) {
             super(name, fullyQualifiedName, offset, description);
+        }
+
+        /**
+         * @since 1.32
+         */
+        Field(String name, PhpClass type, FileObject file, int offset) {
+            super(name, null, type, file, offset, null);
         }
 
         public PhpClass getPhpClass() {
