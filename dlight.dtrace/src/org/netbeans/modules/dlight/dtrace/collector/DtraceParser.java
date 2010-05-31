@@ -145,6 +145,10 @@ public class DtraceParser {
                     case '"':
                         ++pos;
                         return next(c);
+                    case ' ':
+                    case '\t':
+                        ++pos; // skip
+                        break;
                     default:
                         return next(' ');
                 }
