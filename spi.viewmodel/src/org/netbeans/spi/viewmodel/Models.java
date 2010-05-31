@@ -1332,10 +1332,8 @@ public final class Models {
     }
 
     /**
-     * Creates {@link org.netbeans.spi.viewmodel.TableModel} for given TableModel and
-     * {@link org.netbeans.spi.viewmodel.TableModelFilter}.
-     *
-     * @author   Jan Jancura
+     * Creates {@link org.netbeans.spi.viewmodel.TableRendererModel} for given TableRendererModel and
+     * {@link org.netbeans.spi.viewmodel.TableRendererModelFilter}.
      */
     private final static class CompoundTableRendererModel implements TableRendererModel, ModelListener {
 
@@ -2078,11 +2076,9 @@ public final class Models {
     }
 
     /**
-     * Creates one {@link org.netbeans.spi.viewmodel.TableModel}
-     * from given list of TableModels. DelegatingTableModel asks all underlaying
+     * Creates one {@link org.netbeans.spi.viewmodel.TableRendererModel}
+     * from given list of TableRendererModel. DelegatingTableRendererModel asks all underlaying
      * models for each concrete parameter, and returns first returned value.
-     *
-     * @author   Jan Jancura
      */
     private final static class DelegatingTableRendererModel implements TableRendererModel {
 
