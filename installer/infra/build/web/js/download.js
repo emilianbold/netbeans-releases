@@ -569,6 +569,10 @@ function update() {
 	error_message = NOTE_SOLARIS;
     } 
 
+    if (error_message != "" ) {
+       error_message = NOTE_ALL;
+    }
+    
 
     document.getElementById("error_message").innerHTML = error_message;
     
