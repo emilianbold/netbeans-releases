@@ -129,15 +129,15 @@ public class KeyUtilities {
         return RepositoryUtils.getUnitName(unitIndex);
     }
 
-    public static int getFileIdByName(final int unitId, final String fileName) {
+    public static int getFileIdByName(final int unitId, final CharSequence fileName) {
         return RepositoryUtils.getFileIdByName(unitId, fileName);
     }
 
-    public static String getFileNameById(final int unitId, final int fileId) {
+    public static CharSequence getFileNameById(final int unitId, final int fileId) {
         return RepositoryUtils.getFileNameById(unitId, fileId);
     }
 
-    public static String getFileNameByIdSafe(final int unitId, final int fileId) {
+    public static CharSequence getFileNameByIdSafe(final int unitId, final int fileId) {
         return RepositoryUtils.getFileNameByIdSafe(unitId, fileId);
     }
 

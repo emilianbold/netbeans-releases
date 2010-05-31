@@ -353,15 +353,15 @@ public final class RepositoryUtils {
         return RepositoryAccessor.getTranslator().getUnitName(unitIndex);
     }
 
-    static int getFileIdByName(int unitId, String fileName) {
+    static int getFileIdByName(int unitId, CharSequence fileName) {
         return RepositoryAccessor.getTranslator().getFileIdByName(unitId, fileName);
     }
 
-    static String getFileNameByIdSafe(int unitId, int fileId) {
+    static CharSequence getFileNameByIdSafe(int unitId, int fileId) {
         return RepositoryAccessor.getTranslator().getFileNameByIdSafe(unitId, fileId);
     }
 
-    static String getFileNameById(int unitId, int fileId) {
+    static CharSequence getFileNameById(int unitId, int fileId) {
         return RepositoryAccessor.getTranslator().getFileNameById(unitId, fileId);
     }
 

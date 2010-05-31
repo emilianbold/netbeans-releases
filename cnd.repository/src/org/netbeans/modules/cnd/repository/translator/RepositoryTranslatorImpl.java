@@ -59,11 +59,11 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
@@ -116,7 +116,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
     private static final int DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM = 0;
     private static int version = DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM;
     private final static String MASTER_INDEX_FILE_NAME = System.getProperty("netbeans.user") + //NOI18N
-            File.separator + "var" + File.separator + "cache" +  //NOI18N
+            File.separator + "var" + File.separator + "cache" + //NOI18N
             File.separator + "cnd" + File.separator + "model" + //NOI18N
             File.separator + "index"; //NOI18N
     private final static String PROJECT_INDEX_FILE_NAME = "project-index"; //NOI18N
@@ -126,24 +126,28 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
         // load master index
     }
 
-    public int getFileIdByName(final int unitId, final String fileName) {
+    @Override
+    public int getFileIdByName(final int unitId, final CharSequence fileName) {
         assert fileName != null;
         final IntToStringCache unitFileNames = getUnitFileNames(unitId);
         return unitFileNames.getId(fileName);
     }
 
-    public String getFileNameById(final int unitId, final int fileId) {
+    @Override
+    public CharSequence getFileNameById(final int unitId, final int fileId) {
         final IntToStringCache fileNames = getUnitFileNames(unitId);
-        final String fileName = fileNames.getValueById(fileId);
+        final CharSequence fileName = fileNames.getValueById(fileId);
         return fileName;
     }
 
-    public String getFileNameByIdSafe(final int unitId, final int fileId) {
+    @Override
+    public CharSequence getFileNameByIdSafe(final int unitId, final int fileId) {
         final IntToStringCache fileNames = getUnitFileNames(unitId);
-        final String fileName = fileNames.containsId(fileId) ? fileNames.getValueById(fileId) : "?"; // NOI18N
+        final CharSequence fileName = fileNames.containsId(fileId) ? fileNames.getValueById(fileId) : "?"; // NOI18N
         return fileName;
     }
 
+    @Override
     public int getUnitId(String unitName) {
         if (!unitNamesCache.containsValue(unitName)) {
             // NB: this unit can't be open (since there is no such unit in unitNamesCache)
@@ -153,10 +157,12 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
         return unitNamesCache.getId(unitName);
     }
 
+    @Override
     public String getUnitName(int unitId) {
         return unitNamesCache.getValueById(unitId);
     }
 
+    @Override
     public String getUnitNameSafe(int unitId) {
         return unitNamesCache.containsId(unitId) ? unitNamesCache.getValueById(unitId) : "No Index " + unitId + " in " + unitNamesCache; // NOI18N
     }
@@ -459,8 +465,10 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
      * 1) Acts as a int/string table for unit names;
      * 2) Contains int/string tables for file names (a table per unit);
      */
-    private static class UnitsCache extends IntToStringCache {
+    private static class UnitsCache/* extends IntToStringCache*/ {
 
+        private final List<String> cache;
+        private final long timestamp;
         /**
          * A list of int/string tables for unitsm a table per unit.
          * It is "parallel" to the super.cache array.
@@ -489,7 +497,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
          * Stores the list of required inits and their timestamps.
          */
         // package-local
-        static void updateReqUnitInfo(String unitName, Set<String> reqUnits) {
+        private static void updateReqUnitInfo(String unitName, Set<String> reqUnits) {
             // update timestamps
             // ???! why do we copy the timestamps from unitNamesCache.cache to unit2timestamp for ALL modules???
             for (int i = 0; i < unitNamesCache.cache.size(); i++) { // unitNamesCache AKA this
@@ -593,8 +601,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
             return units;
         }
 
-        @Override
-        public void write(DataOutput stream) throws IOException {
+        private void write(DataOutput stream) throws IOException {
             assert cache != null;
             assert stream != null;
 
@@ -618,6 +625,44 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
             }
         }
 
+        /*
+         * This is a simple cache that keeps last found index by string.
+         * Cache reduces method consuming time in 10 times (on huge projects).
+         */
+        private static final class Lock {
+        }
+        private final Object oneItemCacheLock = new Lock();
+        private String oneItemCacheString; // Cached last string
+        private int oneItemCacheInt; // Cached last index
+
+        private int getId(String value) {
+            String prevString = null;
+            int prevInt = 0;
+            synchronized (oneItemCacheLock) {
+                prevString = oneItemCacheString;
+                prevInt = oneItemCacheInt;
+            }
+            if (value.equals(prevString)) {
+                return prevInt;
+            }
+
+            int id = cache.indexOf(value);
+            if (id == -1) {
+                synchronized (cache) {
+                    id = cache.indexOf(value);
+                    if (id == -1) {
+                        id = makeId(value);
+                    }
+                }
+            }
+
+            synchronized (oneItemCacheLock) {
+                oneItemCacheString = value;
+                oneItemCacheInt = id;
+            }
+            return id;
+        }
+
         private static boolean isUnitIndexLoaded(final String unitName) {
             if (!unitNamesCache.cache.contains(unitName)) {
                 return false;
@@ -631,17 +676,21 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
             return false;
         }
 
-        public UnitsCache() {
+        private UnitsCache() {
+            this.cache = new ArrayList<String>();
+            //this.version = RepositoryTranslatorImpl.getVersion();
+            this.timestamp = System.currentTimeMillis();
         }
 
         /**
          * Reads master index.
          * Fills fileNamesCaches with an empty int/string tables.
          */
-        public UnitsCache(DataInput stream) throws IOException {
+        private UnitsCache(DataInput stream) throws IOException {
 
             assert stream != null;
-            assert cache != null;
+            this.cache = new ArrayList<String>();
+            this.timestamp = System.currentTimeMillis();
 
             cache.clear();
             fileNamesCaches.clear();
@@ -675,17 +724,18 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
             }
         }
 
-        public void insertUnitFileCache(String name, IntToStringCache filesCache) {
+        private void insertUnitFileCache(String name, IntToStringCache filesCache) {
             int index = cache.indexOf(name);
             if (index == -1) {
-                index = super.makeId(name);
+                cache.add(name);
+                index = cache.indexOf(name);
             }
             fileNamesCaches.set(index, filesCache);
             unit2timestamp.put(name, Long.valueOf(filesCache.getTimestamp()));
             unit2requnint.put(name, new CopyOnWriteArraySet<RequiredUnit>());
         }
 
-        public IntToStringCache removeFileNames(String unitName) {
+        private IntToStringCache removeFileNames(String unitName) {
             IntToStringCache fileNames = null;
             int index = cache.indexOf(unitName);
             if (index != -1) {
@@ -700,14 +750,14 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
         /**
          * synchronization is controlled by calling getId() method
          */
-        @Override
-        protected int makeId(String unitName) {
+        private int makeId(String unitName) {
             unitName = getFileKey(unitName);
             int id = cache.indexOf(null);
             IntToStringCache fileCache = new IntToStringCache();
 
             if (id == -1) {
-                id = super.makeId(unitName);
+                cache.add(unitName);
+                id = cache.indexOf(unitName);
                 fileNamesCaches.add(fileCache);
             } else {
                 cache.set(id, unitName);
@@ -722,12 +772,24 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
             return id;
         }
 
+        private String getValueById(int id) {
+            return cache.get(id);
+        }
+
+        private boolean containsId(int id) {
+            return 0 <= id && id < cache.size();
+        }
+
+        private boolean containsValue(String value) {
+            return cache.contains(value);
+        }
+
         /**
          * no synchronization is set to speed up processing
          * this call is safe due to add-only way of work with
          * List
          */
-        public IntToStringCache getFileNames(int unitId) {
+        private IntToStringCache getFileNames(int unitId) {
             return fileNamesCaches.get(unitId);
         }
 
@@ -735,6 +797,12 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
             IntToStringCache fileCache = new IntToStringCache();
             unit2requnint.put(unitName, new CopyOnWriteArraySet<RequiredUnit>());
             unit2timestamp.put(unitName, fileCache.getTimestamp());
+        }
+
+        private String getFileKey(String str) {
+            // use name shared by filesystem
+            // return new File(str).getPath();
+            return str;
         }
     }
 
@@ -747,4 +815,3 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
         System.err.printf("RepositoryTranslator [%d] " + format, newArgs);
     }
 }
-
