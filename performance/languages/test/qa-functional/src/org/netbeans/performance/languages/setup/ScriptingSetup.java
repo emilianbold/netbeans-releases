@@ -64,6 +64,10 @@ public class ScriptingSetup extends JellyTestCase {
         CommonUtilities.closeMemoryToolbar();
     }
 
+    public void testAddTomcatServer() {
+        CommonUtilities.addTomcatServer();
+    }
+
     public void testOpenRubyProject() {
 
         try {
