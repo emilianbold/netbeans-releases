@@ -652,6 +652,14 @@ ExplorerManager.Provider, PropertyChangeListener {
             if (ci < columnsToSet.length && columns[i] == columnsToSet[ci]) {
                 TableColumn tc = tcm.getColumn(tci);
                 tableColumns[i] = tc;
+                if (columns[i] instanceof Column) {
+                    tableColumns[i].setCellEditor(new DelegatingCellEditor(
+                            ((Column) columns[i]).getName(),
+                            treeTable.getTable().getCellEditor(0, tci)));
+                    tableColumns[i].setCellRenderer(new DelegatingCellRenderer(
+                            ((Column) columns[i]).getName(),
+                            treeTable.getTable().getCellRenderer(0, tci)));
+                }
                 if (columns[i].isHidden()) {
                     ecm.setColumnHidden(tc, true);
                 } else {
@@ -662,6 +670,12 @@ ExplorerManager.Provider, PropertyChangeListener {
                 tableColumns[i] = tcm.getColumn(0);
                 if (columns[i] instanceof Column) {
                     tableColumns[i].setCellEditor(((Column)columns[i]).getTableCellEditor());
+                    tableColumns[i].setCellEditor(new DelegatingCellEditor(
+                            ((Column) columns[i]).getName(),
+                            treeTable.getTable().getCellEditor(0, 0)));
+                    tableColumns[i].setCellRenderer(new DelegatingCellRenderer(
+                            ((Column) columns[i]).getName(),
+                            treeTable.getTable().getCellRenderer(0, 0)));
                 }
             }
         }
@@ -910,7 +924,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                 ((DefaultOutlineModel) m).setNodesColumnLabel(name);
             }
         }
-        
+
         /*
         public List getExpandedPaths () {
             List result = new ArrayList ();
