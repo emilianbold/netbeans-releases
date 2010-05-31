@@ -609,7 +609,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     break;
                 case ASSERT:
                 case RETURN:
-                case THROW:                    
+                case THROW:
                     localResult(env);
                     addValueKeywords(env);
                     break;
@@ -1666,11 +1666,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (insideNew)
                             env.insideNew();
                         if (encl == null) {
-                            addTypes(env, EnumSet.of(CLASS, INTERFACE, ANNOTATION_TYPE), base);
+                            addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE), base);
                         } else {
                             TypeMirror enclType = controller.getTrees().getTypeMirror(new TreePath(path, nc.getEnclosingExpression()));
                             if (enclType != null && enclType.getKind() == TypeKind.DECLARED)
-                                addMembers(env, enclType, ((DeclaredType)enclType).asElement(), EnumSet.of(CLASS, INTERFACE, ANNOTATION_TYPE), base, false, insideNew);
+                                addMembers(env, enclType, ((DeclaredType)enclType).asElement(), EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE), base, false, insideNew);
                         }
                         break;
                     case LPAREN:
