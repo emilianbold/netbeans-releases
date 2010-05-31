@@ -65,7 +65,7 @@ public class Installer extends ModuleInstall implements Runnable {
     @Override
     public void restored() {
         //No need to block startup
-        RequestProcessor.getDefault().post(this, 2000, Thread.MIN_PRIORITY);
+        RequestProcessor.getDefault().post(this);
     }
 
     public void run() {

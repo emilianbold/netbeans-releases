@@ -95,6 +95,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 /**
  * Implementation of JavacardPlatform for the Java Card Reference Implementation
@@ -221,10 +222,10 @@ public class RIPlatform extends JavacardPlatform {
     public static JavacardPlatform getDefault() {
         File riProps = null;
         try {
-            riProps = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<File>() {
+            riProps = ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<File>() {
 
                 public File run() throws Exception {
-                    EditableProperties globals = PropertyUtils.getGlobalProperties();
+                    final EditableProperties globals = PropertyUtils.getGlobalProperties();
                     String path = globals.getProperty(JCConstants.GLOBAL_BUILD_PROPERTIES_RI_PROPERTIES_PATH_KEY);
                     File result = path == null ? null : new File(path);
                     if (result != null && (!result.exists() || !result.isFile())) {
@@ -246,11 +247,27 @@ public class RIPlatform extends JavacardPlatform {
                             }
                         }
                         if (target != null) {
-                            result = FileUtil.toFile(target);
-                            globals.setProperty(
-                                    JCConstants.GLOBAL_BUILD_PROPERTIES_RI_PROPERTIES_PATH_KEY,
-                                    result.getAbsolutePath());
-                            PropertyUtils.putGlobalProperties(globals);
+                            final File p  = FileUtil.toFile(target);
+                            //avoid going from read to write access http://netbeans.org/bugzilla/show_bug.cgi?id=10778
+                            RequestProcessor.getDefault().post(new Runnable() {
+                                public void run() {
+                                    try {
+                                        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+
+                                            public Object run() throws Exception {
+                                                globals.setProperty(
+                                                        JCConstants.GLOBAL_BUILD_PROPERTIES_RI_PROPERTIES_PATH_KEY,
+                                                        p.getAbsolutePath());
+                                                PropertyUtils.putGlobalProperties(globals);
+                                                return null;
+                                            }
+                                        });
+                                    } catch (MutexException me) {
+                                        Exceptions.printStackTrace(me);
+                                    }
+
+                                }
+                            });
                         }
                     }
                     return result;
