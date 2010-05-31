@@ -43,8 +43,10 @@
  */
 package org.netbeans.modules.cnd.makefile.lexer;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
@@ -113,8 +115,6 @@ import org.netbeans.spi.lexer.TokenFactory;
         addSpecialTokens(MakefileTokenId.KEYWORD,
                 // gmake
                 "override", // NOI18N
-                "define", // NOI18N
-                "endef", // NOI18N
                 "ifdef", // NOI18N
                 "ifndef", // NOI18N
                 "ifeq", // NOI18N
@@ -122,14 +122,22 @@ import org.netbeans.spi.lexer.TokenFactory;
                 "else", // NOI18N
                 "endif"); // NOI18N
 
+        addSpecialTokens(MakefileTokenId.DEFINE, "define"); // NOI18N
+        addSpecialTokens(MakefileTokenId.ENDEF, "endef"); // NOI18N
         addSpecialTokens(MakefileTokenId.INCLUDE, "include"); // NOI18N
     }
+
+    private static final Set<MakefileTokenId> ALL = MakefileTokenId.language().tokenIds();
+    private static final Set<MakefileTokenId> NONE = EnumSet.noneOf(MakefileTokenId.class);
+    private static final Set<MakefileTokenId> ENDEF = EnumSet.of(MakefileTokenId.ENDEF);
 
     private static enum State {
         AT_LINE_START,
         AFTER_LINE_START,
         AFTER_TAB_OR_SEMICOLON,
         IN_SHELL,
+        IN_DEFINE,
+        IN_DEFINE_AT_LINE_START,
         AFTER_EQUALS,
         AFTER_COLON
     }
@@ -148,14 +156,17 @@ import org.netbeans.spi.lexer.TokenFactory;
         switch (state) {
 
             case AT_LINE_START:
-                token = readToken(true, true, true, false);
+                token = readToken(true, true, true, false, ALL);
                 if (token != null) {
                     switch (token.id()) {
                         case NEW_LINE:
-                            // remain in AT_LINE_START state
+                            // stay in AT_LINE_START state
                             break;
                         case TAB:
                             state = State.AFTER_TAB_OR_SEMICOLON;
+                            break;
+                        case DEFINE:
+                            state = State.IN_DEFINE;
                             break;
                         case EQUALS:
                         case COLON_EQUALS:
@@ -174,7 +185,7 @@ import org.netbeans.spi.lexer.TokenFactory;
                 break;
 
             case AFTER_LINE_START:
-                token = readToken(false, true, true, false);
+                token = readToken(false, true, true, false, ALL);
                 if (token != null) {
                     switch (token.id()) {
                         case NEW_LINE:
@@ -192,7 +203,7 @@ import org.netbeans.spi.lexer.TokenFactory;
                         case SEMICOLON:
                             throw new IllegalStateException("Internal error"); // NOI18N
                         default:
-                            // remain in AFTER_LINE_START state
+                            // stay in AFTER_LINE_START state
                     }
                 }
                 break;
@@ -209,7 +220,7 @@ import org.netbeans.spi.lexer.TokenFactory;
                             state = State.IN_SHELL;
                             break;
                         case WHITESPACE:
-                            // remain in AFTER_TAB_OR_SEMICOLON state
+                            // stay in AFTER_TAB_OR_SEMICOLON state
                             break;
                         default:
                             throw new IllegalStateException("Internal error"); // NOI18N
@@ -226,7 +237,7 @@ import org.netbeans.spi.lexer.TokenFactory;
                             break;
                         case SHELL:
                         case MACRO:
-                            // remain in IN_SHELL state
+                            // stay in IN_SHELL state
                             break;
                         default:
                             throw new IllegalStateException("Internal error"); // NOI18N
@@ -234,8 +245,37 @@ import org.netbeans.spi.lexer.TokenFactory;
                 }
                 break;
 
+            case IN_DEFINE:
+                token = readToken(false, false, false, false, NONE);
+                if (token != null) {
+                    switch (token.id()) {
+                        case NEW_LINE:
+                            state = State.IN_DEFINE_AT_LINE_START;
+                            break;
+                        default:
+                            // stay in IN_DEFINE state
+                    }
+                }
+                break;
+
+            case IN_DEFINE_AT_LINE_START:
+                token = readToken(false, false, false, false, ENDEF);
+                if (token != null) {
+                    switch (token.id()) {
+                        case ENDEF:
+                            state = State.AFTER_LINE_START;
+                            break;
+                        case NEW_LINE:
+                            state = State.IN_DEFINE_AT_LINE_START;
+                            break;
+                        default:
+                            state = State.IN_DEFINE;
+                    }
+                }
+                break;
+
             case AFTER_EQUALS:
-                token = readToken(false, false, false, false);
+                token = readToken(false, false, false, false, NONE);
                 if (token != null) {
                     switch (token.id()) {
                         case NEW_LINE:
@@ -249,13 +289,13 @@ import org.netbeans.spi.lexer.TokenFactory;
                         case SEMICOLON:
                             throw new IllegalStateException("Internal error"); // NOI18N
                         default:
-                            // remain in AFTER_EQUALS state
+                            // stay in AFTER_EQUALS state
                     }
                 }
                 break;
 
             case AFTER_COLON:
-                token = readToken(false, false, false, true);
+                token = readToken(false, false, false, true, NONE);
                 if (token != null) {
                     switch (token.id()) {
                         case NEW_LINE:
@@ -271,7 +311,7 @@ import org.netbeans.spi.lexer.TokenFactory;
                         case PLUS_EQUALS:
                             throw new IllegalStateException("Internal error"); // NOI18N
                         default:
-                            // remain in AFTER_EQUALS state
+                            // stay in AFTER_EQUALS state
                     }
                 }
                 break;
@@ -292,7 +332,7 @@ import org.netbeans.spi.lexer.TokenFactory;
     }
 
 
-    private Token<MakefileTokenId> readToken(boolean wantTab, boolean wantColon, boolean wantEquals, boolean wantSemicolon) {
+    private Token<MakefileTokenId> readToken(boolean wantTab, boolean wantColon, boolean wantEquals, boolean wantSemicolon, Set<MakefileTokenId> allowedSpecial) {
         LexerInput input = info.input();
         TokenFactory<MakefileTokenId> factory = info.tokenFactory();
 
@@ -374,7 +414,7 @@ import org.netbeans.spi.lexer.TokenFactory;
 
             default:
                 consumeBare(input, wantColon, wantEquals, wantSemicolon);
-                return createBareOrKeyword(input.readText().toString(), factory);
+                return createBareOrSpecial(input.readText().toString(), factory, allowedSpecial);
         }
     }
 
@@ -605,8 +645,8 @@ import org.netbeans.spi.lexer.TokenFactory;
         }
     }
 
-    private static Token<MakefileTokenId> createBareOrKeyword(String text, TokenFactory<MakefileTokenId> factory) {
+    private static Token<MakefileTokenId> createBareOrSpecial(String text, TokenFactory<MakefileTokenId> factory, Set<MakefileTokenId> allowedSpecial) {
         MakefileTokenId tokenId = SPECIAL_TOKENS.get(text);
-        return factory.createToken(tokenId == null? MakefileTokenId.BARE : tokenId);
+        return factory.createToken(allowedSpecial.contains(tokenId)? tokenId : MakefileTokenId.BARE);
     }
 }
