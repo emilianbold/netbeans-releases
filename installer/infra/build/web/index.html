@@ -157,9 +157,9 @@
                         </table>
                         
                         <noscript>
-                            <div class="noscript_warning">
+                            <div class="noscript_warning" style="text-align:center;"><br/><br/><br/><br/>
                                 In order to download NetBeans installers, Javascript must be switched on in your 
-                                browser.<br> Please switch it on before proceeding.
+                                browser.<br> Please switch it on before proceeding.<br/><br/><br/><br/>
                             </div>
                             <style type="text/css">
                                 table.l_p_select {
@@ -177,14 +177,14 @@
 					<table class="subscription">
 						<tr>
 							<td><script type="text/javascript">message(EMAIL_LABEL)</script></td>
-  				        		<td><input type="text" name="email" id="emailfield" class="field" style="width:190px;"/></td>
+  				        		<td><script type="text/javascript">document.write('<input type="text" name="email" id="emailfield" class="field" style="width:190px;"/></td>')</script>
 						</tr>
   						<tr>
   							<td class="valign-top"><script type="text/javascript">message(SUBSCRIBE_LABEL)</script></td>
 	  						<td>
-								<input type="checkbox" id="monthlycb" name="monthly" value="1" checked/><script type="text/javascript">message(MONTHLY_LABEL)</script>
-  								<input type="checkbox" id="weeklycb" name="weekly" value="1" /><script type="text/javascript">message(WEEKLY_LABEL)</script>
-  								<br/><input type="checkbox" id="contactcb" name="contact" value="1" checked/><script type="text/javascript">message(CONTACT_LABEL)</script>
+								<script type="text/javascript">document.write('<input type="checkbox" id="monthlycb" name="monthly" value="1" checked/>');message(MONTHLY_LABEL)</script>
+  								<script type="text/javascript">document.write('<input type="checkbox" id="weeklycb" name="weekly" value="1" />');message(WEEKLY_LABEL)</script>
+  								<br/><script type="text/javascript">document.write('<input type="checkbox" id="contactcb" name="contact" value="1" checked/>');message(CONTACT_LABEL)</script>
   							</td>
   						</tr>
 					</table>
@@ -233,7 +233,7 @@
 				     <table>
 				     <tr>
 					<td width="10px" style="vertical-align:top;">
-						<span style="font-size:1.2em;color: #333333; margin: 0px 4px 0px 1px; font-weight: bold">*</span>
+						<span style="font-size:1.2em;color: #333333; margin: 0px 4px 0px 1px; font-weight: bold"><script type="text/javascript">document.write('*');</script></span>
 					</td>
 					<td>
 			                        <div style="">
