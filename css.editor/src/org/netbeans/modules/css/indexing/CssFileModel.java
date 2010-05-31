@@ -273,7 +273,7 @@ public class CssFileModel {
                     } while((first = first.next) != last);
 
                     //get the closing right curly bracket }
-                    int to = styleRuleNode.jjtGetLastToken().offset;
+                    int to = last.kind == CssParserConstants.RBRACE ? last.offset : -1;
 
                     if(from != -1 && to != -1) {
                         body = new OffsetRange(from, to);
