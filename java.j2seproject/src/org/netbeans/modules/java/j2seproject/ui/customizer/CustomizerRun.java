@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
+import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Font;
@@ -49,11 +50,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.Collator;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
@@ -72,6 +71,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.api.J2SERunConfigProvider;
 import org.openide.DialogDescriptor;
@@ -120,10 +120,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             jLabelWorkingDirectory,
         };
         keys = new String[] {
-            J2SEProjectProperties.MAIN_CLASS,
-            J2SEProjectProperties.APPLICATION_ARGS,
-            J2SEProjectProperties.RUN_JVM_ARGS,
-            J2SEProjectProperties.RUN_WORK_DIR,
+            ProjectProperties.MAIN_CLASS,
+            ProjectProperties.APPLICATION_ARGS,
+            ProjectProperties.RUN_JVM_ARGS,
+            ProjectProperties.RUN_WORK_DIR,
         };
         assert data.length == keys.length;
         

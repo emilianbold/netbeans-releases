@@ -541,6 +541,7 @@ final public class AppClientProjectProperties {
                     cs, javaClasspathList,
                     new CallbackImpl(project), project,
                     profile, J2eeModule.Type.CAR);
+            generateExtraServerProperty(privateProperties);
             updateAppClientServerProperties(instanceId, projectProperties, privateProperties);
         }
 
@@ -737,6 +738,7 @@ final public class AppClientProjectProperties {
                     J2EEProjectProperties.updateServerProperties(projectProps, privateProps, serverInstanceID,
                             null, null, new CallbackImpl(project), project,
                             profile, J2eeModule.Type.CAR);
+                    generateExtraServerProperty(privateProps);
                     updateAppClientServerProperties(serverInstanceID, projectProps, privateProps);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
@@ -747,7 +749,16 @@ final public class AppClientProjectProperties {
             }
         });
     }
-    
+
+    public static void generateExtraServerProperty(EditableProperties props) {
+        // TODO: this should come from server instead of hacking it here.
+        // Good enough for now though.
+        String val = props.getProperty("j2ee.appclient.tool.jvmoptions");
+        if (val != null && val.endsWith(",client=jar=")) {
+            props.setProperty("j2ee.appclient.tool.jvmoptions.class", val.substring(0, val.length()-4)+"class=");
+        }
+    }
+
     private static void updateAppClientServerProperties(String newServInstID,
             EditableProperties projectProps, EditableProperties privateProps) {
 

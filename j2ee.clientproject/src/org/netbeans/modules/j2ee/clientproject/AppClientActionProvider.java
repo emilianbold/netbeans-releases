@@ -42,68 +42,35 @@
 package org.netbeans.modules.j2ee.clientproject;
 
 
-import java.awt.Dialog;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import javax.lang.model.element.TypeElement;
-import javax.swing.JButton;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
-import org.netbeans.modules.j2ee.clientproject.ui.customizer.MainClassChooser;
-import org.netbeans.modules.j2ee.clientproject.ui.customizer.MainClassWarning;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.openide.DialogDescriptor;
+import org.netbeans.modules.java.api.common.project.BaseActionProvider;
+import org.netbeans.spi.project.SingleMethod;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.MouseUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  * Action provider of the Application Client project.
  */
-class AppClientActionProvider implements ActionProvider {
+class AppClientActionProvider extends BaseActionProvider {
     
-    private static final String COMMAND_COMPILE = "compile"; //NOI18N
     private static final String COMMAND_VERIFY = "verify"; //NOI18N
     
     // Commands available from Application Client project
@@ -121,9 +88,10 @@ class AppClientActionProvider implements ActionProvider {
         COMMAND_TEST,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
+        SingleMethod.COMMAND_RUN_SINGLE_METHOD,
+        SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_DEBUG_STEP_INTO,
-        COMMAND_COMPILE,
         COMMAND_VERIFY,
         COMMAND_DELETE,
         COMMAND_COPY,
@@ -146,28 +114,33 @@ class AppClientActionProvider implements ActionProvider {
         COMMAND_DEBUG_TEST_SINGLE,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_DEBUG_STEP_INTO,
+        SingleMethod.COMMAND_RUN_SINGLE_METHOD,
+        SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
     };
     
-    // Project
-    AppClientProject project;
-    
-    // Ant project helper of the project
-    private final AntProjectHelper antProjectHelper;
-    private final UpdateHelper updateHelper;
-    
+    /**Set of commands which are affected by background scanning*/
+    private Set<String> bkgScanSensitiveActions;
+
+    /**Set of commands which need java model up to date*/
+    private Set<String> needJavaModelActions;
+
+    private static final String[] actionsDisabledForQuickRun = {
+        COMMAND_COMPILE_SINGLE,
+        JavaProjectConstants.COMMAND_DEBUG_FIX,
+    };
+
     /** Map from commands to ant targets */
     Map<String,String[]> commands;
     
-    /**Set of commands which are affected by background scanning*/
-    final Set<String> bkgScanSensitiveActions;
-    
-    public AppClientActionProvider( AppClientProject project, AntProjectHelper antProjectHelper, UpdateHelper updateHelper ) {
+    public AppClientActionProvider( AppClientProject project, UpdateHelper updateHelper ) {
+        super(project, updateHelper, project.evaluator(), project.getSourceRoots(),
+                project.getTestSourceRoots(), project.getAntProjectHelper(), 
+                new BaseActionProvider.CallbackImpl(project.getClassPathProvider()));
         commands = new HashMap<String, String[]>();
         commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
         commands.put(COMMAND_REBUILD, new String[] {"clean", "dist"}); // NOI18N
         commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
-        // commands.put(COMMAND_COMPILE_TEST_SINGLE, new String[] {"compile-test-single"}); // NOI18N
         commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
         commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
         commands.put(EjbProjectConstants.COMMAND_REDEPLOY, new String[] {"run-deploy"}); // NOI18N
@@ -179,8 +152,12 @@ class AppClientActionProvider implements ActionProvider {
         commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[] {"debug-test"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
         commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug-stepinto"}); // NOI18N
-        commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
         commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
+        commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
+
+        this.needJavaModelActions = new HashSet<String>(Arrays.asList(
+            JavaProjectConstants.COMMAND_DEBUG_FIX
+        ));
         
         this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(new String[] {
             COMMAND_RUN,
@@ -189,595 +166,82 @@ class AppClientActionProvider implements ActionProvider {
             COMMAND_DEBUG_SINGLE,
             COMMAND_DEBUG_STEP_INTO
         }));
-        
-        this.antProjectHelper = antProjectHelper;
-        this.updateHelper = updateHelper;
-        this.project = project;
     }
-    
-    private FileObject findBuildXml() {
-        return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+
+    @Override
+    protected String[] getPlatformSensitiveActions() {
+        return platformSensitiveActions;
     }
-    
+
+    @Override
+    protected String[] getActionsDisabledForQuickRun() {
+        return actionsDisabledForQuickRun;
+    }
+
+    @Override
+    public Map<String, String[]> getCommands() {
+        return commands;
+    }
+
+    @Override
+    protected Set<String> getScanSensitiveActions() {
+        return bkgScanSensitiveActions;
+    }
+
+    @Override
+    protected Set<String> getJavaModelActions() {
+        return needJavaModelActions;
+    }
+
+    @Override
+    protected boolean isCompileOnSaveEnabled() {
+        return false; // CoS not implemented for AppClient
+    }
+
+    @Override
     public String[] getSupportedActions() {
         return supportedActions;
     }
-    
-    public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
-        if (COMMAND_DELETE.equals(command)) {
-            DefaultProjectOperations.performDefaultDeleteOperation(project);
-            return ;
-        }
-        
-        if (COMMAND_COPY.equals(command)) {
-            DefaultProjectOperations.performDefaultCopyOperation(project);
-            return ;
-        }
-        
-        if (COMMAND_MOVE.equals(command)) {
-            DefaultProjectOperations.performDefaultMoveOperation(project);
-            return ;
-        }
-        
-        if (COMMAND_RENAME.equals(command)) {
-            DefaultProjectOperations.performDefaultRenameOperation(project, null);
-            return ;
-        }
-        
-        Runnable action = new Runnable() {
-            public void run() {
-                Properties p = new Properties();
-                String[] targetNames;
 
-                targetNames = getTargetNames(command, context, p);
-                if (targetNames == null) {
-                    return;
-                }
-                if (targetNames.length == 0) {
-                    targetNames = null;
-                }
-                if (p.keySet().size() == 0) {
-                    p = null;
-                }
-                try {
-                    FileObject buildFo = findBuildXml();
-                    if (buildFo == null || !buildFo.isValid()) {
-                        //The build.xml was deleted after the isActionEnabled was called
-                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(AppClientActionProvider.class,
-                                "LBL_No_Build_XML_Found"), NotifyDescriptor.WARNING_MESSAGE); // NOI18N
-                        DialogDisplayer.getDefault().notify(nd);
-                    } else {
-                        ActionUtils.runTarget(buildFo, targetNames, p);
-                    }
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-        };
-        
-//        if (this.bkgScanSensitiveActions.contains(command)) {
-            //TODO: RETOUCHE waitScanFinished
-//            JMManager.getManager().invokeAfterScanFinished(action, NbBundle.getMessage(AppClientActionProvider.class,"ACTION_"+command)); //NOI18N
-//        } else {
-            action.run();
-//        }
-    }
-    
-    /**
-     * @return array of targets or null to stop execution; can return empty array
-     */
-    /*private*/ String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
-        if (Arrays.asList(platformSensitiveActions).contains(command)) {
-            final String activePlatformId = this.project.evaluator().getProperty(AppClientProjectProperties.JAVA_PLATFORM);  //NOI18N
-            if (Utils.getActivePlatform(activePlatformId) == null) {
-                showPlatformWarning();
-                return null;
-            }
-        }
-        String[] targetNames = new String[0];
-        if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            FileObject[] sourceRoots = project.getSourceRoots().getRoots();
-            FileObject[] files = findSourcesAndPackages( context, sourceRoots);
-            boolean recursive = (context.lookup(NonRecursiveFolder.class) == null);
-            if (files != null) {
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]), recursive)); // NOI18N
-                targetNames = new String[] {"compile-single"}; // NOI18N
-            } else {
-                FileObject[] testRoots = project.getTestSourceRoots().getRoots();
-                files = findSourcesAndPackages(context, testRoots);
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(testRoots,files[0]), recursive)); // NOI18N
-                targetNames = new String[] {"compile-test-single"}; // NOI18N
-            }
-        } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-            FileObject[] files = findTestSourcesForSources(context);
-            targetNames = setupTestSingle(p, files);
-        } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
-            FileObject[] files = findTestSourcesForSources(context);
-            targetNames = setupDebugTestSingle(p, files);
-        } else if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
-            //this is maybe not needed
-            FileObject[] files = findSources( context );
-            String path = null;
-            final String[] classes = { "" };
-            if (files != null) {
-                path = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),files[0]), files[0]);
-                targetNames = new String[] {"debug-fix"}; // NOI18N
-                JavaSource js = JavaSource.forFileObject(files[0]);
-                if (js != null) {
-                    try {
-                        js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
-                            public void run(CompilationController ci) throws Exception {
-                                if (ci.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo(JavaSource.Phase.ELEMENTS_RESOLVED) < 0) {
-                                    ErrorManager.getDefault().log(ErrorManager.WARNING,
-                                            "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                                            "\nDiagnostics = "+ci.getDiagnostics()+
-                                            "\nFree memory = "+Runtime.getRuntime().freeMemory());
-                                    return;
-                                }
-                                List<? extends TypeElement> types = ci.getTopLevelElements();
-                                if (types.size() > 0) {
-                                    for (TypeElement type : types) {
-                                        if (classes[0].length() > 0) {
-                                            classes[0] = classes[0] + " ";            // NOI18N
-                                        }
-                                        classes[0] = classes[0] + type.getQualifiedName().toString().replace('.', '/') + "*.class";  // NOI18N
-                                    }
-                                }
-                            }
-                        }, true);
-                    } catch (java.io.IOException ioex) {
-                        Exceptions.printStackTrace(ioex);
-                    }
-                }
-            } else {
-                files = findTestSources(context, false);
-                path = FileUtil.getRelativePath(getRoot(project.getTestSourceRoots().getRoots(),files[0]), files[0]);
-                targetNames = new String[] {"debug-fix-test"}; // NOI18N
-            }
-            // Convert foo/FooTest.java -> foo/FooTest
-            if (path.endsWith(".java")) { // NOI18N
-                path = path.substring(0, path.length() - 5);
-            }
-            p.setProperty("fix.includes", path); // NOI18N
-            p.setProperty("fix.classes", classes[0]); // NOI18N
-        } else if (command.equals(COMMAND_RUN) || command.equals(EjbProjectConstants.COMMAND_REDEPLOY) || command.equals(COMMAND_DEBUG) /*|| command.equals(COMMAND_DEBUG_STEP_INTO)*/) {
-            EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            //check server
+    @Override
+    public String[] getTargetNames(String command, Lookup context, Properties p, boolean doJavaChecks) throws IllegalArgumentException {
+        if (command.equals(COMMAND_RUN) || command.equals(EjbProjectConstants.COMMAND_REDEPLOY) || 
+                command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_RUN_SINGLE)) {
             if (!isSelectedServer()) {
-                // no selected server => warning
                 String msg = NbBundle.getMessage(
                         AppClientActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
                 DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
                 return null;
             }
-            
-            //see issue 83056
-            if (command.equals(COMMAND_DEBUG)) {
-                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(AppClientActionProvider.class, "MSG_Server_State_Question"), NotifyDescriptor.QUESTION_MESSAGE);
-                nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
-                nd.setOptions(new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION});
-                if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
-                    nd = new NotifyDescriptor.Message(NbBundle.getMessage(AppClientActionProvider.class, "MSG_Server_State"), NotifyDescriptor.INFORMATION_MESSAGE);
-                    Object o = DialogDisplayer.getDefault().notify(nd);
-                    return null;
-                }
+            if (isDebugged()) {
+                p.setProperty("is.debugged", "true");
             }
-            
-            // check project's main class
-            String mainClass = ep.get("main.class"); // NOI18N
-            MainClassStatus result = isSetMainClass(project.getSourceRoots().getRoots(), mainClass);
-            if (result != MainClassStatus.SET_AND_VALID) {
-                do {
-                    // show warning, if cancel then return
-                    if (showMainClassWarning(mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep,result)) {
-                        return null;
-                    }
-                    mainClass = ep.get("main.class"); // NOI18N
-                    result=isSetMainClass(project.getSourceRoots().getRoots(), mainClass);
-                } while (result != MainClassStatus.SET_AND_VALID);
-                try {
-                    if (updateHelper.requestUpdate()) {
-                        updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
-                        ProjectManager.getDefault().saveProject(project);
-                    } else {
-                        return null;
-                    }
-                } catch (IOException ioe) {
-                    Logger.getLogger("global").log(Level.INFO, "Error while saving project: " + ioe);
-                }
-            }
-            
-            if (command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) {
+            if (command.equals(EjbProjectConstants.COMMAND_REDEPLOY)) {
                 p.setProperty("forceRedeploy", "true"); //NOI18N
             } else {
                 p.setProperty("forceRedeploy", "false"); //NOI18N
             }
-            
-            targetNames = commands.get(command);
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
-        } else if (command.equals(COMMAND_RUN_SINGLE)) {
-            FileObject[] files = findTestSources(context, false);
-            if (files != null) {
-                targetNames = setupTestSingle(p, files);
-            } else {
-                //run java
-                FileObject file = findSources(context)[0];
-                String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
-                p.setProperty("javac.includes", clazz); // NOI18N
-                // Convert foo/FooTest.java -> foo.FooTest
-                if (clazz.endsWith(".java")) { // NOI18N
-                    clazz = clazz.substring(0, clazz.length() - 5);
-                }
-                clazz = clazz.replace('/','.');
-                
-                if (!Utils.hasMainMethod(file)) {
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(AppClientActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return null;
-                } else {
-                    p.setProperty("run.class", clazz); // NOI18N
-                    targetNames = commands.get(COMMAND_RUN_SINGLE);
-                        /*
-                    } else {
-                        p.setProperty("debug.class", clazz); // NOI18N
-                        targetNames = (String[])commands.get(COMMAND_DEBUG_SINGLE);
-                    }
-                         */
-                }
-            }
-        //DEBUGGING PART
-        } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
-            // #122296
-            FileObject[] files = findTestSources(context, false);
-            if (files != null) {
-                targetNames = setupDebugTestSingle(p, files);
-            } else {
-                if (!isSelectedServer()) {
-                    // no selected server => warning
-                    String msg = NbBundle.getMessage(
-                            AppClientActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
-                    return null;
-                }
-                if (isDebugged()) {
-                    NotifyDescriptor nd;
-                    nd = new NotifyDescriptor.Confirmation(
-                                NbBundle.getMessage(AppClientActionProvider.class, "MSG_FinishSession"),
-                                NotifyDescriptor.OK_CANCEL_OPTION);
-                    Object o = DialogDisplayer.getDefault().notify(nd);
-                    if (o.equals(NotifyDescriptor.OK_OPTION)) {
-                        DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                    } else {
-                        return null;
-                    }
-                }
-                FileObject file = findSources(context)[0];
-                String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
-                p.setProperty("javac.includes", clazz); // NOI18N
-                // Convert foo/FooTest.java -> foo.FooTest
-                if (clazz.endsWith(".java")) { // NOI18N
-                    clazz = clazz.substring(0, clazz.length() - 5);
-                }
-                clazz = clazz.replace('/','.');
-
-                if (!Utils.hasMainMethod(file)) {
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(AppClientActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return null;
-                } else {
-                    p.setProperty("debug.class", clazz); // NOI18N
-                    targetNames = commands.get(COMMAND_DEBUG_SINGLE);
-                }
-            }
-        } else {
-            targetNames = commands.get(command);
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
         }
-        return targetNames;
+        return super.getTargetNames(command, context, p, doJavaChecks);
     }
     
-    private String[] setupTestSingle(Properties p, FileObject[] files) {
-        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-        FileObject root = getRoot(testSrcPath, files[0]);
-        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        return new String[] {"test-single"}; // NOI18N
-    }
-    
-    private String[] setupDebugTestSingle(Properties p, FileObject[] files) {
-        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-        FileObject root = getRoot(testSrcPath, files[0]);
-        String path = FileUtil.getRelativePath(root, files[0]);
-        // Convert foo/FooTest.java -> foo.FooTest
-        p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
-        return new String[] {"debug-test"}; // NOI18N
-    }
-    
+    @Override
     public boolean isActionEnabled( String command, Lookup context ) {
-        FileObject buildXml = findBuildXml();
-        if (  buildXml == null || !buildXml.isValid()) {
-            return false;
+        boolean res = super.isActionEnabled(command, context);
+        if (res && command.equals(COMMAND_VERIFY)) {
+            return ((AppClientProject)getProject()).getCarModule().hasVerifierSupport();
         }
-        if ( command.equals( COMMAND_VERIFY ) ) {
-            return project.getCarModule().hasVerifierSupport();
-        }
-        if (command.equals(COMMAND_RUN)) {
+        if (command.equals(COMMAND_RUN) || command.equals(COMMAND_DEBUG)) {
             //see issue #92895
             //XXX - replace this method with a call to API as soon as issue 109895 will be fixed
-            return isSelectedServer() && !isTargetServerRemote();
-        } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            return findSourcesAndPackages( context, project.getSourceRoots().getRoots()) != null
-                    || findSourcesAndPackages( context, project.getTestSourceRoots().getRoots()) != null;
-        } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-            return findTestSourcesForSources(context) != null;
-        } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
-            FileObject[] files = findTestSourcesForSources(context);
-            return files != null && files.length == 1;
-        } else if (command.equals(COMMAND_RUN_SINGLE) ||
-                command.equals(COMMAND_DEBUG_SINGLE) ||
-                command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
-            FileObject fos[] = findSources(context);
-            if (fos != null && fos.length == 1) {
-                return true;
-            }
-            fos = findTestSources(context, false);
-            return fos != null && fos.length == 1;
-        } else {
-            // other actions are global
-            return true;
+            return res && isSelectedServer() && !isTargetServerRemote();
         }
-    }
-    
-    
-    
-    // Private methods -----------------------------------------------------
-    
-    
-    private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
-    private static final String SUBST = "Test.java"; // NOI18N
-    
-    /** Find selected sources, the sources has to be under single source root,
-     *  @param context the lookup in which files should be found
-     */
-    private FileObject[] findSources(Lookup context) {
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        for (int i=0; i< srcPath.length; i++) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], ".java", true); // NOI18N
-            if (files != null) {
-                return files;
-            }
-        }
-        return null;
-    }
-    
-    private FileObject[] findSourcesAndPackages(Lookup context, FileObject srcDir) {
-        if (srcDir != null) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, null, true); // NOI18N
-            //Check if files are either packages of java files
-            if (files != null) {
-                for (int i = 0; i < files.length; i++) {
-                    if (!files[i].isFolder() && !"java".equals(files[i].getExt())) { // NOI18N
-                        return null;
-                    }
-                }
-            }
-            return files;
-        } else {
-            return null;
-        }
-    }
-    
-    private FileObject[] findSourcesAndPackages(Lookup context, FileObject[] srcRoots) {
-        for (int i=0; i<srcRoots.length; i++) {
-            FileObject[] result = findSourcesAndPackages(context, srcRoots[i]);
-            if (result != null) {
-                return result;
-            }
-        }
-        return null;
-    }
-    
-    /** Find either selected tests or tests which belong to selected source files
-     */
-    private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
-        //XXX: Ugly, should be rewritten
-        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-        for (int i=0; i< testSrcPath.length; i++) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcPath[i], ".java", true); // NOI18N
-            if (files != null) {
-                return files;
-            }
-        }
-        if (checkInSrcDir && testSrcPath.length>0) {
-            FileObject[] files = findSources(context);
-            if (files != null) {
-                //Try to find the test under the test roots
-                FileObject srcRoot = getRoot(project.getSourceRoots().getRoots(),files[0]);
-                for (int i=0; i<testSrcPath.length; i++) {
-                    FileObject[] files2 = ActionUtils.regexpMapFiles(files,srcRoot, SRCDIRJAVA, testSrcPath[i], SUBST, true);
-                    if (files2 != null) {
-                        return files2;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-    
-    
-    /** Find tests corresponding to selected sources.
-     */
-    private FileObject[] findTestSourcesForSources(Lookup context) {
-        FileObject[] sourceFiles = findSources(context);
-        if (sourceFiles == null) {
-            return null;
-        }
-        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-        if (testSrcPath.length == 0) {
-            return null;
-        }
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        FileObject srcDir = getRoot(srcPath, sourceFiles[0]);
-        for (int i=0; i<testSrcPath.length; i++) {
-            FileObject[] files2 = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcPath[i], SUBST, true);
-            if (files2 != null) {
-                return files2;
-            }
-        }
-        return null;
-    }
-    
-    private FileObject getRoot(FileObject[] roots, FileObject file) {
-        assert file != null : "File can't be null";   //NOI18N
-        FileObject srcDir = null;
-        for (int i=0; i< roots.length; i++) {
-            assert roots[i] != null : "Source Path Root can't be null"; //NOI18N
-            if (FileUtil.isParentOf(roots[i],file) || roots[i].equals(file)) {
-                srcDir = roots[i];
-                break;
-            }
-        }
-        return srcDir;
-    }
-    
-    
-    private static enum MainClassStatus {
-        SET_AND_VALID,
-        SET_BUT_INVALID,
-        UNSET
-    }
-
-    /**
-     * Tests if the main class is set
-     * @param sourcesRoots source roots
-     * @param mainClass main class name
-     * @return status code
-     */
-    private MainClassStatus isSetMainClass(FileObject[] sourcesRoots, String mainClass) {
-
-        // support for unit testing
-        if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
-            return MainClassChooser.unitTestingSupport_hasMainMethodResult ? MainClassStatus.SET_AND_VALID : MainClassStatus.SET_BUT_INVALID;
-        }
-
-        if (mainClass == null || mainClass.length () == 0) {
-            return MainClassStatus.UNSET;
-        }
-        
-        ClassPath bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
-        ClassPath compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.COMPILE);
-        ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.SOURCE);
-        if (Utils.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
-            return MainClassStatus.SET_AND_VALID;
-        }
-        return MainClassStatus.SET_BUT_INVALID;
-    }
-    
-    /** Checks if given file object contains the main method.
-     *
-     * @param classFO file object represents java
-     * @return false if parameter is null or doesn't contain class with main method
-     */
-    public static boolean canBeRun(FileObject classFO) {
-        return !SourceUtils.getMainClasses(classFO).isEmpty();
-    }
-    
-    
-    /**
-     * Asks user for name of main class
-     * @param mainClass current main class
-     * @param projectName the name of project
-     * @param ep EditableProperties
-     * @param messgeType type of dialog -1 when the main class is not set, -2 when the main class in not valid
-     * @return true if user selected main class
-     */
-    private boolean showMainClassWarning(String mainClass, String projectName, EditableProperties ep, MainClassStatus messageType) {
-        boolean canceled;
-        final JButton okButton = new JButton(NbBundle.getMessage(MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK")); // NOI18N
-        okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MainClassWarning.class, "AD_MainClassWarning_ChooseMainClass_OK"));
-        
-        // main class goes wrong => warning
-        String message;
-        switch (messageType) {
-            case UNSET:
-                message = MessageFormat.format(NbBundle.getMessage(MainClassWarning.class,"LBL_MainClassNotFound"), new Object[] {
-                    projectName
-                });
-                break;
-            case SET_BUT_INVALID:
-                message = MessageFormat.format(NbBundle.getMessage(MainClassWarning.class,"LBL_MainClassWrong"), new Object[] {
-                    mainClass,
-                    projectName
-                });
-                break;
-            default:
-                throw new IllegalArgumentException();
-        }
-        final MainClassWarning panel = new MainClassWarning(message,project.getSourceRoots().getRoots());
-        Object[] options = new Object[] {
-            okButton,
-            DialogDescriptor.CANCEL_OPTION
-        };
-        
-        panel.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                if (e.getSource() instanceof MouseEvent && MouseUtils.isDoubleClick(((MouseEvent)e.getSource()))) {
-                    // click button and the finish dialog with selected class
-                    okButton.doClick();
-                } else {
-                    okButton.setEnabled(panel.getSelectedMainClass() != null);
-                }
-            }
-        });
-        
-        okButton.setEnabled(false);
-        DialogDescriptor desc = new DialogDescriptor(panel,
-                NbBundle.getMessage(MainClassWarning.class, "CTL_MainClassWarning_Title", ProjectUtils.getInformation(project).getDisplayName()), // NOI18N
-                true, options, options[0], DialogDescriptor.BOTTOM_ALIGN, null, null);
-        desc.setMessageType(DialogDescriptor.INFORMATION_MESSAGE);
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
-        dlg.setVisible(true);
-        if (desc.getValue() != options[0]) {
-            canceled = true;
-        } else {
-            mainClass = panel.getSelectedMainClass();
-            canceled = false;
-            ep.put("main.class", mainClass == null ? "" : mainClass); // NOI18N
-        }
-        dlg.dispose();
-        
-        return canceled;
-    }
-    
-    private void showPlatformWarning() {
-        final JButton closeOption = new JButton(NbBundle.getMessage(AppClientActionProvider.class, "CTL_BrokenPlatform_Close"));
-        closeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AppClientActionProvider.class, "AD_BrokenPlatform_Close"));
-        final ProjectInformation pi = this.project.getLookup().lookup(ProjectInformation.class);
-        final String projectDisplayName = pi == null ?
-            NbBundle.getMessage(AppClientActionProvider.class,"TEXT_BrokenPlatform_UnknownProjectName")
-            : pi.getDisplayName();
-        final DialogDescriptor dd = new DialogDescriptor(
-                NbBundle.getMessage(AppClientActionProvider.class, "TEXT_BrokenPlatform", projectDisplayName),
-                NbBundle.getMessage(AppClientActionProvider.class, "MSG_BrokenPlatform_Title"),
-                true,
-                new Object[] {closeOption},
-                closeOption,
-                DialogDescriptor.DEFAULT_ALIGN,
-                null,
-                null);
-        dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
-        final Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
-        dlg.setVisible(true);
+        return res;
     }
     
     private boolean isSelectedServer() {
-        String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (AppClientProjectProperties.J2EE_SERVER_INSTANCE);
+        String instance = getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (AppClientProjectProperties.J2EE_SERVER_INSTANCE);
         if (instance != null) {
             String id = Deployment.getDefault().getServerID(instance);
             if (id != null) {
@@ -787,7 +251,7 @@ class AppClientActionProvider implements ActionProvider {
         
         // if there is some server instance of the type which was used
         // previously do not ask and use it
-        String serverType = antProjectHelper.getStandardPropertyEvaluator ().getProperty (AppClientProjectProperties.J2EE_SERVER_TYPE);
+        String serverType = getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (AppClientProjectProperties.J2EE_SERVER_TYPE);
         if (serverType != null) {
             String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
             if (servInstIDs.length > 0) {
@@ -799,11 +263,11 @@ class AppClientActionProvider implements ActionProvider {
     }
     
     private void setServerInstance(final String serverInstanceId) {
-        AppClientProjectProperties.setServerInstance(project, antProjectHelper, serverInstanceId);
+        AppClientProjectProperties.setServerInstance((AppClientProject)getProject(), getAntProjectHelper(), serverInstanceId);
     }
     
    private boolean isDebugged() {
-        J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider jmp = getProject().getLookup().lookup(J2eeModuleProvider.class);
         ServerDebugInfo sdi = jmp.getServerDebugInfo();
         if (sdi == null) {
             return false;
@@ -833,7 +297,7 @@ class AppClientActionProvider implements ActionProvider {
     }
    
     private boolean isTargetServerRemote() {
-        J2eeModuleProvider module = project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider module = getProject().getLookup().lookup(J2eeModuleProvider.class);
         InstanceProperties props = module.getInstanceProperties();
         String domain = props.getProperty("DOMAIN"); //NOI18N
         String location = props.getProperty("LOCATION"); //NOI18N

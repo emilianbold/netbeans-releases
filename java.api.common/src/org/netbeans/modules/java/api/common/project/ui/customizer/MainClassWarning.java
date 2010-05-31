@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.j2seproject.ui.customizer;
+package org.netbeans.modules.java.api.common.project.ui.customizer;
 
 import java.util.Collection;
 import javax.lang.model.element.TypeElement;

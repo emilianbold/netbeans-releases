@@ -312,8 +312,8 @@ public class J2SEProjectGenerator {
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
         ep.setProperty("platform.active", "default_platform"); // NOI18N
 
-        ep.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, ""); // NOI18N
-        ep.setComment(J2SEProjectProperties.RUN_JVM_ARGS, new String[] {
+        ep.setProperty(ProjectProperties.RUN_JVM_ARGS, ""); // NOI18N
+        ep.setComment(ProjectProperties.RUN_JVM_ARGS, new String[] {
             "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs"), // NOI18N
             "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs_2"), // NOI18N
             "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs_3"), // NOI18N
@@ -337,7 +337,7 @@ public class J2SEProjectGenerator {
         }
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty(J2SEProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
+        ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         logUsage();
         return h;

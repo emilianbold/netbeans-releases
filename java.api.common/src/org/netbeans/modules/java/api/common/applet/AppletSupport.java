@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.j2seproject.applet;
+package org.netbeans.modules.java.api.common.applet;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
@@ -50,13 +50,11 @@ import java.net.*;
 import java.util.*;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 
 import org.openide.*;
 import org.openide.modules.SpecificationVersion;
@@ -64,14 +62,10 @@ import org.openide.filesystems.*;
 import org.openide.util.*;
 
 import org.netbeans.api.java.classpath.*;
-import org.netbeans.spi.java.classpath.support.*;
-import org.netbeans.api.java.queries.*;
-import org.netbeans.api.project.*;
 
 import org.netbeans.api.java.platform.*;
 
-import org.openide.loaders.*;
-import org.openide.cookies.*;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 
 /** Support for execution of applets.
 *
@@ -237,7 +231,7 @@ public class AppletSupport {
     public static URL getHTMLPageURL (FileObject htmlFile, String activePlatform) {
         assert htmlFile != null : "htmlFile cannot be null";    //NOI18N
         // JDK issue #6193279: Appletviewer does not accept encoded URLs
-        JavaPlatform platform = J2SEProjectUtil.getActivePlatform(activePlatform);        
+        JavaPlatform platform = CommonProjectUtils.getActivePlatform(activePlatform);
         boolean workAround6193279 = platform != null    //In case of nonexisting platform don't use the workaround
                 && platform.getSpecification().getVersion().compareTo(JDK_15)>=0; //JDK1.5 and higher
         URL url = null;

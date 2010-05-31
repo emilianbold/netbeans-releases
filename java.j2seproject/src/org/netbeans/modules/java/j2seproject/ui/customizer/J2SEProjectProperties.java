@@ -140,35 +140,20 @@ public class J2SEProjectProperties {
     // Properties stored in the PROJECT.PROPERTIES    
     public static final String DIST_DIR = "dist.dir"; // NOI18N
     public static final String DIST_JAR = "dist.jar"; // NOI18N
-    public static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
-    public static final String RUN_WORK_DIR = "work.dir"; // NOI18N
     public static final String DEBUG_CLASSPATH = "debug.classpath"; // NOI18N
     public static final String JAR_COMPRESS = "jar.compress"; // NOI18N
-    public static final String MAIN_CLASS = "main.class"; // NOI18N
     public static final String JAVAC_SOURCE = "javac.source"; // NOI18N
     public static final String JAVAC_TARGET = "javac.target"; // NOI18N
     public static final String JAVAC_DEBUG = "javac.debug"; // NOI18N
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; // NOI18N
     public static final String JAVAC_COMPILER_ARG = "javac.compilerargs";    //NOI18N
-    public static final String BUILD_DIR = "build.dir"; // NOI18N
     public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
     public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; // NOI18N
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; // NOI18N
     public static final String NO_DEPENDENCIES="no.dependencies"; // NOI18N
     public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
     public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
-    public static final String RUNTIME_ENCODING="runtime.encoding"; //NOI18N
-    /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
-    public static final String DO_DEPEND = "do.depend"; // NOI18N
-    /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
-    public static final String DO_JAR = "do.jar"; // NOI18N
-    /** @since org.netbeans.modules.java.j2seproject/1 1.21 */
-    public static final String COMPILE_ON_SAVE = "compile.on.save"; // NOI18N
-    /** @since org.netbeans.modules.java.j2seproject/1 1.19 */
-    public static final String COMPILE_ON_SAVE_UNSUPPORTED_PREFIX = "compile.on.save.unsupported"; // NOI18N
     
-    public static final String SYSTEM_PROPERTIES_RUN_PREFIX = "run-sys-prop."; // NOI18N
-    public static final String SYSTEM_PROPERTIES_TEST_PREFIX = "test-sys-prop."; // NOI18N
     
     public static final String JAVADOC_PRIVATE="javadoc.private"; // NOI18N
     public static final String JAVADOC_NO_TREE="javadoc.notree"; // NOI18N
@@ -189,16 +174,11 @@ public class J2SEProjectProperties {
     public static final String APPLICATION_SPLASH ="application.splash"; // NOI18N
     
     // Properties stored in the PRIVATE.PROPERTIES
-    public static final String APPLICATION_ARGS = "application.args"; // NOI18N
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
     // Main build.xml location
     public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
     
-    //NB 6.1 tracking of files modifications
-    public static final String TRACK_FILE_CHANGES="track.file.changes"; //NOI18N
-
     ClassPathSupport cs;
-    
     
     // SOURCE ROOTS
     // public static final String SOURCE_ROOTS = "__virtual_source_roots__";   //NOI18N
@@ -354,9 +334,9 @@ public class J2SEProjectProperties {
         JAVAC_DEBUG_MODEL = createToggleButtonModel( evaluator, JAVAC_DEBUG, kind);
         javacDebugBooleanKind = kind[0];
 
-        DO_DEPEND_MODEL = privateGroup.createToggleButtonModel(evaluator, DO_DEPEND);
+        DO_DEPEND_MODEL = privateGroup.createToggleButtonModel(evaluator, ProjectProperties.DO_DEPEND);
 
-        COMPILE_ON_SAVE_MODEL = privateGroup.createToggleButtonModel(evaluator, COMPILE_ON_SAVE);
+        COMPILE_ON_SAVE_MODEL = privateGroup.createToggleButtonModel(evaluator, ProjectProperties.COMPILE_ON_SAVE);
 
         NO_DEPENDENCIES_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, NO_DEPENDENCIES );
         ENABLE_ANNOTATION_PROCESSING_MODEL =projectGroup.createToggleButtonModel(evaluator, ProjectProperties.ANNOTATION_PROCESSING_ENABLED);
@@ -397,7 +377,7 @@ public class J2SEProjectProperties {
         DIST_JAR_MODEL = projectGroup.createStringDocument( evaluator, DIST_JAR );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
         JAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, JAR_COMPRESS );
-        DO_JAR_MODEL = createToggleButtonModel(evaluator, DO_JAR, kind);
+        DO_JAR_MODEL = createToggleButtonModel(evaluator, ProjectProperties.DO_JAR, kind);
         doJarBooleanKind = kind[0];
         
         // CustomizerJavadoc
@@ -559,7 +539,7 @@ public class J2SEProjectProperties {
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
         //Save javac.debug
         privateProperties.setProperty(JAVAC_DEBUG, encodeBoolean (JAVAC_DEBUG_MODEL.isSelected(), javacDebugBooleanKind));
-        privateProperties.setProperty(DO_JAR, encodeBoolean(DO_JAR_MODEL.isSelected(), doJarBooleanKind));
+        privateProperties.setProperty(ProjectProperties.DO_JAR, encodeBoolean(DO_JAR_MODEL.isSelected(), doJarBooleanKind));
                 
         //Hotfix of the issue #70058
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
@@ -776,7 +756,7 @@ public class J2SEProjectProperties {
             }
         });
         Map<String,String> def = new TreeMap<String,String>();
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR}) {
+        for (String prop : new String[] {ProjectProperties.MAIN_CLASS, ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_JVM_ARGS, ProjectProperties.RUN_WORK_DIR}) {
             String v = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
             if (v == null) {
                 v = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
@@ -819,9 +799,9 @@ public class J2SEProjectProperties {
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR}) {
+        for (String prop : new String[] {ProjectProperties.MAIN_CLASS, ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_JVM_ARGS, ProjectProperties.RUN_WORK_DIR}) {
             String v = def.get(prop);
-            EditableProperties ep = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR)) ?
+            EditableProperties ep = (prop.equals(ProjectProperties.APPLICATION_ARGS) || prop.equals(ProjectProperties.RUN_WORK_DIR)) ?
                 privateProperties : projectProperties;
             if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                 if (v != null && v.length() > 0) {
@@ -847,7 +827,7 @@ public class J2SEProjectProperties {
             for (Map.Entry<String,String> entry2 : c.entrySet()) {
                 String prop = entry2.getKey();
                 String v = entry2.getValue();
-                String path = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR)) ?
+                String path = (prop.equals(ProjectProperties.APPLICATION_ARGS) || prop.equals(ProjectProperties.RUN_WORK_DIR)) ?
                     privatePath : sharedPath;
                 EditableProperties ep = updateHelper.getProperties(path);
                 if (!Utilities.compareObjects(v, ep.getProperty(prop))) {

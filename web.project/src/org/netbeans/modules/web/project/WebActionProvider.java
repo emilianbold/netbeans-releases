@@ -53,18 +53,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.regex.Pattern;
-import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -92,41 +84,45 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
+import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
+import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.ui.ServletScanObserver;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
-import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
+import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
  */
-class WebActionProvider implements ActionProvider {
+class WebActionProvider extends BaseActionProvider {
 
     // property definitions
     private static final String DIRECTORY_DEPLOYMENT_SUPPORTED = "directory.deployment.supported"; // NOI18N
 
     // Definition of commands
-    private static final String COMMAND_COMPILE = "compile"; //NOI18N
     private static final String COMMAND_VERIFY = "verify"; //NOI18N
+    
     // Commands available from Web project
     private static final String[] supportedActions = {
         COMMAND_BUILD,
@@ -136,14 +132,15 @@ class WebActionProvider implements ActionProvider {
         COMMAND_RUN,
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG,
-        WebProjectConstants.COMMAND_REDEPLOY,
         COMMAND_DEBUG_SINGLE,
+        WebProjectConstants.COMMAND_REDEPLOY,
         JavaProjectConstants.COMMAND_JAVADOC,
         COMMAND_TEST,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
+        SingleMethod.COMMAND_RUN_SINGLE_METHOD,
+        SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
-        COMMAND_COMPILE,
         COMMAND_VERIFY,
         COMMAND_DELETE,
         COMMAND_COPY,
@@ -151,17 +148,37 @@ class WebActionProvider implements ActionProvider {
         COMMAND_RENAME
     };
 
-    // Project
-    WebProject project;
-    // Ant project helper of the project
-    private final UpdateHelper updateHelper;
-    
-    private final PropertyEvaluator evaluator;
+    private static final String[] platformSensitiveActions = {
+        COMMAND_BUILD,
+        COMMAND_REBUILD,
+        COMMAND_COMPILE_SINGLE,
+        COMMAND_RUN_SINGLE,
+        COMMAND_DEBUG_SINGLE,
+        JavaProjectConstants.COMMAND_JAVADOC,
+        COMMAND_TEST,
+        COMMAND_TEST_SINGLE,
+        COMMAND_DEBUG_TEST_SINGLE,
+        SingleMethod.COMMAND_RUN_SINGLE_METHOD,
+        SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
+    };
+
+    /**Set of commands which are affected by background scanning*/
+    private Set<String> bkgScanSensitiveActions;
+
+    /**Set of commands which need java model up to date*/
+    private Set<String> needJavaModelActions;
+
+    private static final String[] actionsDisabledForQuickRun = {
+        COMMAND_COMPILE_SINGLE,
+        JavaProjectConstants.COMMAND_DEBUG_FIX,
+    };
 
     /** Map from commands to ant targets */
     Map<String,String[]> commands;
 
     public WebActionProvider(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator) {
+        super(project, updateHelper, evaluator, project.getSourceRoots(), project.getTestSourceRoots(), 
+                project.getAntProjectHelper(), new CallbackImpl(project.getClassPathProvider()));
         commands = new HashMap<String, String[]>();
         commands.put(COMMAND_BUILD, new String[]{"dist"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[]{"clean"}); // NOI18N
@@ -180,486 +197,254 @@ class WebActionProvider implements ActionProvider {
         commands.put(COMMAND_TEST_SINGLE, new String[]{"test-single"}); // NOI18N
         commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[]{"debug-test"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[]{"debug-fix"}); // NOI18N
-        commands.put(COMMAND_COMPILE, new String[]{"compile"}); // NOI18N
         commands.put(COMMAND_VERIFY, new String[]{"verify"}); // NOI18N
+        this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(
+            COMMAND_RUN_SINGLE
+        ));
 
-        this.updateHelper = updateHelper;
-        this.evaluator = evaluator;
-        this.project = project;
+        this.needJavaModelActions = new HashSet<String>(Arrays.asList(
+            JavaProjectConstants.COMMAND_DEBUG_FIX
+        ));
+        setServerExecution(true);
     }
 
-    private FileObject findBuildXml() {
-        return project.getProjectDirectory().getFileObject(project.getBuildXmlName());
+    @Override
+    protected String[] getPlatformSensitiveActions() {
+        return platformSensitiveActions;
     }
 
+    @Override
+    protected String[] getActionsDisabledForQuickRun() {
+        return actionsDisabledForQuickRun;
+    }
+
+    @Override
+    public Map<String, String[]> getCommands() {
+        return commands;
+    }
+
+    @Override
+    protected Set<String> getScanSensitiveActions() {
+        return bkgScanSensitiveActions;
+    }
+
+    @Override
+    protected Set<String> getJavaModelActions() {
+        return needJavaModelActions;
+    }
+
+    @Override
+    protected boolean isCompileOnSaveEnabled() {
+        return Boolean.parseBoolean(getEvaluator().getProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE));
+    }
+
+    @Override
     public String[] getSupportedActions() {
         return supportedActions;
     }
 
-    public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
-        if (COMMAND_DELETE.equals(command)) {
-            DefaultProjectOperations.performDefaultDeleteOperation(project);
-            return;
+    @Override
+    protected void updateJavaRunnerClasspath(String command, Map<String, Object> execProperties) {
+        if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command) ||
+            SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(command) || SingleMethod.COMMAND_RUN_SINGLE_METHOD.equals(command) ||
+            COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
+            FileObject fo = (FileObject)execProperties.get(JavaRunner.PROP_EXECUTE_FILE);
+            ClassPath cp = getCallback().findClassPath(fo, ClassPath.EXECUTE);
+            ClassPath cp2 = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    FileUtil.toFile(getProject().getProjectDirectory()), getEvaluator(),
+                    new String[]{"j2ee.platform.classpath", "j2ee.platform.embeddableejb.classpath"}));
+            cp = ClassPathSupport.createProxyClassPath(cp, cp2);
+            execProperties.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cp);
         }
-
-        if (COMMAND_COPY.equals(command)) {
-            DefaultProjectOperations.performDefaultCopyOperation(project);
-            return;
-        }
-
-        if (COMMAND_MOVE.equals(command)) {
-            DefaultProjectOperations.performDefaultMoveOperation(project);
-            return;
-        }
-
-        if (COMMAND_RENAME.equals(command)) {
-            DefaultProjectOperations.performDefaultRenameOperation(project, null);
-            return;
-        }
-
-        String realCommand = command;
-        if (COMMAND_BUILD.equals(realCommand) && isDosEnabled()
-                && DeployOnSaveUtils.containsIdeArtifacts(evaluator, updateHelper, "build.classes.dir")) {
-            boolean cleanAndBuild = DeployOnSaveUtils.showBuildActionWarning(project,
-                    new DeployOnSaveUtils.CustomizerPresenter() {
-
-                public void showCustomizer(String category) {
-                    CustomizerProviderImpl provider = project.getLookup().lookup(CustomizerProviderImpl.class);
-                    provider.showCustomizer(category);
-                }
-            });
-            if (cleanAndBuild) {
-                realCommand = COMMAND_REBUILD;
-            } else {
-                return;
-            }
-        }
-
-        final String commandToExecute = realCommand;
-        Runnable action = new Runnable() {
-
-            public void run() {
-                Properties p = new Properties();
-                String[] targetNames;
-
-                targetNames = getTargetNames(commandToExecute, context, p);
-                if (targetNames == null) {
-                    return;
-                }
-                if (targetNames.length == 0) {
-                    targetNames = null;
-                }
-                if (p.keySet().size() == 0) {
-                    p = null;
-                }
-                try {
-                    FileObject buildFo = findBuildXml();
-                    if (buildFo == null || !buildFo.isValid()) {
-                        //The build.xml was deleted after the isActionEnabled was called
-                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class,
-                                "LBL_No_Build_XML_Found"), NotifyDescriptor.WARNING_MESSAGE);
-                        DialogDisplayer.getDefault().notify(nd);
-                    } else {
-                        ActionUtils.runTarget(buildFo, targetNames, p);
-                    }
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-        };
-
-        action.run();
     }
 
-    /**
-     * @return array of targets or null to stop execution; can return empty array
-     */
-    String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
-        String[] targetNames = commands.get(command);
+    @Override
+    protected boolean handleJavaClass(Properties p, FileObject javaFile, String command) {
+        return runServlet(p, javaFile, "LBL_RunAction", false);
+    }
 
-        // RUN-SINGLE
-        if (command.equals(COMMAND_RUN_SINGLE)) {
+    @Override
+    public String[] getTargetNames(String command, Lookup context, Properties p, boolean doJavaChecks) throws IllegalArgumentException {
+        if (command.equals(COMMAND_RUN_SINGLE) ||command.equals(COMMAND_RUN) ||
+            command.equals(WebProjectConstants.COMMAND_REDEPLOY) ||command.equals(COMMAND_DEBUG) ||
+            command.equals(COMMAND_DEBUG_SINGLE) || command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX) ||
+            command.equals( COMMAND_TEST_SINGLE) || command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
             setDirectoryDeploymentProperty(p);
-            FileObject[] files = findTestSources(context, false);
-            FileObject[] rootz = project.getTestSourceRoots().getRoots();
+        }
 
-            if((files != null) && (files.length > 0)) {
-                FileObject file = files[0];
-                if(SourceUtils.getMainClasses(file).isEmpty()) {
-                    return setupTestSingle(p, files);
-                }
+        if (command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
+            p.setProperty("forceRedeploy", "true"); //NOI18N
+        } else {
+            p.setProperty("forceRedeploy", "false"); //NOI18N
+        }
+
+        if (isDebugged()) {
+            p.setProperty("is.debugged", "true");
+        }
+        
+        if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE)) {
+            String res[] = super.getTargetNames(command, context, p, doJavaChecks);
+            if (res != null) {
+                return res;
             }
-
-            if (files != null) {
-                targetNames = setupRunSingle(p, files);
-            } else {
-                if (!isSelectedServer()) {
-                    return null;
-                }
-                if (isDebugged()) {
-                    p.setProperty("is.debugged", "true");
-                }
-                if (command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
-                    p.setProperty("forceRedeploy", "true"); //NOI18N
-                } else {
-                    p.setProperty("forceRedeploy", "false"); //NOI18N
-                }
-                // run a JSP
-                files = findJsps(context);
-                if (files != null && files.length > 0) {
-                    // possibly compile the JSP, if we are not compiling all of them
-                    String raw = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.COMPILE_JSPS);
-                    boolean compile = decodeBoolean(raw);
-                    if (!compile) {
-                        setAllPropertiesForSingleJSPCompilation(p, files);
-                    }
-
-                    String requestParams = RequestParametersQuery.getFileAndParameters(files[0]);
-                    if (requestParams != null) {
-                        p.setProperty("client.urlPart", requestParams); //NOI18N
-                    } else {
-                        return null;
-                    }
-                } else {
-                    // run HTML file
-                    FileObject[] htmlFiles = findHtml(context);
-                    if ((htmlFiles != null) && (htmlFiles.length > 0)) {
-                        String url = "/" + FileUtil.getRelativePath(WebModule.getWebModule(htmlFiles[0]).getDocumentBase(), htmlFiles[0]); // NOI18N
-                        if (url != null) {
-                            url = url.replace(" ", "%20");
-                            p.setProperty("client.urlPart", url); //NOI18N
-                        } else {
-                            return null;
-                        }
-                    } else {
-                        // run Java
-                        FileObject[] javaFiles = findJavaSources(context);
-                        if ((javaFiles != null) && (javaFiles.length > 0)) {
-                            FileObject javaFile = javaFiles[0];
-                            if (!SourceUtils.getMainClasses(javaFile).isEmpty()) {
-                                // run Java with Main method
-                                String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(), javaFile), javaFile);
-                                p.setProperty("javac.includes", clazz); // NOI18N
-                                // Convert foo/FooTest.java -> foo.FooTest
-                                if (clazz.endsWith(".java")) { // NOI18N
-                                    clazz = clazz.substring(0, clazz.length() - 5);
-                                }
-                                clazz = clazz.replace('/', '.');
-
-                                p.setProperty("run.class", clazz); // NOI18N
-                                targetNames = new String[]{"run-main"};
-                            } else {
-                                // Fix for IZ#170419 - Invoking Run took 29110 ms.
-                                if ( !runServlet(p, javaFile, "LBL_RunAction" ,     //NOI18N
-                                        false))
-                                {
-                                    return null;
-                                }
-                            }
-                        }
-                    }
-                }
+            if (!isSelectedServer()) {
+                return null;
             }
-
-        // RUN, REDEPLOY
-        } else if (command.equals(COMMAND_RUN) || command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
-            setDirectoryDeploymentProperty(p);
-            FileObject[] files = findTestSources(context, false);
-            if (files != null) {
-                targetNames = setupTestSingle( p, files);
-            } else {
-                if (!isSelectedServer()) {
-                    return null;
-                }
-                if (isDebugged()) {
-                    p.setProperty("is.debugged", "true");
-                }
-                if (command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
-                    p.setProperty("forceRedeploy", "true"); //NOI18N
-                } else {
-                    p.setProperty("forceRedeploy", "false"); //NOI18N
-                }
-            }
-
-        // DEBUG-SINGLE
-        } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
-            setDirectoryDeploymentProperty(p);
-                        
-            FileObject[] files = findTestSources(context, false);
-            FileObject[] rootz = project.getTestSourceRoots().getRoots();
-            
-            if((files != null) && (files.length > 0)) {
-                FileObject file = files[0];
-                if(SourceUtils.getMainClasses(files[0]).isEmpty()) {
-                    return setupDebugTestSingle(p, files);
-                }
-            }
-            
-            if (files != null) {
-                targetNames = setupDeubgRunSingle(p, files);
-            } else {
-                if (!isSelectedServer()) {
-                    return null;
-                }
-                if (isDebugged()) {
-                    p.setProperty("is.debugged", "true");
-                }
-
+            if (command.equals(COMMAND_DEBUG_SINGLE)) {
                 boolean keepDebugging = setJavaScriptDebuggerProperties(p);
                 if (!keepDebugging) {
                     return null;
                 }
-                
-                files = findJsps(context);
-                if ((files != null) && (files.length > 0)) {
-                    // debug jsp
-                    // possibly compile the JSP, if we are not compiling all of them
-                    String raw = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.COMPILE_JSPS);
-                    boolean compile = decodeBoolean(raw);
-                    if (!compile) {
-                        setAllPropertiesForSingleJSPCompilation(p, files);
-                    }
+            }
+            // run a JSP
+            FileObject files[] = findJsps(context);
+            if (files != null && files.length > 0) {
+                // possibly compile the JSP, if we are not compiling all of them
+                String raw = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.COMPILE_JSPS);
+                boolean compile = decodeBoolean(raw);
+                if (!compile) {
+                    setAllPropertiesForSingleJSPCompilation(p, files);
+                }
 
-                    String requestParams = RequestParametersQuery.getFileAndParameters(files[0]);
-                    if (requestParams != null) {
-                        p.setProperty("client.urlPart", requestParams); //NOI18N
+                String requestParams = RequestParametersQuery.getFileAndParameters(files[0]);
+                if (requestParams != null) {
+                    p.setProperty("client.urlPart", requestParams); //NOI18N
+                    p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
+                    return commands.get(command);
+                } else {
+                    return null;
+                }
+            } else {
+                // run HTML file
+                FileObject[] htmlFiles = findHtml(context);
+                if ((htmlFiles != null) && (htmlFiles.length > 0)) {
+                    String url = "/" + FileUtil.getRelativePath(WebModule.getWebModule(htmlFiles[0]).getDocumentBase(), htmlFiles[0]); // NOI18N
+                    if (url != null) {
+                        url = url.replace(" ", "%20");
+                        p.setProperty("client.urlPart", url); //NOI18N
+                        p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
+                        return commands.get(command);
                     } else {
                         return null;
                     }
-                } else {
-                    // debug HTML file
-                    FileObject[] htmlFiles = findHtml(context);
-                    if ((htmlFiles != null) && (htmlFiles.length > 0)) {
-                        String url = "/" + FileUtil.getRelativePath(WebModule.getWebModule(htmlFiles[0]).getDocumentBase(), htmlFiles[0]); // NOI18N
-                        if (url != null) {
-                            url = url.replace(" ", "%20");
-                            p.setProperty("client.urlPart", url); //NOI18N
-                        } else {
-                            return null;
-                        }
-                    } else {
-                        // debug Java
-                        // debug servlet
-                        FileObject[] javaFiles = findJavaSources(context);
-                        if ((javaFiles != null) && (javaFiles.length > 0)) {
-                            FileObject javaFile = javaFiles[0];
-
-                            if (!SourceUtils.getMainClasses(javaFile).isEmpty()) {
-                                // debug Java with Main method
-                                String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(), javaFile), javaFile);
-                                p.setProperty("javac.includes", clazz); // NOI18N
-                                // Convert foo/FooTest.java -> foo.FooTest
-                                if (clazz.endsWith(".java")) { // NOI18N
-                                    clazz = clazz.substring(0, clazz.length() - 5);
-                                }
-                                clazz = clazz.replace('/', '.');
-
-                                p.setProperty("debug.class", clazz); // NOI18N
-                                targetNames = new String[]{"debug-single-main"};
-                            } else {
-                                // Fix for IZ#170419 - Invoking Run took 29110 ms.
-                                if ( !runServlet( p, javaFile, "LBL_DebugAction",   //NOI18N
-                                        true))
-                                {
-                                    return null;
-                                }
-                            }
-                        }
-                    }
                 }
             }
-
-        //DEBUG
-        } else if (command.equals(COMMAND_DEBUG)) {
-            setDirectoryDeploymentProperty(p);
+        } else if (command.equals(COMMAND_RUN) || command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
             if (!isSelectedServer()) {
                 return null;
             }
-
-            if (isDebugged()) {
-                p.setProperty("is.debugged", "true");
+            return commands.get(command);
+        } else if (command.equals(COMMAND_DEBUG)) {
+            if (!isSelectedServer()) {
+                return null;
             }
-
             boolean keepDebugging = setJavaScriptDebuggerProperties(p);
             if (!keepDebugging) {
                 return null;
             }
-            
-            WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-            if (wscs != null) { //project contains ws reference
-                List serviceClients = wscs.getServiceClients();
-                //we store all ws client names into hash set for later fast searching
-                HashSet<String> scNames = new HashSet<String>();
-                for (Iterator scIt = serviceClients.iterator(); scIt.hasNext();) {
-                    WsCompileClientEditorSupport.ServiceSettings serviceClientSettings =
-                            (WsCompileClientEditorSupport.ServiceSettings) scIt.next();
-                    scNames.add(serviceClientSettings.getServiceName());
-                }
-
-                StringBuffer clientDCP = new StringBuffer();//additional debug.classpath
-                StringBuffer clientWDD = new StringBuffer();//additional web.docbase.dir
-
-                //we find all projects containg a web service            
-                Set<FileObject> globalPath = GlobalPathRegistry.getDefault().getSourceRoots();
-                HashSet<String> serverNames = new HashSet<String>();
-                //iteration through all source roots
-                for (FileObject sourceRoot : globalPath) {
-                    Project serverProject = FileOwnerQuery.getOwner(sourceRoot);
-                    if (serverProject != null) {
-                        if (!serverNames.add(serverProject.getProjectDirectory().getName())) //project was already visited
-                        {
-                            continue;
-                        }
-
-                        WebServicesSupport wss = WebServicesSupport.getWebServicesSupport(serverProject.getProjectDirectory());
-                        if (wss != null) { //project contains ws
-                            List services = wss.getServices();
-                            boolean match = false;
-                            for (Iterator sIt = services.iterator(); sIt.hasNext();) {
-                                WsCompileEditorSupport.ServiceSettings serviceSettings =
-                                        (WsCompileEditorSupport.ServiceSettings) sIt.next();
-                                String serviceName = serviceSettings.getServiceName();
-                                if (scNames.contains(serviceName)) { //matching ws name found
-                                    match = true;
-                                    break; //no need to continue
-                                }
-                            }
-                            if (match) { //matching ws name found in project
-                                //we need to add project's source folders onto a debugger's search path
-                                AntProjectHelper serverHelper = wss.getAntProjectHelper();
-                                String dcp = serverHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.DEBUG_CLASSPATH);
-                                if (dcp != null) {
-                                    String[] pathTokens = PropertyUtils.tokenizePath(dcp);
-                                    for (int i = 0; i <
-                                            pathTokens.length; i++) {
-                                        File f = new File(pathTokens[i]);
-                                        if (!f.isAbsolute()) {
-                                            pathTokens[i] = serverProject.getProjectDirectory().getPath() + "/" + pathTokens[i];
-                                        }
-                                        clientDCP.append(pathTokens[i] + ":");
-                                    }
-                                }
-
-                                String wdd = serverHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
-                                if (wdd != null) {
-                                    String[] pathTokens = PropertyUtils.tokenizePath(wdd);
-                                    for (int i = 0; i <
-                                            pathTokens.length; i++) {
-                                        File f = new File(pathTokens[i]);
-                                        if (!f.isAbsolute()) {
-                                            pathTokens[i] = serverProject.getProjectDirectory().getPath() + "/" + pathTokens[i];
-                                        }
-                                        clientWDD.append(pathTokens[i] + ":");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (clientDCP.length()>0) {
-                    p.setProperty(WebProjectProperties.WS_DEBUG_CLASSPATHS, clientDCP.toString());
-                }
-                if (clientWDD.length() > 0) {
-                    p.setProperty(WebProjectProperties.WS_WEB_DOCBASE_DIRS, clientWDD.toString());
-                }
+            initWebServiceProperties(p);
+        } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
+            String res[] = super.getTargetNames(command, context, p, doJavaChecks);
+            if (res != null) {
+                return res;
             }
-        } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
-            setDirectoryDeploymentProperty(p);
-            FileObject[] files = findJavaSources(context);
-            String path = null;
-            final String[] classes = {""            };
+            FileObject[] files = findJsps(context);
             if (files != null) {
-                path = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(), files[0]), files[0]);
-                targetNames = new String[]{"debug-fix"}; // NOI18N
-                JavaSource js = JavaSource.forFileObject(files[0]);
-                if (js != null) {
-                    try {
-                        js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
-                            public void run(CompilationController ci) throws Exception {
-                                if (ci.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo(JavaSource.Phase.ELEMENTS_RESOLVED) < 0) {
-                                    ErrorManager.getDefault().log(ErrorManager.WARNING,
-                                            "Unable to resolve " + ci.getFileObject() + " to phase " + JavaSource.Phase.RESOLVED + ", current phase = " + ci.getPhase() +
-                                            "\nDiagnostics = " + ci.getDiagnostics() +
-                                            "\nFree memory = " + Runtime.getRuntime().freeMemory());
-                                    return;
-                                }
-
-                                List<? extends TypeElement> types = ci.getTopLevelElements();
-                                if (types.size() > 0) {
-                                    for (TypeElement type : types) {
-                                        if (classes[0].length() > 0) {
-                                            classes[0] = classes[0] + " ";            // NOI18N
-                                        }
-                                        classes[0] = classes[0] + type.getQualifiedName().toString().replace('.', '/') + "*.class";  // NOI18N
-                                    }
-                                }
-                            }
-                        }, true);
-                    } catch (java.io.IOException ioex) {
-                        Exceptions.printStackTrace(ioex);
+                for (int i = 0; i < files.length; i++) {
+                    FileObject jsp = files[i];
+                    if (areIncludesModified(jsp)) {
+                        invalidateClassFile(jsp);
                     }
                 }
+                setAllPropertiesForSingleJSPCompilation(p, files);
+                return new String[]{"compile-single-jsp"};
             } else {
                 return null;
             }
-// Convert foo/FooTest.java -> foo/FooTest
-            if (path.endsWith(".java")) { // NOI18N
-                path = path.substring(0, path.length() - 5);
+        }
+        return super.getTargetNames(command, context, p, doJavaChecks);
+    }
+
+    private void initWebServiceProperties(Properties p) {
+        WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(getProject().getProjectDirectory());
+        if (wscs != null) { //project contains ws reference
+            List serviceClients = wscs.getServiceClients();
+            //we store all ws client names into hash set for later fast searching
+            HashSet<String> scNames = new HashSet<String>();
+            for (Iterator scIt = serviceClients.iterator(); scIt.hasNext();) {
+                WsCompileClientEditorSupport.ServiceSettings serviceClientSettings =
+                        (WsCompileClientEditorSupport.ServiceSettings) scIt.next();
+                scNames.add(serviceClientSettings.getServiceName());
             }
 
-            p.setProperty("fix.includes", path); // NOI18N
-            p.setProperty("fix.classes", classes[0]); // NOI18N
+            StringBuffer clientDCP = new StringBuffer();//additional debug.classpath
+            StringBuffer clientWDD = new StringBuffer();//additional web.docbase.dir
 
-        //COMPILATION PART
-        } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
-            FileObject[] sourceRoots = project.getSourceRoots().getRoots();
-            FileObject[] files = findJavaSourcesAndPackages(context, sourceRoots);
-            boolean recursive = (context.lookup(NonRecursiveFolder.class) == null);
+            //we find all projects containg a web service
+            Set<FileObject> globalPath = GlobalPathRegistry.getDefault().getSourceRoots();
+            HashSet<String> serverNames = new HashSet<String>();
+            //iteration through all source roots
+            for (FileObject sourceRoot : globalPath) {
+                Project serverProject = FileOwnerQuery.getOwner(sourceRoot);
+                if (serverProject != null) {
+                    if (!serverNames.add(serverProject.getProjectDirectory().getName())) //project was already visited
+                    {
+                        continue;
+                    }
 
-            if (files != null) {
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots, files[0]), recursive)); // NOI18N
-            } else {
-                FileObject[] testRoots = project.getTestSourceRoots().getRoots();
-                files = findJavaSourcesAndPackages(context, testRoots);
-                if (files != null) {
-                    p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(testRoots, files[0]), recursive)); // NOI18N
-                    targetNames = new String[]{"compile-test-single"}; // NOI18N
-                } else {
-                    files = findJsps(context);
-                    if (files != null) {
-                        for (int i = 0; i < files.length; i++) {
-                            FileObject jsp = files[i];
-                            if (areIncludesModified(jsp)) {
-                                invalidateClassFile(project, jsp);
+                    WebServicesSupport wss = WebServicesSupport.getWebServicesSupport(serverProject.getProjectDirectory());
+                    if (wss != null) { //project contains ws
+                        List services = wss.getServices();
+                        boolean match = false;
+                        for (Iterator sIt = services.iterator(); sIt.hasNext();) {
+                            WsCompileEditorSupport.ServiceSettings serviceSettings =
+                                    (WsCompileEditorSupport.ServiceSettings) sIt.next();
+                            String serviceName = serviceSettings.getServiceName();
+                            if (scNames.contains(serviceName)) { //matching ws name found
+                                match = true;
+                                break; //no need to continue
                             }
                         }
-                        setAllPropertiesForSingleJSPCompilation(p, files);
-                        targetNames = new String[]{"compile-single-jsp"};
-                    } else {
-                        return null;
+                        if (match) { //matching ws name found in project
+                            //we need to add project's source folders onto a debugger's search path
+                            AntProjectHelper serverHelper = wss.getAntProjectHelper();
+                            String dcp = serverHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.DEBUG_CLASSPATH);
+                            if (dcp != null) {
+                                String[] pathTokens = PropertyUtils.tokenizePath(dcp);
+                                for (int i = 0; i <
+                                        pathTokens.length; i++) {
+                                    File f = new File(pathTokens[i]);
+                                    if (!f.isAbsolute()) {
+                                        pathTokens[i] = serverProject.getProjectDirectory().getPath() + "/" + pathTokens[i];
+                                    }
+                                    clientDCP.append(pathTokens[i] + ":");
+                                }
+                            }
+
+                            String wdd = serverHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
+                            if (wdd != null) {
+                                String[] pathTokens = PropertyUtils.tokenizePath(wdd);
+                                for (int i = 0; i <
+                                        pathTokens.length; i++) {
+                                    File f = new File(pathTokens[i]);
+                                    if (!f.isAbsolute()) {
+                                        pathTokens[i] = serverProject.getProjectDirectory().getPath() + "/" + pathTokens[i];
+                                    }
+                                    clientWDD.append(pathTokens[i] + ":");
+                                }
+                            }
+                        }
                     }
                 }
             }
-
-        //TEST PART
-        } else if (command.equals(COMMAND_TEST_SINGLE)) {
-            setDirectoryDeploymentProperty(p);
-            //FileObject[] files = findTestSourcesForSources(context);
-            FileObject[] files = findTestSources(context, true);
-            targetNames =
-                    setupTestSingle(p, files);
-        } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
-            setDirectoryDeploymentProperty(p);
-            //FileObject[] files = findTestSourcesForSources(context);
-            FileObject[] files = findTestSources(context, true);
-            targetNames =
-                    setupDebugTestSingle(p, files);
-        } else {
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
+            if (clientDCP.length()>0) {
+                p.setProperty(WebProjectProperties.WS_DEBUG_CLASSPATHS, clientDCP.toString());
+            }
+            if (clientWDD.length() > 0) {
+                p.setProperty(WebProjectProperties.WS_WEB_DOCBASE_DIRS, clientWDD.toString());
             }
         }
-        return targetNames;
     }
 
     // Fix for IZ#170419 - Invoking Run took 29110 ms.
@@ -675,8 +460,10 @@ class WebActionProvider implements ActionProvider {
         if (SetExecutionUriAction.isScanInProgress(webModule, javaFile,
                 new ServletScanObserver() {
 
+                    @Override
                     public void scanFinished() {
                         SwingUtilities.invokeLater( new Runnable(){
+                            @Override
                             public void run(){
                                 if ( waitDialog[0]!=null ){
                                     waitDialog[0].setVisible(false);
@@ -702,6 +489,7 @@ class WebActionProvider implements ActionProvider {
                                             actionName) }) }, null, 0,
                     null, new ActionListener() {
                         
+                        @Override
                         public void actionPerformed( ActionEvent arg0 ) {
                             if ( waitDialog[0]!=null ){
                                 waitDialog[0].setVisible(false);
@@ -750,6 +538,7 @@ class WebActionProvider implements ActionProvider {
         else {
             return runEmptyMapping(javaFile);
         }
+        p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
         return true;
     }
 
@@ -794,13 +583,13 @@ class WebActionProvider implements ActionProvider {
             return true;
         } else {
             // display Debug Project Dialog
-            boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(project);
+            boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(getProject());
             if (!keepDebugging) {
                 return false;
             }
 
-            boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
-            boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
+            boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(getProject());
+            boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(getProject());
 
             p.setProperty("debug.client", String.valueOf(debugClient)); // NOI18N
             p.setProperty("debug.server", String.valueOf(debugServer)); // NOI18N
@@ -809,61 +598,10 @@ class WebActionProvider implements ActionProvider {
         }
     }
 
-    private String[] setupRunSingle(Properties p, FileObject[] files) {
-        FileObject[] rootz = project.getTestSourceRoots().getRoots();
-        FileObject file = files[0];
-        String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
-        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-        FileObject root = getRoot(testSrcPath, files[0]);
-
-        if (clazz.endsWith(".java")) { // NOI18N
-            clazz = clazz.substring(0, clazz.length() - 5);
-        }
-
-        p.setProperty("run.class", clazz); // NOI18N
-        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        return new String[] { "run-test-with-main" }; // NOI18N
-    }
-
-    private String[] setupDeubgRunSingle(Properties p, FileObject[] files) {
-        FileObject[] rootz = project.getTestSourceRoots().getRoots();
-        FileObject file = files[0];
-        String clazz = FileUtil.getRelativePath(getRoot(rootz, file), file);
-        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-        FileObject root = getRoot(testSrcPath, files[0]);
-
-        if (clazz.endsWith(".java")) { // NOI18N
-            clazz = clazz.substring(0, clazz.length() - 5);
-        }
-
-        p.setProperty("debug.class", clazz); // NOI18N
-        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        return new String[] { "debug-test-with-main" }; // NOI18N
-    }
-
-    private String[] setupTestSingle(Properties p, FileObject[] files) {
-        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-        FileObject root = getRoot(testSrcPath, files[0]);
-        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        return new String[]{"test-single"}; // NOI18N
-    }
-
-    private String[] setupDebugTestSingle(Properties p, FileObject[] files) {
-        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-        FileObject root = getRoot(testSrcPath, files[0]);
-        String path = FileUtil.getRelativePath(root, files[0]);
-        // Convert foo/FooTest.java -> foo.FooTest
-        p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
-        return new String[]{"debug-test"}; // NOI18N
-    }
-
     /* Deletes translated class/java file to force recompilation of the page with all includes
      */
-    public void invalidateClassFile(WebProject wp, FileObject jsp) {
-        String dir = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.BUILD_GENERATED_DIR);
+    public void invalidateClassFile(FileObject jsp) {
+        String dir = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.BUILD_GENERATED_DIR);
         if (dir == null) {
             return;
         }
@@ -884,8 +622,8 @@ class WebActionProvider implements ActionProvider {
         String fileClass = dir + '/' + filePath + ".class"; //NOI18N
         String fileJava = dir + '/' + filePath + ".java"; //NOI18N
 
-        FileObject fC = FileUtil.toFileObject(updateHelper.getAntProjectHelper().resolveFile(fileClass));
-        FileObject fJ = FileUtil.toFileObject(updateHelper.getAntProjectHelper().resolveFile(fileJava));
+        FileObject fC = FileUtil.toFileObject(getAntProjectHelper().resolveFile(fileClass));
+        FileObject fJ = FileUtil.toFileObject(getAntProjectHelper().resolveFile(fileJava));
         try {
             if ((fJ != null) && (fJ.isValid())) {
                 fJ.delete();
@@ -968,13 +706,13 @@ class WebActionProvider implements ActionProvider {
     /** Returns a resource name for a given JSP separated by / (does not start with a /).
      */
     private String getJspResource(FileObject jsp) {
-        ProjectWebModule pwm = project.getWebModule();
+        ProjectWebModule pwm = getWebProject().getWebModule();
         FileObject webDir = pwm.getDocumentBase();
         return FileUtil.getRelativePath(webDir, jsp);
     }
 
     public File getBuiltJsp(FileObject jsp) {
-        ProjectWebModule pwm = project.getWebModule();
+        ProjectWebModule pwm = getWebProject().getWebModule();
         FileObject webDir = pwm.getDocumentBase();
         String relFile = FileUtil.getRelativePath(webDir, jsp).replace('/', File.separatorChar);
         File webBuildDir = pwm.getContentDirectoryAsFile();
@@ -993,75 +731,31 @@ class WebActionProvider implements ActionProvider {
         return b.toString();
     }
 
+    private WebProject getWebProject() {
+        return (WebProject)getProject();
+    }
+
+    @Override
     public boolean isActionEnabled(String command, Lookup context) {
-        FileObject buildXml = findBuildXml();
-        if (buildXml == null || !buildXml.isValid()) {
-            return false;
+        if (command.equals(COMMAND_VERIFY)) {
+            return getWebProject().getWebModule().hasVerifierSupport();
         }
-
-        // build or compile source file (JSP compilation allowed)
-        if (isDosEnabled() && DeployOnSaveUtils.containsIdeArtifacts(evaluator, updateHelper, "build.classes.dir")
-                && (COMMAND_COMPILE_SINGLE.equals(command)
-                    && (findJavaSourcesAndPackages(context, project.getSourceRoots().getRoots()) != null || findJavaSourcesAndPackages(context, project.getTestSourceRoots().getRoots()) != null))) {
-
-            return false;
-        }
-
-        if (command.equals(COMMAND_DEBUG_SINGLE)) {
-            return findJavaSources(context) != null || findJsps(context) != null || findHtml(context) != null || findTestSources(context, false) != null;
-        } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
-            return findJavaSourcesAndPackages(context, project.getSourceRoots().getRoots()) != null || findJavaSourcesAndPackages(context, project.getTestSourceRoots().getRoots()) != null || findJsps(context) != null;
-        } else if (command.equals(COMMAND_VERIFY)) {
-            return project.getWebModule().hasVerifierSupport();
-        } else if (command.equals(COMMAND_RUN_SINGLE)) {
-            // test for jsps
-            FileObject files[] = findJsps(context);
-            if (files != null && files.length > 0) {
-                return true;
-            }
-// test for x/html pages
-            files = findHtml(context);
-            if (files != null && files.length > 0) {
-                return true;
-            }
-// test for servlets
-            FileObject[] javaFiles = findJavaSources(context);
-            if (javaFiles != null && javaFiles.length > 0) {
-                if (javaFiles[0].getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI) != null) {
-                    return true;
-                } else if (Boolean.TRUE.equals(javaFiles[0].getAttribute("org.netbeans.modules.web.IsServletFile"))) //NOI18N
-                {
-                    return true;
-                } else if (isDDServlet(context, javaFiles[0])) {
-                    try {
-                        javaFiles[0].setAttribute("org.netbeans.modules.web.IsServletFile", Boolean.TRUE); //NOI18N
-                    } catch (IOException ex) {
-                    }
-                    return true;
-                } else {
-                    return true;
-                } /* because of java main classes, otherwise we would return false */
-            }
-            javaFiles = findTestSources(context, false);
-            if ((javaFiles != null) && (javaFiles.length > 0)) {
-                return true;
-            }
-            return false;
-        } else if (command.equals(COMMAND_TEST_SINGLE)) {
-            //return findTestSourcesForSources(context) != null;
-            return findTestSources(context, true) != null;
-        } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
-            //FileObject[] files = findTestSourcesForSources(context);
-            FileObject[] files = findTestSources(context, true);
-            return files != null && files.length == 1;
-        } else {
-            // other actions are global
+        if (super.isActionEnabled(command, context)) {
             return true;
         }
+        if (command.equals(COMMAND_COMPILE_SINGLE) ||
+            command.equals(COMMAND_DEBUG_SINGLE) ||
+            command.equals(COMMAND_RUN_SINGLE)) {
+            if (findJsps(context) != null || findHtml(context) != null ) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 
     // Private methods -----------------------------------------------------
-    private static final String SUBST = "Test.java"; // NOI18N
 
     /*
      * copied from ActionUtils and reworked so that it checks for mimeType of files, and DOES NOT include files with suffix 'suffix'
@@ -1098,50 +792,9 @@ class WebActionProvider implements ActionProvider {
         }
         return files.toArray(new FileObject[files.size()]);
     }
-    private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
-
-    /** Find selected java sources 
-     */
-    private FileObject[] findJavaSources(Lookup context) {
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        for (int i = 0; i < srcPath.length; i++) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], ".java", true); // NOI18N
-            if (files != null) {
-                return files;
-            }
-        }
-        return null;
-    }
-
-    private FileObject[] findJavaSourcesAndPackages(Lookup context, FileObject srcDir) {
-        if (srcDir != null) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, null, true); // NOI18N
-            //Check if files are either packages of java files
-            if (files != null) {
-                for (int i = 0; i < files.length; i++) {
-                    if (!files[i].isFolder() && !"java".equals(files[i].getExt())) {
-                        return null;
-                    }
-                }
-            }
-            return files;
-        } else {
-            return null;
-        }
-    }
-
-    private FileObject[] findJavaSourcesAndPackages(Lookup context, FileObject[] srcRoots) {
-        for (int i = 0; i < srcRoots.length; i++) {
-            FileObject[] result = findJavaSourcesAndPackages(context, srcRoots[i]);
-            if (result != null) {
-                return result;
-            }
-        }
-        return null;
-    }
 
     private FileObject[] findHtml(Lookup context) {
-        FileObject webDir = project.getWebModule().getDocumentBase();
+        FileObject webDir = getWebProject().getWebModule().getDocumentBase();
         FileObject[] files = null;
         if (webDir != null) {
             files = findSelectedFilesByMimeType(context, webDir, "text/html", null, true);
@@ -1155,7 +808,7 @@ class WebActionProvider implements ActionProvider {
     /** Find selected jsps
      */
     private FileObject[] findJsps(Lookup context) {
-        FileObject webDir = project.getWebModule().getDocumentBase();
+        FileObject webDir = getWebProject().getWebModule().getDocumentBase();
         FileObject[] files = null;
         if (webDir != null) {
             files = findSelectedFilesByMimeType(context, webDir, "text/x-jsp", ".jspf", true);
@@ -1163,35 +816,8 @@ class WebActionProvider implements ActionProvider {
         return files;
     }
 
-    /** Find either selected tests or tests which belong to selected source files
-     */
-    private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
-        //XXX: Ugly, should be rewritten
-        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-        for (int i = 0; i < testSrcPath.length; i++) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcPath[i], ".java", true); // NOI18N
-            if (files != null) {
-                return files;
-            }
-        }
-        if (checkInSrcDir && testSrcPath.length > 0) {
-            FileObject[] files = findSources(context);
-            if (files != null) {
-                //Try to find the test under the test roots
-                FileObject srcRoot = getRoot(project.getSourceRoots().getRoots(), files[0]);
-                for (int i = 0; i < testSrcPath.length; i++) {
-                    FileObject[] files2 = ActionUtils.regexpMapFiles(files, srcRoot, SRCDIRJAVA, testSrcPath[i], SUBST, true);
-                    if (files2 != null) {
-                        return files2;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     private boolean isDebugged() {
-        J2eeModuleProvider jmp = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider jmp = (J2eeModuleProvider) getWebProject().getLookup().lookup(J2eeModuleProvider.class);
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         ServerDebugInfo sdi = null;
         if (sessions != null && sessions.length > 0) {
@@ -1234,9 +860,9 @@ class WebActionProvider implements ActionProvider {
     }
 
     private boolean isSelectedServer() {
-        String instance = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+        String instance = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
         if (instance != null) {
-            J2eeModuleProvider jmp = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider jmp = (J2eeModuleProvider) getProject().getLookup().lookup(J2eeModuleProvider.class);
             String sdi = jmp.getServerInstanceID();
             if (sdi != null) {
                 String id = Deployment.getDefault().getServerID(sdi);
@@ -1248,7 +874,7 @@ class WebActionProvider implements ActionProvider {
 
 // if there is some server instance of the type which was used
 // previously do not ask and use it
-        String serverType = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.J2EE_SERVER_TYPE);
+        String serverType = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.J2EE_SERVER_TYPE);
         if (serverType != null) {
             String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
             if (servInstIDs.length > 0) {
@@ -1265,7 +891,7 @@ class WebActionProvider implements ActionProvider {
     }
 
     private void setServerInstance(String serverInstanceId) {
-        WebProjectProperties.setServerInstance(project, updateHelper, serverInstanceId);
+        WebProjectProperties.setServerInstance((WebProject)getProject(), getUpdateHelper(), serverInstanceId);
     }
 
     private boolean isDDServlet(Lookup context, FileObject javaClass) {
@@ -1273,7 +899,7 @@ class WebActionProvider implements ActionProvider {
 //        if (webDir==null) return false;
 //        FileObject fo = webDir.getFileObject("WEB-INF/web.xml"); //NOI18N
 
-        FileObject webInfDir = project.getWebModule().getWebInf();
+        FileObject webInfDir = getWebProject().getWebModule().getWebInf();
         if (webInfDir == null) {
             return false;
         }
@@ -1283,7 +909,7 @@ class WebActionProvider implements ActionProvider {
             return false;
         }
 
-        String relPath = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(), javaClass), javaClass);
+        String relPath = FileUtil.getRelativePath(getRoot(getWebProject().getSourceRoots().getRoots(), javaClass), javaClass);
         // #117888
         String className = relPath.replace('/', '.').replaceFirst("\\.java$", ""); // is there a better way how to do it?
         try {
@@ -1299,30 +925,6 @@ class WebActionProvider implements ActionProvider {
         }
     }
 
-    /** Find tests corresponding to selected sources.
-     */
-    private FileObject[] findTestSourcesForSources(Lookup context) {
-        FileObject[] sourceFiles = findSources(context);
-        if (sourceFiles == null) {
-            return null;
-        }
-
-        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-        if (testSrcPath.length == 0) {
-            return null;
-        }
-
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        FileObject srcDir = getRoot(srcPath, sourceFiles[0]);
-        for (int i = 0; i < testSrcPath.length; i++) {
-            FileObject[] files2 = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcPath[i], SUBST, true);
-            if (files2 != null) {
-                return files2;
-            }
-        }
-        return null;
-    }
-
     private FileObject getRoot(FileObject[] roots, FileObject file) {
         FileObject srcDir = null;
         for (int i = 0; i < roots.length; i++) {
@@ -1334,24 +936,10 @@ class WebActionProvider implements ActionProvider {
         return srcDir;
     }
 
-    /** Find selected sources, the sources has to be under single source root,
-     *  @param context the lookup in which files should be found
-     */
-    private FileObject[] findSources(Lookup context) {
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        for (int i = 0; i < srcPath.length; i++) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], ".java", true); // NOI18N
-            if (files != null) {
-                return files;
-            }
-        }
-        return null;
-    }
-
     private void setDirectoryDeploymentProperty(Properties p) {
-        String instance = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+        String instance = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
         if (instance != null) {
-            J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider jmp = getProject().getLookup().lookup(J2eeModuleProvider.class);
             String sdi = jmp.getServerInstanceID();
             J2eeModule mod = jmp.getJ2eeModule();
             if (sdi != null && mod != null) {
@@ -1366,6 +954,7 @@ class WebActionProvider implements ActionProvider {
         if (js != null) {
             try {
                 js.runUserActionTask(new org.netbeans.api.java.source.Task<CompilationController>() {
+                    @Override
                     public void run(CompilationController ci) throws Exception {
                         ci.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         TypeElement classEl = org.netbeans.modules.j2ee.core.api.support.java.SourceUtils.getPublicTopLevelElement(ci);
@@ -1390,7 +979,24 @@ class WebActionProvider implements ActionProvider {
         return foundWebServiceAnnotation[0];
     }
 
-    private boolean isDosEnabled() {
-        return Boolean.parseBoolean(project.evaluator().getProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE));
+    public static class CallbackImpl implements BaseActionProvider.Callback {
+
+        // be aware: there are two ClassPathProviderImpl: one in java.api.common and second in web.project
+        private ClassPathProviderImpl cp;
+
+        public CallbackImpl(ClassPathProviderImpl cp) {
+            this.cp = cp;
+        }
+
+        @Override
+        public ClassPath getProjectSourcesClassPath(String type) {
+            return cp.getProjectSourcesClassPath(type);
+        }
+
+        @Override
+        public ClassPath findClassPath(FileObject file, String type) {
+            return cp.findClassPath(file, type);
+        }
+
     }
 }

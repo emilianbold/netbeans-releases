@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.j2seproject.applet;
 
+import org.netbeans.modules.java.api.common.applet.AppletSupport;
 import java.net.URL;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
