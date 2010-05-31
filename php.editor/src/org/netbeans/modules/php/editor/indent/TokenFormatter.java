@@ -964,7 +964,7 @@ public class TokenFormatter {
                                         }
                                         else {
                                             if (!isCloseAndOpenTagOnOneLine(formatTokens, index)) {
-                                                newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
+                                                newLines = Math.max(newLines, docOptions.blankLinesBeforeClosePHPTag + 1);
                                                 countSpaces = indentOfOpenTag;
                                             } else {
                                                 newLines = 0;

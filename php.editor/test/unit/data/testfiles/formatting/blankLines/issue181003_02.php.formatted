@@ -11,4 +11,5 @@ interface GenericInterface
 
     public abstract function toString();
 }
+
 ?>

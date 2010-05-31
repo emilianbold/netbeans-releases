@@ -43,4 +43,5 @@ class Simple2 {
     function method() { echo "test"; }
 
 }
+
 ?>
