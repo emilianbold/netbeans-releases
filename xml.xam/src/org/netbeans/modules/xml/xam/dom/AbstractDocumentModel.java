@@ -119,6 +119,8 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
 		getModelSource().getLookup().lookup(javax.swing.text.Document.class);
     if (currentDoc == null) {
         swingDocument = null;
+        setState(State.NOT_SYNCED); // The XAM model isn't synched with text, because there isn't a text at all
+        getAccess().unsetDirty();
         return false;
     }
 	if (lastDoc == null || currentDoc != lastDoc) {
@@ -539,7 +541,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     }
 
     @Override
-    public DocumentModelAccess getAccess() { 
+    public synchronized DocumentModelAccess getAccess() {
         if (access == null) {
             access = getEffectiveAccessProvider().createModelAccess(this);
             if (! (access instanceof ReadOnlyAccess)) {

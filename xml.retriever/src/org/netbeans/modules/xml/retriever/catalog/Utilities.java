@@ -517,6 +517,9 @@ public class Utilities {
     
     private static Document _getDocument(DataObject modelSourceDataObject)
     throws IOException {
+        //
+        // throw new IOException("Invalid FileObject"); // for testing issue #184306
+        //
         Document result = null;
         if (modelSourceDataObject != null && modelSourceDataObject.isValid()) {
             EditorCookie ec = modelSourceDataObject.getCookie(EditorCookie.class);

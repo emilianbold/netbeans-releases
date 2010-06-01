@@ -91,10 +91,11 @@ public class TestModel2 extends AbstractDocumentModel<TestComponent2> implements
         protected TestModel2 createModel(ModelSource source) {
             return new TestModel2(source);
         }
-        
-        public TestModel2 getModel(ModelSource source) {
-            return super.getModel(source);
-        }
+
+
+//        public TestModel2 getModel(ModelSource source) {
+//            return super.getModel(source);
+//        }
     }
     
     public TestComponent2 getRootComponent() {

@@ -75,8 +75,9 @@ public class WSDLModelFactory extends AbstractModelFactory<WSDLModel> {
      */
     public WSDLModel getModel(ModelSource source) {
         if (source == null) return null;
-        Lookup lookup = source.getLookup();
-        assert lookup.lookup(Document.class) != null;
+        // The Document can be null if the file object is deleted.
+        // Lookup lookup = source.getLookup();
+        // assert lookup.lookup(Document.class) != null; 
         return super.getModel(source);
     }
     
