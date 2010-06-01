@@ -1436,11 +1436,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                         else if (type.getKind() == TypeKind.DECLARED)
                             addMemberConstantsAndTypes(env, (DeclaredType)type, el);
                         return;
-                    } else if (parent.getKind() == Tree.Kind.VARIABLE && ((VariableTree)parent).getType() == fa && grandParent.getKind() == Tree.Kind.CATCH) {
-                        if (queryType == COMPLETION_QUERY_TYPE)
-                            exs = controller.getTreeUtilities().getUncaughtExceptions(grandParentPath.getParentPath());
-                        kinds = EnumSet.of(CLASS, INTERFACE);
-                        baseType = controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")); //NOI18N
+                    } else if (parent.getKind() == Tree.Kind.VARIABLE && ((VariableTree)parent).getType() == fa) {
+                        if (grandParent.getKind() == Tree.Kind.CATCH) {
+                            kinds = EnumSet.of(CLASS, INTERFACE);
+                            if (queryType == COMPLETION_QUERY_TYPE)
+                                exs = controller.getTreeUtilities().getUncaughtExceptions(grandParentPath.getParentPath());
+                            baseType = controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")); //NOI18N
+                        } else {
+                            kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE);
+                        }
                     } else if (parent.getKind() == Tree.Kind.METHOD && ((MethodTree)parent).getThrows().contains(fa)) {
                         Types types = controller.getTypes();
                         if (queryType == COMPLETION_QUERY_TYPE && ((MethodTree)parent).getBody() != null) {
