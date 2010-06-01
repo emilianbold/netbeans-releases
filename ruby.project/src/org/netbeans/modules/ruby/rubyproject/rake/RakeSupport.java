@@ -122,11 +122,9 @@ public final class RakeSupport {
         FileObject pwd = project.getProjectDirectory();
 
         // See if we're in the right directory
-        for (String s : RakeSupport.RAKEFILE_NAMES) {
-            FileObject f = pwd.getFileObject(s);
-            if (f != null) {
-                return f;
-            }
+        FileObject result = findRakeFileIn(pwd);
+        if (result != null) {
+            return result;
         }
 
         // Try to adjust the directory to a folder which contains a rakefile
@@ -136,15 +134,31 @@ public final class RakeSupport {
         if (rubygroups != null && rubygroups.length > 0) {
             for (SourceGroup group : rubygroups) {
                 FileObject f = group.getRootFolder();
-                for (String s : RakeSupport.RAKEFILE_NAMES) {
-                    FileObject r = f.getFileObject(s);
-                    if (r != null) {
-                        return r;
-                    }
+                FileObject r = findRakeFileIn(f);
+                if (r != null) {
+                    return r;
                 }
             }
         }
 
+        return null;
+    }
+
+    private static FileObject findRakeFileIn(FileObject folder) {
+        for (String s : RakeSupport.RAKEFILE_NAMES) {
+            FileObject f = folder.getFileObject(s);
+            if (f != null) {
+                // #179305 -- need to do case sensitive comparison
+                File file = FileUtil.toFile(f);
+                try {
+                    if (file != null && s.equals(file.getCanonicalFile().getName())) {
+                        return f;
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
         return null;
     }
     
