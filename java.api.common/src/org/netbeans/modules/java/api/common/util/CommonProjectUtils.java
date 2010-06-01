@@ -42,9 +42,18 @@
 
 package org.netbeans.modules.java.api.common.util;
 
+import java.util.Collection;
+import java.util.Collections;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
+import org.openide.filesystems.FileObject;
 
 /**
  * Common project utilities. This is a helper class; all methods are static.
@@ -93,4 +102,35 @@ public final class CommonProjectUtils {
         }
         return property;
     }
+
+    public static Collection<ElementHandle<TypeElement>> getMainMethods (final FileObject fo) {
+        // support for unit testing
+        if (fo == null || MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
+            return Collections.<ElementHandle<TypeElement>>emptySet();
+        }
+        return SourceUtils.getMainClasses(fo);
+    }
+
+    /** Check if the given file object represents a source with the main method.
+     *
+     * @param fo source
+     * @return true if the source contains the main method
+     */
+    public static boolean hasMainMethod(FileObject fo) {
+        // support for unit testing
+        if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
+            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
+        }
+        if (fo == null) {
+            // ??? maybe better should be thrown IAE
+            return false;
+        }
+        return !SourceUtils.getMainClasses(fo).isEmpty();
+    }
+
+    public static boolean isMainClass (final String className, ClassPath bootPath, ClassPath compilePath, ClassPath sourcePath) {
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+        return SourceUtils.isMainClass(className, cpInfo);
+    }
+
 }

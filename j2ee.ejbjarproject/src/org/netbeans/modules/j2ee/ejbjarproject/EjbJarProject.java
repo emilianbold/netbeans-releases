@@ -415,7 +415,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 // FIXME this is just fallback for code searching for the old SPI in lookup
                 // remove in next release
                 new EjbJarImpl(apiEjbJar),
-                new EjbJarActionProvider( this, helper, refHelper, updateHelper, eval ),
+                new EjbJarActionProvider(this, updateHelper),
                 new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper, ejbModule),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
                 LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -1074,6 +1074,9 @@ public class EjbJarProject implements Project, FileChangeListener {
         public void initialize() throws FileStateInvalidException {
             metaBase = getEjbModule().getMetaInf();
             metaBaseValue = evaluator().getProperty(EjbJarProjectProperties.META_INF);
+            if (resources != null) {
+                FileUtil.removeFileChangeListener(this, resources);
+            }
             resources = getEjbModule().getResourceDirectory();
             buildClasses = evaluator().getProperty(ProjectProperties.BUILD_CLASSES_DIR);
 

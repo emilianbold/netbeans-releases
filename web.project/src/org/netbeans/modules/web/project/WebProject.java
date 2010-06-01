@@ -1632,7 +1632,7 @@ public final class WebProject implements Project, AntProjectListener {
                 FileObject fo = fe.getFile();
                 handleCopyFileToDestDir(fo);
 
-                FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, false, true);
+                FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, true, true);
                 FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
 
                 if (webInf != null && FileUtil.isParentOf(webInf, fo)
@@ -1683,7 +1683,7 @@ public final class WebProject implements Project, AntProjectListener {
 
                 FileObject fo = fe.getFile();
 
-                FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, false, true);
+                FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, true, true);
                 FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
 
                 if (webInf != null && FileUtil.isParentOf(webInf, fo)
@@ -1763,7 +1763,7 @@ public final class WebProject implements Project, AntProjectListener {
                 return;
             }
 
-            FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, false, true);
+            FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, true, true);
             FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
 
             if (webInf != null && FileUtil.isParentOf(webInf, fo)
