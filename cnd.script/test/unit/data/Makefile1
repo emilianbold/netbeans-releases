@@ -15,3 +15,10 @@ include Makefile ${FOO}.mk
 
 .DONE:
 	echo "Done"
+
+define FOO
+BAR=$(BAZ)
+a: b
+	echo endef
+#dummy comment
+endef

@@ -641,7 +641,7 @@ public class RADComponent {
         return NO_NEW_TYPES;
     }
 
-    public Node.PropertySet[] getProperties() {
+    public synchronized Node.PropertySet[] getProperties() {
         if (propertySets == null) {
             List<Node.PropertySet> propSets = new ArrayList<Node.PropertySet>(5);
             createPropertySets(propSets);
@@ -651,7 +651,7 @@ public class RADComponent {
         return propertySets;
     }
 
-    public RADProperty[] getAllBeanProperties() {
+    public synchronized RADProperty[] getAllBeanProperties() {
         if (knownBeanProperties == null) {
             createBeanProperties();
         }
@@ -659,7 +659,7 @@ public class RADComponent {
         return knownBeanProperties;
     }
 
-    public RADProperty[] getKnownBeanProperties() {
+    public synchronized RADProperty[] getKnownBeanProperties() {
         return knownBeanProperties != null ? knownBeanProperties : NO_PROPERTIES;
     }
 
@@ -719,38 +719,38 @@ public class RADComponent {
     // -----------------------------------------------------------------------------
     // Access to component Properties
 
-    Node.Property[] getSyntheticProperties() {
+    synchronized Node.Property[] getSyntheticProperties() {
         if (syntheticProperties == null)
             syntheticProperties = createSyntheticProperties();
         return syntheticProperties;
     }
 
-    RADProperty[] getBeanProperties1() {
+    synchronized RADProperty[] getBeanProperties1() {
         if (beanProperties1 == null)
             createBeanProperties();
         return beanProperties1;
     }
 
-    RADProperty[] getBeanProperties2() {
+    synchronized RADProperty[] getBeanProperties2() {
         if (beanProperties2 == null)
             createBeanProperties();
         return beanProperties2;
     }
 
-    EventProperty[] getEventProperties() {
+    synchronized EventProperty[] getEventProperties() {
         if (eventProperties == null)
             createEventProperties();
         return eventProperties;
     }
     
-    List getActionProperties() {
+    synchronized List getActionProperties() {
         if (actionProperties == null) {
             createBeanProperties();
         }
         return actionProperties;
     }
 
-    protected <T> T getPropertyByName(String name, Class<? extends T> propertyType, boolean fromAll) {
+    protected synchronized <T> T getPropertyByName(String name, Class<? extends T> propertyType, boolean fromAll) {
         Node.Property prop = nameToProperty.get(name);
         if (prop == null && fromAll) {
             if (beanProperties1 == null && !name.startsWith("$")) // NOI18N
@@ -808,7 +808,7 @@ public class RADComponent {
      * @return array of properties corresponding to the names; may contain
      *         null if there is no property of given name
      */
-    public RADProperty[] getBeanProperties(String[] propNames) {
+    public synchronized RADProperty[] getBeanProperties(String[] propNames) {
         RADProperty[] properties = new RADProperty[propNames.length];        
         PropertyDescriptor[] descriptors = null;
         
@@ -901,7 +901,7 @@ public class RADComponent {
         return properties;
     }
 
-    public Event getEvent(String name) {
+    public synchronized Event getEvent(String name) {
         Object prop = nameToProperty.get(name);
         if (prop == null && eventProperties == null) {
             createEventProperties();
@@ -911,7 +911,7 @@ public class RADComponent {
                ((EventProperty)prop).getEvent() : null;
     }
 
-    public Event[] getEvents(String[] eventNames) {
+    public synchronized Event[] getEvents(String[] eventNames) {
         Event[] events = new Event[eventNames.length];
         EventSetDescriptor[] eventSets = null;
 
@@ -1022,7 +1022,7 @@ public class RADComponent {
 
     /** @return all events of the component grouped by EventSetDescriptor
      */
-    public Event[] getAllEvents() {
+    public synchronized Event[] getAllEvents() {
         if (knownEvents == null || eventProperties == null) {
             if (eventProperties == null)
                 createEventProperties();
@@ -1037,7 +1037,7 @@ public class RADComponent {
     }
 
     // Note: events must be grouped by EventSetDescriptor
-    public Event[] getKnownEvents() {
+    public synchronized Event[] getKnownEvents() {
         return knownEvents != null ? knownEvents : FormEvents.NO_EVENTS;
     }
 
@@ -1070,7 +1070,7 @@ public class RADComponent {
     // -----------------------------------------------------------------------------
     // Properties
 
-    protected void clearProperties() {
+    protected synchronized void clearProperties() {
         if (nameToProperty != null)
             nameToProperty.clear();
         else nameToProperty = new HashMap<String,Node.Property>();
@@ -1087,9 +1087,9 @@ public class RADComponent {
     }
 
     static final boolean SUPPRESS_PROPERTY_TABS = Boolean.getBoolean(
-            "nb.form.suppressTabs");
+            "nb.form.suppressTabs"); // NOI18N
 
-    protected void createPropertySets(List<Node.PropertySet> propSets) {
+    protected synchronized void createPropertySets(List<Node.PropertySet> propSets) {
         if (beanProperties1 == null)
             createBeanProperties();
 
@@ -1213,7 +1213,7 @@ public class RADComponent {
         return codeGen != null ? codeGen.getSyntheticProperties(this) : new Node.Property[0];
     }
 
-    private void createBeanProperties() {
+    private synchronized void createBeanProperties() {
         List<RADProperty> prefProps = new ArrayList<RADProperty>();
         List<RADProperty> normalProps = new ArrayList<RADProperty>();
         List<RADProperty> expertProps = new ArrayList<RADProperty>();
@@ -1381,7 +1381,7 @@ public class RADComponent {
         }       
     }
 
-    private void createEventProperties() {
+    private synchronized void createEventProperties() {
         EventSetDescriptor[] eventSets = getBeanInfo().getEventSetDescriptors();
 
         List<EventProperty> eventPropList = new ArrayList<EventProperty>(eventSets.length * 5);
@@ -1411,17 +1411,17 @@ public class RADComponent {
         eventProperties = eventProps;
     }
 
-    public FormProperty[] getAccessibilityProperties() {
+    public synchronized FormProperty[] getAccessibilityProperties() {
         if (accessibilityProperties == null)
             createAccessibilityProperties();
         return accessibilityProperties;
     }
 
-    FormProperty[] getKnownAccessibilityProperties() {
+    synchronized FormProperty[] getKnownAccessibilityProperties() {
         return accessibilityProperties != null ? accessibilityProperties : NO_PROPERTIES;
     }
 
-    private void createAccessibilityProperties() {
+    private synchronized void createAccessibilityProperties() {
         Object comp = getBeanInstance();
         if (comp instanceof Accessible
             && ((Accessible)comp).getAccessibleContext() != null)

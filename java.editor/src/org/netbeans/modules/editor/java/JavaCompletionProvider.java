@@ -2737,7 +2737,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             return startsWith(env, sn, prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(((ExecutableType)asMemberOf(e, t, types)).getReturnType(), e, kinds, baseType, scope, trees, types) &&
-                                    (isSuperCall && e.getModifiers().contains(PROTECTED) || env.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t)) &&
+                                    (isSuperCall && (e.getModifiers().contains(PROTECTED) || e.getModifiers().contains(PUBLIC)) || env.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t)) &&
                                     (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     (!Utilities.isExcludeMethods() || !Utilities.isExcluded(Utilities.getElementName(e.getEnclosingElement(), true) + "." + sn)); //NOI18N
                         case CLASS:

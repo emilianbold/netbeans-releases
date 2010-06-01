@@ -389,36 +389,8 @@ public class Utils {
     }
 
     public static Project getProject(final EjbReference ejbReference, final EjbReference.EjbRefIType refIType) throws IOException {
-        FileObject[] javaSources = ejbReference.getEjbModule().getJavaSources();
-        ClasspathInfo cpInfo = javaSources.length > 0 ? ClasspathInfo.create(
-            ClassPath.getClassPath(javaSources[0], ClassPath.BOOT),
-            ClassPath.getClassPath(javaSources[0], ClassPath.COMPILE),
-            ClassPath.getClassPath(javaSources[0], ClassPath.SOURCE)
-            ) : null;
-        if (cpInfo != null){
-            FileObject ejbReferenceEjbClassFO = findFileObject(ejbReference.getComponentName(refIType), cpInfo);
-            return ejbReferenceEjbClassFO != null ? FileOwnerQuery.getOwner(ejbReferenceEjbClassFO) : null;
-        }
-
-        return null;
-    }
-
-    public static FileObject findFileObject(final String className, ClasspathInfo cpInfo) throws IOException{
-        if (cpInfo == null){
-            return null;
-        }
-        final FileObject[] result = new FileObject[1];
-        JavaSource.create(cpInfo).runUserActionTask(new Task<CompilationController>() {
-            @Override
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = controller.getElements().getTypeElement(className);
-                if (typeElement != null) {
-                    result[0] = SourceUtils.getFile(ElementHandle.create(typeElement), controller.getClasspathInfo());
-                }
-            }
-        }, true);
-        return result[0];
+        FileObject ejbReferenceEjbClassFO = ejbReference.getComponentFO(refIType);
+        return ejbReferenceEjbClassFO != null ? FileOwnerQuery.getOwner(ejbReferenceEjbClassFO) : null;
     }
 
     /**

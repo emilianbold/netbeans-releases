@@ -49,8 +49,6 @@ import java.awt.GridLayout;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentSection;
-import org.netbeans.modules.welcome.content.Utils;
-import org.netbeans.modules.welcome.content.WebLink;
 
 /**
  * 'Learn & Discover' tab of the Start Page
@@ -69,9 +67,7 @@ class LearnAndDiscoverTab extends AbstractTab {
         panel.setOpaque(false);
         panel.add(new ContentSection( new GetStarted(), false, false ));
 
-        WebLink b = new WebLink(BundleSupport.getLabel("SectionDemosAndTutorials"), BundleSupport.getURL("SectionDemosAndTutorials"), Utils.getColor(COLOR_HEADER), true);
-        b.setFont( SECTION_HEADER_FONT );
-        panel.add( new ContentSection( b, new Tutorials(), true, false )); //NOI18N
+        panel.add( new ContentSection( BundleSupport.getLabel("SectionDemosAndTutorials"), new Tutorials(), true, false )); //NOI18N
 
         panel.add( new ContentSection( BundleSupport.getLabel( "SectionDemo" ), //NOI18N
                 new DemoPanel(), true, false ));
