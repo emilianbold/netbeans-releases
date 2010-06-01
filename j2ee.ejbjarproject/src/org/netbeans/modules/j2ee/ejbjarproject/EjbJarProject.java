@@ -1099,6 +1099,7 @@ public class EjbJarProject implements Project, FileChangeListener {
             }
             if (resources != null) {
                 FileUtil.removeFileChangeListener(this, resources);
+                resources = null;
             }
 
             EjbJarProject.this.evaluator().removePropertyChangeListener(this);
