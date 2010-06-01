@@ -63,6 +63,7 @@ import javax.swing.JLabel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiActivity;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiNotification;
@@ -225,6 +226,32 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
     public void logVcsUsage(String vcs, String repositoryUrl) {
         if (repositoryUrl != null && isKenai(repositoryUrl)) {
             UIUtils.logKenaiUsage("SCM", vcs); // NOI18N
+        }
+    }
+
+    @Override
+    public boolean isAuthorized (String repositoryURL, RepositoryActivity activity) {
+        boolean authorized = true;
+        Kenai kenai = getKenai(repositoryURL);
+        if (kenai != null) {
+            try {
+                KenaiProject kp = KenaiProject.forRepository(repositoryURL);
+                if (kp != null) {
+                    authorized = kenai.isAuthorized(kp, getKenaiActivity(activity));
+                }
+            } catch (KenaiException ex) {
+                Logger.getLogger(VCSKenaiAccessorImpl.class.getName()).log(Level.INFO, null, ex);
+                authorized = false;
+            }
+        }
+        return authorized;
+    }
+
+    private KenaiActivity getKenaiActivity (RepositoryActivity repositoryActivity) {
+        if (RepositoryActivity.WRITE.equals(repositoryActivity)) {
+            return KenaiActivity.SOURCE_WRITE;
+        } else {
+            return KenaiActivity.SOURCE_READ;
         }
     }
 
