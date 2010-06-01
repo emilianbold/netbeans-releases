@@ -109,7 +109,7 @@ is the proper place.
         <change id="action-provider">
             <api name="java-api-common"/>
             <summary>BaseActionProvider introduced</summary>
-            <version major="1" minor="18"/>
+            <version major="1" minor="20"/>
             <date day="1" month="6" year="2010"/>
             <author login="dkonecny"/>
             <compatibility addition="yes"/>

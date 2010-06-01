@@ -138,7 +138,7 @@ import org.openide.util.TaskListener;
  * refactored here so that other EE project types requiring handling of Java
  * related actions can reuse and extend it.
  *
- * @since org.netbeans.modules.java.api.common/1 1.18
+ * @since org.netbeans.modules.java.api.common/1 1.20
  */
 public abstract class BaseActionProvider implements ActionProvider {
     public static final String AUTOMATIC_BUILD_TAG = ".netbeans_automatic_build";
