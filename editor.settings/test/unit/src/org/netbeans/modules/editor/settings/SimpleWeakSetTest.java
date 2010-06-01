@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,43 +42,41 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.nbbuild.extlibs;
+package org.netbeans.modules.editor.settings;
 
-import java.io.File;
-import java.util.Map;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Task;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.editor.util.random.RandomTestContainer;
 
 /**
- * Defines a property release.files.extra.
- * Value is comma-separated list of those project properties whose name begins with "release."
- * where the remainder of the property name describes an existing file path (relative to basedir).
+ * Test of SimpleWeakSet functionality.
+ *
+ *  @author Miloslav Metelka
  */
-public class ReleaseFilesExtra extends Task {
+public class SimpleWeakSetTest extends NbTestCase {
 
-    private String property;
-    public void setProperty(String property) {
-        this.property = property;
+    public SimpleWeakSetTest(String testName) {
+        super(testName);
     }
 
-    public @Override void execute() throws BuildException {
-        StringBuilder b = new StringBuilder();
-        for (Map.Entry<?,?> entry : ((Map<?,?>) getProject().getProperties()).entrySet()) {
-            String k = (String) entry.getKey();
-            if (k.startsWith("release.")) {
-                File f = getProject().resolveFile(k.substring(8).replaceFirst("!/.+$", ""));
-                if (!f.isFile()) {
-                    log("No such release file: " + f, Project.MSG_VERBOSE);
-                    continue;
-                }
-                if (b.length() > 0) {
-                    b.append(',');
-                }
-                b.append((String) entry.getValue());
-            }
-        }
-        getProject().setNewProperty(property, b.toString());
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
+    }
+
+    public void testRandom() throws Exception {
+        RandomTestContainer container = SimpleWeakSetTesting.createContainer();
+        container.setLogOp(true);
+        int opCount = 1000;
+        SimpleWeakSetTesting.addRoundPreferAdd(container, opCount);
+        SimpleWeakSetTesting.addRoundPreferRemove(container, opCount);
+        container.runInit(1274381066314L);
+        container.runOps(20);
+//        container.runOps(1);
+        container.runOps(0); // till end
+
+        container.run(0L); // Run till end
     }
 
 }

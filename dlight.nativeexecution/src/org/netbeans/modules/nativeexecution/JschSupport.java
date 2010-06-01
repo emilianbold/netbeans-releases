@@ -66,7 +66,7 @@ public final class JschSupport {
     private JschSupport() {
     }
 
-    public static ChannelStreams startCommand(final ExecutionEnvironment env, final String command, final ChannelParams params)
+    public static synchronized ChannelStreams startCommand(final ExecutionEnvironment env, final String command, final ChannelParams params)
             throws IOException, JSchException {
 
         JSchWorker<ChannelStreams> worker = new JSchWorker<ChannelStreams>() {
@@ -94,7 +94,7 @@ public final class JschSupport {
         return start(worker, env, 2);
     }
 
-    public static ChannelStreams startLoginShellSession(final ExecutionEnvironment env) throws IOException, JSchException {
+    public static synchronized ChannelStreams startLoginShellSession(final ExecutionEnvironment env) throws IOException, JSchException {
         JSchWorker<ChannelStreams> worker = new JSchWorker<ChannelStreams>() {
 
             @Override
@@ -119,7 +119,7 @@ public final class JschSupport {
         return start(worker, env, 2);
     }
 
-    private static ChannelStreams start(final JSchWorker<ChannelStreams> worker, final ExecutionEnvironment env, final int attempts) throws IOException, JSchException {
+    private static synchronized ChannelStreams start(final JSchWorker<ChannelStreams> worker, final ExecutionEnvironment env, final int attempts) throws IOException, JSchException {
         int retry = attempts;
 
         while (retry-- > 0) {
