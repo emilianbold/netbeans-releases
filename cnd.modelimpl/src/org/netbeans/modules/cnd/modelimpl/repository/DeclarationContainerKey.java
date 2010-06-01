@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  */
 public class DeclarationContainerKey extends ProjectNameBasedKey {
 
-    public DeclarationContainerKey(String project) {
+    public DeclarationContainerKey(CharSequence project) {
         super(project);
     }
 
@@ -63,6 +63,7 @@ public class DeclarationContainerKey extends ProjectNameBasedKey {
         super(in);
     }
 
+    @Override
     public int getSecondaryDepth() {
         return 1;
     }
@@ -77,11 +78,13 @@ public class DeclarationContainerKey extends ProjectNameBasedKey {
         return 37*KeyObjectFactory.KEY_DECLARATION_CONTAINER_KEY + super.hashCode();
     }
 
+    @Override
     public int getSecondaryAt(int level) {
         assert (level == 0);
         return KeyObjectFactory.KEY_DECLARATION_CONTAINER_KEY;
     }
 
+    @Override
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
     }

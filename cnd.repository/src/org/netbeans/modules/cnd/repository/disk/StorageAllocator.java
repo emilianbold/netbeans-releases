@@ -78,7 +78,7 @@ public class StorageAllocator {
         return instance;
     }
     
-    private Map<String, String> unit2path = new ConcurrentHashMap<String, String>();
+    private Map<CharSequence, String> unit2path = new ConcurrentHashMap<CharSequence, String>();
     
     public String getCachePath() {
         return diskRepositoryPath;
@@ -93,12 +93,12 @@ public class StorageAllocator {
         return name;
     }
 
-    public String getUnitStorageName(String unit) {
+    public String getUnitStorageName(CharSequence unit) {
         String path = unit2path.get(unit);
         if (path == null) {
-            String prefix = unit;
+            String prefix = unit.toString();
             try {
-                prefix = URLEncoder.encode(unit, Stats.ENCODING);
+                prefix = URLEncoder.encode(prefix, Stats.ENCODING);
             } catch (UnsupportedEncodingException ex) {
                 ex.printStackTrace();
             } 
@@ -118,11 +118,11 @@ public class StorageAllocator {
         return path;
     }
     
-    public void closeUnit(String unitName) {
+    public void closeUnit(CharSequence unitName) {
         unit2path.remove(unitName);
     }
     
-    public void deleteUnitFiles (String unitName, boolean removeUnitFolder) {
+    public void deleteUnitFiles (CharSequence unitName, boolean removeUnitFolder) {
 	if( Stats.TRACE_UNIT_DELETION ) System.err.printf("Deleting unit files for %s\n", unitName);
         String path = getUnitStorageName(unitName);
         File pathFile = new File (path);

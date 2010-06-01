@@ -55,7 +55,7 @@ public interface RepositoryTranslation {
     int getFileIdByName(final int unitId, final CharSequence fileName);
     CharSequence getFileNameById(final int unitId, final int fileId);
     CharSequence getFileNameByIdSafe(final int unitId, final int fileId);
-    int getUnitId(String unitName);
-    String getUnitName(int unitId);    
-    String getUnitNameSafe(int unitId);
+    int getUnitId(CharSequence unitName);
+    CharSequence getUnitName(int unitId);
+    CharSequence getUnitNameSafe(int unitId);
 }
