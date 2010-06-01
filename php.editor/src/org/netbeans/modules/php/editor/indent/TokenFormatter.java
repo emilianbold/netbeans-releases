@@ -571,6 +571,7 @@ public class TokenFormatter {
                                     case WHITESPACE_BEFORE_NAMESPACE:
                                         indentRule = true;
                                         newLines = docOptions.blankLinesBeforeNamespace + 1;
+                                        countSpaces = Math.max(indent, countSpaces);
                                         break;
                                     case WHITESPACE_AFTER_NAMESPACE:
                                         indentRule = true;
