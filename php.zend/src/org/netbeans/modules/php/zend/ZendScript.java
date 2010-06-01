@@ -52,6 +52,7 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
@@ -68,6 +69,7 @@ import org.openide.windows.InputOutput;
  */
 public class ZendScript extends PhpProgram {
     public static final String SCRIPT_NAME = "zf"; // NOI18N
+    public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
     public static final String OPTIONS_SUB_PATH = "Zend"; // NOI18N
 
