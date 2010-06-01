@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.border.Border;
@@ -128,6 +129,10 @@ public final class Model extends TabbedPanelModel {
      */
     public String getDisplayName(String categoryID) {
         AdvancedOption option = categoryToOption.get(idToCategory.get(categoryID));
+        if (option == null) {
+            Logger.getLogger(Model.class.getName()).info("No category found for ID: " + categoryID); // NOI18N
+            return "";
+        }
         return option.getDisplayName();
     }
 
