@@ -61,14 +61,13 @@ import org.netbeans.modules.php.zend.ui.options.ZendOptions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
  * @author Tomas Mysik
  */
 public class ZendScript extends PhpProgram {
-    public static final String SCRIPT_NAME;
+    public static final String SCRIPT_NAME = "zf"; // NOI18N
 
     public static final String OPTIONS_SUB_PATH = "Zend"; // NOI18N
 
@@ -80,16 +79,6 @@ public class ZendScript extends PhpProgram {
 
     private static final String[] CMD_CREATE_CONFIG = new String[] {"create", "config"}; // NOI18N
     private static final String[] CMD_ENABLE_CONFIG = new String[] {"enable", "config.provider", "NetBeansCommandsProvider"}; // NOI18N
-
-    static {
-        String scriptName = null;
-        if (Utilities.isWindows()) {
-            scriptName = "zf.bat"; // NOI18N
-        } else {
-            scriptName = "zf.sh"; // NOI18N
-        }
-        SCRIPT_NAME = scriptName;
-    }
 
     public ZendScript(String command) {
         super(command);
