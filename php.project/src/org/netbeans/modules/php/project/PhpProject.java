@@ -772,8 +772,12 @@ public final class PhpProject implements Project {
             PhpFrameworks.removeFrameworksListener(frameworksListener);
 
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
-            GlobalPathRegistry.getDefault().unregister(PhpSourcePath.BOOT_CP, cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP));
+            ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
+            GlobalPathRegistry.getDefault().unregister(PhpSourcePath.BOOT_CP, bootClassPaths);
             GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
+            for (ClassPath classPath : bootClassPaths) {
+                IncludePathClassPathProvider.removeProjectIncludePath(classPath);
+            }
 
             getCopySupport().projectClosed();
 

@@ -121,6 +121,8 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     private ClassPath               originalSourcePath;
     /** Contains the additional source roots, added at a later time to the original roots. */
     private Set<String>             additionalSourceRoots;
+    /** Contains platform (JDK) source roots. */
+    private Set<String>             platformSourceRoots;
     /** Contains just the source paths from {@link #originalSourcePath} which are selected for debugging. */
     private ClassPath               smartSteppingSourcePath;
     /** Roots of {@link #originalSourcePath} */
@@ -154,6 +156,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             ClassPath jdkCP = (ClassPath) properties.get ("jdksources");
             if ( (jdkCP == null) && (JavaPlatform.getDefault () != null) )
                 jdkCP = JavaPlatform.getDefault ().getSourceFolders ();
+            platformSourceRoots = getSourceRootsSet(jdkCP);
             ClassPath additionalClassPath;
             if (baseDir != null) {
                 additionalClassPath = getAdditionalClassPath(baseDir);
@@ -250,6 +253,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             Set<FileObject> preferredRoots = new HashSet<FileObject>();
             Set<FileObject> addedBinaryRoots = new HashSet<FileObject>();
             Project mainProject = OpenProjects.getDefault().getMainProject();
+            platformSourceRoots = new HashSet<String>();
             if (mainProject != null) {
                 SourceGroup[] sgs = ProjectUtils.getSources(mainProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                 for (SourceGroup sg : sgs) {
@@ -277,6 +281,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                             }
                         }
                     }
+                    ecp = ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT);
+                    if (ecp != null) {
+                        platformSourceRoots.addAll(getSourceRootsSet(ecp));
+                    }
                 }
             }
             if (logger.isLoggable(Level.FINE)) {
@@ -299,6 +307,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                         allSourceRoots.add(roots [j]);
                     }
                 }
+                platformSourceRoots.addAll(getSourceRootsSet(platforms[i].getSourceFolders()));
             }
             List<FileObject> additional = getAdditionalRemoteClassPath();
             if (additional != null) {
@@ -745,6 +754,22 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         return roots.toArray(new String[0]);
     }
     
+    private static Set<String> getSourceRootsSet(ClassPath classPath) {
+        FileObject[] sourceRoots = classPath.getRoots();
+        Set<String> roots = new HashSet<String>(sourceRoots.length);
+        for (FileObject fo : sourceRoots) {
+            String root = getRoot(fo);
+            if (root != null) {
+                roots.add(root);
+            }
+        }
+        return roots;
+    }
+
+    public synchronized Set<String> getPlatformSourceRoots() {
+        return Collections.unmodifiableSet(platformSourceRoots);
+    }
+
     /**
      * Returns allSourceRoots of original source roots.
      *
@@ -1422,6 +1447,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             boolean changed = false;
             synchronized (SourcePathProviderImpl.this) {
                 if (originalSourcePath == null) return ;
+                platformSourceRoots.clear();
                 List<FileObject> sourcePaths = new ArrayList<FileObject>(
                         Arrays.asList(originalSourcePath.getRoots()));
                 for(JavaPlatform jp : platforms) {
@@ -1432,6 +1458,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                             changed = true;
                         }
                     }
+                    platformSourceRoots.addAll(getSourceRootsSet(jp.getSourceFolders()));
                 }
                 if (changed) {
                     originalSourcePath =

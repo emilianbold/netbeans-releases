@@ -512,10 +512,11 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         } else if (c instanceof SettingsTab) {
             id = SettingsTab.class.getName ();
         }
-        if (isValidHelpID (id)) {
-            Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.FINE, "HelpId is " + id);
-        } else {
-            Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.INFO, id + " looks no valid HelpCtx. Is valid? " + isValidHelpID (id));
+
+        Logger LOG = Logger.getLogger(PluginManagerUI.class.getName());
+        if(LOG.isLoggable(Level.FINE)) { // #176576
+            LOG.log(Level.FINE,
+                    isValidHelpID(id) ? "HelpId is {0}" : "{0} looks no valid HelpCtx", id);
         }
         return new HelpCtx (id);
     }

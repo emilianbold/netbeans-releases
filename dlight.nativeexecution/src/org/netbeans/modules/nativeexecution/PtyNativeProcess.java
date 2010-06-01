@@ -46,13 +46,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.pty.PtyUtility;
 
@@ -99,6 +96,9 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         // TODO: Clone Info!!!!
         info.setExecutable(executable);
         info.setArguments(newArgs.toArray(new String[0]));
+        
+        // no need to preload unbuffer in case of running in internal terminal
+        info.setUnbuffer(false);
 
         // Listeners...
         // listeners are copied already in super()
@@ -152,24 +152,6 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         ByteArrayInputStream bis = new ByteArrayInputStream(pidLine.getBytes());
         readPID(bis);
-    }
-
-    @Override
-    protected synchronized void cancel() {
-        int pid = 0;
-
-        try {
-            pid = getPID();
-        } catch (IOException ex) {
-        }
-
-        if (pid > 0) {
-            try {
-                CommonTasksSupport.sendSignal(info.getExecutionEnvironment(), pid, Signal.SIGKILL, null).get();
-            } catch (InterruptedException ex) {
-            } catch (ExecutionException ex) {
-            }
-        }
     }
 
     @Override

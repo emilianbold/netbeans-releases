@@ -59,6 +59,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.filesystems.FileObject;
@@ -160,6 +161,11 @@ public class UseEntityManagerCodeGenerator implements CodeGenerator {
         if(cp == null) {
             return false;
         }
+
+        if(PersistenceScope.getPersistenceScope(target) == null){
+            return false;
+        }
+
         FileObject entityMgrRes = cp.findResource("javax/persistence/EntityManager.class"); // NOI18N
 
         if (entityMgrRes != null) {

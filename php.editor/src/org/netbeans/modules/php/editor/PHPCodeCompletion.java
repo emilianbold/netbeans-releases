@@ -265,10 +265,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
             request.context = context;
+            final String pref = getPrefix(info, caretOffset, true);
+            if (pref == null) {
+                return CodeCompletionResult.NONE;
+            }
+
             request.anchor = caretOffset
                     // can't just use 'prefix.getLength()' here cos it might have been calculated with
                     // the 'upToOffset' flag set to false
-                    - getPrefix(info, caretOffset, true).length();
+                    - pref.length();
 
             request.result = result;
             request.info = info;

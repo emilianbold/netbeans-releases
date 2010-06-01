@@ -41,11 +41,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
- package org.netbeans.core.output2;
- import javax.swing.*;
- import java.awt.*;
- import org.netbeans.core.output2.ui.*;
- import org.openide.windows.*;
+
+package org.netbeans.core.output2;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+import org.netbeans.core.io.ui.IOWindow.IOWindowImpl;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 /** Demo class for interactively testing changes */
  public class TestFrame extends JFrame implements Runnable {
@@ -78,7 +89,7 @@
 //                io.getErr().println("file:/tmp/file:23");
             }
             try {
-                Thread.currentThread().sleep(100);
+                Thread.sleep(100);
             } catch (Exception e){};
         }
         
@@ -88,28 +99,26 @@
         out.flush();
         io.getErr().close();
         out.close();
-        written = true;
         System.err.println("DONE");
     }
 
-    private static boolean written = false;
     public void setVisible (boolean val) {
        boolean go = val != isVisible();
        super.setVisible(val);
        if (!SwingUtilities.isEventDispatchThread() && go) {
            try {
-               Thread.currentThread().sleep (500);
+               Thread.sleep(500);
                 SwingUtilities.invokeLater(this);
            } catch (Exception e) {}
        }
     }
 
-    private OutputWindow win;
+    private IOWindowImpl win;
     private NbIO io;
     private NbWriter out = null;
     private void init() {
-        win = new OutputWindow();
-        OutputWindow.DEFAULT = win;
+        win = new IOWindowImpl();
+        IOWindowImpl.DEFAULT = win;
         getContentPane().setLayout (new BorderLayout());
         getContentPane().add (win, BorderLayout.CENTER);
         setBounds (20, 20, 335, 300);
@@ -124,14 +133,16 @@
            t.setName ("Thread " + ct + " - ");
            t.start();
            ct--;
+           /* XXX how to implement now?
            out.println ("This is the first text " + ct + " and even it might be long enough to be word wrapped.  We should make sure that doesn't cause any strange problems, shouldn't we?");
            ((OutputPane) win.getSelectedTab().getOutputPane()).setWrapped(true);
+            */
            if (ct > 0) {
                SwingUtilities.invokeLater (this);
            }
         } else {
-        try {
-            Thread.currentThread().sleep(3000);
+            try {
+                Thread.sleep(3000);
             } catch (Exception e) {}
             writeContent();
         }

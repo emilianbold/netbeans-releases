@@ -533,6 +533,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return false;
     }
 
+    protected boolean hasEditedFiles() {
+        return false;
+    }
+
     protected final synchronized void registerProjectListeners() {
         if (platformProject instanceof NativeProject) {
             if (projectListener == null) {
@@ -2137,7 +2141,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             disposeLock.readLock().lock();
 
             if (!isDisposing()) {
-                new FakeRegistrationWorker(this, disposing).fixFakeRegistration(libsAlreadyParsed);
+                if (!hasEditedFiles()) {
+                    new FakeRegistrationWorker(this, disposing).fixFakeRegistration(libsAlreadyParsed);
+                }
             }
         } catch (Exception e) {
             DiagnosticExceptoins.register(e);
