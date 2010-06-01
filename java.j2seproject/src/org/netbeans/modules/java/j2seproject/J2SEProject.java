@@ -78,6 +78,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
@@ -322,7 +323,6 @@ public final class J2SEProject implements Project {
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
         @SuppressWarnings("deprecation") Object cpe = new org.netbeans.modules.java.api.common.classpath.ClassPathExtender(
             cpMod, ProjectProperties.JAVAC_CLASSPATH, null);
-        J2SESources srcs = new J2SESources(this, helper, eval, getSourceRoots(), getTestSourceRoots());
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
             QuerySupport.createProjectInformation(updateHelper, this, J2SE_PROJECT_ICON),
@@ -342,8 +342,7 @@ public final class J2SEProject implements Project {
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
-            srcs,
-            srcs.getSourceGroupModifierImplementation(),
+            QuerySupport.createSources(this, helper, eval, getSourceRoots(), getTestSourceRoots(), Roots.nonSourceRoots(J2SEProjectProperties.BUILD_DIR, J2SEProjectProperties.DIST_DIR)),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             new RecommendedTemplatesImpl (this.updateHelper),
