@@ -89,7 +89,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.versioning.hooks.HgHook;
@@ -167,6 +166,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+        initCollapsibleSections();
         TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault().getPreferences());
         if (ts.isAutofill()) {
             messageTextArea.setText(ts.getTemplate());
@@ -181,7 +181,6 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             messageTextArea.setText(lastCommitMessage);
         }
         messageTextArea.selectAll();
-        initCollapsibleSections();
     }
 
     private void initCollapsibleSections() {
@@ -362,7 +361,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         messageTextArea.setRows(4);
         messageTextArea.setTabSize(4);
         messageTextArea.setWrapStyleWord(true);
-        messageTextArea.setMinimumSize(new Dimension(80, 18));
+        messageTextArea.setMinimumSize(new Dimension(100, 18));
         jScrollPane1.setViewportView(messageTextArea);
         messageTextArea.getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitForm_Message")); // NOI18N
         messageTextArea.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitForm_Message")); // NOI18N
