@@ -52,6 +52,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramExcept
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -63,6 +64,17 @@ import org.openide.util.Utilities;
 public final class RunAsValidator {
 
     private RunAsValidator() {
+    }
+
+    /**
+     * See {@link #validateWebFields(String, File, String, String)}.
+     * Please notice that WebRoot can be {@code null}.
+     */
+    public static String validateWebFields(String url, FileObject webRoot, String indexFile, String arguments) {
+        if (webRoot == null) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidWebRoot");
+        }
+        return validateWebFields(url, FileUtil.toFile(webRoot), indexFile, arguments);
     }
 
     /**
