@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
@@ -104,6 +105,27 @@ public abstract class PhpElementImpl implements PhpElement {
     private final int offset;
     private final ElementQuery elementQuery;
     private FileObject fileObject;
+
+    public static PhpElementImpl create(final String variableName, final String in, final int offset, final FileObject fo, final PhpElementKind kind) {
+        return new PhpElementImpl(variableName, in, null, offset, null) {
+
+            @Override
+            public String getSignature() {
+                return "";//NOI18N
+            }
+
+            @Override
+            public PhpElementKind getPhpElementKind() {
+                return kind;
+            }
+
+            @Override
+            public synchronized FileObject getFileObject() {
+                return fo;
+            }
+        };
+    }
+
 
     PhpElementImpl(final String name, final String in, final String fileUrl,
             final int offset, final ElementQuery elementQuery) {
