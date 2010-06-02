@@ -148,7 +148,6 @@ public final class MakeActionProvider implements ActionProvider {
     // Commands available from Make project
     public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
     public static final String COMMAND_BUILD_PACKAGE = "build_packages"; // NOI18N
-    public static final String COMMAND_DEBUG_LOAD_ONLY = "debug.load.only"; // NOI18N
     public static final String COMMAND_CUSTOM_ACTION = "custom.action"; // NOI18N
     private static final String[] supportedActions = {
         COMMAND_BUILD,
@@ -159,7 +158,6 @@ public final class MakeActionProvider implements ActionProvider {
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG,
         COMMAND_DEBUG_STEP_INTO,
-        COMMAND_DEBUG_LOAD_ONLY,
         COMMAND_DEBUG_SINGLE,
         COMMAND_BATCH_BUILD,
         COMMAND_BUILD_PACKAGE,
@@ -185,7 +183,6 @@ public final class MakeActionProvider implements ActionProvider {
     private static final String RUN_STEP = "run"; // NOI18N
     private static final String DEBUG_STEP = "debug"; // NOI18N
     private static final String DEBUG_STEPINTO_STEP = "debug-stepinto"; // NOI18N
-    private static final String DEBUG_LOAD_ONLY_STEP = "debug-load-only"; // NOI18N
     private static final String RUN_SINGLE_STEP = "run-single"; // NOI18N
     private static final String DEBUG_SINGLE_STEP = "debug-single"; // NOI18N
     private static final String COMPILE_SINGLE_STEP = "compile-single"; // NOI18N
@@ -470,8 +467,6 @@ public final class MakeActionProvider implements ActionProvider {
             return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG);
         } else if (targetName.equals(DEBUG_STEPINTO_STEP)) {
             return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO);
-        } else if (targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_LOAD_ONLY);
         } else if (targetName.equals(CUSTOM_ACTION_STEP)) {
             return onCustomActionStep(actionEvents, conf, context, ProjectActionEvent.PredefinedType.CUSTOM_ACTION);
         }
@@ -987,7 +982,6 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_RUN)
                 || command.equals(COMMAND_DEBUG)
                 || command.equals(COMMAND_DEBUG_STEP_INTO)
-                || command.equals(COMMAND_DEBUG_LOAD_ONLY)
                 || command.equals(COMMAND_CUSTOM_ACTION)) {
             MakeConfigurationDescriptor pd = getProjectDescriptor();
             MakeConfiguration conf = pd.getActiveConfiguration();
@@ -1044,8 +1038,6 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_DEBUG)) {
             return conf.hasDebugger() && !conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_DEBUG_STEP_INTO)) {
-            return conf.hasDebugger() && !conf.isLibraryConfiguration();
-        } else if (command.equals(COMMAND_DEBUG_LOAD_ONLY)) {
             return conf.hasDebugger() && !conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
             boolean enabled = true;
