@@ -191,7 +191,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             }
         } catch (Exception e) {
             try {
-                if(handleException((SvnClient) proxy, e) ) {
+                if(handleException((SvnClient) proxy, e, method.getName()) ) {
                     return invoke(proxy, method, args);
                 } else {
                     // some action canceled by user message 
@@ -385,7 +385,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         return ret;
     }
 
-    private boolean handleException(SvnClient client, Throwable t) throws Throwable {
+    private boolean handleException(SvnClient client, Throwable t, String methodName) throws Throwable {
         if( t instanceof InvocationTargetException ) {
             t = ((InvocationTargetException) t).getCause();            
         } 
@@ -394,6 +394,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         }
 
         SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client, desc, handledExceptions, isCommandLine());
+        eh.setMethod(methodName);
         return eh.handleException();        
     }
 
