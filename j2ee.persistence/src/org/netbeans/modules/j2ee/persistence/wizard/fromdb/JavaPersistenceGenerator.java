@@ -443,7 +443,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                     JPAClassPathHelper cpHelper = new JPAClassPathHelper(bootCPs, compileCPs, sourceCPs);
 
-                    JavaSource javaSource = (pkClassFO != null) ?
+                    JavaSource javaSource = (pkClassFO != null && entityClass.getUpdateType() != UpdateType.UPDATE) ?
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO, pkClassFO) :
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO);
                     javaSource.runModificationTask(new Task<WorkingCopy>() {
