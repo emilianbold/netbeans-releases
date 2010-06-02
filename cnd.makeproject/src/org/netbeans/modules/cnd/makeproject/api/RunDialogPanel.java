@@ -582,7 +582,7 @@ public final class RunDialogPanel extends javax.swing.JPanel {
                     Map<String,Object> map = new HashMap<String,Object>();
                     map.put("DW:buildResult",getExecutablePath()); // NOI18N
                     map.put("DW:consolidationLevel", "file"); // NOI18N
-                    map.put("DW:rootFolder", baseDir);
+                    map.put("DW:rootFolder", baseDir); // NOI18N
                     if (extension.canApply(map, project)) {
                         extension.apply(map, project);
                     }
