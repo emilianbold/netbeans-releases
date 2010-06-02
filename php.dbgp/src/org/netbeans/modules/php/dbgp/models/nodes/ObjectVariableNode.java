@@ -46,7 +46,8 @@ class ObjectVariableNode extends
 
     @Override
     public String getType() {
-        return NbBundle.getMessage( ObjectVariableNode.class, TYPE_OBJECT);
+        String className = getProperty().getClassName();
+        return (className != null && !className.isEmpty()) ? className : NbBundle.getMessage( ObjectVariableNode.class, TYPE_OBJECT);
     }
     
     /* (non-Javadoc)
