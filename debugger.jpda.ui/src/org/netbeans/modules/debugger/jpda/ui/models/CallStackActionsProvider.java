@@ -70,6 +70,8 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import org.netbeans.api.debugger.Session;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -201,9 +203,17 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         if (debugger.getCurrentCallStackFrame () != frame) {
             frame.makeCurrent ();
         } else {
-            String language = DebuggerManager.getDebuggerManager ().
-                getCurrentSession ().getCurrentLanguage ();
-            SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
+            Session session;
+            try {
+                session = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                session = DebuggerManager.getDebuggerManager ().getCurrentSession ();
+            }
+            if (session == null) return ;
+            String language = session.getCurrentLanguage ();
+            SourcePath sp = session.getCurrentEngine().lookupFirst(null, SourcePath.class);
+            if (sp == null) return ;
             sp.showSource (frame, language);
         }
     }
