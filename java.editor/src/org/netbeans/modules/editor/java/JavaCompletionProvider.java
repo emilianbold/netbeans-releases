@@ -221,7 +221,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         private static final String SKIP_ACCESSIBILITY_CHECK = "org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck"; //NOI18N
         
         private List<JavaCompletionItem> results;
-        private boolean hasAdditionalItems;
+        private byte hasAdditionalItems = 0; //no additional items
         private JToolTip toolTip;
         private CompletionDocumentation documentation;
         private int anchorOffset;
@@ -290,9 +290,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                             if (results != null)
                                 resultSet.addAllItems(results);
-                            resultSet.setHasAdditionalItems(hasAdditionalItems);
-                            if (hasAdditionalItems)
+                            resultSet.setHasAdditionalItems(hasAdditionalItems > 0);
+                            if (hasAdditionalItems == 1)
                                 resultSet.setHasAdditionalItemsText(NbBundle.getMessage(JavaCompletionProvider.class, "JCP-imported-items")); //NOI18N
+                            if (hasAdditionalItems == 2)
+                                resultSet.setHasAdditionalItemsText(NbBundle.getMessage(JavaCompletionProvider.class, "JCP-instance-members")); //NOI18N
                         } else if (queryType == TOOLTIP_QUERY_TYPE) {
                             if (toolTip != null)
                                 resultSet.setToolTip(toolTip);
@@ -356,7 +358,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (results != null) {
                         if (filterPrefix != null) {
                             resultSet.addAllItems(getFilteredData(results, filterPrefix));
-                            resultSet.setHasAdditionalItems(hasAdditionalItems);
+                            resultSet.setHasAdditionalItems(hasAdditionalItems > 0);
                         } else {
                             Completion.get().hideDocumentation();
                             Completion.get().hideCompletion();
@@ -2685,7 +2687,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void addMembers(final Env env, final TypeMirror type, final Element elem, final EnumSet<ElementKind> kinds, final DeclaredType baseType, final boolean inImport, final boolean insideNew) throws IOException {
-            Set<? extends TypeMirror> smartTypes = queryType == COMPLETION_QUERY_TYPE ? env.getSmartTypes() : null;
+            Set<? extends TypeMirror> smartTypes = env.getSmartTypes();
             final String prefix = env.getPrefix();
             final CompilationController controller = env.getController();
             final Trees trees = controller.getTrees();
@@ -2723,10 +2725,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 }
                                 return false;
                             }
+                            if (isStatic) {
+                                if (!e.getModifiers().contains(STATIC))
+                                    return false;
+                            } else {
+                                if (queryType == COMPLETION_QUERY_TYPE && e.getModifiers().contains(STATIC)) {
+                                    hasAdditionalItems = 2; //instance members only
+                                    return false;
+                                }
+                            }
                             return (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) &&
                                     env.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t) &&
-                                    (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     ((isStatic && !inImport) || !e.getSimpleName().contentEquals(CLASS_KEYWORD));
                         case ENUM_CONSTANT:
                         case EXCEPTION_PARAMETER:
@@ -2737,12 +2747,20 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) &&
                                     env.isAccessible(scope, e, t);
                         case METHOD:
+                            if (isStatic) {
+                                if (!e.getModifiers().contains(STATIC))
+                                    return false;
+                            } else {
+                                if (queryType == COMPLETION_QUERY_TYPE && e.getModifiers().contains(STATIC)) {
+                                    hasAdditionalItems = 2; //instance members only
+                                    return false;
+                                }
+                            }
                             String sn = e.getSimpleName().toString();
                             return startsWith(env, sn, prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(((ExecutableType)asMemberOf(e, t, types)).getReturnType(), e, kinds, baseType, scope, trees, types) &&
                                     (isSuperCall && (e.getModifiers().contains(PROTECTED) || e.getModifiers().contains(PUBLIC)) || env.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t)) &&
-                                    (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     (!Utilities.isExcludeMethods() || !Utilities.isExcluded(Utilities.getElementName(e.getEnclosingElement(), true) + "." + sn)); //NOI18N
                         case CLASS:
                         case ENUM:
@@ -2890,7 +2908,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             } else {
                 addLocalAndImportedTypes(env, kinds, baseType);
-                hasAdditionalItems = true;
+                hasAdditionalItems = 1; //imported items only
             }
             addPackages(env, env.getPrefix(), false);
         }
