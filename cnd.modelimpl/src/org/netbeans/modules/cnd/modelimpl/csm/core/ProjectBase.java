@@ -141,13 +141,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
         init(model, platformProject);
-        declarationsSorageKey = new DeclarationContainerKey(getUniqueName().toString());
+        declarationsSorageKey = new DeclarationContainerKey(getUniqueName());
         weakDeclarationContainer = new WeakContainer<DeclarationContainer>(this, declarationsSorageKey);
-        classifierStorageKey = new ClassifierContainerKey(getUniqueName().toString());
+        classifierStorageKey = new ClassifierContainerKey(getUniqueName());
         weakClassifierContainer = new WeakContainer<ClassifierContainer>(this, classifierStorageKey);
-        fileContainerKey = new FileContainerKey(getUniqueName().toString());
+        fileContainerKey = new FileContainerKey(getUniqueName());
         weakFileContainer = new WeakContainer<FileContainer>(this, fileContainerKey);
-        graphStorageKey = new GraphContainerKey(getUniqueName().toString());
+        graphStorageKey = new GraphContainerKey(getUniqueName());
         weakGraphContainer = new WeakContainer<GraphContainer>(this, graphStorageKey);
         initFields();
     }
@@ -214,7 +214,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private static Key createProjectKey(Object platfProj) {
-        return KeyUtilities.createProjectKey(getUniqueName(platfProj).toString());
+        return KeyUtilities.createProjectKey(getUniqueName(platfProj));
     }
 
     protected static ProjectBase readInstance(ModelImpl model, Object platformProject, String name) {
@@ -789,7 +789,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private void reopenUnit() {
         setStatus(Status.Initial);
         ParserQueue.instance().clean(this);
-        RepositoryUtils.closeUnit(this.getUniqueName().toString(), null, true);
+        RepositoryUtils.closeUnit(this.getUniqueName(), null, true);
         RepositoryUtils.openUnit(this);
         RepositoryUtils.hang(this);
         initFields();
@@ -2039,10 +2039,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    protected final Set<String> getRequiredUnits() {
-        Set<String> requiredUnits = new HashSet<String>();
+    protected final Set<CharSequence> getRequiredUnits() {
+        Set<CharSequence> requiredUnits = new HashSet<CharSequence>();
         for (Key dependent : this.getLibrariesKeys()) {
-            requiredUnits.add(dependent.getUnit().toString());
+            requiredUnits.add(dependent.getUnit());
         }
         return requiredUnits;
     }

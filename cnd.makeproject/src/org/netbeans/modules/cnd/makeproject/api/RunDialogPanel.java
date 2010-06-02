@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.event.DocumentListener;
@@ -62,6 +64,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -569,11 +573,20 @@ public final class RunDialogPanel extends javax.swing.JPanel {
                 exe = CndPathUtilitities.toRelativePath(baseDir, exe);
                 exe = CndPathUtilitities.normalize(exe);
                 conf.getMakefileConfiguration().getOutput().setValue(exe);
-                
                 updateRunProfile(baseDir, conf.getProfile());
                 ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectParentFolder);
                 prjParams.setOpenFlag(true).setConfiguration(conf);
                 project = ProjectGenerator.createBlankProject(prjParams);
+                IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                if (extension != null) {
+                    Map<String,Object> map = new HashMap<String,Object>();
+                    map.put("DW:buildResult",getExecutablePath()); // NOI18N
+                    map.put("DW:consolidationLevel", "file"); // NOI18N
+                    map.put("DW:rootFolder", baseDir); // NOI18N
+                    if (extension.canApply(map, project)) {
+                        extension.apply(map, project);
+                    }
+                }
             } catch (Exception e) {
                 project = null;
             }
