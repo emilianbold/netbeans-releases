@@ -66,7 +66,7 @@ import org.netbeans.modules.editor.lib2.view.ViewHierarchyRandomTesting;
  */
 public class JavaViewHierarchyRandomTest extends NbTestCase {
 
-    private static final int OP_COUNT = 10000;
+    private static final int OP_COUNT = 100;
 
     private static final Level LOG_LEVEL = Level.FINE;
 

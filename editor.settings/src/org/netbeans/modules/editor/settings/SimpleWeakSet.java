@@ -187,8 +187,8 @@ final class SimpleWeakSet<E> {
     public List<E> asList() { // Mainly for testing purposes
         expungeStaleEntries();
         List<E> l = new ArrayList<E>(size()); // size() does expunge()
-        for (int i = table.length - 1; i >= 0; i--) {
-            Item<E> item = table[i];
+        // Order the items like in the table i.e. object with zero hashcode will be first
+        for (Item<E> item : table) {
             E e;
             if (item != null && (e = item.get()) != null) {
                 l.add(e);
