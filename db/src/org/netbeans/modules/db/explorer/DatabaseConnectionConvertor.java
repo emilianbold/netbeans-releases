@@ -131,6 +131,11 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     
     private PCL listener;
 
+    // a essential method for testing DB Explorer, don't remove it.
+    private static DatabaseConnectionConvertor createProvider() {
+        return new DatabaseConnectionConvertor();
+    }
+    
     private DatabaseConnectionConvertor() {
         holder = new WeakReference<XMLDataObject>(null);
     }
