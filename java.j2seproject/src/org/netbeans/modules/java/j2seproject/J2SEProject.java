@@ -534,7 +534,7 @@ public final class J2SEProject implements Project {
             //register updater of main.class
             //the updater is active only on the opened projects
 	    mainClassUpdater = new MainClassUpdater (J2SEProject.this, eval, updateHelper,
-                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], J2SEProjectProperties.MAIN_CLASS);
+                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], ProjectProperties.MAIN_CLASS);
 
             // Make it easier to run headless builds on the same machine at least.
             try {
@@ -739,7 +739,7 @@ public final class J2SEProject implements Project {
             
             EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             // if the project has no main class, it's not really an application
-            boolean isLibrary = ep.getProperty (J2SEProjectProperties.MAIN_CLASS) == null || "".equals (ep.getProperty (J2SEProjectProperties.MAIN_CLASS)); // NOI18N
+            boolean isLibrary = ep.getProperty (ProjectProperties.MAIN_CLASS) == null || "".equals (ep.getProperty (ProjectProperties.MAIN_CLASS)); // NOI18N
             return isLibrary ? LIBRARY_TYPES : APPLICATION_TYPES;
         }
         

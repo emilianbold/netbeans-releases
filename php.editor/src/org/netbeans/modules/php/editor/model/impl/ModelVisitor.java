@@ -149,6 +149,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private final ModelBuilder modelBuilder;
     private final ParserResult info;
     private boolean  askForEditorExtensions = true;
+    private List<PhpBaseElement> baseElements;
 
 
     public ModelVisitor(final ParserResult info) {
@@ -158,6 +159,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         markerBuilder = new CodeMarkerBuilder();
         this.modelBuilder = new ModelBuilder(this.fileScope);
         this.info = info;
+        this.baseElements = new ArrayList<PhpBaseElement>();
     }
 
     public ParserResult getCompilationInfo() {
@@ -169,17 +171,18 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         super.scan(node);
     }
 
-    public void extendModel() {
+    public List<PhpBaseElement> extendedElements() {
         synchronized(this) {
             if (!askForEditorExtensions) {
-                return;
+                return new ArrayList<PhpBaseElement>(baseElements);
             }
             askForEditorExtensions = false;
         }
-
+        baseElements.clear();
         final FileObject fileObject = fileScope.getFileObject();
         EditorExtender editorExtender = PhpEditorExtender.forFileObject(fileObject);
         final List<PhpBaseElement> elements = editorExtender.getElementsForCodeCompletion(fileObject);
+        baseElements.addAll(elements);
         if (elements.size() > 0) {
             for (PhpBaseElement element : elements) {
                 if (element instanceof PhpVariable) {
@@ -193,12 +196,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                             if (variable != null) {
                                 variable.indexedElement = VariableElementImpl.create(
                                          varName, phpVariable.getOffset(), phpVariable.getFile(),
-                                        null, TypeResolverImpl.parseTypes(phpVariable.getFullyQualifiedName()));
+                                        null, TypeResolverImpl.parseTypes(phpVariable.getType().getFullyQualifiedName()));
                             } else {
                                 int offset = namespaceScope.getOffset();
                                 VariableElementImpl var = VariableElementImpl.create(
                                          varName, offset, phpVariable.getFile(),
-                                        null, TypeResolverImpl.parseTypes(phpVariable.getFullyQualifiedName()));
+                                        null, TypeResolverImpl.parseTypes(phpVariable.getType().getFullyQualifiedName()));
                                 namespaceScope.createElement(var);
                             }
                         }
@@ -206,6 +209,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 }
             }
         }
+        return new ArrayList<PhpBaseElement>(baseElements);
     }
 
     @Override

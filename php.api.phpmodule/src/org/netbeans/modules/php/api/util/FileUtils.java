@@ -56,6 +56,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
@@ -87,13 +88,14 @@ public final class FileUtils {
     }
 
     /**
-     * Find all the files (absolute path) with the given "filename" os user's PATH.
+     * Find all the files (absolute path) with the given "filename" on user's PATH.
      * <p>
      * This method is suitable for *nix as well as windows.
-     * @param filename the name of a file to find.
-     * @return list of absolute paths of found files.
+     * @param filename the name of a file to find, more names can be provided.
+     * @return list of absolute paths of found files (order preserved according to input names).
+     * @since 1.33
      */
-    public static List<String> findFileOnUsersPath(String filename) {
+    public static List<String> findFileOnUsersPath(String... filename) {
         Parameters.notNull("filename", filename);
 
         String path = System.getenv("PATH"); // NOI18N
@@ -102,18 +104,43 @@ public final class FileUtils {
         }
         // on linux there are usually duplicities in PATH
         Set<String> dirs = new LinkedHashSet<String>(Arrays.asList(path.split(File.pathSeparator)));
-        List<String> found = new ArrayList<String>(dirs.size());
-        for (String d : dirs) {
-            File file = new File(d, filename);
-            if (file.isFile()) {
-                String absolutePath = FileUtil.normalizeFile(file).getAbsolutePath();
-                // not optimal but should be ok
-                if (!found.contains(absolutePath)) {
-                    found.add(absolutePath);
+        List<String> found = new ArrayList<String>(dirs.size() * filename.length);
+        for (String f : filename) {
+            for (String d : dirs) {
+                File file = new File(d, f);
+                if (file.isFile()) {
+                    String absolutePath = FileUtil.normalizeFile(file).getAbsolutePath();
+                    // not optimal but should be ok
+                    if (!found.contains(absolutePath)) {
+                        found.add(absolutePath);
+                    }
                 }
             }
         }
         return found;
+    }
+
+    /**
+     * Get the OS-dependent script extension.
+     * <ul>Currently it returns (for dotted version):
+     *   <li><tt>.bat</tt> on Windows
+     *   <li><tt>.sh</tt> anywhere else
+     * </ul>
+     * @param withDot return "." as well, e.g. <tt>.sh</tt>
+     * @return the OS-dependent script extension
+     * @since 1.33
+     */
+    public static String getScriptExtension(boolean withDot) {
+        StringBuilder sb = new StringBuilder(4);
+        if (withDot) {
+            sb.append("."); // NOI18N
+        }
+        if (Utilities.isWindows()) {
+            sb.append("bat"); // NOI18N
+        } else {
+            sb.append("sh"); // NOI18N
+        }
+        return sb.toString();
     }
 
     /**
