@@ -57,9 +57,9 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 public class MultyFileStorage implements Storage {
     
     private FilesAccessStrategy theFilesHelper;
-    private String unitName;
+    private CharSequence unitName;
     
-    public MultyFileStorage(String unitName) {
+    public MultyFileStorage(CharSequence unitName) {
         super();
         theFilesHelper = FilesAccessStrategyImpl.getInstance();
         this.unitName = unitName;
@@ -70,6 +70,7 @@ public class MultyFileStorage implements Storage {
         theFilesHelper = aFilesHelper;
     }
     
+    @Override
     public void write(Key id, final Persistent obj) {
         assert id != null;
         assert obj != null;
@@ -77,14 +78,16 @@ public class MultyFileStorage implements Storage {
             theFilesHelper.write(id, obj);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    id.getUnit().toString(), new RepositoryException(ex));
+                    id.getUnit(), new RepositoryException(ex));
         }
     }
     
+    @Override
     public boolean defragment(long timeout) {
 	return false;
     }
     
+    @Override
     public Persistent read(Key id) {
         assert id != null;
         Persistent obj = null;
@@ -92,25 +95,28 @@ public class MultyFileStorage implements Storage {
             obj = theFilesHelper.read(id);
         }  catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    id.getUnit().toString(), new RepositoryException(ex));
+                    id.getUnit(), new RepositoryException(ex));
         }
         return obj;
     }
     
+    @Override
     public void remove(Key id) {
         assert id != null;
         try {
         theFilesHelper.remove(id);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    id.getUnit().toString(), new RepositoryException(ex));
+                    id.getUnit(), new RepositoryException(ex));
         }
     }
 
+    @Override
     public void close() throws IOException {
         theFilesHelper.closeUnit(unitName);
     }
 
+    @Override
     public int getFragmentationPercentage() {
         return 0;
     }

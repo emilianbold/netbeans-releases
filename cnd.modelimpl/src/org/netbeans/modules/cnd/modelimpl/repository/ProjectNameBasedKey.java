@@ -56,19 +56,22 @@ abstract class ProjectNameBasedKey extends AbstractKey {
 
     private final int unitIndex;
 
-    protected ProjectNameBasedKey(String project) {
+    protected ProjectNameBasedKey(CharSequence project) {
         assert project != null;
         this.unitIndex = KeyUtilities.getUnitId(project);
     }
 
+    @Override
     public String toString() {
         return getProjectName().toString();
     }
 
+    @Override
     public int hashCode() {
         return unitIndex;
     }
 
+    @Override
     public final int getUnitId() {
         return unitIndex;
     }
@@ -87,6 +90,7 @@ abstract class ProjectNameBasedKey extends AbstractKey {
         return getUnit();
     }
 
+    @Override
     public void write(DataOutput aStream) throws IOException {
         aStream.writeInt(this.unitIndex);
     }
@@ -95,14 +99,17 @@ abstract class ProjectNameBasedKey extends AbstractKey {
         this.unitIndex = aStream.readInt();
     }
 
+    @Override
     public int getDepth() {
         return 0;
     }
 
+    @Override
     public CharSequence getAt(int level) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public CharSequence getUnit() {
         // having this functionality here to be sure unit is the same thing as project
         return KeyUtilities.getUnitName(this.unitIndex);
