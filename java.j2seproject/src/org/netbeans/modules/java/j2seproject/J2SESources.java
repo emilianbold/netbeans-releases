@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
  */
 public class J2SESources implements Sources, PropertyChangeListener, ChangeListener  {
     
-    private static final String BUILD_DIR_PROP = "${" + J2SEProjectProperties.BUILD_DIR + "}";    //NOI18N
+    private static final String BUILD_DIR_PROP = "${" + ProjectProperties.BUILD_DIR + "}";    //NOI18N
     private static final String DIST_DIR_PROP = "${" + J2SEProjectProperties.DIST_DIR + "}";    //NOI18N
 
     private final Project project;
@@ -225,7 +225,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
         // was listening to PROP_ROOT_PROPERTIES, changed to PROP_ROOTS in #143633 as changes
         // from SourceGroupModifierImplementation need refresh too
         if (SourceRoots.PROP_ROOTS.equals(propName)  ||
-            J2SEProjectProperties.BUILD_DIR.equals(propName)  ||
+            ProjectProperties.BUILD_DIR.equals(propName)  ||
             J2SEProjectProperties.DIST_DIR.equals(propName)) {
             this.fireChange();
         }

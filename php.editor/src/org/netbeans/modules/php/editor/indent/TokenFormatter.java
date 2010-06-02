@@ -571,6 +571,7 @@ public class TokenFormatter {
                                     case WHITESPACE_BEFORE_NAMESPACE:
                                         indentRule = true;
                                         newLines = docOptions.blankLinesBeforeNamespace + 1;
+                                        countSpaces = Math.max(indent, countSpaces);
                                         break;
                                     case WHITESPACE_AFTER_NAMESPACE:
                                         indentRule = true;
@@ -963,7 +964,7 @@ public class TokenFormatter {
                                         }
                                         else {
                                             if (!isCloseAndOpenTagOnOneLine(formatTokens, index)) {
-                                                newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
+                                                newLines = Math.max(newLines, docOptions.blankLinesBeforeClosePHPTag + 1);
                                                 countSpaces = indentOfOpenTag;
                                             } else {
                                                 newLines = 0;

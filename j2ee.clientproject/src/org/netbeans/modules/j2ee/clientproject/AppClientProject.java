@@ -297,7 +297,7 @@ public final class AppClientProject implements Project, FileChangeListener {
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
             spp,
-            new AppClientActionProvider( this, helper, this.updateHelper ),
+            new AppClientActionProvider( this, this.updateHelper ),
             new AppClientLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper, appClient),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),

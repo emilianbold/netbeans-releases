@@ -121,6 +121,18 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         return name;
     }
 
+    /**
+     * Used for constructs like
+     * class A {
+     *     struct B;
+     *     // ...
+     * };
+     * struct A::B {
+     *     // ...
+     * }
+     * See BZ #131625
+     * @return  For "struct A::B" above, the method returns its forward declaration "struct B;"
+     */
     protected ClassImpl.ClassMemberForwardDeclaration isClassDefinition() {
         CsmScope scope = getScope();
         if (name != null && name.toString().indexOf("::") > 0) { // NOI18N

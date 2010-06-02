@@ -104,11 +104,11 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/multiline_function_header.php");
     }
 
-    public void etestLineSplitting1() throws Exception {
+    public void testLineSplitting1() throws Exception {
         reformatFileContents("testfiles/formatting/line_splitting1.php");
     }
 
-    public void etestLineSplitting2() throws Exception {
+    public void testLineSplitting2() throws Exception {
         reformatFileContents("testfiles/formatting/line_splitting2.php");
     }
 
@@ -1866,6 +1866,11 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testIssue186461_02() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/blankLines/issue186461_02.php", options);
+    }
+
+    public void testIssue186738_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/issue186738_01.php", options);
     }
 
     private void reformatFileContents(String file) throws Exception {

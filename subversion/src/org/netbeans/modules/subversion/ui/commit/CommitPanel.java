@@ -84,7 +84,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicTreeUI;
@@ -174,7 +173,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
-
+        initCollapsibleSections();
         TemplateSelector ts = new TemplateSelector(SvnModuleConfig.getDefault().getPreferences());
         if (ts.isAutofill()) {
             messageTextArea.setText(ts.getTemplate());
@@ -189,7 +188,6 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             messageTextArea.setText(lastCommitMessage);
         }
         messageTextArea.selectAll();
-        initCollapsibleSections();
     }
 
     @Override
