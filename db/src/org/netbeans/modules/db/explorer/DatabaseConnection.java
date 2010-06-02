@@ -73,6 +73,7 @@ import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.api.keyring.Keyring;
 
 import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.action.ConnectAction;
@@ -135,6 +136,8 @@ public class DatabaseConnection implements DBConnection {
 
     /** Remembers password */
     private Boolean rpwd = Boolean.FALSE;
+
+    private String connectionFileName;
 
     /** The support for firing property changes */
     private PropertyChangeSupport propertySupport;
@@ -226,6 +229,19 @@ public class DatabaseConnection implements DBConnection {
         pwd = password;
         name = getName();
         rpwd = Boolean.valueOf(rememberPassword);
+    }
+
+    public DatabaseConnection(String driver, String driverName, String database, 
+            String theschema, String user) {
+        this();
+        drv = driver;
+        drvname = driverName;
+        db = database;
+        usr = user;
+        schema = theschema;
+        pwd = null;
+        name = getName();
+        rpwd = null;
     }
 
     public JDBCDriver findJDBCDriver() {
@@ -538,8 +554,37 @@ public class DatabaseConnection implements DBConnection {
         return defaultSchema;
     }
 
+    public void setConnectionFileName(String connectionFileName) {
+        this.connectionFileName = connectionFileName;
+    }
+
+    private synchronized void restorePassword() {
+        if (this.connectionFileName == null) {
+            LOGGER.log(Level.FINEST, "No connectionFileName for " + this);
+            pwd = "";
+            rpwd = false;
+            return ;
+        }
+        // If the password was saved, then it means the user checked
+        // the box to say the password should be remembered.
+        char[] chars = Keyring.read(this.connectionFileName);
+        if (chars != null) {
+            LOGGER.log(Level.FINE, "A password read for " + this.connectionFileName);
+            pwd = String.valueOf(chars);
+            rpwd = true;
+        } else {
+            LOGGER.log(Level.FINE, "No password read for " + this.connectionFileName);
+            pwd = "";
+            rpwd = false;
+        }
+
+    }
+
     /** Returns if password should be remembered */
     public boolean rememberPassword() {
+        if (rpwd == null) {
+            restorePassword();
+        }
         return rpwd.booleanValue();
     }
 
@@ -556,6 +601,9 @@ public class DatabaseConnection implements DBConnection {
 
     /** Returns password */
     public String getPassword() {
+        if (pwd == null) {
+            restorePassword();
+        }
         return pwd;
     }
 
@@ -1028,4 +1076,5 @@ public class DatabaseConnection implements DBConnection {
         }
         return this;
     }
+
 }
