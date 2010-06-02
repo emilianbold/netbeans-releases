@@ -232,27 +232,13 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     }
 
     private static DatabaseConnection createDatabaseConnection(Handler handler) {
-        // If the password was saved, then it means the user checked
-        // the box to say the password should be remembered.
-        boolean rememberPassword = false;
-        String password = null;
-        char[] chars = Keyring.read(handler.connectionFileName);
-        if (chars != null) {
-            LOGGER.log(Level.FINE, "A password read for " + handler.connectionFileName);
-            password = String.valueOf(chars);
-            rememberPassword = true;
-        } else {
-            LOGGER.log(Level.FINE, "No password read for " + handler.connectionFileName);
-        }
-
         DatabaseConnection dbconn = new DatabaseConnection(
                 handler.driverClass, 
                 handler.driverName,
                 handler.connectionUrl,
                 handler.schema,
-                handler.user,
-                password,
-                rememberPassword);
+                handler.user);
+        dbconn.setConnectionFileName(handler.connectionFileName);
         if (handler.displayName != null) {
             dbconn.setDisplayName(handler.displayName);
         }
@@ -437,7 +423,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         private static final String ELEMENT_DISPLAY_NAME = "display-name"; // NOI18N
         private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
         
-        private final String connectionFileName;
+        final String connectionFileName;
         
         String driverClass;
         String driverName;
