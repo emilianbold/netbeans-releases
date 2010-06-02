@@ -74,16 +74,19 @@ class DelegatingCellRenderer implements TableCellRenderer {
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         Outline outline = (Outline) table;
         OutlineModel om = (OutlineModel) outline.getModel();
-        TreeModelNode tmn = (TreeModelNode) getNodeAt(om, row);
-        TableRendererModel trm = tmn.getModel();
-        try {
-            if (trm.canRenderCell(tmn.getObject(), columnID)) {
-                TableCellRenderer renderer = trm.getCellRenderer(tmn.getObject(), columnID);
-                if (renderer != null) {
-                    return renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        Node n = getNodeAt(om, row);
+        if (n instanceof TreeModelNode) {
+            TreeModelNode tmn = (TreeModelNode) n;
+            TableRendererModel trm = tmn.getModel();
+            try {
+                if (trm.canRenderCell(tmn.getObject(), columnID)) {
+                    TableCellRenderer renderer = trm.getCellRenderer(tmn.getObject(), columnID);
+                    if (renderer != null) {
+                        return renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                    }
                 }
+            } catch (UnknownTypeException ex) {
             }
-        } catch (UnknownTypeException ex) {
         }
         // No specific renderer
         return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

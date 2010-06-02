@@ -55,6 +55,7 @@ import org.netbeans.spi.viewmodel.TableRendererModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
 /**
@@ -76,17 +77,20 @@ class DelegatingCellEditor implements TableCellEditor {
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         Outline outline = (Outline) table;
         OutlineModel om = (OutlineModel) outline.getModel();
-        TreeModelNode tmn = (TreeModelNode) DelegatingCellRenderer.getNodeAt(om, row);
-        TableRendererModel trm = tmn.getModel();
-        try {
-            if (trm.canEditCell(tmn.getObject(), columnID)) {
-                TableCellEditor editor = trm.getCellEditor(tmn.getObject(), columnID);
-                if (editor != null) {
-                    currentEditor = editor;
-                    return editor.getTableCellEditorComponent(table, value, isSelected, row, column);
+        Node n = DelegatingCellRenderer.getNodeAt(om, row);
+        if (n instanceof TreeModelNode) {
+            TreeModelNode tmn = (TreeModelNode) n;
+            TableRendererModel trm = tmn.getModel();
+            try {
+                if (trm.canEditCell(tmn.getObject(), columnID)) {
+                    TableCellEditor editor = trm.getCellEditor(tmn.getObject(), columnID);
+                    if (editor != null) {
+                        currentEditor = editor;
+                        return editor.getTableCellEditorComponent(table, value, isSelected, row, column);
+                    }
                 }
+            } catch (UnknownTypeException ex) {
             }
-        } catch (UnknownTypeException ex) {
         }
         // No specific editor
         currentEditor = defaultEditor;
@@ -118,11 +122,14 @@ class DelegatingCellEditor implements TableCellEditor {
         //int column = outline.columnAtPoint(p);
         int row = outline.rowAtPoint(p);
         OutlineModel om = (OutlineModel) outline.getModel();
-        TreeModelNode tmn = (TreeModelNode) DelegatingCellRenderer.getNodeAt(om, row);
-        TableRendererModel trm = tmn.getModel();
-        try {
-            return trm.canEditCell(tmn.getObject(), columnID);
-        } catch (UnknownTypeException ex) {
+        Node n = DelegatingCellRenderer.getNodeAt(om, row);
+        if (n instanceof TreeModelNode) {
+            TreeModelNode tmn = (TreeModelNode) n;
+            TableRendererModel trm = tmn.getModel();
+            try {
+                return trm.canEditCell(tmn.getObject(), columnID);
+            } catch (UnknownTypeException ex) {
+            }
         }
         return defaultEditor.isCellEditable(anEvent);
     }
@@ -143,16 +150,19 @@ class DelegatingCellEditor implements TableCellEditor {
         //int column = outline.columnAtPoint(p);
         int row = outline.rowAtPoint(p);
         OutlineModel om = (OutlineModel) outline.getModel();
-        TreeModelNode tmn = (TreeModelNode) DelegatingCellRenderer.getNodeAt(om, row);
-        TableRendererModel trm = tmn.getModel();
-        try {
-            if (trm.canEditCell(tmn.getObject(), columnID)) {
-                TableCellEditor editor = trm.getCellEditor(tmn.getObject(), columnID);
-                if (editor != null) {
-                    return editor.shouldSelectCell(anEvent);
+        Node n = DelegatingCellRenderer.getNodeAt(om, row);
+        if (n instanceof TreeModelNode) {
+            TreeModelNode tmn = (TreeModelNode) n;
+            TableRendererModel trm = tmn.getModel();
+            try {
+                if (trm.canEditCell(tmn.getObject(), columnID)) {
+                    TableCellEditor editor = trm.getCellEditor(tmn.getObject(), columnID);
+                    if (editor != null) {
+                        return editor.shouldSelectCell(anEvent);
+                    }
                 }
+            } catch (UnknownTypeException ex) {
             }
-        } catch (UnknownTypeException ex) {
         }
         return defaultEditor.shouldSelectCell(anEvent);
     }
