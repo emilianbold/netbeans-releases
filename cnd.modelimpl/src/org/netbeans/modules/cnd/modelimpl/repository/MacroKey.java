@@ -70,6 +70,7 @@ final class MacroKey extends OffsetableKey {
     }
     
     
+    @Override
     public PersistentFactory getPersistentFactory() {
 	return CsmObjectFactory.instance();
     }

@@ -87,6 +87,7 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
+import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.repository.UserCredentialsSupport;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.KeyringSupport;
@@ -1784,36 +1785,39 @@ public class HgCommand {
             command.add(target); // target must be the last argument
 
             list = exec(command);
-            if (!list.isEmpty()) {
-                if (isErrorNoRepository(list.get(0))) {
-                    handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
-                } else if (isErrorNoResponse(list.get(list.size() - 1))) {
-                    handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_RESPONSE_ERR"), logger);
-                } else if (isErrorAbort(list.get(list.size() - 1))) {
-                    if ((credentials = handleAuthenticationError(list, target, rawUrl, credentials == null ? "" : credentials.getUserName(), new UserCredentialsSupport())) != null) { //NOI18N
-                        // try again with new credentials
-                        retry = true;
-                    } else {
-                        handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
-                    }
-                } else {
-                    // save credentials
-                    if (url.getPassword() != null && !supp.isKenai(rawUrl)) { // not kenai, credentials can be saved
-                        try {
-                            // for kenai this is handled in CloneAction
-                            HgModuleConfig.getDefault().setProperty(target, HgConfigFiles.HG_DEFAULT_PULL,
-                                    new HgURL(url.toUrlStringWithoutUserInfo(), url.getUsername(), null).toCompleteUrlString());
-                        } catch (URISyntaxException ex) {
-                            Mercurial.LOG.log(Level.INFO, null, ex);
-                        } catch (IOException ex) {
-                            Mercurial.LOG.log(Level.INFO, null, ex);
+            try {
+                if (!list.isEmpty()) {
+                    if (isErrorNoRepository(list.get(0))) {
+                        handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
+                    } else if (isErrorNoResponse(list.get(list.size() - 1))) {
+                        handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_RESPONSE_ERR"), logger);
+                    } else if (isErrorAbort(list.get(list.size() - 1))) {
+                        if ((credentials = handleAuthenticationError(list, target, rawUrl, credentials == null ? "" : credentials.getUserName(), new UserCredentialsSupport(), HG_CLONE_CMD)) != null) { //NOI18N
+                            // try again with new credentials
+                            retry = true;
+                        } else {
+                            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
                         }
-                        KeyringSupport.save(HgUtils.PREFIX_VERSIONING_MERCURIAL_URL, url.toHgCommandStringWithNoPassword(), url.getPassword().clone(), null);
+                    } else {
+                        // save credentials
+                        if (url.getPassword() != null && !supp.isKenai(rawUrl)) { // not kenai, credentials can be saved
+                            try {
+                                // for kenai this is handled in CloneAction
+                                HgModuleConfig.getDefault().setProperty(target, HgConfigFiles.HG_DEFAULT_PULL,
+                                        new HgURL(url.toUrlStringWithoutUserInfo(), url.getUsername(), null).toCompleteUrlString());
+                            } catch (URISyntaxException ex) {
+                                Mercurial.LOG.log(Level.INFO, null, ex);
+                            } catch (IOException ex) {
+                                Mercurial.LOG.log(Level.INFO, null, ex);
+                            }
+                            KeyringSupport.save(HgUtils.PREFIX_VERSIONING_MERCURIAL_URL, url.toHgCommandStringWithNoPassword(), url.getPassword().clone(), null);
+                        }
                     }
                 }
-            }
-            if (url != repository) {
-                url.clearPassword();
+            } finally {
+                if (url != repository) {
+                    url.clearPassword();
+                }
             }
         }
         return list;
@@ -3176,16 +3180,17 @@ public class HgCommand {
         }
     }
 
-    private static PasswordAuthentication handleAuthenticationError(List<String> cmdOutput, File repository, String url, String userName, UserCredentialsSupport credentialsSupport) {
-        return handleAuthenticationError(cmdOutput, repository, url, userName, credentialsSupport, true);
+    private static PasswordAuthentication handleAuthenticationError(List<String> cmdOutput, File repository, String url, String userName, UserCredentialsSupport credentialsSupport, String hgCommand) throws HgException {
+        return handleAuthenticationError(cmdOutput, repository, url, userName, credentialsSupport, hgCommand, true);
     }
 
-    private static PasswordAuthentication handleAuthenticationError(List<String> cmdOutput, File repository, String url, String userName, UserCredentialsSupport credentialsSupport, boolean showKenaiLoginDialog) {
+    private static PasswordAuthentication handleAuthenticationError(List<String> cmdOutput, File repository, String url, String userName, UserCredentialsSupport credentialsSupport, String hgCommand, boolean showKenaiLoginDialog) throws HgException {
         PasswordAuthentication credentials = null;
         String msg = cmdOutput.get(cmdOutput.size() - 1).toLowerCase();
         if (isAuthMsg(msg)) {
             HgKenaiAccessor support = HgKenaiAccessor.getInstance();
             if(support.isKenai(url) && showKenaiLoginDialog) {
+                checkKenaiPermissions(hgCommand, url, support);
                 // try to login
                 credentials = handleKenaiAuthorisation(support, url);
             } else {
@@ -3702,65 +3707,68 @@ public class HgCommand {
             HgURL url = remoteUrl;
             credentialsSupport = new UserCredentialsSupport();
             credentialsSupport.setShowSaveOption(showSaveOption);
-            while (retry) {
-                retry = false;
-                try {
-                    if (credentials != null) {
-                        url = new HgURL(remoteUrl.toHgCommandUrlString(), credentials.getUserName(), credentials.getPassword());
+            try {
+                while (retry) {
+                    retry = false;
+                    try {
+                        if (credentials != null) {
+                            url = new HgURL(remoteUrl.toHgCommandUrlString(), credentials.getUserName(), credentials.getPassword());
+                        }
+                    } catch (URISyntaxException ex) {
+                        // this should NEVER happen
+                        Mercurial.LOG.log(Level.SEVERE, null, ex);
+                        break;
                     }
-                } catch (URISyntaxException ex) {
-                    // this should NEVER happen
-                    Mercurial.LOG.log(Level.SEVERE, null, ex);
-                    break;
-                }
-                List<Object> command = new ArrayList<Object>();
+                    List<Object> command = new ArrayList<Object>();
 
-                command.add(hgCommand);
-                command.add(hgCommandType);
-                for (String s : additionalOptions) {
-                    command.add(s);
-                }
-                command.add(HG_OPT_REPOSITORY);
-                command.add(repository.getAbsolutePath());
-                command.add(url);
+                    command.add(hgCommand);
+                    command.add(hgCommandType);
+                    for (String s : additionalOptions) {
+                        command.add(s);
+                    }
+                    command.add(HG_OPT_REPOSITORY);
+                    command.add(repository.getAbsolutePath());
+                    command.add(url);
 
-                String proxy = getGlobalProxyIfNeeded(defaultUrl, outputDetails, logger);
-                if (proxy != null) {
-                    List<String> env = new ArrayList<String>();
-                    env.add(HG_PROXY_ENV + proxy);
-                    list = execEnv(command, env);
-                } else {
-                    list = exec(command);
-                }
-                // clear the cached password, remove it from memory
-                if (url != remoteUrl) {
-                    url.clearPassword();
-                }
-
-                if (!list.isEmpty() &&
-                        isErrorAbort(list.get(list.size() - 1))) {
-                    if (HG_PUSH_CMD.equals(hgCommandType) && isErrorAbortPush(list.get(list.size() - 1))) {
-                        //
+                    String proxy = getGlobalProxyIfNeeded(defaultUrl, outputDetails, logger);
+                    if (proxy != null) {
+                        List<String> env = new ArrayList<String>();
+                        env.add(HG_PROXY_ENV + proxy);
+                        list = execEnv(command, env);
                     } else {
-                        if ((credentials = handleAuthenticationError(list, repository, rawUrl, credentials == null ? "" : credentials.getUserName(), credentialsSupport, showLoginWindow)) != null) { //NOI18N
-                            // auth redone, try again
-                            retry = true;
-                            if (!supp.isKenai(rawUrl) && credentials != null) {
-                                try {
-                                    KeyringSupport.save(HgUtils.PREFIX_VERSIONING_MERCURIAL_URL, new HgURL(remoteUrl.toHgCommandUrlString(), credentials.getUserName(), null).toHgCommandStringWithNoPassword(), credentials.getPassword().clone(), null);
-                                } catch (URISyntaxException ex) {
-                                    Mercurial.LOG.log(Level.SEVERE, null, ex);
-                                }
-                            }
+                        list = exec(command);
+                    }
+                    // clear the cached password, remove it from memory
+                    if (url != remoteUrl) {
+                        url.clearPassword();
+                    }
+
+                    if (!list.isEmpty() &&
+                            isErrorAbort(list.get(list.size() - 1))) {
+                        if (HG_PUSH_CMD.equals(hgCommandType) && isErrorAbortPush(list.get(list.size() - 1))) {
+                            //
                         } else {
-                            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
+                            if ((credentials = handleAuthenticationError(list, repository, rawUrl, credentials == null ? "" : credentials.getUserName(), credentialsSupport, hgCommandType, showLoginWindow)) != null) { //NOI18N
+                                // auth redone, try again
+                                retry = true;
+                                if (!supp.isKenai(rawUrl) && credentials != null) {
+                                    try {
+                                        KeyringSupport.save(HgUtils.PREFIX_VERSIONING_MERCURIAL_URL, new HgURL(remoteUrl.toHgCommandUrlString(), credentials.getUserName(), null).toHgCommandStringWithNoPassword(), credentials.getPassword().clone(), null);
+                                    } catch (URISyntaxException ex) {
+                                        Mercurial.LOG.log(Level.SEVERE, null, ex);
+                                    }
+                                }
+                            } else {
+                                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
+                            }
                         }
                     }
                 }
-            }
-            if (!supp.isKenai(rawUrl) && credentials != null) {
-                savePathProperties();
-                Arrays.fill(credentials.getPassword(), '\0');
+            } finally {
+                if (!supp.isKenai(rawUrl) && credentials != null) {
+                    savePathProperties();
+                    Arrays.fill(credentials.getPassword(), '\0');
+                }
             }
             return list;
         }
@@ -3771,6 +3779,16 @@ public class HgCommand {
                     saveCredentials(pathProp);
                 }
             }
+        }
+    }
+
+    private static void checkKenaiPermissions (String hgCommand, String repositoryUrl, HgKenaiAccessor ka) throws HgException {
+        if (HG_PUSH_CMD.equals(hgCommand)) { //NOI18N
+            if (!ka.canWrite(repositoryUrl)) {
+                throw new HgException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.write")); //NOI18N
+            }
+        } else if (!ka.canRead(repositoryUrl)) {
+            throw new HgException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.read")); //NOI18N
         }
     }
 

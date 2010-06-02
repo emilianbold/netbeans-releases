@@ -109,6 +109,7 @@ public class SvnClientExceptionHandler {
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     private static final String CHARSET_NAME = "ASCII7";                        // NOI18N
     private final boolean commandLine;
+    private String methodName;
     
     private class CertificateFailure {
         int mask;
@@ -197,14 +198,26 @@ public class SvnClientExceptionHandler {
 
         return true;
     }
+    
+    void setMethod (String methodName) {
+        this.methodName = methodName;
+    }
 
-    private boolean handleRepositoryConnectError() {                
+    private boolean handleRepositoryConnectError() throws SVNClientException {
         SVNUrl url = getRemoteHostUrl(); // try to get the repository url from the svnclientdescriptor
 
 
         SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
-        if(support.isKenai(url.toString())) {
-            return support.showLogin() && handleKenaiAuthorisation(support, url.toString());
+        String sUrl = url.toString();
+        if(support.isKenai(sUrl)) {
+            if ("commit".equals(methodName)) { //NOI18N
+                if (!support.canWrite(sUrl)) {
+                    throw new SVNClientException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.write"));//NOI18N
+                }
+            } else if (!support.canRead(sUrl)) {
+                throw new SVNClientException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.read"));//NOI18N
+            }
+            return support.showLogin() && handleKenaiAuthorisation(support, sUrl);
         } else {
             Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);
