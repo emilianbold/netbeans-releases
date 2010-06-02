@@ -48,6 +48,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.openide.util.CharSequences;
 
 /**
  * A common ancestor for keys 
@@ -56,24 +57,25 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
 /*package*/
 abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
+    protected static final CharSequence NO_PROJECT = CharSequences.create("<No Project Name>"); // NOI18N
 
     protected final int fileNameIndex;
 
-    protected ProjectFileNameBasedKey(String prjName, CharSequence fileName) {
+    protected ProjectFileNameBasedKey(CharSequence prjName, CharSequence fileName) {
         super(prjName);
         assert fileName != null;
-        this.fileNameIndex = KeyUtilities.getFileIdByName(getUnitId(), fileName.toString());
+        this.fileNameIndex = KeyUtilities.getFileIdByName(getUnitId(), fileName);
     }
 
     protected ProjectFileNameBasedKey(FileImpl file) {
         this(getProjectName(file), file.getAbsolutePath());
     }
 
-    protected static String getProjectName(FileImpl file) {
+    protected static CharSequence getProjectName(FileImpl file) {
         assert (file != null);
         ProjectBase prj = file.getProjectImpl(true);
         assert (prj != null);
-        return prj == null ? "<No Project Name>" : prj.getUniqueName().toString();  // NOI18N
+        return prj == null ? NO_PROJECT : prj.getUniqueName();  // NOI18N
     }
 
     @Override
@@ -108,12 +110,12 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
         return fileNameIndex;
     }
 
-    protected String getFileName() {
+    protected CharSequence getFileName() {
         return KeyUtilities.getFileNameById(getUnitId(), this.fileNameIndex);
     }
 
     /** A special safe method, mainly for toString / tracing */
-    protected String getFileNameSafe() {
+    protected CharSequence getFileNameSafe() {
         return KeyUtilities.getFileNameByIdSafe(getUnitId(), this.fileNameIndex);
     }
 
