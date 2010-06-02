@@ -429,7 +429,6 @@ public class ProjectActionSupport {
             // Validate executable
             if (pae.getType() == PredefinedType.RUN
                     || pae.getType() == PredefinedType.DEBUG
-                    || pae.getType() == PredefinedType.DEBUG_LOAD_ONLY
                     || pae.getType() == PredefinedType.DEBUG_STEPINTO
                     || pae.getType() == PredefinedType.CHECK_EXECUTABLE
                     || pae.getType() == PredefinedType.CUSTOM_ACTION) {
