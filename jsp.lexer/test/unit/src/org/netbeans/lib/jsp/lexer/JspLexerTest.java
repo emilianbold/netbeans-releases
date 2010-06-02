@@ -45,19 +45,29 @@ package org.netbeans.lib.jsp.lexer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.spi.jsp.lexer.JspParseData;
+import org.openide.filesystems.FileObject;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.web.core.syntax.gsf.JspLanguage;
 
 /**Jsp Lexer Test
  *
  * @author Marek.Fukala@Sun.COM
  */
-public class JspLexerTest extends NbTestCase {
+public class JspLexerTest extends CslTestBase {
 
     public JspLexerTest() {
         super("JspLexerTest");
@@ -226,5 +236,41 @@ public class JspLexerTest extends NbTestCase {
     public void testRegressions() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testRegressions.jsp.txt",
                 JspTokenId.language());
+    }
+
+    public void testHashedEL() throws Exception {
+        testSyntaxTree("testHashedEL.jspx.txt");
+
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return "text/x-jsp";
+    }
+
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new JspLanguage();
+    }
+
+    private void testSyntaxTree(String testFile) throws Exception {
+        FileObject source = getTestFile("testfiles/" + testFile);
+        BaseDocument doc = getDocument(source);
+        
+        
+        JspParseData jspParseData = new JspParseData((Map<String,String>)Collections.EMPTY_MAP, true, true, true);
+
+        InputAttributes inputAttributes = new InputAttributes();
+        inputAttributes.setValue(JspTokenId.language(), JspParseData.class, jspParseData, false);
+        doc.putProperty(InputAttributes.class, inputAttributes);
+
+
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence ts = th.tokenSequence();
+
+
+        StringBuilder output = new StringBuilder(ts.toString());
+        
+        assertDescriptionMatches(source, output.toString(), false, ".pass", true);
     }
 }
