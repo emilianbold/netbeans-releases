@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -75,7 +76,8 @@ public class DeleteCreateTest extends NbTestCase {
         // ping
         File file = new File("dil");
         file = FileUtil.normalizeFile(file);                
-        final FileObject fo = FileUtil.toFileObject(file);                
+        final FileObject fo = FileUtil.toFileObject(file);
+        MockServices.setServices(DeleteCreateTestAnnotationProvider.class);
         // interceptor init
         DeleteCreateTestAnnotationProvider.instance.init();
     }

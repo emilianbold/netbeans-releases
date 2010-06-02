@@ -67,7 +67,6 @@ import org.openide.filesystems.FileUtil;
  *
  * @author tomas
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class)
 public class DeleteCreateTestAnnotationProvider extends AnnotationProvider {
 
     static DeleteCreateTestAnnotationProvider instance = null;
