@@ -161,6 +161,9 @@ public final class AttrSet implements AttributeSet, Iterable<Object> {
         AttrSet attrSet = null;
         for (int i = sets.length - 1; i >= 0; i--) {
             AttributeSet set = sets[i];
+            if (set == null) { // Skip null attribute set e.g. from html.editor's navigation sidebar
+                continue;
+            }
             if (attrSet == null) {
                 attrSet = toAttrSet(set);
             } else if (set == EMPTY) {

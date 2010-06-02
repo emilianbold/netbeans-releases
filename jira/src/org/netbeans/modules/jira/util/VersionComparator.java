@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,48 +34,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xml.wsdl.model;
+package org.netbeans.modules.jira.util;
 
-import javax.swing.text.Document;
-import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.wsdl.model.impl.WSDLModelImpl;
-import org.netbeans.modules.xml.xam.AbstractModelFactory;
-import org.openide.util.Lookup;
+import java.util.Comparator;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
+
 
 /**
  *
- * @author rico
+ * @author Tomas Stupka
  */
-public class WSDLModelFactory extends AbstractModelFactory<WSDLModel> {
-    
-    private static final WSDLModelFactory wsdlModelFactory = new WSDLModelFactory();
-    
-    public static WSDLModelFactory getDefault(){
-        return wsdlModelFactory;
-    }
-    
-    /** Creates a new instance of WSDLModelFactory */
-    private WSDLModelFactory() {
-    }
-
-    /**
-     * Gets WSDL model from given model source.  Model source should 
-     * provide lookup for:
-     * 1. FileObject of the model source
-     * 2. DataObject represent the model
-     * 3. Swing Document buffer for in-memory text of the model source
-     */
-    public WSDLModel getModel(ModelSource source) {
-        if (source == null) return null;
-        // The Document can be null if the file object is deleted.
-        // Lookup lookup = source.getLookup();
-        // assert lookup.lookup(Document.class) != null; 
-        return super.getModel(source);
-    }
-    
-    protected WSDLModel createModel(ModelSource source) {
-        return new WSDLModelImpl(source);
+public class VersionComparator implements Comparator<Version>{
+    @Override
+    public int compare(Version v1, Version v2) {
+        if(v1 == null && v2 == null) return 0;
+        if(v2 == null) return 1;
+        if(v1 == null) return -1;
+        return v1.getName().compareTo(v2.getName());
     }
 }
