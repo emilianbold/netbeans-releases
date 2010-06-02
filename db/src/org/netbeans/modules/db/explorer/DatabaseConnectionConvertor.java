@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -131,10 +131,6 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     
     private PCL listener;
 
-    private static DatabaseConnectionConvertor createProvider() {
-        return new DatabaseConnectionConvertor();
-    }
-    
     private DatabaseConnectionConvertor() {
         holder = new WeakReference<XMLDataObject>(null);
     }
