@@ -85,6 +85,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
@@ -237,7 +238,9 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     new Info(),
                     new AntClasspathClosureProviderImpl(),
                     new JCLogicalViewProvider(this),
-                    new JCProjectSources(this, antHelper, eval, getRoots()),
+                    QuerySupport.createSources(this, antHelper, eval,
+                            getRoots(),
+                            Roots.nonSourceRoots(ProjectPropertyNames.PROJECT_PROP_BUILD_DIR,ProjectPropertyNames.PROJECT_PROP_DIST_DIR)),
                     cpProvider,
                     new ProjectXmlSavedHookImpl(),
                     UILookupMergerSupport.createProjectOpenHookMerger(hook),
