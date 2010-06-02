@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.editor;
 
+import org.netbeans.modules.php.editor.PHPCompletionItem.BasicFieldItem;
+import org.netbeans.modules.php.editor.elements.PhpElementImpl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -73,6 +75,10 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
+import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.api.editor.PhpClass.Field;
+import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.PHPCompletionItem.MethodElementItem;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
@@ -705,6 +711,26 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                             ElementFilter.forName(NameKind.prefix(request.prefix)),
                             ElementFilter.forInstanceOf(TypeConstantElement.class)
                             );
+                    List<PhpBaseElement> extendedElements = request.result.getModel().getExtendedElements();
+                    for (PhpBaseElement phpBaseElement : extendedElements) {
+                        if (phpBaseElement instanceof PhpVariable) {
+                            PhpVariable variable  = (PhpVariable) phpBaseElement;
+                            final PhpClass type = variable.getType();
+                            final Collection<Field> fields = type.getFields();
+                            for (final Field field : fields) {
+                                final PhpClass fldType = field.getType();
+                                final PhpElementImpl fldHandle = PhpElementImpl.create(
+                                        field.getName(),
+                                        type.getName(),
+                                        field.getOffset(),
+                                        field.getFile(),
+                                        PhpElementKind.FIELD);
+                                BasicFieldItem fieldItem = PHPCompletionItem.BasicFieldItem.getItem(
+                                        fldHandle, fldType != null ? fldType.getName() : null, request);
+                                completionResult.add(fieldItem);
+                            }
+                        }
+                    }
                     for (final PhpElement phpElement : request.index.getAccessibleTypeMembers(typeScope, enclosingType)) {
                         if (methodsFilter.isAccepted(phpElement)) {
                             MethodElement method = (MethodElement) phpElement;
