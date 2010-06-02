@@ -138,41 +138,41 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     /** Creates a new instance of InstantRenamePerformer */
     private InstantRenamePerformer(JTextComponent target, Set<Token> highlights, int caretOffset) throws BadLocationException {
-	this.target = target;
-	doc = target.getDocument();
-	
-	MutablePositionRegion mainRegion = null;
-	List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
-        
-	for (Token h : highlights) {
+        this.target = target;
+        doc = target.getDocument();
+
+        MutablePositionRegion mainRegion = null;
+        List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
+
+        for (Token h : highlights) {
             // type parameter name is represented as html tag -> ignore surrounding <> in rename
             int delta = h.id() == JavadocTokenId.HTML_TAG ? 1 : 0;
-	    Position start = NbDocument.createPosition(doc, h.offset(null) + delta, Bias.Backward);
-	    Position end = NbDocument.createPosition(doc, h.offset(null) + h.length() - delta, Bias.Forward);
-	    MutablePositionRegion current = new MutablePositionRegion(start, end);
-	    
-	    if (isIn(current, caretOffset)) {
-		mainRegion = current;
-	    } else {
-		regions.add(current);
-	    }
-	}
-	
-	if (mainRegion == null) {
-	    throw new IllegalArgumentException("No highlight contains the caret.");
-	}
-	
-	regions.add(0, mainRegion);
-	
-	region = new SyncDocumentRegion(doc, regions);
-	
+            Position start = NbDocument.createPosition(doc, h.offset(null) + delta, Bias.Backward);
+            Position end = NbDocument.createPosition(doc, h.offset(null) + h.length() - delta, Bias.Forward);
+            MutablePositionRegion current = new MutablePositionRegion(start, end);
+
+            if (isIn(current, caretOffset)) {
+                mainRegion = current;
+            } else {
+                regions.add(current);
+            }
+        }
+
+        if (mainRegion == null) {
+            throw new IllegalArgumentException("No highlight contains the caret.");
+        }
+
+        regions.add(0, mainRegion);
+
+        region = new SyncDocumentRegion(doc, regions);
+
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).setPostModificationDocumentListener(this);
         }
-        
-	target.addKeyListener(this);
-	
-	target.putClientProperty(InstantRenamePerformer.class, this);
+
+        target.addKeyListener(this);
+
+        target.putClientProperty(InstantRenamePerformer.class, this);
 	
         requestRepaint();
         
@@ -202,6 +202,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             final boolean[] wasResolved = new boolean[1];
 
             Set<Token> changePoints = ComputeOffAWT.computeOffAWT(new Worker<Set<Token>>() {
+                @Override
                 public Set<Token> process(CompilationInfo info) {
                     try {
                         return computeChangePoints(info, caret, wasResolved);
@@ -250,6 +251,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         final boolean[] insideJavadoc = {false};
         
         doc.render(new Runnable() {
+            @Override
             public void run() {
                 TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(info.getTokenHierarchy(), caret);
                 
@@ -313,6 +315,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             return null;
         
         doc.render(new Runnable() {
+            @Override
             public void run() {
                 wasResolved[0] = name.offset(null) <= caret && caret <= (name.offset(null) + name.length());
             }
@@ -347,6 +350,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             final boolean[] overlapsWithGuardedBlocks = new boolean[1];
             
             doc.render(new Runnable() {
+                @Override
                 public void run() {
                     overlapsWithGuardedBlocks[0] = overlapsWithGuardedBlocks(doc, points);
                 }
@@ -417,9 +421,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             ElementKind enclosingKind = enclosing.getKind();
             boolean isEnclosingFinal = enclosing.getModifiers().contains(Modifier.FINAL)
                     // ann type is not final even if it cannot be subclassed
-                    || enclosingKind == ElementKind.ANNOTATION_TYPE
-                    // enum implementing an interface is not final even if it cannot be subclassed
-                    || enclosingKind == ElementKind.ENUM;
+                    || enclosingKind == ElementKind.ANNOTATION_TYPE;
             // do not try to rename members of class that extends or implements anything
             // it would require deeper analyze
             boolean isSubclass = enclosingKind == ElementKind.CLASS
@@ -466,7 +468,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     
     public static void performInstantRename(JTextComponent target, Set<Token> highlights, int caretOffset) throws BadLocationException {
-	new InstantRenamePerformer(target, highlights, caretOffset);
+        new InstantRenamePerformer(target, highlights, caretOffset);
     }
 
     private boolean isIn(MutablePositionRegion region, int caretOffset) {
@@ -475,6 +477,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     private boolean inSync;
     
+    @Override
     public synchronized void insertUpdate(DocumentEvent e) {
 	if (inSync)
 	    return ;
@@ -485,14 +488,15 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             return;
         }
         
-	inSync = true;
-	region.sync(0);
+        inSync = true;
+        region.sync(0);
         span = region.getFirstRegionLength();
-	inSync = false;
+        inSync = false;
         
-	requestRepaint();
+        requestRepaint();
     }
 
+    @Override
     public synchronized void removeUpdate(DocumentEvent e) {
 	if (inSync)
 	    return ;
@@ -505,10 +509,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 
             if (e.getOffset() == region.getFirstRegionStartOffset() && region.getFirstRegionLength() > 0 && region.getFirstRegionLength() == span) {
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("e.getOffset()=" + e.getOffset());
-                    LOG.fine("region.getFirstRegionStartOffset()=" + region.getFirstRegionStartOffset());
-                    LOG.fine("region.getFirstRegionEndOffset()=" + region.getFirstRegionEndOffset());
-                    LOG.fine("span= " + span);
+                    LOG.log(Level.FINE, "e.getOffset()={0}", e.getOffset ());
+                    LOG.log(Level.FINE, "region.getFirstRegionStartOffset()={0}", region.getFirstRegionStartOffset ());
+                    LOG.log(Level.FINE, "region.getFirstRegionEndOffset()={0}", region.getFirstRegionEndOffset ());
+                    LOG.log(Level.FINE, "span= {0}", span);
                 }
                 JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
                 
@@ -523,10 +527,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             
             if (e.getOffset() == region.getFirstRegionEndOffset() && region.getFirstRegionLength() > 0 && region.getFirstRegionLength() == span) {
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("e.getOffset()=" + e.getOffset());
-                    LOG.fine("region.getFirstRegionStartOffset()=" + region.getFirstRegionStartOffset());
-                    LOG.fine("region.getFirstRegionEndOffset()=" + region.getFirstRegionEndOffset());
-                    LOG.fine("span= " + span);
+                    LOG.log(Level.FINE, "e.getOffset()={0}", e.getOffset ());
+                    LOG.log(Level.FINE, "region.getFirstRegionStartOffset()={0}", region.getFirstRegionStartOffset ());
+                    LOG.log(Level.FINE, "region.getFirstRegionEndOffset()={0}", region.getFirstRegionEndOffset ());
+                    LOG.log(Level.FINE, "span= {0}", span);
                 }
             //XXX: moves the caret anyway:
 //                JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
@@ -541,10 +545,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             }
             if (e.getOffset() == region.getFirstRegionEndOffset() && e.getOffset() == region.getFirstRegionStartOffset() && region.getFirstRegionLength() == 0 && region.getFirstRegionLength() == span) {
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("e.getOffset()=" + e.getOffset());
-                    LOG.fine("region.getFirstRegionStartOffset()=" + region.getFirstRegionStartOffset());
-                    LOG.fine("region.getFirstRegionEndOffset()=" + region.getFirstRegionEndOffset());
-                    LOG.fine("span= " + span);
+                    LOG.log(Level.FINE, "e.getOffset()={0}", e.getOffset ());
+                    LOG.log(Level.FINE, "region.getFirstRegionStartOffset()={0}", region.getFirstRegionStartOffset ());
+                    LOG.log(Level.FINE, "region.getFirstRegionEndOffset()={0}", region.getFirstRegionEndOffset ());
+                    LOG.log(Level.FINE, "span= {0}", span);
                 }
                 
                 JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
@@ -573,31 +577,36 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             return ;
         }
         
-	inSync = true;
-	region.sync(0);
+        inSync = true;
+        region.sync(0);
         span = region.getFirstRegionLength();
-	inSync = false;
+        inSync = false;
         
-	requestRepaint();
+        requestRepaint();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
     }
 
     public void caretUpdate(CaretEvent e) {
     }
 
+    @Override
     public void keyTyped(KeyEvent e) {
     }
 
+    @Override
     public synchronized void keyPressed(KeyEvent e) {
-	if (   (e.getKeyCode() == KeyEvent.VK_ESCAPE && e.getModifiers() == 0) 
-            || (e.getKeyCode() == KeyEvent.VK_ENTER  && e.getModifiers() == 0)) {
-	    release();
-	    e.consume();
-	}
+        if (   (e.getKeyCode() == KeyEvent.VK_ESCAPE && e.getModifiers() == 0) ||
+               (e.getKeyCode() == KeyEvent.VK_ENTER  && e.getModifiers() == 0)
+        ) {
+            release();
+            e.consume();
         }
+    }
 
+    @Override
     public void keyReleased(KeyEvent e) {
     }
 
@@ -607,19 +616,19 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             return ;
         }
         
-	target.putClientProperty(InstantRenamePerformer.class, null);
+        target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).setPostModificationDocumentListener(null);
         }
-	target.removeKeyListener(this);
-	target = null;
+        target.removeKeyListener(this);
+        target = null;
 
-	region = null;
+        region = null;
         attribs = null;
         
         requestRepaint();
 
-	doc = null;
+        doc = null;
     }
 
     private void undo() {
