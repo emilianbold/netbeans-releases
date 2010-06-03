@@ -79,14 +79,7 @@ import org.openide.util.WeakListeners;
 /**
  * Implementation of {@link Sources} interface.
  */
-<<<<<<< local
-public class J2SESources implements Sources, PropertyChangeListener, ChangeListener  {
-    
-    private static final String BUILD_DIR_PROP = "${" + ProjectProperties.BUILD_DIR + "}";    //NOI18N
-    private static final String DIST_DIR_PROP = "${" + J2SEProjectProperties.DIST_DIR + "}";    //NOI18N
-=======
 final class SourcesImpl implements Sources, SourceGroupModifierImplementation, PropertyChangeListener, ChangeListener  {
->>>>>>> other
 
     private final Project project;
     private final AntProjectHelper helper;
@@ -262,13 +255,7 @@ final class SourcesImpl implements Sources, SourceGroupModifierImplementation, P
         String propName = evt.getPropertyName();
         // was listening to PROP_ROOT_PROPERTIES, changed to PROP_ROOTS in #143633 as changes
         // from SourceGroupModifierImplementation need refresh too
-<<<<<<< local
-        if (SourceRoots.PROP_ROOTS.equals(propName)  ||
-            ProjectProperties.BUILD_DIR.equals(propName)  ||
-            J2SEProjectProperties.DIST_DIR.equals(propName)) {
-=======
         if (SourceRoots.PROP_ROOTS.equals(propName)) {
->>>>>>> other
             this.fireChange();
         }
     }
