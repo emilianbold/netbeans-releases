@@ -77,6 +77,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
+import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSClientSupport;
@@ -398,7 +399,6 @@ public class EjbJarProject implements Project, FileChangeListener {
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), EjbJarProjectProperties.SOURCE_ENCODING);
-        EjbJarSources sources = new EjbJarSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         Lookup base = Lookups.fixed(new Object[] {
                 EjbJarProject.this, // never cast an externally obtained Project to EjbJarProject - use lookup instead
                 buildExtender,
@@ -427,8 +427,11 @@ public class EjbJarProject implements Project, FileChangeListener {
                 UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
                 QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
                 QuerySupport.createSourceLevelQuery(evaluator()),
-                sources,
-                sources.getSourceGroupModifierImplementation(),
+                QuerySupport.createSources(this, helper, evaluator(),
+                        getSourceRoots(),
+                        getTestSourceRoots(),
+                        Roots.propertyBased(new String[]{EjbJarProjectProperties.META_INF}, new String[]{NbBundle.getMessage(EjbJarLogicalViewProvider.class, "LBL_Node_DocBase")}, false, null, null),
+                        Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, EjbJarProjectProperties.DIST_DIR)),
                 QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                         EjbJarProjectProperties.META_INF),
                 QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),

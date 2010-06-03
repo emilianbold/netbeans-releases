@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,50 +42,54 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.wizards;
+package org.netbeans.modules.java.api.common;
 
-import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.openide.WizardDescriptor;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Alexander Simon
+ * @author Tomas Zezula
  */
-public interface IteratorExtension {
-    /**
-     * Methods for incorporating discovery in new make project wizard
-     * @param wizard
-     * @return
-     */
-    boolean isApplicable(WizardDescriptor wizard);
+public class TestRoots extends Roots {
 
-    String getProviderID(WizardDescriptor wizard);
+    public static final String TYPE_TEST = "test"; //NOI18N
 
-    Map<String,Object> clone(WizardDescriptor wizard);
+    private final Map<String,String> props = new HashMap<String, String>();
+    private final AntProjectHelper helper;
 
-    boolean canApply(WizardDescriptor wizard, Project project);
+    public TestRoots (final AntProjectHelper helper) {
+        super(true,true,TYPE_TEST,null);
+        this.helper=helper;
+    }
 
-    boolean canApply(Map<String,Object> map, Project project);
-    
-    void apply(WizardDescriptor wizard, Project project) throws IOException;
+    public void addRoot(final String prop, final FileObject root, String name) {
+        props.put(prop, name);
+        final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        props.setProperty(prop, root.getName());
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        firePropertyChange(SourceRoots.PROP_ROOTS, null, null);
+    }
 
-    void apply(Map<String,Object> map, Project project) throws IOException;
-    
-    void uninitialize(WizardDescriptor wizard);
+    public void removeRoot(final String prop) {
+        props.remove(prop);
+        final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        props.remove(prop);
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        //fire by putProperties
+    }
 
-    void openFunction(String functionName, Project project);
+    @Override
+    public String[] getRootDisplayNames() {
+        return props.values().toArray(new String[props.size()]);
+    }
 
-    /**
-     * Method delegates a project creating to discovery.
-     * Instantiate make project in simple mode.
-     * 
-     * @param wizard
-     * @return set make project
-     * @throws java.io.IOException
-     */
-    Set<FileObject> createProject(WizardDescriptor wizard) throws IOException;
+    @Override
+    public String[] getRootProperties() {
+        return props.keySet().toArray(new String[props.size()]);
+    }
+
 }
