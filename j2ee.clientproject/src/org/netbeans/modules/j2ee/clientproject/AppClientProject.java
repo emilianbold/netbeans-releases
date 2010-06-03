@@ -88,6 +88,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation2;
+import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
@@ -290,7 +291,6 @@ public final class AppClientProject implements Project, FileChangeListener {
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING);
-        AppClientSources sources = new AppClientSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         Lookup base = Lookups.fixed(new Object[] {
             QuerySupport.createProjectInformation(helper, this, CAR_PROJECT_ICON),
             aux,
@@ -310,8 +310,11 @@ public final class AppClientProject implements Project, FileChangeListener {
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(),getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
-            sources,
-            sources.getSourceGroupModifierImplementation(),
+            QuerySupport.createSources(this, helper, evaluator(),
+                    getSourceRoots(),
+                    getTestSourceRoots(),
+                    Roots.propertyBased(new String[]{AppClientProjectProperties.META_INF}, new String[]{NbBundle.getMessage(AppClientLogicalViewProvider.class, "LBL_Node_ConfFiles")}, false, null, null),
+                    Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, AppClientProjectProperties.DIST_DIR)),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                     AppClientProjectProperties.META_INF),
             QuerySupport.createFileBuiltQuery(helper,  evaluator(), getSourceRoots(), getTestSourceRoots()),
