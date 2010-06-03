@@ -75,6 +75,7 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JToolTip;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -1138,6 +1139,70 @@ public class OutlineView extends JScrollPane {
         void setTreeSortable(boolean treeSortable) {
             this.treeSortable = treeSortable;
         }
+
+        private JToolTip toolTip = null;
+
+        @Override
+        public String getToolTipText(MouseEvent event) {
+            try {
+                // Required to really get the tooltip text:
+                putClientProperty("ComputingTooltip", Boolean.TRUE);
+
+                toolTip = null;
+                String tipText = null;
+                Point p = event.getPoint();
+
+                // Locate the renderer under the event location
+                int hitColumnIndex = columnAtPoint(p);
+                int hitRowIndex = rowAtPoint(p);
+
+                if ((hitColumnIndex != -1) && (hitRowIndex != -1)) {
+                    TableCellRenderer renderer = getCellRenderer(hitRowIndex, hitColumnIndex);
+                    Component component = prepareRenderer(renderer, hitRowIndex, hitColumnIndex);
+
+                    // Now have to see if the component is a JComponent before
+                    // getting the tip
+                    if (component instanceof JComponent) {
+                        // Convert the event to the renderer's coordinate system
+                        Rectangle cellRect = getCellRect(hitRowIndex, hitColumnIndex, false);
+                        p.translate(-cellRect.x, -cellRect.y);
+                        MouseEvent newEvent = new MouseEvent(component, event.getID(),
+                                                  event.getWhen(), event.getModifiers(),
+                                                  p.x, p.y,
+                                                  event.getXOnScreen(),
+                                                  event.getYOnScreen(),
+                                                  event.getClickCount(),
+                                                  event.isPopupTrigger(),
+                                                  MouseEvent.NOBUTTON);
+
+                        tipText = ((JComponent)component).getToolTipText(newEvent);
+                        toolTip = ((JComponent)component).createToolTip();
+                    }
+                }
+
+                // No tip from the renderer get our own tip
+                if (tipText == null)
+                    tipText = getToolTipText();
+                
+                return tipText;
+            } finally {
+                putClientProperty("ComputingTooltip", Boolean.FALSE);
+            }
+            //return super.getToolTipText(event);
+        }
+
+        @Override
+        public JToolTip createToolTip() {
+            JToolTip t = toolTip;
+            toolTip = null;
+            if (t != null) {
+                return t;
+            } else {
+                return super.createToolTip();
+            }
+        }
+
+
 
         /**
          * Extension of ETableColumn using TableViewRowComparator as
