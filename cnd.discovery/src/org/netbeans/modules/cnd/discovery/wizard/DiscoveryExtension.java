@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,12 +55,15 @@ import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -69,20 +71,28 @@ import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel.MyProgress;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.class)
-public class DiscoveryExtension implements IteratorExtension {
+public class DiscoveryExtension implements IteratorExtension, DiscoveryExtensionInterface {
+    private static final RequestProcessor RP = new RequestProcessor(RunDialogPanel.class.getName(), 2);
     
     /** Creates a new instance of DiscoveryExtension */
     public DiscoveryExtension() {
@@ -94,14 +104,6 @@ public class DiscoveryExtension implements IteratorExtension {
     }
 
     @Override
-    public void apply(WizardDescriptor wizard, Project project) throws IOException {
-        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
-        descriptor.setProject(project);
-        DiscoveryProjectGenerator generator = new DiscoveryProjectGenerator(descriptor);
-        generator.makeProject();
-    }
-    
-    @Override
     public void apply(Map<String, Object> map, Project project) throws IOException {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         descriptor.setProject(project);
@@ -109,28 +111,11 @@ public class DiscoveryExtension implements IteratorExtension {
         generator.makeProject();
     }
 
-
-    @Override
-    public Map<String,Object> clone(WizardDescriptor wizard){
-        Map<String,Object> map = new HashMap<String,Object>();
-        map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, wizard.getProperty("buildCommandWorkingDirTextField")); // NOI18N
-        map.put(DiscoveryWizardDescriptor.BUILD_RESULT, wizard.getProperty("outputTextField")); // NOI18N
-        map.put(DiscoveryWizardDescriptor.ADDITIONAL_LIBRARIES, wizard.getProperty("additionalLibraries")); // NOI18N
-        map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, wizard.getProperty("consolidationLevel")); // NOI18N
-        return map;
-    }
-    
-    @Override
-    public void uninitialize(WizardDescriptor wizard) {
-        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
-        descriptor.clean();
-    }
-    
-    public IteratorExtension.Applicable isApplicable(DiscoveryDescriptor descriptor) {
+    public DiscoveryExtensionInterface.Applicable isApplicable(DiscoveryDescriptor descriptor) {
         Progress progress = new MyProgress();
         progress.start(0);
         try {
-            IteratorExtension.Applicable applicable = isApplicableDwarfExecutable(descriptor);
+            DiscoveryExtensionInterface.Applicable applicable = isApplicableDwarfExecutable(descriptor);
             if (applicable.isApplicable()){
                 return applicable;
             }
@@ -144,7 +129,7 @@ public class DiscoveryExtension implements IteratorExtension {
         }
     }
     
-    private IteratorExtension.Applicable isApplicableDwarfExecutable(DiscoveryDescriptor descriptor){
+    private DiscoveryExtensionInterface.Applicable isApplicableDwarfExecutable(DiscoveryDescriptor descriptor){
         String selectedExecutable = descriptor.getBuildResult();
         if (selectedExecutable == null) {
             return ApplicableImpl.NotApplicable;
@@ -167,7 +152,7 @@ public class DiscoveryExtension implements IteratorExtension {
         return ApplicableImpl.NotApplicable;
     }
 
-    private IteratorExtension.Applicable  isApplicableDwarfFolder(DiscoveryDescriptor descriptor){
+    private DiscoveryExtensionInterface.Applicable  isApplicableDwarfFolder(DiscoveryDescriptor descriptor){
         String rootFolder = descriptor.getRootFolder();
         if (rootFolder == null) {
             return ApplicableImpl.NotApplicable;
@@ -185,7 +170,7 @@ public class DiscoveryExtension implements IteratorExtension {
         return ApplicableImpl.NotApplicable;
     }
 
-    private IteratorExtension.Applicable  isApplicableMakeLog(DiscoveryDescriptor descriptor){
+    private DiscoveryExtensionInterface.Applicable  isApplicableMakeLog(DiscoveryDescriptor descriptor){
         String rootFolder = descriptor.getRootFolder();
         if (rootFolder == null) {
             return ApplicableImpl.NotApplicable;
@@ -204,30 +189,9 @@ public class DiscoveryExtension implements IteratorExtension {
         return ApplicableImpl.NotApplicable;
     }
     
-    @Override
-    public IteratorExtension.Applicable isApplicable(WizardDescriptor wizard) {
-        String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
-        String rootFolder = (String)wizard.getProperty("buildCommandWorkingDirTextField"); // NOI18N
-        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
-        descriptor.setBuildResult(selectedExecutable);
-        descriptor.setRootFolder(rootFolder);
-        return isApplicable(descriptor);
-    }
-
-    @Override
-    public IteratorExtension.Applicable isApplicable(Map<String,Object> map, Project project) {
-        //String selectedExecutable = (String)map.get("outputTextField"); // NOI18N
-        //String rootFolder = (String)map.get("buildCommandWorkingDirTextField"); // NOI18N
+    private DiscoveryExtensionInterface.Applicable isApplicable(Map<String,Object> map, Project project) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
-        //descriptor.setBuildResult(selectedExecutable);
-        //descriptor.setRootFolder(rootFolder);
         return isApplicable(descriptor);
-    }
-    
-    @Override
-    public String getProviderID(WizardDescriptor wizard){
-        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
-        return descriptor.getProviderID();
     }
     
     public boolean canApply(DiscoveryDescriptor descriptor) {
@@ -272,19 +236,6 @@ public class DiscoveryExtension implements IteratorExtension {
     }
     
     @Override
-    public boolean canApply(WizardDescriptor wizard, Project project) {
-        String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
-        String additional = (String)wizard.getProperty("additionalLibraries"); // NOI18N
-        String level = (String)wizard.getProperty("consolidationLevel"); // NOI18N
-        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
-        descriptor.setBuildResult(selectedExecutable);
-        descriptor.setAditionalLibraries(additional);
-        descriptor.setLevel(level);
-        descriptor.setProject(project);
-        return canApply(descriptor);
-    }
-
-    @Override
     public boolean canApply(Map<String, Object> map, Project project) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         descriptor.setProject(project);
@@ -303,8 +254,7 @@ public class DiscoveryExtension implements IteratorExtension {
 
     private static final List<CsmProgressListener> listeners = new ArrayList<CsmProgressListener>(1);
 
-    @Override
-    public void openFunction(final String functionName, Project makeProject) {
+    private void openFunction(final String functionName, Project makeProject) {
         if (makeProject != null) {
             final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             CsmProgressListener listener = new CsmProgressAdapter() {
@@ -327,6 +277,66 @@ public class DiscoveryExtension implements IteratorExtension {
             };
             listeners.add(listener);
             CsmListeners.getDefault().addProgressListener(listener);
+        }
+    }
+
+    @Override
+    public void discoverProject(final Map<String, Object> map, final Project lastSelectedProject, final String functionToOpen) {
+        switchModel(false, lastSelectedProject);
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
+                Applicable applicable = isApplicable(map, lastSelectedProject);
+                if (applicable.isApplicable()) {
+                    String preferredCompiler = applicable.getCompilerName();
+                    resetCompilerSet(configurationDescriptor.getActiveConfiguration(), preferredCompiler);
+                    if (canApply(map, lastSelectedProject)) {
+                        try {
+                            apply(map, lastSelectedProject);
+                            configurationDescriptor.setModified();
+                            configurationDescriptor.save();
+                            configurationDescriptor.checkForChangedItems(lastSelectedProject, null, null);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+                switchModel(true, lastSelectedProject);
+                if (functionToOpen != null) {
+                    openFunction(functionToOpen, lastSelectedProject);
+                }
+            }
+        });
+    }
+
+    private void switchModel(boolean state, Project makeProject) {
+        CsmModel model = CsmModelAccessor.getModel();
+        if (model instanceof ModelImpl && makeProject != null) {
+            NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+            if (state) {
+                ((ModelImpl) model).enableProject(np);
+            } else {
+                ((ModelImpl) model).disableProject(np);
+            }
+        }
+    }
+
+    private void resetCompilerSet(MakeConfiguration configuration, String preferredCompiler){
+        if (configuration != null) {
+            if (preferredCompiler != null && preferredCompiler.length()>2) {
+                if (preferredCompiler.indexOf("GNU") >= 0 || // NOI18N
+                    preferredCompiler.indexOf("gcc") >= 0 || // NOI18N
+                    preferredCompiler.indexOf("g++") >= 0) { // NOI18N
+                    configuration.getCompilerSet().setCompilerSetName(new StringConfiguration(null, "GNU")); // NOI18N
+                } else if (preferredCompiler.indexOf("Sun") >= 0 || // NOI18N
+                           preferredCompiler.indexOf("CC") >= 0 || // NOI18N
+                           preferredCompiler.indexOf("cc") >= 0) { // NOI18N
+                    configuration.getCompilerSet().setCompilerSetName(new StringConfiguration(null, "OracleSolarisStudio")); // NOI18N
+                }
+            }
         }
     }
 

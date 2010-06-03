@@ -51,12 +51,12 @@ import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.FolderProperties;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.*;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 
 /**
  *
@@ -67,7 +67,7 @@ public class DwarfAnalyzer {
     public static void analyze(String[] files){
         DwarfProvider provider = new DwarfProvider() {
             @Override
-            public IteratorExtension.Applicable canAnalyze(ProjectProxy project) {
+            public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
                 return new ApplicableImpl(true, null, 1);
             }
         };

@@ -50,13 +50,13 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.NbBundle;
 
@@ -226,7 +226,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     }
     
     @Override
-    public IteratorExtension.Applicable canAnalyze(ProjectProxy project) {
+    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
         String set = (String)getProperty(MAKE_LOG_KEY).getValue();
         if (set == null || set.length() == 0) {
             set = detectMakeLog(project);
