@@ -42,25 +42,28 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.j2seproject;
+package org.netbeans.modules.java.api.common.queries;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.modules.java.api.common.Roots;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.impl.RootsAccessor;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.GenericSources;
@@ -71,39 +74,39 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
- * Implementation of {@link Sources} interface for J2SEProject.
+ * Implementation of {@link Sources} interface.
  */
-public class J2SESources implements Sources, PropertyChangeListener, ChangeListener  {
-    
-    private static final String BUILD_DIR_PROP = "${" + ProjectProperties.BUILD_DIR + "}";    //NOI18N
-    private static final String DIST_DIR_PROP = "${" + J2SEProjectProperties.DIST_DIR + "}";    //NOI18N
+final class SourcesImpl implements Sources, SourceGroupModifierImplementation, PropertyChangeListener, ChangeListener  {
 
     private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
-    private final SourceRoots sourceRoots;
-    private final SourceRoots testRoots;
+    private final List<? extends Roots> roots;
     private boolean dirty;
     private final Map<String,SourceGroup[]> cachedGroups = new ConcurrentHashMap<String,SourceGroup[]>();
     private long eventId;
     private Sources delegate;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private SourceGroupModifierImplementation sgmi;
+    private final SourceGroupModifierImplementation sgmi;
     private final FireAction fireTask = new FireAction();
 
-    J2SESources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator,
-                SourceRoots sourceRoots, SourceRoots testRoots) {
+    @SuppressWarnings("LeakingThisInConstructor")
+    SourcesImpl(Project project, AntProjectHelper helper, PropertyEvaluator evaluator,
+                Roots... roots) {
         this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;
-        this.sourceRoots = sourceRoots;
-        this.testRoots = testRoots;
-        this.sourceRoots.addPropertyChangeListener(this);
-        this.testRoots.addPropertyChangeListener(this);        
-        this.evaluator.addPropertyChangeListener(this);
-        delegate = initSources(); // have to register external build roots eagerly
+        this.roots = Collections.unmodifiableList(Arrays.asList(roots));
+        for (Roots r : this.roots) {
+            r.addPropertyChangeListener(WeakListeners.propertyChange(this, r));
+        }
+        final SourcesHelper sh = initSources();
+        assert sh != null;
+        sgmi = sh.createSourceGroupModifierImplementation();
+        delegate = sh.createSources(); // have to register external build roots eagerly
     }
 
     /**
@@ -113,6 +116,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
      * is created. These instance is cleared also in the synchronized block by the
      * {@link J2SESources#fireChange} method.
      */
+    @Override
     public SourceGroup[] getSourceGroups(final String type) {
         final SourceGroup[] _cachedGroups = this.cachedGroups.get(type);
         if (_cachedGroups != null) {
@@ -122,11 +126,11 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
             public SourceGroup[] run() {
                 Sources _delegate;
                 long myEventId;
-                synchronized (J2SESources.this) {                    
+                synchronized (SourcesImpl.this) {
                     if (dirty) {
-                        delegate.removeChangeListener(J2SESources.this);
-                        delegate = initSources();
-                        delegate.addChangeListener(J2SESources.this);
+                        delegate.removeChangeListener(SourcesImpl.this);
+                        delegate = initSources().createSources();
+                        delegate.addChangeListener(SourcesImpl.this);
                         dirty = false;
                     }
                     _delegate = delegate;
@@ -138,23 +142,43 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
                     if (libLoc != null) {
                         SourceGroup[] grps = new SourceGroup[groups.length + 1];
                         System.arraycopy(groups, 0, grps, 0, groups.length);
-                        grps[grps.length - 1] = GenericSources.group(null, libLoc, 
+                        grps[grps.length - 1] = GenericSources.group(null, libLoc,
                                 "sharedlibraries", // NOI18N
-                                NbBundle.getMessage(J2SESources.class, "LibrarySourceGroup_DisplayName"), 
+                                NbBundle.getMessage(SourcesImpl.class, "LibrarySourceGroup_DisplayName"),
                                 null, null);
                         groups = grps;
                     }
                 }
-                synchronized (J2SESources.this) {
+                synchronized (SourcesImpl.this) {
                     if (myEventId == eventId) {
-                        J2SESources.this.cachedGroups.put(type, groups);
+                        SourcesImpl.this.cachedGroups.put(type, groups);
                     }
                 }
                 return groups;
             }
         });
     }
-    
+
+    @Override
+    public SourceGroup createSourceGroup(String type, String hint) {
+        return sgmi.createSourceGroup(type, hint);
+    }
+
+    @Override
+    public boolean canCreateSourceGroup(String type, String hint) {
+        return sgmi.canCreateSourceGroup(type, hint);
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener changeListener) {
+        changeSupport.addChangeListener(changeListener);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener changeListener) {
+        changeSupport.removeChangeListener(changeListener);
+    }
+
     private FileObject getSharedLibraryFolderLocation() {
         String libLoc = helper.getLibrariesLocation();
         if (libLoc != null) {
@@ -174,66 +198,72 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
         return null;
     }
 
-    SourceGroupModifierImplementation getSourceGroupModifierImplementation() {
-        return sgmi;
-    }
-    
-    private Sources initSources() {
+    private SourcesHelper initSources() {
         final SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH
-        register(sourcesHelper, sourceRoots, JavaProjectConstants.SOURCES_HINT_MAIN);
-        register(sourcesHelper, testRoots, JavaProjectConstants.SOURCES_HINT_TEST);
-        sourcesHelper.addNonSourceRoot(BUILD_DIR_PROP);
-        sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
+        for (Roots r : roots) {
+            if (RootsAccessor.getInstance().isSourceRoot(r)) {
+                registerSources(sourcesHelper, r);
+            } else {
+                registerNonSources(sourcesHelper, r);
+            }
+        }
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT, false);
-        sgmi = sourcesHelper.createSourceGroupModifierImplementation();
-        return sourcesHelper.createSources();
+        return sourcesHelper;
     }
 
-    private void register(SourcesHelper sourcesHelper, SourceRoots roots, String hint) {
+    private void registerSources(SourcesHelper sourcesHelper, Roots roots) {
         String[] propNames = roots.getRootProperties();
-        String[] rootNames = roots.getRootNames();
+        String[] displayNames = roots.getRootDisplayNames();
         for (int i = 0; i < propNames.length; i++) {
-            String prop = propNames[i];
-            String displayName = roots.getRootDisplayName(rootNames[i], prop);
-            String loc = "${" + prop + "}"; // NOI18N
-            String includes = "${" + ProjectProperties.INCLUDES + "}"; // NOI18N
-            String excludes = "${" + ProjectProperties.EXCLUDES + "}"; // NOI18N
-            sourcesHelper.sourceRoot(loc).includes(includes).excludes(excludes).hint(hint).displayName(displayName)
-                    .add() // principal root
-                    .type(JavaProjectConstants.SOURCES_TYPE_JAVA).add();    // typed root
+            final String prop = propNames[i];
+            final String loc = "${" + prop + "}"; // NOI18N
+            final SourcesHelper.SourceRootConfig cfg = sourcesHelper.sourceRoot(loc);
+            cfg.displayName(displayNames[i]);
+            if (RootsAccessor.getInstance().supportIncludes(roots)) {
+                final String includes = "${" + ProjectProperties.INCLUDES + "}"; // NOI18N
+                final String excludes = "${" + ProjectProperties.EXCLUDES + "}"; // NOI18N
+                cfg.includes(includes);
+                cfg.excludes(excludes);
+            }
+            final String hint = RootsAccessor.getInstance().getHint(roots);
+            if (hint != null) {
+                cfg.hint(hint);
+            }
+            cfg.add();  // principal root
+            final String type = RootsAccessor.getInstance().getType(roots);
+            if (type != null) {
+                cfg.type(type).add();    // typed root
+            }
         }
     }
 
-    public void addChangeListener(ChangeListener changeListener) {
-        changeSupport.addChangeListener(changeListener);
-    }
-
-    public void removeChangeListener(ChangeListener changeListener) {
-        changeSupport.removeChangeListener(changeListener);
+    private void registerNonSources(final SourcesHelper sourcesHelper, final Roots nonSources) {
+        for (String nonSourceRootProp : nonSources.getRootProperties()) {
+            sourcesHelper.addNonSourceRoot(String.format("${%s}", nonSourceRootProp));
+        }
     }
 
     private void fireChange() {
         synchronized (this) {
             cachedGroups.clear();   //threading: CHM.clear is not atomic, the getSourceGroup may return staled data which is not a problem in this case.
             dirty = true;
-        }        
+        }
         ProjectManager.mutex().postReadRequest(fireTask.activate());
     }
-       
+
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
         // was listening to PROP_ROOT_PROPERTIES, changed to PROP_ROOTS in #143633 as changes
         // from SourceGroupModifierImplementation need refresh too
-        if (SourceRoots.PROP_ROOTS.equals(propName)  ||
-            ProjectProperties.BUILD_DIR.equals(propName)  ||
-            J2SEProjectProperties.DIST_DIR.equals(propName)) {
+        if (SourceRoots.PROP_ROOTS.equals(propName)) {
             this.fireChange();
         }
     }
-    
+
     public void stateChanged (ChangeEvent event) {
         this.fireChange();
     }
+
 
     private class FireAction implements Runnable {
 
