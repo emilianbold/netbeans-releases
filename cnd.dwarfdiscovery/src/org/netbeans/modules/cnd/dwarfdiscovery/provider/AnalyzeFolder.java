@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
@@ -61,7 +62,6 @@ import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -185,7 +185,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     }
     
     @Override
-    public IteratorExtension.Applicable canAnalyze(ProjectProxy project) {
+    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
         String root = (String)getProperty(FOLDER_KEY).getValue();
         if (root == null || root.length() == 0) {
             return ApplicableImpl.NotApplicable;
@@ -197,7 +197,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         int i = 0;
         for(String obj : set){
             i++;
-            IteratorExtension.Applicable applicable = sizeComilationUnit(obj);
+            DiscoveryExtensionInterface.Applicable applicable = sizeComilationUnit(obj);
             if (applicable.isApplicable()) {
                 return new ApplicableImpl(true, applicable.getCompilerName(), 50);
             }

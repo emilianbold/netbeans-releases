@@ -42,35 +42,26 @@
 
 package org.netbeans.modules.cnd.discovery.api;
 
+import java.io.IOException;
+import java.util.Map;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+
 /**
  *
  * @author as204739
  */
-public final class ApplicableImpl implements DiscoveryExtensionInterface.Applicable {
-    private final String compiler;
-    private final boolean applicable;
-    private final int weight;
+public interface DiscoveryExtensionInterface extends IteratorExtension {
+    boolean canApply(Map<String,Object> map, Project project);
 
-    public ApplicableImpl(boolean applicable, String compiler, int weight) {
-        this.compiler = compiler;
-        this.applicable = applicable;
-        this.weight = weight;
+    void apply(Map<String,Object> map, Project project) throws IOException;
+
+    interface Applicable {
+        boolean isApplicable();
+
+        int getPriority();
+
+        String getCompilerName();
     }
 
-    @Override
-    public boolean isApplicable() {
-        return applicable;
-    }
-
-    @Override
-    public String getCompilerName() {
-        return compiler;
-    }
-
-    @Override
-    public int getPriority() {
-        return weight;
-    }
-
-    public static final DiscoveryExtensionInterface.Applicable NotApplicable = new ApplicableImpl(false, null, 0);
 }

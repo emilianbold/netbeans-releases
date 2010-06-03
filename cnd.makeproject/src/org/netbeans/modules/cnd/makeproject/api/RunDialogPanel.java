@@ -60,7 +60,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.Applicable;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
@@ -68,17 +67,14 @@ import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 public final class RunDialogPanel extends javax.swing.JPanel implements PropertyChangeListener {
-    private static final RequestProcessor RP = new RequestProcessor(RunDialogPanel.class.getName(), 2);
     private DocumentListener modifiedValidateDocumentListener = null;
     private Project[] projectChoices = null;
     private boolean executableReadOnly = true;
@@ -86,7 +82,6 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     
     private static String lastSelectedExecutable = null;
     private static Project lastSelectedProject = null;
-    private static String preferredCompiler = null;
     
     private static DefaultPicklistModel picklist = null;
     private static String picklistHomeDir = null;
@@ -592,24 +587,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                              .setConfiguration(conf)
                              .setImportantFiles(Collections.<String>singletonList(exe).iterator());
                     project = ProjectGenerator.createBlankProject(prjParams);
-                    IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
                     lastSelectedProject = project;
-                    if (extension != null) {
-                        Map<String,Object> map = new HashMap<String,Object>();
-                        map.put("DW:buildResult",getExecutablePath()); // NOI18N
-                        map.put("DW:consolidationLevel", "file"); // NOI18N
-                        map.put("DW:rootFolder", baseDir); // NOI18N
-                        Applicable applicable = extension.isApplicable(map, project);
-                        if (applicable.isApplicable()) {
-                            preferredCompiler = applicable.getCompilerName();
-                            ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                            MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
-                            resetCompilerSet(configurationDescriptor.getActiveConfiguration());
-                            if (extension.canApply(map, project)) {
-                                extension.apply(map, project);
-                            }
-                        }
-                    }
                     OpenProjects.getDefault().addPropertyChangeListener(this);
                     OpenProjects.getDefault().open(new Project[]{project}, false);
                     OpenProjects.getDefault().setMainProject(project);
@@ -636,38 +614,17 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 if (lastSelectedProject == null) {
                     return;
                 }
-                RP.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                        provider.getConfigurationDescriptor(true);
-                        IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-                        if (extension != null) {
-                            extension.openFunction("main", lastSelectedProject); // NOI18N
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-    private void resetCompilerSet(MakeConfiguration configuration){
-        if (configuration != null) {
-            if (preferredCompiler != null && preferredCompiler.length()>2) {
-                if (preferredCompiler.indexOf("GNU") >= 0 || // NOI18N
-                    preferredCompiler.indexOf("gcc") >= 0 || // NOI18N
-                    preferredCompiler.indexOf("g++") >= 0) { // NOI18N
-                    configuration.getCompilerSet().setCompilerSetName(new StringConfiguration(null, "GNU")); // NOI18N
-                } else if (preferredCompiler.indexOf("Sun") >= 0 || // NOI18N
-                           preferredCompiler.indexOf("CC") >= 0 || // NOI18N
-                           preferredCompiler.indexOf("cc") >= 0) { // NOI18N
-                    configuration.getCompilerSet().setCompilerSetName(new StringConfiguration(null, "OracleSolarisStudio")); // NOI18N
+                IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                if (extension != null) {
+                    Map<String, Object> map = new HashMap<String, Object>();
+                    map.put("DW:buildResult", getExecutablePath()); // NOI18N
+                    map.put("DW:consolidationLevel", "file"); // NOI18N
+                    map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
+                    extension.discoverProject(map, lastSelectedProject, "main"); // NOI18N
                 }
             }
         }
     }
-
 
     private void updateRunProfile(String baseDir, RunProfile runProfile) {
         // Arguments
