@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
@@ -84,6 +85,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     
     private static String lastSelectedExecutable = null;
     private static Project lastSelectedProject = null;
+    private static String preferredCompiler = null;
     
     private static DefaultPicklistModel picklist = null;
     private static String picklistHomeDir = null;
@@ -595,9 +597,10 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                         map.put("DW:buildResult",getExecutablePath()); // NOI18N
                         map.put("DW:consolidationLevel", "file"); // NOI18N
                         map.put("DW:rootFolder", baseDir); // NOI18N
-                            if (extension.canApply(map, project)) {
-                                extension.apply(map, project);
-                            }
+                        if (extension.canApply(map, project)) {
+                            extension.apply(map, project);
+                            preferredCompiler = (String) map.get("DW:compiler"); // NOI18N
+                        }
                     }
                     lastSelectedProject = project;
                     OpenProjects.getDefault().addPropertyChangeListener(this);
@@ -631,10 +634,21 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     @Override
                     public void run() {
                         ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                        provider.getConfigurationDescriptor(true);
+                        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
+                        if (preferredCompiler != null && preferredCompiler.length()>2) {
+                            if (preferredCompiler.indexOf("GNU") >= 0 || // NOI18N
+                                preferredCompiler.indexOf("gcc") >= 0 || // NOI18N
+                                preferredCompiler.indexOf("g++") >= 0) { // NOI18N
+                                configurationDescriptor.getActiveConfiguration().getCompilerSet().setCompilerSetName(new StringConfiguration(null, "GNU")); // NOI18N
+                            } else if (preferredCompiler.indexOf("Sun") >= 0 || // NOI18N
+                                       preferredCompiler.indexOf("CC") >= 0 || // NOI18N
+                                       preferredCompiler.indexOf("cc") >= 0) { // NOI18N
+                                configurationDescriptor.getActiveConfiguration().getCompilerSet().setCompilerSetName(new StringConfiguration(null, "SunStudio")); // NOI18N
+                            }
+                        }
                         IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
                         if (extension != null) {
-                            extension.openFunction("main", lastSelectedProject);
+                            extension.openFunction("main", lastSelectedProject); // NOI18N
                         }
                     }
                 });
