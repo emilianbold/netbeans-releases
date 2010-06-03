@@ -93,10 +93,10 @@ public class AddJDBCDriverDialogTest extends PerformanceTestCase {
     @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.db.resources.Bundle";
-        MENU = Bundle.getStringTrimmed(BUNDLE, "AddNewDriver");
-        TITLE = Bundle.getStringTrimmed(BUNDLE, "AddDriverDialogTitle");
+        MENU = "New Driver";
+        TITLE = "New JDBC Driver";
         
-        String path = Bundle.getStringTrimmed(BUNDLE, "Databases") + "|Drivers";
+        String path = "Databases|Drivers";
         thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), path);
         thenode.select();
     }
