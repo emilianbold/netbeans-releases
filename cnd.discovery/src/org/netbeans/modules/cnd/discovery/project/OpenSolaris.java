@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ConfigurationFactory;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
+import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -647,7 +648,7 @@ public class OpenSolaris extends KnownProject {
         }
 
         @Override
-        public int canAnalyze(ProjectProxy project) {
+        public IteratorExtension.Applicable canAnalyze(ProjectProxy project) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 

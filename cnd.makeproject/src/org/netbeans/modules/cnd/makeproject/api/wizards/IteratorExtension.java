@@ -61,7 +61,9 @@ public interface IteratorExtension {
      * @param wizard
      * @return
      */
-    boolean isApplicable(WizardDescriptor wizard);
+    Applicable isApplicable(WizardDescriptor wizard);
+
+    Applicable isApplicable(Map<String,Object> map, Project project);
 
     String getProviderID(WizardDescriptor wizard);
 
@@ -88,4 +90,12 @@ public interface IteratorExtension {
      * @throws java.io.IOException
      */
     Set<FileObject> createProject(WizardDescriptor wizard) throws IOException;
+
+    interface Applicable {
+        boolean isApplicable();
+
+        int getPriority();
+
+        String getCompilerName();
+    }
 }

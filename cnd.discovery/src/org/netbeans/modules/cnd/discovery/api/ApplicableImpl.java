@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,69 +34,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.discovery.api;
 
-import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 
 /**
  *
- * @author Alexander Simon
+ * @author as204739
  */
-public interface DiscoveryProvider {
+public final class ApplicableImpl implements IteratorExtension.Applicable {
+    private final String compiler;
+    private final boolean applicable;
+    private final int weight;
 
-    /**
-     * Returns provider ID
-     */
-    String getID();
-    
-    /**
-     * Returns provider name
-     */
-    String getName();
+    public ApplicableImpl(boolean applicable, String compiler, int weight) {
+        this.compiler = compiler;
+        this.applicable = applicable;
+        this.weight = weight;
+    }
 
-    /**
-     * Returns provider description
-     */
-    String getDescription();
-    
-    /**
-     * Returns property keys of additional information for provider
-     */
-    List<String> getPropertyKeys();
+    @Override
+    public boolean isApplicable() {
+        return applicable;
+    }
 
-    /**
-     * Returns property of additional information for provider
-     */
-    ProviderProperty getProperty(String key);
-    
-    /**
-     * Clean provider state
-     */
-   void clean();
+    @Override
+    public String getCompilerName() {
+        return compiler;
+    }
 
-    /**
-     * Is analyzer applicable to project
-     */
-    boolean isApplicable(ProjectProxy project);
+    @Override
+    public int getPriority() {
+        return weight;
+    }
 
-    /**
-     * Can analyze project. Returns weight of assurance of results.
-     * Results range is [0,100].
-     * 0 provider is not sure about results at all
-     * 100 provider is sure about results
-     */
-    IteratorExtension.Applicable canAnalyze(ProjectProxy project);
-
-    /**
-     * Analyze project and returns list of configuration
-     */
-    public List<Configuration> analyze(ProjectProxy project,Progress progress);
-    
-    /**
-     * Stop analyzing.
-     */
-    void stop();
+    public static final IteratorExtension.Applicable NotApplicable = new ApplicableImpl(false, null, 0);
 }
