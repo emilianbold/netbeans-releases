@@ -54,7 +54,6 @@ import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.spi.DConfigBeanRoot;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
-import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
 import org.netbeans.modules.glassfish.eecommon.api.config.J2eeModuleHelper;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
 import org.netbeans.modules.glassfish.javaee.db.ResourcesHelper;
@@ -70,19 +69,15 @@ import org.openide.util.NbBundle;
  * @author Ludovic Champenois
  * @author Peter Williams
  */
-public class Hk2Configuration extends GlassfishConfiguration implements DeploymentConfiguration {
+public class Three1Configuration extends Hk2Configuration implements DeploymentConfiguration {
 
-    public Hk2Configuration(J2eeModule module) throws ConfigurationException {
-        super(module);
-    }
-
-    public Hk2Configuration(J2eeModule module, J2eeModuleHelper jmh) throws ConfigurationException {
-        super(module, jmh);
+    public Three1Configuration(J2eeModule module) throws ConfigurationException {
+        super(module, J2eeModuleHelper.getGlassfishDDModuleHelper(module.getType()));
     }
 
     @Deprecated
-    public Hk2Configuration(DeployableObject dObj)  {
-        throw new IllegalArgumentException("deprecated constructor called");
+    public Three1Configuration(DeployableObject dObj) {
+        super(dObj);
     }
 
     // ------------------------------------------------------------------------
