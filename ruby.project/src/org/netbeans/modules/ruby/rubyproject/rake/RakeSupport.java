@@ -103,7 +103,7 @@ public final class RakeSupport {
     
     /** Standard names used for Rakefile. */
     static final String[] RAKEFILE_NAMES = new String[] {
-        "rakefile", "Rakefile", "rakefile.rb", "Rakefile.rb" // NOI18N
+        "Rakefile", "Rakefile.rb", "rakefile", "rakefile.rb" // NOI18N
     };
 
     private final Project project;
@@ -151,7 +151,11 @@ public final class RakeSupport {
                 // #179305 -- need to do case sensitive comparison
                 File file = FileUtil.toFile(f);
                 try {
-                    if (file != null && s.equals(file.getCanonicalFile().getName())) {
+                    String canonicalName = file.getCanonicalFile().getName();
+                    if (file != null && s.equals(canonicalName)) {
+                        // logging for #179305
+                        LOGGER.log(Level.FINE, "Found rakefile: {0}, searching with: {1}. Full path: {2}",
+                                new Object[]{canonicalName, s, file.getCanonicalPath()});
                         return f;
                     }
                 } catch (IOException ex) {

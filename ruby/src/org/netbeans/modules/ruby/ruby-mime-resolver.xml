@@ -62,8 +62,8 @@ made subject to such option by the copyright holder.
         <!-- Empty extension. -->
         <ext name=""/>
         <!-- Filename matches exactly rakefile or Rakefile. -->
-        <name name="rakefile" ignorecase="false"/>
         <name name="Rakefile" ignorecase="false"/>
+        <name name="rakefile" ignorecase="false"/>
         <name name="Capfile" ignorecase="false"/>
         <name name="Gemfile" ignorecase="false"/>
         <resolver mime="text/x-ruby"/>
