@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,52 +34,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.wizards;
+package org.netbeans.modules.java.api.common.impl;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.java.api.common.Roots;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author Alexander Simon
+ * @author Tomas Zezula
  */
-public interface IteratorExtension {
-    /**
-     * Methods for incorporating discovery in new make project wizard
-     * @param wizard
-     * @return
-     */
-    boolean isApplicable(WizardDescriptor wizard);
+public abstract class RootsAccessor {
 
-    String getProviderID(WizardDescriptor wizard);
+    private static volatile RootsAccessor instance;
 
-    Map<String,Object> clone(WizardDescriptor wizard);
 
-    boolean canApply(WizardDescriptor wizard, Project project);
+    public synchronized static RootsAccessor getInstance() {
+        if (instance == null) {
+            try {
+                Class.forName(Roots.class.getName(),true,RootsAccessor.class.getClassLoader());
+                assert instance != null;
+            } catch (ClassNotFoundException cnf) {
+                Exceptions.printStackTrace(cnf);
+            }
+        }
+        return instance;
+    }
 
-    boolean canApply(Map<String,Object> map, Project project);
-    
-    void apply(WizardDescriptor wizard, Project project) throws IOException;
+    public static void setInstance(final @NonNull RootsAccessor theInstance) {
+        assert theInstance != null;
+        instance = theInstance;
+    }
 
-    void apply(Map<String,Object> map, Project project) throws IOException;
-    
-    void uninitialize(WizardDescriptor wizard);
+    public abstract boolean isSourceRoot(Roots roots);
 
-    void openFunction(String functionName, Project project);
+    public abstract boolean supportIncludes(Roots roots);
 
-    /**
-     * Method delegates a project creating to discovery.
-     * Instantiate make project in simple mode.
-     * 
-     * @param wizard
-     * @return set make project
-     * @throws java.io.IOException
-     */
-    Set<FileObject> createProject(WizardDescriptor wizard) throws IOException;
+    public abstract String getType(Roots roots);
+
+    public abstract String getHint(Roots roots);
+
 }

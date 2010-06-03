@@ -71,6 +71,7 @@ import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
@@ -517,7 +518,6 @@ public final class WebProject implements Project, AntProjectListener {
     }
 
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
-        WebSources webSources = new WebSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
         
         Lookup base = Lookups.fixed(new Object[] {
@@ -546,8 +546,13 @@ public final class WebProject implements Project, AntProjectListener {
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
-            webSources,
-            webSources.getSourceGroupModifierImplementation(),
+            QuerySupport.createSources(this, helper, evaluator(),
+                    getSourceRoots(),
+                    getTestSourceRoots(),
+                    Roots.propertyBased(new String[] {WebProjectProperties.SOURCE_ROOT}, new String[] {NbBundle.getMessage(WebProject.class, "LBL_Node_WebModule")}, false, null, null),
+                    Roots.propertyBased(new String[] {WebProjectProperties.WEB_DOCBASE_DIR}, new String[] {NbBundle.getMessage(WebProject.class, "LBL_Node_DocBase")}, true, WebProjectConstants.TYPE_DOC_ROOT, null),
+                    Roots.propertyBased(new String[] {WebProjectProperties.WEBINF_DIR}, new String[] {NbBundle.getMessage(WebProject.class, "LBL_Node_WebInf")}, false, WebProjectConstants.TYPE_WEB_INF, null),
+                    Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, WebProjectProperties.DIST_DIR)),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), 
                 getTestSourceRoots(), WebProjectProperties.WEB_DOCBASE_DIR),
             new RecommendedTemplatesImpl(this),
