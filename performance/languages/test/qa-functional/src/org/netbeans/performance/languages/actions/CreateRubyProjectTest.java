@@ -179,11 +179,11 @@ public class CreateRubyProjectTest extends PerformanceTestCase {
         doMeasurement();
     }
     
-    public void testCreateRubyOnRailsProject() {
+/*    public void testCreateRubyOnRailsProject() {
         category = "Ruby";
         project = "Ruby on Rails Application";
         project_type = "RailsProject";
         doMeasurement();
-    }
+    }*/
 
 }
