@@ -47,12 +47,20 @@ package org.netbeans.modules.cnd.discovery.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
+import org.netbeans.modules.cnd.api.model.CsmProgressListener;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -61,6 +69,9 @@ import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel.MyProg
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -76,10 +87,12 @@ public class DiscoveryExtension implements IteratorExtension {
     public DiscoveryExtension() {
     }
     
+    @Override
     public Set<FileObject> createProject(WizardDescriptor wizard) throws IOException{
         return new ImportProject(wizard).create();
     }
 
+    @Override
     public void apply(WizardDescriptor wizard, Project project) throws IOException {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
         descriptor.setProject(project);
@@ -87,6 +100,7 @@ public class DiscoveryExtension implements IteratorExtension {
         generator.makeProject();
     }
     
+    @Override
     public void apply(Map<String, Object> map, Project project) throws IOException {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         descriptor.setProject(project);
@@ -95,6 +109,7 @@ public class DiscoveryExtension implements IteratorExtension {
     }
 
 
+    @Override
     public Map<String,Object> clone(WizardDescriptor wizard){
         Map<String,Object> map = new HashMap<String,Object>();
         map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, wizard.getProperty("buildCommandWorkingDirTextField")); // NOI18N
@@ -104,6 +119,7 @@ public class DiscoveryExtension implements IteratorExtension {
         return map;
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
         descriptor.clean();
@@ -181,6 +197,7 @@ public class DiscoveryExtension implements IteratorExtension {
         return false;
     }
     
+    @Override
     public boolean isApplicable(WizardDescriptor wizard) {
         String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
         String rootFolder = (String)wizard.getProperty("buildCommandWorkingDirTextField"); // NOI18N
@@ -190,6 +207,7 @@ public class DiscoveryExtension implements IteratorExtension {
         return isApplicable(descriptor);
     }
     
+    @Override
     public String getProviderID(WizardDescriptor wizard){
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
         return descriptor.getProviderID();
@@ -236,6 +254,7 @@ public class DiscoveryExtension implements IteratorExtension {
             && descriptor.getIncludedFiles() != null;
     }
     
+    @Override
     public boolean canApply(WizardDescriptor wizard, Project project) {
         String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
         String additional = (String)wizard.getProperty("additionalLibraries"); // NOI18N
@@ -248,6 +267,7 @@ public class DiscoveryExtension implements IteratorExtension {
         return canApply(descriptor);
     }
 
+    @Override
     public boolean canApply(Map<String, Object> map, Project project) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         descriptor.setProject(project);
@@ -264,26 +284,61 @@ public class DiscoveryExtension implements IteratorExtension {
         return null;
     }
 
+    private static final List<CsmProgressListener> listeners = new ArrayList<CsmProgressListener>(1);
+
+    @Override
+    public void openFunction(final String functionName, Project makeProject) {
+        if (makeProject != null) {
+            final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+            CsmProgressListener listener = new CsmProgressAdapter() {
+
+                @Override
+                public void projectParsingFinished(CsmProject project) {
+                    if (project.getPlatformProject().equals(np)) {
+                        CsmListeners.getDefault().removeProgressListener(this);
+                        listeners.remove(this);
+                        if (project instanceof ProjectBase) {
+                            String from = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + ':' + functionName + '('; // NOI18N
+                            Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)project).findDeclarationsByPrefix(from);
+                            for(CsmOffsetableDeclaration decl : decls){
+                                CsmUtilities.openSource(decl);
+                                break;
+                            }
+                        }
+                    }
+                }
+            };
+            listeners.add(listener);
+            CsmListeners.getDefault().addProgressListener(listener);
+        }
+    }
+
     private static class ProjectProxyImpl implements ProjectProxy {
             private DiscoveryDescriptor descriptor;
             private ProjectProxyImpl(DiscoveryDescriptor descriptor){
                 this.descriptor = descriptor;
             }
+        @Override
             public boolean createSubProjects() {
                 return false;
             }
+        @Override
             public Project getProject() {
                 return null;
             }
+        @Override
             public String getMakefile() {
                 return null;
             }
+        @Override
             public String getSourceRoot() {
                 return descriptor.getRootFolder();
             }
+        @Override
             public String getExecutable() {
                 return descriptor.getBuildResult();
             }
+        @Override
             public String getWorkingFolder() {
                 return null;
             }

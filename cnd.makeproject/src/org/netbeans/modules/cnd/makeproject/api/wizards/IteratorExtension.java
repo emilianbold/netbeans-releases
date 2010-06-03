@@ -77,6 +77,8 @@ public interface IteratorExtension {
     
     void uninitialize(WizardDescriptor wizard);
 
+    void openFunction(String functionName, Project project);
+
     /**
      * Method delegates a project creating to discovery.
      * Instantiate make project in simple mode.
