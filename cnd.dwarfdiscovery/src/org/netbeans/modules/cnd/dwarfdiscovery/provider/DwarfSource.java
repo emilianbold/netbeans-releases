@@ -307,14 +307,11 @@ public class DwarfSource implements SourceFileProperties{
         return name;
     }
     
-    
-    private void initSourceSettings(CompilationUnit cu, boolean isCPP) throws IOException{
-        userIncludes = new ArrayList<String>();
-        userMacros = new HashMap<String,String>();
-        includedFiles = new HashSet<String>();
-        countFileName(cu);
+
+    static String extractCompilerName(CompilationUnit cu, boolean isCPP) throws IOException {
+        String compilerName = null;
         if (cu.getCompileOptions() == null) {
-            compilerName = PathCache.getString(cu.getProducer());
+            compilerName = cu.getProducer();
         } else {
             String compileOptions = cu.getCompileOptions();
             int startIndex = compileOptions.indexOf("R="); // NOI18N
@@ -332,7 +329,16 @@ public class DwarfSource implements SourceFileProperties{
                 }
             }
         }
+        return compilerName;
+    }
 
+    
+    private void initSourceSettings(CompilationUnit cu, boolean isCPP) throws IOException{
+        userIncludes = new ArrayList<String>();
+        userMacros = new HashMap<String,String>();
+        includedFiles = new HashSet<String>();
+        countFileName(cu);
+        compilerName = PathCache.getString(extractCompilerName(cu, isCPP));
         compilePath = PathCache.getString(fixFileName(cu.getCompilationDir()));
         sourceName = PathCache.getString(cu.getSourceFileName());
         
