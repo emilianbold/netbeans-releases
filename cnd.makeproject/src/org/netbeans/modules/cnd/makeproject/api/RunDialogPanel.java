@@ -45,7 +45,10 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -69,9 +72,11 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
-public final class RunDialogPanel extends javax.swing.JPanel {
+public final class RunDialogPanel extends javax.swing.JPanel implements PropertyChangeListener {
+    private static final RequestProcessor RP = new RequestProcessor(RunDialogPanel.class.getName(), 2);
     private DocumentListener modifiedValidateDocumentListener = null;
     private Project[] projectChoices = null;
     private boolean executableReadOnly = true;
@@ -530,7 +535,7 @@ public final class RunDialogPanel extends javax.swing.JPanel {
             isValidating = false;
         }
     }
-    
+
     // ModifiedDocumentListener
     public class ModifiedValidateDocumentListener implements DocumentListener {
         @Override
@@ -580,7 +585,9 @@ public final class RunDialogPanel extends javax.swing.JPanel {
                     conf.getMakefileConfiguration().getOutput().setValue(exe);
                     updateRunProfile(baseDir, conf.getProfile());
                     ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectParentFolder);
-                    prjParams.setOpenFlag(false).setConfiguration(conf);
+                    prjParams.setOpenFlag(false)
+                             .setConfiguration(conf)
+                             .setImportantFiles(Collections.<String>singletonList(exe).iterator());
                     project = ProjectGenerator.createBlankProject(prjParams);
                     IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
                     if (extension != null) {
@@ -592,6 +599,8 @@ public final class RunDialogPanel extends javax.swing.JPanel {
                                 extension.apply(map, project);
                             }
                     }
+                    lastSelectedProject = project;
+                    OpenProjects.getDefault().addPropertyChangeListener(this);
                     OpenProjects.getDefault().open(new Project[]{project}, false);
                     OpenProjects.getDefault().setMainProject(project);
                 } finally {
@@ -604,7 +613,35 @@ public final class RunDialogPanel extends javax.swing.JPanel {
         }
         return project;
     }
-    
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
+            if (evt.getNewValue() instanceof Project[]) {
+                Project[] projects = (Project[])evt.getNewValue();
+                if (projects.length == 0) {
+                    return;
+                }
+                OpenProjects.getDefault().removePropertyChangeListener(this);
+                if (lastSelectedProject == null) {
+                    return;
+                }
+                RP.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                        provider.getConfigurationDescriptor(true);
+                        IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                        if (extension != null) {
+                            extension.openFunction("main", lastSelectedProject);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
     private void updateRunProfile(String baseDir, RunProfile runProfile) {
         // Arguments
         runProfile.setArgs(argumentTextField.getText());
