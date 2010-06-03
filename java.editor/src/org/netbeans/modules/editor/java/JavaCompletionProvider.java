@@ -2730,13 +2730,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     return false;
                             } else {
                                 if (queryType == COMPLETION_QUERY_TYPE && e.getModifiers().contains(STATIC)) {
-                                    hasAdditionalItems = 2; //instance members only
+                                    if ((Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))
+                                            && isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types)
+                                            && env.isAccessible(scope, e, t, isSuperCall)
+                                            && ((isStatic && !inImport) || !e.getSimpleName().contentEquals(CLASS_KEYWORD))) {
+                                        hasAdditionalItems = 2; //instance members only
+                                    }
                                     return false;
                                 }
                             }
                             return (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) &&
-                                    env.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t) &&
+                                    env.isAccessible(scope, e, t, isSuperCall) &&
                                     ((isStatic && !inImport) || !e.getSimpleName().contentEquals(CLASS_KEYWORD));
                         case ENUM_CONSTANT:
                         case EXCEPTION_PARAMETER:
@@ -2745,22 +2750,28 @@ public class JavaCompletionProvider implements CompletionProvider {
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) &&
-                                    env.isAccessible(scope, e, t);
+                                    env.isAccessible(scope, e, t, isSuperCall);
                         case METHOD:
+                            String sn = e.getSimpleName().toString();
                             if (isStatic) {
                                 if (!e.getModifiers().contains(STATIC))
                                     return false;
                             } else {
                                 if (queryType == COMPLETION_QUERY_TYPE && e.getModifiers().contains(STATIC)) {
-                                    hasAdditionalItems = 2; //instance members only
+                                    if (startsWith(env, sn, prefix)
+                                            && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))
+                                            && isOfKindAndType(((ExecutableType) asMemberOf(e, t, types)).getReturnType(), e, kinds, baseType, scope, trees, types)
+                                            && env.isAccessible(scope, e, t, isSuperCall)
+                                            && (!Utilities.isExcludeMethods() || !Utilities.isExcluded(Utilities.getElementName(e.getEnclosingElement(), true) + "." + sn))) { //NOI18N
+                                        hasAdditionalItems = 2; //instance members only
+                                    }
                                     return false;
                                 }
                             }
-                            String sn = e.getSimpleName().toString();
                             return startsWith(env, sn, prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(((ExecutableType)asMemberOf(e, t, types)).getReturnType(), e, kinds, baseType, scope, trees, types) &&
-                                    (isSuperCall && (e.getModifiers().contains(PROTECTED) || e.getModifiers().contains(PUBLIC)) || env.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t)) &&
+                                    env.isAccessible(scope, e, t, isSuperCall) &&
                                     (!Utilities.isExcludeMethods() || !Utilities.isExcluded(Utilities.getElementName(e.getEnclosingElement(), true) + "." + sn)); //NOI18N
                         case CLASS:
                         case ENUM:
@@ -2771,12 +2782,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) &&
-                                    env.isAccessible(scope, e, t) && isStatic;
+                                    env.isAccessible(scope, e, t, isSuperCall) && isStatic;
                         case CONSTRUCTOR:
                             ctorSeen[0] = true;
                             return (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(e.getEnclosingElement().asType(), e, kinds, baseType, scope, trees, types) &&
-                                    (env.isAccessible(scope, e, t) || (elem.getModifiers().contains(ABSTRACT) && !e.getModifiers().contains(PRIVATE))) &&
+                                    (env.isAccessible(scope, e, t, isSuperCall) || (elem.getModifiers().contains(ABSTRACT) && !e.getModifiers().contains(PRIVATE))) &&
                                     isStatic;
                     }
                     return false;
@@ -4883,8 +4894,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return excludes;
             }
 
-            public boolean isAccessible(Scope scope, Element member, TypeMirror type) {
-                return !checkAccessibility || getController().getTreeUtilities().isAccessible(scope, member, type);
+            public boolean isAccessible(Scope scope, Element member, TypeMirror type, boolean selectSuper) {
+                if (!checkAccessibility)
+                    return true;
+                if (getController().getTreeUtilities().isAccessible(scope, member, type))
+                    return true;
+                return selectSuper && type.getKind() == TypeKind.DECLARED
+                        && member.getModifiers().contains(PROTECTED) && !member.getModifiers().contains(STATIC)
+                        && !member.getKind().isClass() && !member.getKind().isInterface()
+                        && getController().getTrees().isAccessible(scope, (TypeElement)((DeclaredType)type).asElement())
+                        && (member.getKind() != METHOD
+                        || getController().getElementUtilities().getImplementationOf((ExecutableElement)member, (TypeElement)((DeclaredType)type).asElement()) == member);
             }
         }
         
