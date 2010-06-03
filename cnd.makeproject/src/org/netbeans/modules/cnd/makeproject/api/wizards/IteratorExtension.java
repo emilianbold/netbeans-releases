@@ -57,29 +57,6 @@ import org.openide.filesystems.FileObject;
  */
 public interface IteratorExtension {
     /**
-     * Methods for incorporating discovery in new make project wizard
-     * @param wizard
-     * @return
-     */
-    boolean isApplicable(WizardDescriptor wizard);
-
-    String getProviderID(WizardDescriptor wizard);
-
-    Map<String,Object> clone(WizardDescriptor wizard);
-
-    boolean canApply(WizardDescriptor wizard, Project project);
-
-    boolean canApply(Map<String,Object> map, Project project);
-    
-    void apply(WizardDescriptor wizard, Project project) throws IOException;
-
-    void apply(Map<String,Object> map, Project project) throws IOException;
-    
-    void uninitialize(WizardDescriptor wizard);
-
-    void openFunction(String functionName, Project project);
-
-    /**
      * Method delegates a project creating to discovery.
      * Instantiate make project in simple mode.
      * 
@@ -88,4 +65,12 @@ public interface IteratorExtension {
      * @throws java.io.IOException
      */
     Set<FileObject> createProject(WizardDescriptor wizard) throws IOException;
+
+    /**
+     * Method invoke discovery for created project.
+     * @param map
+     * @param project
+     * @param functionToOpen
+     */
+    void discoverProject(Map<String,Object> map, Project project, String functionToOpen);
 }

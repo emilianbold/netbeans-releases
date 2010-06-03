@@ -109,6 +109,7 @@ public class ExpandNodesInComponentInspectorTest extends PerformanceTestCase {
     }
     
     public void prepare(){
+        waitNoEvent(10000);
         nodeToBeExpanded = new Node(new ComponentInspectorOperator().treeComponents(), "[JFrame]");
         nodeToBeExpanded.tree().clickOnPath(nodeToBeExpanded.getTreePath(), 2);
     }
