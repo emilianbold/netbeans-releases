@@ -265,7 +265,7 @@ public class NbModuleSuiteTest extends TestCase {
             NbModuleSuite.emptyConfiguration().
             gui(false).
             clusters("ide[0-9]*").
-            clusters("java.*").
+            clusters("java[0-9]*").
             addTest(NbModuleSuiteClusters.class)
         );
         junit.textui.TestRunner.run(instance);
@@ -279,7 +279,7 @@ public class NbModuleSuiteTest extends TestCase {
         Test instance = NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
             gui(false).
-            clusters("java.*").
+            clusters("java[0-9]*").
             clusters("ide[0-9]*").
             addTest(NbModuleSuiteClusters.class)
         );

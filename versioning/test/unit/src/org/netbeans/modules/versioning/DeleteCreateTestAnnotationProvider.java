@@ -67,14 +67,13 @@ import org.openide.filesystems.FileUtil;
  *
  * @author tomas
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class)
-public class TestAnnotationProvider extends AnnotationProvider {
+public class DeleteCreateTestAnnotationProvider extends AnnotationProvider {
 
-    static TestAnnotationProvider instance = null;
+    static DeleteCreateTestAnnotationProvider instance = null;
     List<String> events = new ArrayList<String>();
     FilesystemInterceptor interceptor = new FilesystemInterceptor();
     
-    public TestAnnotationProvider() {
+    public DeleteCreateTestAnnotationProvider() {
         instance = this;
     }
 
@@ -144,7 +143,7 @@ public class TestAnnotationProvider extends AnnotationProvider {
         }
 
         public void fileDataCreated(FileEvent fe) {
-            events.add("fileDataCreated");
+            // ignore this
         }
 
         // delete
@@ -155,7 +154,7 @@ public class TestAnnotationProvider extends AnnotationProvider {
         }        
         
         public void fileDeleted(FileEvent fe) {
-            events.add("fileDeleted");
+            // ignore this
         }
 
         @Override

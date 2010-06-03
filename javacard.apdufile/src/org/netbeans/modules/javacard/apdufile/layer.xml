@@ -79,6 +79,7 @@
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.javacard.apdufile.ApduDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/x-apduscr"/>
+                        <attr name="position" intvalue="1043"/>
                     </file>
                 </folder>
             </folder>
