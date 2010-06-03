@@ -171,13 +171,10 @@ final class RunFilePanel extends JPanel {
         runArgsLabel.setLabelFor(runArgsField);
         org.openide.awt.Mnemonics.setLocalizedText(runArgsLabel, org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.runArgsLabel.text")); // NOI18N
 
-        runArgsField.setText(org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.runArgsField.text")); // NOI18N
-
         workDirLabel.setLabelFor(workDirField);
         org.openide.awt.Mnemonics.setLocalizedText(workDirLabel, org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.workDirLabel.text")); // NOI18N
 
         workDirField.setEditable(false);
-        workDirField.setText(org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.workDirField.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -188,8 +185,6 @@ final class RunFilePanel extends JPanel {
 
         phpOptionsLabel.setLabelFor(phpOptionsField);
         org.openide.awt.Mnemonics.setLocalizedText(phpOptionsLabel, org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.phpOptionsLabel.text")); // NOI18N
-
-        phpOptionsField.setText(org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.phpOptionsField.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(displayDialog, org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.displayDialog.text")); // NOI18N
 
