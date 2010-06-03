@@ -143,6 +143,7 @@ public class ExpandNodesWebProjectsViewTest extends PerformanceTestCase {
     }
 
     public void initialize(){
+        waitNoEvent(10000);
         projectTab = new ProjectsTabOperator();
         new MaximizeWindowAction().performAPI(projectTab);
         projectTab.getProjectRootNode("TestWebProject").collapse();
