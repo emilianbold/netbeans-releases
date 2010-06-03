@@ -47,7 +47,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
@@ -127,19 +127,7 @@ final class RunFilePanel extends JPanel {
     void validateWorkDir() {
         assert notificationLineSupport != null;
 
-        String workDir = getWorkDir();
-        String error = null;
-        if (!StringUtils.hasText(workDir)) {
-            error = NbBundle.getMessage(RunFilePanel.class, "MSG_FolderEmpty");
-        } else {
-            File workDirFile = new File(workDir);
-            if (!workDirFile.isAbsolute()) {
-                error = NbBundle.getMessage(RunFilePanel.class, "MSG_WorkDirNotAbsolute");
-            } else if (!workDirFile.isDirectory()) {
-                error = NbBundle.getMessage(RunFilePanel.class, "MSG_WorkDirDirectory");
-            }
-        }
-
+        String error = RunAsValidator.validateWorkDir(getWorkDir(), false);
         if (error != null) {
             notificationLineSupport.setErrorMessage(error);
             dialogDescriptor.setValid(false);

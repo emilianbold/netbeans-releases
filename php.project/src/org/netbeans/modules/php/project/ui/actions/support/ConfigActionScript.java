@@ -45,7 +45,6 @@ package org.netbeans.modules.php.project.ui.actions.support;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -60,6 +59,7 @@ import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * Action implementation for SCRIPT configuration.
@@ -86,7 +86,9 @@ class ConfigActionScript extends ConfigAction {
                         ProjectPropertiesSupport.getPhpInterpreter(project).getProgram(),
                         FileUtil.toFile(sourceRoot),
                         null,
-                        ProjectPropertiesSupport.getArguments(project)) != null) {
+                        ProjectPropertiesSupport.getArguments(project),
+                        ProjectPropertiesSupport.getWorkDir(project),
+                        ProjectPropertiesSupport.getPhpArguments(project)) != null) {
                     valid = false;
                 }
             } catch (PhpProgram.InvalidPhpProgramException ex) {
@@ -171,12 +173,26 @@ class ConfigActionScript extends ConfigAction {
         @Override
         public ExternalProcessBuilder getProcessBuilder() {
             assert file != null;
-            ExternalProcessBuilder builder = super.getProcessBuilder();
-            String argProperty = ProjectPropertiesSupport.getArguments(project);
-            if (StringUtils.hasText(argProperty)) {
-                for (String argument : Arrays.asList(argProperty.split(" "))) { // NOI18N
-                    builder = builder.addArgument(argument);
+            ExternalProcessBuilder builder = program.getProcessBuilder();
+            String phpArgs = ProjectPropertiesSupport.getPhpArguments(project);
+            if (StringUtils.hasText(phpArgs)) {
+                for (String phpArg : Utilities.parseParameters(phpArgs)) {
+                    builder = builder.addArgument(phpArg);
                 }
+            }
+            builder = builder.addArgument(file.getAbsolutePath());
+            String args = ProjectPropertiesSupport.getArguments(project);
+            if (StringUtils.hasText(args)) {
+                for (String arg : Utilities.parseParameters(args)) {
+                    builder = builder.addArgument(arg);
+                }
+            }
+
+            String workDir = ProjectPropertiesSupport.getWorkDir(project);
+            if (RunAsValidator.validateWorkDir(workDir, false) == null) {
+                builder = builder.workingDirectory(new File(workDir));
+            } else {
+                builder = builder.workingDirectory(file.getParentFile());
             }
             return builder;
         }
