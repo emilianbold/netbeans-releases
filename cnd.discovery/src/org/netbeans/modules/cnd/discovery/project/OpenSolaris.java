@@ -61,6 +61,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.KnownProject;
 import org.netbeans.modules.cnd.discovery.api.Progress;
@@ -76,7 +77,6 @@ import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ConfigurationFactory;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -648,7 +648,7 @@ public class OpenSolaris extends KnownProject {
         }
 
         @Override
-        public IteratorExtension.Applicable canAnalyze(ProjectProxy project) {
+        public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
