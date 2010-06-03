@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -73,16 +74,15 @@ public class DeleteCreateTest extends NbTestCase {
         dataRootDir.mkdirs();
         System.setProperty("netbeans.user", getWorkDir() + "/userdir");
         // ping
-        File file = new File("dil");
-        file = FileUtil.normalizeFile(file);                
-        final FileObject fo = FileUtil.toFileObject(file);                
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        MockServices.setServices(DeleteCreateTestAnnotationProvider.class);
         // interceptor init
-        TestAnnotationProvider.instance.init();
+        DeleteCreateTestAnnotationProvider.instance.init();
     }
 
     @Override
     protected void tearDown() throws Exception {        
-        TestAnnotationProvider.instance.reset();        
+        DeleteCreateTestAnnotationProvider.instance.reset();
     }
 
     public void testDeleteCreate() throws IOException {        
@@ -97,8 +97,8 @@ public class DeleteCreateTest extends NbTestCase {
         fo1.getParent().createData(fo1.getName());             
         
         // get intercepted events 
-        String[] nonAtomic = TestAnnotationProvider.instance.events.toArray(new String[TestAnnotationProvider.instance.events.size()]);        
-        TestAnnotationProvider.instance.events.clear();
+        String[] nonAtomic = DeleteCreateTestAnnotationProvider.instance.events.toArray(new String[DeleteCreateTestAnnotationProvider.instance.events.size()]);
+        DeleteCreateTestAnnotationProvider.instance.events.clear();
         
         // atomic delete and create
         File file2 = new File(dataRootDir, "file2");
@@ -114,12 +114,12 @@ public class DeleteCreateTest extends NbTestCase {
         };
         fo2.getFileSystem().runAtomicAction(a);        
         // get intercepted events 
-        String[] atomic = TestAnnotationProvider.instance.events.toArray(new String[TestAnnotationProvider.instance.events.size()]);        
+        String[] atomic = DeleteCreateTestAnnotationProvider.instance.events.toArray(new String[DeleteCreateTestAnnotationProvider.instance.events.size()]);
         
         Logger l = Logger.getLogger(DeleteCreateTest.class.getName());
-        l.info("-------------------------------");
+        l.info("- atomic events ----------------------------------");
         for (String s : atomic) l.info(s);        
-        l.info("-------------------------------");
+        l.info("- non atomic events ------------------------------");
         for (String s : nonAtomic) l.info(s);
         l.info("-------------------------------");
         
