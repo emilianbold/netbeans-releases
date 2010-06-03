@@ -322,7 +322,7 @@
              value="${build.number}"/>
         
 	<set property="nb.build.number"
-             value="2"/>
+             value="0"/>
         
 
 	<set property="nb.full.version"
