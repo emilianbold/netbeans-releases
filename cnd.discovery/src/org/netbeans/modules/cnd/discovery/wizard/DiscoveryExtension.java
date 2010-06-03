@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -125,14 +126,17 @@ public class DiscoveryExtension implements IteratorExtension {
         descriptor.clean();
     }
     
-    public boolean isApplicable(DiscoveryDescriptor descriptor) {
+    public IteratorExtension.Applicable isApplicable(DiscoveryDescriptor descriptor) {
         Progress progress = new MyProgress();
         progress.start(0);
         try {
-            if (isApplicableDwarfExecutable(descriptor)){
-                return true;
-            } else if (isApplicableMakeLog(descriptor)){
-                return true;
+            IteratorExtension.Applicable applicable = isApplicableDwarfExecutable(descriptor);
+            if (applicable.isApplicable()){
+                return applicable;
+            }
+            applicable = isApplicableMakeLog(descriptor);
+            if (applicable.isApplicable()){
+                return applicable;
             }
             return isApplicableDwarfFolder(descriptor);
         } finally {
@@ -140,70 +144,83 @@ public class DiscoveryExtension implements IteratorExtension {
         }
     }
     
-    private boolean isApplicableDwarfExecutable(DiscoveryDescriptor descriptor){
+    private IteratorExtension.Applicable isApplicableDwarfExecutable(DiscoveryDescriptor descriptor){
         String selectedExecutable = descriptor.getBuildResult();
         if (selectedExecutable == null) {
-            return false;
+            return ApplicableImpl.NotApplicable;
         }
         File file = new File(selectedExecutable);
         if (!file.exists()) {
-            return false;
+            return ApplicableImpl.NotApplicable;
         }
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
         DiscoveryProvider provider = findProvider("dwarf-executable"); // NOI18N
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("executable").setValue(selectedExecutable); // NOI18N
             provider.getProperty("libraries").setValue(new String[0]); // NOI18N
-            if (provider.canAnalyze(proxy)>0){
+            Applicable canAnalyze = provider.canAnalyze(proxy);
+            if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
-                return true;
+                return canAnalyze;
             }
         }
-        return false;
+        return ApplicableImpl.NotApplicable;
     }
 
-    private boolean isApplicableDwarfFolder(DiscoveryDescriptor descriptor){
+    private IteratorExtension.Applicable  isApplicableDwarfFolder(DiscoveryDescriptor descriptor){
         String rootFolder = descriptor.getRootFolder();
         if (rootFolder == null) {
-            return false;
+            return ApplicableImpl.NotApplicable;
         }
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
         DiscoveryProvider provider = findProvider("dwarf-folder"); // NOI18N
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("folder").setValue(rootFolder); // NOI18N
-            if (provider.canAnalyze(proxy)>0){
+            Applicable canAnalyze = provider.canAnalyze(proxy);
+            if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
-                return true;
+                return canAnalyze;
             }
         }
-        return false;
+        return ApplicableImpl.NotApplicable;
     }
 
-    private boolean isApplicableMakeLog(DiscoveryDescriptor descriptor){
+    private IteratorExtension.Applicable  isApplicableMakeLog(DiscoveryDescriptor descriptor){
         String rootFolder = descriptor.getRootFolder();
         if (rootFolder == null) {
-            return false;
+            return ApplicableImpl.NotApplicable;
         }
         String logFile = descriptor.getBuildLog();
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
         DiscoveryProvider provider = findProvider("make-log"); // NOI18N
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("make-log-file").setValue(logFile); // NOI18N
-            if (provider.canAnalyze(proxy)>0){
+            Applicable canAnalyze = provider.canAnalyze(proxy);
+            if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
-                return true;
+                return canAnalyze;
             }
         }
-        return false;
+        return ApplicableImpl.NotApplicable;
     }
     
     @Override
-    public boolean isApplicable(WizardDescriptor wizard) {
+    public IteratorExtension.Applicable isApplicable(WizardDescriptor wizard) {
         String selectedExecutable = (String)wizard.getProperty("outputTextField"); // NOI18N
         String rootFolder = (String)wizard.getProperty("buildCommandWorkingDirTextField"); // NOI18N
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(wizard);
         descriptor.setBuildResult(selectedExecutable);
         descriptor.setRootFolder(rootFolder);
+        return isApplicable(descriptor);
+    }
+
+    @Override
+    public IteratorExtension.Applicable isApplicable(Map<String,Object> map, Project project) {
+        //String selectedExecutable = (String)map.get("outputTextField"); // NOI18N
+        //String rootFolder = (String)map.get("buildCommandWorkingDirTextField"); // NOI18N
+        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
+        //descriptor.setBuildResult(selectedExecutable);
+        //descriptor.setRootFolder(rootFolder);
         return isApplicable(descriptor);
     }
     
@@ -214,7 +231,7 @@ public class DiscoveryExtension implements IteratorExtension {
     }
     
     public boolean canApply(DiscoveryDescriptor descriptor) {
-        if (!isApplicable(descriptor)){
+        if (!isApplicable(descriptor).isApplicable()){
             return false;
         }
         String level = descriptor.getLevel();
@@ -314,34 +331,42 @@ public class DiscoveryExtension implements IteratorExtension {
     }
 
     private static class ProjectProxyImpl implements ProjectProxy {
-            private DiscoveryDescriptor descriptor;
-            private ProjectProxyImpl(DiscoveryDescriptor descriptor){
-                this.descriptor = descriptor;
-            }
+
+        private DiscoveryDescriptor descriptor;
+
+        private ProjectProxyImpl(DiscoveryDescriptor descriptor) {
+            this.descriptor = descriptor;
+        }
+
         @Override
-            public boolean createSubProjects() {
-                return false;
-            }
+        public boolean createSubProjects() {
+            return false;
+        }
+
         @Override
-            public Project getProject() {
-                return null;
-            }
+        public Project getProject() {
+            return null;
+        }
+
         @Override
-            public String getMakefile() {
-                return null;
-            }
+        public String getMakefile() {
+            return null;
+        }
+
         @Override
-            public String getSourceRoot() {
-                return descriptor.getRootFolder();
-            }
+        public String getSourceRoot() {
+            return descriptor.getRootFolder();
+        }
+
         @Override
-            public String getExecutable() {
-                return descriptor.getBuildResult();
-            }
+        public String getExecutable() {
+            return descriptor.getBuildResult();
+        }
+
         @Override
-            public String getWorkingFolder() {
-                return null;
-            }
-        };
+        public String getWorkingFolder() {
+            return null;
+        }
+    };
 
 }

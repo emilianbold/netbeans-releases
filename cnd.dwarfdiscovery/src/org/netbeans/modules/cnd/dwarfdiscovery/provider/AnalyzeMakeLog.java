@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
@@ -55,6 +56,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.NbBundle;
 
@@ -71,86 +73,107 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
         clean();
     }
     
-    public void clean() {
+    @Override
+    public final void clean() {
         myProperties.clear();
         myProperties.put(MAKE_LOG_KEY, new ProviderProperty(){
             private String myPath;
+            @Override
             public String getName() {
                 return i18n("Make_Log_File_Name"); // NOI18N
             }
+            @Override
             public String getDescription() {
                 return i18n("Make_Log_File_Description"); // NOI18N
             }
+            @Override
             public Object getValue() {
                 return myPath;
             }
+            @Override
             public void setValue(Object value) {
                 if (value instanceof String){
                     myPath = (String)value;
                 }
             }
+            @Override
             public ProviderProperty.PropertyKind getKind() {
                 return ProviderProperty.PropertyKind.MakeLogFile;
             }
         });
         myProperties.put(RESTRICT_SOURCE_ROOT, new ProviderProperty(){
             private String myPath="";
+            @Override
             public String getName() {
                 return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
             }
+            @Override
             public String getDescription() {
                 return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
             }
+            @Override
             public Object getValue() {
                 return myPath;
             }
+            @Override
             public void setValue(Object value) {
                 if (value instanceof String){
                     myPath = (String)value;
                 }
             }
+            @Override
             public ProviderProperty.PropertyKind getKind() {
                 return ProviderProperty.PropertyKind.String;
             }
         });
         myProperties.put(RESTRICT_COMPILE_ROOT, new ProviderProperty(){
             private String myPath="";
+            @Override
             public String getName() {
                 return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
             }
+            @Override
             public String getDescription() {
                 return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
             }
+            @Override
             public Object getValue() {
                 return myPath;
             }
+            @Override
             public void setValue(Object value) {
                 if (value instanceof String){
                     myPath = (String)value;
                 }
             }
+            @Override
             public ProviderProperty.PropertyKind getKind() {
                 return ProviderProperty.PropertyKind.String;
             }
         });
     }
 
+    @Override
     public String getID() {
         return "make-log"; // NOI18N
     }
     
+    @Override
     public String getName() {
         return i18n("Make_Log_Provider_Name"); // NOI18N
     }
     
+    @Override
     public String getDescription() {
         return i18n("Make_Log_Provider_Description"); // NOI18N
     }
     
+    @Override
     public List<String> getPropertyKeys() {
         return new ArrayList<String>(myProperties.keySet());
     }
     
+    @Override
     public ProviderProperty getProperty(String key) {
         return myProperties.get(key);
     }
@@ -202,7 +225,8 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
         return null;
     }
     
-    public int canAnalyze(ProjectProxy project) {
+    @Override
+    public IteratorExtension.Applicable canAnalyze(ProjectProxy project) {
         String set = (String)getProperty(MAKE_LOG_KEY).getValue();
         if (set == null || set.length() == 0) {
             set = detectMakeLog(project);
@@ -211,9 +235,9 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
             }
         }
         if (set == null || set.length() == 0) {
-            return 0;
+            return ApplicableImpl.NotApplicable;
         }
-        return 80;
+        return new ApplicableImpl(true, null, 80);
     }
 
     @Override
@@ -236,6 +260,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     }
 
     private Progress progress;
+    @Override
     public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
         isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
@@ -245,14 +270,17 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
+                @Override
                 public List<ProjectProperties> getProjectConfiguration() {
                     return ProjectImpl.divideByLanguage(getSourcesConfiguration());
                 }
                 
+                @Override
                 public List<Configuration> getDependencies() {
                     return null;
                 }
                 
+                @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null){
                         String set = (String)getProperty(MAKE_LOG_KEY).getValue();
@@ -266,6 +294,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                     return myFileProperties;
                 }
                 
+                @Override
                 public List<String> getIncludedFiles(){
                     if (myIncludedFiles == null) {
                         HashSet<String> set = new HashSet<String>();
