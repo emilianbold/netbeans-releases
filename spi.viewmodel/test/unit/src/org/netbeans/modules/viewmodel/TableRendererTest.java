@@ -53,6 +53,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToolTip;
 import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -220,6 +221,45 @@ public class TableRendererTest extends NbTestCase {
         assertEquals("Editor of 9:col2", ((EditorComponent) c).getText());
     }
 
+    public void testTooltip() {
+        setUpModel();
+        JTable t = ot.treeTable.getTable();
+        ot.revalidate();
+
+        javax.swing.JFrame f = new javax.swing.JFrame();
+        f.setLayout(new BorderLayout());
+        f.add(ot, BorderLayout.CENTER);
+        f.setSize(600, 500);
+        f.setVisible(true);
+        //while (f.isVisible()) {
+            try {
+                Thread.sleep(333);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        //}
+
+        MouseEvent event = getMouseClickAt(t, 0, 0);
+        String tipText = t.getToolTipText(event);
+        JToolTip tip = t.createToolTip();
+        tip.setTipText(tipText);
+        assertTrue("Bad ToolTip class: "+tip, tip instanceof RendererComponent.ToolTipComponent);
+        assertEquals("ToolTip for Renderer of 0:DN", tip.getTipText());
+
+        event = getMouseClickAt(t, 1, 1);
+        tipText = t.getToolTipText(event);
+        tip = t.createToolTip();
+        tip.setTipText(tipText);
+        assertFalse("Bad ToolTip class: "+tip, tip instanceof RendererComponent.ToolTipComponent);
+
+        event = getMouseClickAt(t, 2, 2);
+        tipText = t.getToolTipText(event);
+        tip = t.createToolTip();
+        tip.setTipText(tipText);
+        assertTrue("Bad ToolTip class: "+tip, tip instanceof RendererComponent.ToolTipComponent);
+        assertEquals("ToolTip for Renderer of 2:col2", tip.getTipText());
+    }
+
     private MouseEvent getMouseClickAt(JTable t, int row, int col) {
         Point p = t.getCellRect(row, col, false).getLocation();
         MouseEvent me = new MouseEvent(t, 1000, System.currentTimeMillis(), 0, p.x, p.y, 1, false);
@@ -227,9 +267,28 @@ public class TableRendererTest extends NbTestCase {
     }
 
     private static class RendererComponent extends JLabel {
+
+        private String s;
+
         public RendererComponent(String s) {
             super(s);
+            this.s = s;
         }
+
+        @Override
+        public String getToolTipText() {
+            return "ToolTip for "+s;
+        }
+
+        @Override
+        public JToolTip createToolTip() {
+            return new ToolTipComponent();
+        }
+
+        private static class ToolTipComponent extends JToolTip {
+            
+        }
+
     }
 
     private static final class CellRendererImpl implements TableCellRenderer {
