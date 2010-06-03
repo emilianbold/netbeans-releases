@@ -72,11 +72,9 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 public final class RunDialogPanel extends javax.swing.JPanel implements PropertyChangeListener {
-    private static final RequestProcessor RP = new RequestProcessor(RunDialogPanel.class.getName(), 2);
     private DocumentListener modifiedValidateDocumentListener = null;
     private Project[] projectChoices = null;
     private boolean executableReadOnly = true;
@@ -589,16 +587,6 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                              .setConfiguration(conf)
                              .setImportantFiles(Collections.<String>singletonList(exe).iterator());
                     project = ProjectGenerator.createBlankProject(prjParams);
-                    IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-                    if (extension != null) {
-                        Map<String,Object> map = new HashMap<String,Object>();
-                        map.put("DW:buildResult",getExecutablePath()); // NOI18N
-                        map.put("DW:consolidationLevel", "file"); // NOI18N
-                        map.put("DW:rootFolder", baseDir); // NOI18N
-                            if (extension.canApply(map, project)) {
-                                extension.apply(map, project);
-                            }
-                    }
                     lastSelectedProject = project;
                     OpenProjects.getDefault().addPropertyChangeListener(this);
                     OpenProjects.getDefault().open(new Project[]{project}, false);
@@ -626,18 +614,14 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                 if (lastSelectedProject == null) {
                     return;
                 }
-                RP.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                        provider.getConfigurationDescriptor(true);
-                        IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-                        if (extension != null) {
-                            extension.openFunction("main", lastSelectedProject);
-                        }
-                    }
-                });
+                IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                if (extension != null) {
+                    Map<String, Object> map = new HashMap<String, Object>();
+                    map.put("DW:buildResult", getExecutablePath()); // NOI18N
+                    map.put("DW:consolidationLevel", "file"); // NOI18N
+                    map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
+                    extension.discoverProject(map, lastSelectedProject, "main"); // NOI18N
+                }
             }
         }
     }

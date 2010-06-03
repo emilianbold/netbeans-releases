@@ -99,6 +99,7 @@ public class DwarfSource implements SourceFileProperties{
     private Set<String> includedFiles;
     private CompilerSettings normilizeProvider;
     private Map<String,GrepEntry> grepBase;
+    private String compilerName;
     
     DwarfSource(CompilationUnit cu, boolean isCPP, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase) throws IOException{
         initCompilerSettings(compilerSettings, isCPP);
@@ -211,6 +212,11 @@ public class DwarfSource implements SourceFileProperties{
     public ItemProperties.LanguageKind getLanguageKind() {
         return language;
     }
+
+    @Override
+    public String getCompilerName() {
+        return compilerName;
+    }
     
     private String fixFileName(String fileName) {
         if (fileName == null){
@@ -301,12 +307,38 @@ public class DwarfSource implements SourceFileProperties{
         return name;
     }
     
+
+    static String extractCompilerName(CompilationUnit cu, boolean isCPP) throws IOException {
+        String compilerName = null;
+        if (cu.getCompileOptions() == null) {
+            compilerName = cu.getProducer();
+        } else {
+            String compileOptions = cu.getCompileOptions();
+            int startIndex = compileOptions.indexOf("R="); // NOI18N
+            if (startIndex >=0 ) {
+                int endIndex = compileOptions.indexOf(";", startIndex); // NOI18N
+                if (endIndex >= 0) {
+                    compilerName = PathCache.getString(compileOptions.substring(startIndex+2, endIndex));
+                }
+            }
+            if (compilerName == null) {
+                if (isCPP) {
+                    compilerName = PathCache.getString("CC"); // NOI18N
+                } else {
+                    compilerName = PathCache.getString("cc"); // NOI18N
+                }
+            }
+        }
+        return compilerName;
+    }
+
     
     private void initSourceSettings(CompilationUnit cu, boolean isCPP) throws IOException{
         userIncludes = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
         includedFiles = new HashSet<String>();
         countFileName(cu);
+        compilerName = PathCache.getString(extractCompilerName(cu, isCPP));
         compilePath = PathCache.getString(fixFileName(cu.getCompilationDir()));
         sourceName = PathCache.getString(cu.getSourceFileName());
         
