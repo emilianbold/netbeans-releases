@@ -173,7 +173,7 @@ public class ZendEditorExtender extends EditorExtender {
                                     PhpClass type = view.getType();
                                     type.addField(
                                             "$" + CodeUtils.extractVariableName(field), // NOI18N
-                                            new PhpClass(name, fqn),
+                                            name != null ? new PhpClass(name, fqn) : null,
                                             action,
                                             ASTNodeInfo.toOffsetRangeVar(field).getStart());
                                 }

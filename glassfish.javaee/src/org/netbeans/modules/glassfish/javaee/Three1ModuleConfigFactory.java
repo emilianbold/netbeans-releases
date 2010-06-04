@@ -51,17 +51,17 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurati
  *
  * @author vbk
  */
-public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory {
+public class Three1ModuleConfigFactory implements ModuleConfigurationFactory {
     
     /** Creates a new instance of Hk2ModuleConfigFactory */
-    public Hk2ModuleConfigFactory() {
+    public Three1ModuleConfigFactory() {
     }
     
     @Override
     public ModuleConfiguration create(J2eeModule module) throws ConfigurationException {
         ModuleConfiguration retVal = null;
         try {
-            retVal = new ModuleConfigurationImpl(module, new Hk2Configuration(module));
+            retVal = new ModuleConfigurationImpl(module, new Three1Configuration(module));
         } catch (ConfigurationException ce) {
             throw ce;
         } catch (Exception ex) {

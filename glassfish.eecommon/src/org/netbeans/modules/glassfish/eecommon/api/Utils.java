@@ -135,7 +135,7 @@ public final class Utils {
         }
 
         if (null == moduleID || moduleID.trim().length() < 1) {
-            J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getType());
+            J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getSunDDModuleHelper(module.getType());
             if(j2eeModuleHelper != null) {
                 RootInterface rootDD = j2eeModuleHelper.getStandardRootDD(module);
                 if(rootDD != null) {
@@ -192,6 +192,7 @@ public final class Utils {
     }
     
     public static class JarFileFilter implements FileFilter {
+        @Override
         public boolean accept(File f) {
             return ((! f.isDirectory()) && f.getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")); //NOI18N
         }
