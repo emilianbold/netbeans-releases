@@ -198,6 +198,8 @@ public abstract class SourceAccessor {
      */
     public abstract Source get (final FileObject file);
 
+    public abstract void suppressListening(boolean suppress);
+
     public abstract int getLineStartOffset(Snapshot snapshot, int lineIdx);
 
     public abstract Snapshot createSnapshot(

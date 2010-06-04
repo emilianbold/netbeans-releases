@@ -51,6 +51,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -429,6 +430,13 @@ public final class Source {
     // -J-Dorg.netbeans.modules.parsing.api.Source.level=FINE
     private static final Logger LOG = Logger.getLogger(Source.class.getName());
     private static final Map<FileObject, Reference<Source>> instances = new WeakHashMap<FileObject, Reference<Source>>();
+    private static final Map<FileObject,Void> detached = new WeakHashMap<FileObject, Void>();
+    private static final ThreadLocal<Boolean> suppressListening = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }
+    };
 
     static {
         SourceAccessor.setINSTANCE(new MySourceAccessor());
@@ -483,7 +491,16 @@ public final class Source {
     }
 
     private void assignListeners () {
-        support.init();
+        boolean listen = !suppressListening.get();
+        if (listen) {
+            support.init();
+        } else {
+            synchronized (Source.class) {
+                if (this.fileObject != null) {
+                    detached.put(this.fileObject,null);
+                }
+            }
+        }
     }
 
     private static class MySourceAccessor extends SourceAccessor {
@@ -681,6 +698,21 @@ public final class Source {
                 ref = instances.get(file);
             }
             return ref == null ? null : ref.get();
+        }
+
+        public void suppressListening(final boolean suppress) {
+            suppressListening.set(suppress);
+            if (!suppress) {
+                //clean up after suppress
+                synchronized (Source.class) {
+                    for (Iterator<FileObject> it = detached.keySet().iterator(); it.hasNext();) {
+                        final FileObject fo = it.next();
+                        it.remove();
+                        instances.remove(fo);
+                    }
+                    assert detached.isEmpty();
+                }
+            }
         }
 
         @Override
