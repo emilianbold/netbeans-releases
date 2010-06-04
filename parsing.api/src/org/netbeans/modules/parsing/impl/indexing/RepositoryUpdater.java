@@ -1629,6 +1629,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
             final LinkedList<Context> transactionContexts = new LinkedList<Context>();
             final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<Iterable<Indexable>>();
+            SourceAccessor.getINSTANCE().suppressListening(true);
                 try {
                     final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                     final ClusteredIndexables ci = new ClusteredIndexables(resources);
@@ -1744,6 +1745,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                     return true;
                 } finally {
+                    SourceAccessor.getINSTANCE().suppressListening(false);
                     final Iterable<Indexable> proxyIterable = new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false, true);
                     for(Context ctx : transactionContexts) {
                         if (getShuttdownRequest().isRaised()) {
