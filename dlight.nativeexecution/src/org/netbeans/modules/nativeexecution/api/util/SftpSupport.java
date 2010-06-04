@@ -53,7 +53,6 @@ import java.net.ConnectException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -252,7 +251,12 @@ class SftpSupport {
                 try {
                     res = new Md5checker(execEnv).check(new File(srcFileName), dstFileName);
                 } catch (NoSuchAlgorithmException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getInstance().log(Level.WARNING, "Can not perform md5 check for {0}: {1}", new Object[]{execEnv.getDisplayName(), ex.getMessage()});
+                    if (HostInfoUtils.fileExists(execEnv, dstFileName)) {
+                        res = Md5checker.Result.UPTODATE;
+                    } else {
+                        res = Md5checker.Result.INEXISTENT;
+                    }
                 } catch (Md5checker.CheckSumException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (InterruptedException ex) {
