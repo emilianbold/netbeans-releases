@@ -181,7 +181,7 @@ public class SymfonyEditorExtender extends EditorExtender {
                         synchronized (fields) {
                             fields.add(new PhpVariable(
                                     "$" + CodeUtils.extractVariableName(field), // NOI18N
-                                    new PhpClass(name, fqn),
+                                    name != null ? new PhpClass(name, fqn) : null,
                                     action, ASTNodeInfo.toOffsetRangeVar(field).getStart()));
                         }
                     }

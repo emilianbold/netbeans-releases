@@ -79,11 +79,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="runArgsField">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/project/ui/actions/support/Bundle.properties" key="RunFilePanel.runArgsField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="workDirLabel">
       <Properties>
@@ -98,9 +93,6 @@
     <Component class="javax.swing.JTextField" name="workDirField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/project/ui/actions/support/Bundle.properties" key="RunFilePanel.workDirField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="browseButton">
@@ -124,11 +116,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="phpOptionsField">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/project/ui/actions/support/Bundle.properties" key="RunFilePanel.phpOptionsField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="displayDialog">
       <Properties>

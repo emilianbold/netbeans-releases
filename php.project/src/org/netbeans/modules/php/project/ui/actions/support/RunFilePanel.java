@@ -47,7 +47,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
@@ -127,19 +127,7 @@ final class RunFilePanel extends JPanel {
     void validateWorkDir() {
         assert notificationLineSupport != null;
 
-        String workDir = getWorkDir();
-        String error = null;
-        if (!StringUtils.hasText(workDir)) {
-            error = NbBundle.getMessage(RunFilePanel.class, "MSG_FolderEmpty");
-        } else {
-            File workDirFile = new File(workDir);
-            if (!workDirFile.isAbsolute()) {
-                error = NbBundle.getMessage(RunFilePanel.class, "MSG_WorkDirNotAbsolute");
-            } else if (!workDirFile.isDirectory()) {
-                error = NbBundle.getMessage(RunFilePanel.class, "MSG_WorkDirDirectory");
-            }
-        }
-
+        String error = RunAsValidator.validateWorkDir(getWorkDir(), false);
         if (error != null) {
             notificationLineSupport.setErrorMessage(error);
             dialogDescriptor.setValid(false);
@@ -171,13 +159,10 @@ final class RunFilePanel extends JPanel {
         runArgsLabel.setLabelFor(runArgsField);
         org.openide.awt.Mnemonics.setLocalizedText(runArgsLabel, org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.runArgsLabel.text")); // NOI18N
 
-        runArgsField.setText(org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.runArgsField.text")); // NOI18N
-
         workDirLabel.setLabelFor(workDirField);
         org.openide.awt.Mnemonics.setLocalizedText(workDirLabel, org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.workDirLabel.text")); // NOI18N
 
         workDirField.setEditable(false);
-        workDirField.setText(org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.workDirField.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -188,8 +173,6 @@ final class RunFilePanel extends JPanel {
 
         phpOptionsLabel.setLabelFor(phpOptionsField);
         org.openide.awt.Mnemonics.setLocalizedText(phpOptionsLabel, org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.phpOptionsLabel.text")); // NOI18N
-
-        phpOptionsField.setText(org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.phpOptionsField.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(displayDialog, org.openide.util.NbBundle.getMessage(RunFilePanel.class, "RunFilePanel.displayDialog.text")); // NOI18N
 
