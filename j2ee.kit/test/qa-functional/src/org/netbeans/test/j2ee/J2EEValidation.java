@@ -128,7 +128,7 @@ public class J2EEValidation extends JellyTestCase {
     // name of sample web application project
     private static final String SAMPLE_WEB_PROJECT_NAME = "SampleWebProject";  //NOI18N
     private static final String HTTP_PORT= System.getProperty("http.port","8080"); //NOI18N
-    private static final String GF_INSTALL_ROOT= System.getProperty("com.sun.aas.installRoot","/Applications/NetBeans/glassfish-3.0.1-b19"); //NOI18N
+    private static final String GF_INSTALL_ROOT= System.getProperty("com.sun.aas.installRoot"); //NOI18N
 
 
     /** Test Web Application
