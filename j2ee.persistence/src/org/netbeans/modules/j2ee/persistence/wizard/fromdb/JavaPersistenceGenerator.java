@@ -826,6 +826,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private String namedQueryPrefix;
 
             private Set<String> existingColumns = new HashSet<String>();
+            private Set<String> existingJoinColumns = new HashSet<String>();
 
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 super(copy, entityClass);
@@ -893,17 +894,29 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
             private void collectExistingColumns(){
                 for (Tree member: originalClassTree.getMembers()){
+                    List<? extends AnnotationTree> annotations = null;
                     if (Kind.VARIABLE.equals(member.getKind())){
                         VariableTree variable = (VariableTree)member;
-                        List<? extends AnnotationTree> annotations = variable.getModifiers().getAnnotations();
+                        annotations = variable.getModifiers().getAnnotations();
+                    } else if(Kind.METHOD.equals(member.getKind())) {
+                        MethodTree method = (MethodTree) member;
+                        annotations = method.getModifiers().getAnnotations();
+                    }
+                    if(annotations!=null)    {
                         for(AnnotationTree annTree: annotations){
-                            if (!((IdentifierTree)annTree.getAnnotationType()).getName().contentEquals("Column")){
+                            Name nm = ((IdentifierTree)annTree.getAnnotationType()).getName();
+                            Set<String> set = null;
+                            if (nm.contentEquals("Column")){//NOI18N
+                                set = existingColumns;
+                            } else if( nm.contentEquals("JoinColumn") ){//NOI18N
+                                set = existingJoinColumns;
+                            } else {//NOI18N
                                 continue;
                             }
                             for(ExpressionTree exTree: annTree.getArguments()){
                                 AssignmentTree aTree = (AssignmentTree)exTree;
-                                if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("name")){
-                                        existingColumns.add((String)((LiteralTree)aTree.getExpression()).getValue());
+                                if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("name")){//NOI18N
+                                        set.add((String)((LiteralTree)aTree.getExpression()).getValue());
                                         break;
                                 }
                             }
@@ -913,6 +926,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
             }
 
+            @Override
             protected void generateMember(EntityMember m) throws IOException {
                 //skip generating already exist members for UPDATE type
                 if (updateType.UPDATE.equals(updateType) && existingColumns.contains(m.getColumnName())){
