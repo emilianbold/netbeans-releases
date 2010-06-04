@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
@@ -68,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -92,19 +95,25 @@ public class ImportExecutable {
 
             @Override
             public void run() {
-                ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
-                Applicable applicable = extension.isApplicable(map, lastSelectedProject);
-                if (applicable.isApplicable()) {
-                    resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
-                    if (extension.canApply(map, lastSelectedProject)) {
-                        try {
-                            extension.apply(map, lastSelectedProject);
-                            saveMakeConfigurationDescriptor();
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
+                ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getBundle(ImportExecutable.class).getString("ImportExecutable.Progress")); // NOI18N
+                progress.start();
+                try {
+                    ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                    MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
+                    Applicable applicable = extension.isApplicable(map, lastSelectedProject);
+                    if (applicable.isApplicable()) {
+                        resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
+                        if (extension.canApply(map, lastSelectedProject)) {
+                            try {
+                                extension.apply(map, lastSelectedProject);
+                                saveMakeConfigurationDescriptor();
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
                         }
                     }
+                } finally {
+                    progress.finish();
                 }
                 switchModel(true, lastSelectedProject);
                 if (functionToOpen != null) {
