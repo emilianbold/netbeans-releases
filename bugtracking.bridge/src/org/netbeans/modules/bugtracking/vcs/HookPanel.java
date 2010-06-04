@@ -110,6 +110,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         linkCheckBox.setSelected(link);
         resolveCheckBox.setSelected(resolve);
         commitRadioButton.setSelected(commit);
+        pushRadioButton.setSelected(!commit);
 
         enableFields();
 
@@ -124,7 +125,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         return selectedRepository;
     }
 
-    private void enableFields() {
+    void enableFields() {
         boolean repoSelected = isRepositorySelected();
         boolean enableFields = repoSelected && (getIssue() != null);
 
@@ -205,7 +206,6 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         });
 
         buttonGroup1.add(commitRadioButton);
-        commitRadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(commitRadioButton, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.commitRadioButton.text")); // NOI18N
 
         buttonGroup1.add(pushRadioButton);
@@ -238,11 +238,8 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
-                                    .add(repositoryComboBox, 0, 463, Short.MAX_VALUE))))
+                            .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, repositoryComboBox, 0, 463, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(jButton2)))
                 .addContainerGap())
