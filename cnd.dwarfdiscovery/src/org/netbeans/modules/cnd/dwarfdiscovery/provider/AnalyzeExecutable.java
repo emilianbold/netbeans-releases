@@ -212,9 +212,9 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         if (set == null || set.length() == 0) {
             return ApplicableImpl.NotApplicable;
         }
-        ApplicableImpl sizeComilationUnit = sizeComilationUnit(set);
-        if (sizeComilationUnit.isApplicable()) {
-            return new ApplicableImpl(true, sizeComilationUnit.getCompilerName(), 70);
+        ApplicableImpl applicable = sizeComilationUnit(set);
+        if (applicable.isApplicable()) {
+            return new ApplicableImpl(true, applicable.getCompilerName(), 70, applicable.isSunStudio());
         }
         return ApplicableImpl.NotApplicable;
     }
