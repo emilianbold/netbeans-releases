@@ -241,6 +241,7 @@
                 <friend>org.netbeans.modules.javacard.project</friend>
                 <friend>org.netbeans.modules.javafx.profiler</friend>
                 <friend>org.netbeans.modules.javafx.project</friend>
+                <friend>org.netbeans.modules.javame.bdj.bdjo.project</friend>
                 <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.projectimport</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.core</friend>
