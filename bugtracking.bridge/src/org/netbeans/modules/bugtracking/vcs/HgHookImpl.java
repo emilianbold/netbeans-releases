@@ -244,6 +244,7 @@ public class HgHookImpl extends HgHook {
             issue.addComment(operation.getMsg(), operation.isClose());
         }
         LOG.log(Level.FINE, "push hook end for {0}", file);                       // NOI18N
+        VCSHooksConfig.logHookUsage("HG", getSelectedRepository()); // NOI18N
     }
 
     @Override
