@@ -596,15 +596,16 @@ class BraceCompletion {
             return false;
         }
 
-        if (caretOffset == 1) {
-            char previousChar = doc.getChars(caretOffset - 1, 1)[0];
-
-            return previousChar == '\\';
+        for (int i = 2; caretOffset - i >= 0; i += 2) {
+            char[] previousChars = doc.getChars(caretOffset - i, 2);
+            if (previousChars[1] != '\\')
+                return false;
+            if (previousChars[0] != '\\')
+                return true;
         }
 
-        char[] previousChars = doc.getChars(caretOffset - 2, 2);
-
-        return previousChars[0] != '\\' && previousChars[1] == '\\';
+        char previousChar = doc.getChars(caretOffset - 1, 1)[0];
+        return previousChar == '\\';
     }
 
     /** 

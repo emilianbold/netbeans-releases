@@ -208,7 +208,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         result = new Generator(entityClasses, generateNamedQueries, 
                 fullyQualifiedTableNames, regenTablesAttrs,
                 fetchType, collectionType,
-                progressContributor, panel).run();
+                progressContributor, panel, this).run();
         addToPersistenceUnit(result);
         progressContributor.progress(progressMax);
         PersistenceUtils.logUsage(JavaPersistenceGenerator.class, "USG_PERSISTENCE_ENTITY_DB_CREATED", new Integer[]{entityClasses.length});
@@ -229,7 +229,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         }
         
         Project project = FileOwnerQuery.getOwner(entities.iterator().next());
-        if (project != null && !Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {
+        if (project != null && !(Util.isSupportedJavaEEVersion(project) && Util.isContainerManaged(project)) && ProviderUtil.getDDFile(project) != null) {
             try {
                 PUDataObject pudo = ProviderUtil.getPUDataObject(project);
                 // no persistence unit was provider, we'll try find one
@@ -334,11 +334,13 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         private final CollectionType collectionType;
         private final Set<FileObject> generatedEntityFOs;
         private final Set<FileObject> generatedFOs;
+        private final PersistenceGenerator persistenceGen;
 
         public Generator(EntityClass[] entityClasses, boolean generateNamedQueries,
                 boolean fullyQualifiedTableNames, boolean regenTablesAttrs, 
                 FetchType fetchType, CollectionType collectionType,
-                ProgressContributor progressContributor, ProgressPanel progressPanel) {
+                ProgressContributor progressContributor, ProgressPanel progressPanel,
+                PersistenceGenerator persistenceGen) {
             this.entityClasses = entityClasses;
             this.generateNamedQueries = generateNamedQueries;
             this.fullyQualifiedTableNames = fullyQualifiedTableNames;
@@ -349,6 +351,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             this.progressPanel = progressPanel;
             generatedFOs = new HashSet<FileObject>();
             generatedEntityFOs = new HashSet<FileObject>();
+            this.persistenceGen = persistenceGen;
         }
 
         public Set<FileObject> run() throws IOException {
@@ -386,9 +389,19 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     progressPanel.setText(progressMsg);
                 }
 
-                FileObject entity = packageFileObject.getFileObject(entityClassName, "java"); //NOI18N
+                FileObject entity = packageFileObject.getFileObject(entityClassName, "java");
+
+                //NOI18N
                 switch (entityClass.getUpdateType()){
                     case RECREATE:
+                        if(entity == null){//we hit case when old entity position is different from target package
+                           String fqn = persistenceGen.getFQClassName(entityClass.getTableName());
+                           int ind = fqn.lastIndexOf(".");
+                           String pkg = ind>-1 ? fqn.substring(0, ind) : "";
+                           String rel = pkg.replaceAll("\\.", "/");
+                           FileObject oldPackage = entityClass.getRootFolder().getFileObject(rel);
+                           entity = oldPackage.getFileObject(entityClassName, "java");
+                        }
                         entity.delete();
                         entity = null;
                     case NEW:{
@@ -443,7 +456,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                     JPAClassPathHelper cpHelper = new JPAClassPathHelper(bootCPs, compileCPs, sourceCPs);
 
-                    JavaSource javaSource = (pkClassFO != null) ?
+                    JavaSource javaSource = (pkClassFO != null && entityClass.getUpdateType() != UpdateType.UPDATE) ?
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO, pkClassFO) :
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO);
                     javaSource.runModificationTask(new Task<WorkingCopy>() {

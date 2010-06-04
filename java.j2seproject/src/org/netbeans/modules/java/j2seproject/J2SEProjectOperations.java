@@ -58,6 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
@@ -264,9 +265,9 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         ProjectManager.mutex().readAccess(new Runnable() {
             public void run () {
                 privatePropsToRestore.clear();
-                backUpPrivateProp(J2SEProjectProperties.APPLICATION_ARGS);
-                backUpPrivateProp(J2SEProjectProperties.RUN_WORK_DIR);
-                backUpPrivateProp(J2SEProjectProperties.COMPILE_ON_SAVE);                                                
+                backUpPrivateProp(ProjectProperties.APPLICATION_ARGS);
+                backUpPrivateProp(ProjectProperties.RUN_WORK_DIR);
+                backUpPrivateProp(ProjectProperties.COMPILE_ON_SAVE);                                                
             }
         });
     }    

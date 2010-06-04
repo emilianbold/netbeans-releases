@@ -67,7 +67,6 @@ import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -155,7 +154,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         if (!StringUtils.hasText(indexFile)) {
             indexFile = null;
         }
-        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(getWebRoot()), indexFile, args);
+        String err = RunAsValidator.validateWebFields(url, getWebRoot(), indexFile, args);
         category.setErrorMessage(err);
         // #148957 always allow to save customizer
         category.setValid(true);

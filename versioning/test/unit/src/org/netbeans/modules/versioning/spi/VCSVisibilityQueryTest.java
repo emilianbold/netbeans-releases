@@ -44,11 +44,13 @@
 package org.netbeans.modules.versioning.spi;
 
 import java.io.IOException;
+import javax.swing.event.ChangeEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileObject;
 
 import java.io.File;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
@@ -71,20 +73,68 @@ public class VCSVisibilityQueryTest extends NbTestCase {
         super.setUp();
     }
 
-    public void testVQ() throws FileStateInvalidException, IOException {
+    public void testVQ() throws FileStateInvalidException, IOException, Exception {
         File folder = new File(getWorkDir(), TestVCS.VERSIONED_FOLDER_SUFFIX);
         folder.mkdirs();
         
+        VQChangeListener cl = new VQChangeListener();
+        VisibilityQuery.getDefault().addChangeListener(cl);
         File visible = new File(folder, "this-file-is-visible");
         visible.createNewFile();
         FileObject visibleFO = FileUtil.toFileObject(visible);
+        cl.testVisibility(true, visible, visibleFO);
         assertTrue(VisibilityQuery.getDefault().isVisible(visible));
         assertTrue(VisibilityQuery.getDefault().isVisible(visibleFO));
 
         File invisible = new File(folder, "this-file-is-" + TestVCSVisibilityQuery.INVISIBLE_FILE_SUFFIX);
         invisible.createNewFile();
         FileObject invisibleFO = FileUtil.toFileObject(invisible);
+        cl.testVisibility(false, invisible, invisibleFO);
         assertFalse(VisibilityQuery.getDefault().isVisible(invisible));
         assertFalse(VisibilityQuery.getDefault().isVisible(invisibleFO));
+        VisibilityQuery.getDefault().removeChangeListener(cl);
+    }
+
+    private class VQChangeListener implements ChangeListener {
+        private static final long MAXTIME = 30000;
+        private static final long STABLETIME = 10000;
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            synchronized(this) {
+                notifyAll();
+            }
+        }
+
+        void testVisibility (boolean expectedVisibility, Object... files) throws Exception {
+            boolean ok = false;
+            long maxTime = System.currentTimeMillis() + MAXTIME;
+            long stableFor = 0;
+            boolean cont = true;
+            while (cont) {
+                ok = true;
+                synchronized(this) {
+                    for (Object o : files) {
+                        assert o instanceof File || o instanceof FileObject;
+                        ok &= expectedVisibility == (o instanceof File
+                                ? VisibilityQuery.getDefault().isVisible((File) o)
+                                : VisibilityQuery.getDefault().isVisible((FileObject) o));
+                    }
+                    if (ok) {
+                        long t = System.currentTimeMillis();
+                        wait(STABLETIME - stableFor); // stable state for these files should take 10 seconds
+                        stableFor += System.currentTimeMillis() - t;
+                    }
+                }
+                if (!ok) {
+                    stableFor = 0;
+                }
+                cont = stableFor < STABLETIME && System.currentTimeMillis() < maxTime; // continue until stable state is reached
+            }
+            long t = System.currentTimeMillis();
+            assertTrue("Takes too long: " + (t - maxTime + MAXTIME), t < maxTime);
+            assertTrue(ok);
+            assertTrue(stableFor >= 10000);
+        }
     }
 }

@@ -13,4 +13,5 @@ function testFunction($param) {
             ? getLastResult()
             : getPreviousResult("There is a long text");
 }
+
 ?>

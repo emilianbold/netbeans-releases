@@ -550,19 +550,19 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     private void computeHint() {
         LOG.entering(ComponentPeer.class.getName(), "computeHint");
         
+        final TokenList l = getTokenList();
+
+        if (l == null) {
+            //nothing to do:
+            LOG.fine("token list == null");
+            LOG.exiting(ComponentPeer.class.getName(), "computeHint");
+            return ;
+        }
+
         final Dictionary d = ComponentPeer.getDictionary(document);
         
         if (d == null) {
             LOG.fine("dictionary == null");
-            LOG.exiting(ComponentPeer.class.getName(), "computeHint");
-            return ;
-        }
-        
-        final TokenList l = getTokenList();
-        
-        if (l == null) {
-            //nothing to do:
-            LOG.fine("token list == null");
             LOG.exiting(ComponentPeer.class.getName(), "computeHint");
             return ;
         }

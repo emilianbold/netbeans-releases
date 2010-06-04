@@ -57,4 +57,8 @@ public class FileChangedManagerTest {
     public static void assertNoLock() {
         FileChangedManager.assertNoLock();
     }
+
+    public static boolean isIdleIO() {
+        return FileChangedManager.isIdleIO();
+    }
 }

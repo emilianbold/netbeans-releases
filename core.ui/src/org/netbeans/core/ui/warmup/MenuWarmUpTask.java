@@ -256,7 +256,11 @@ public final class MenuWarmUpTask implements Runnable {
                 @Override
                 public void run() {
                     if (EventQueue.isDispatchThread()) {
-                        h.suspend(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh_Suspend"));
+                        try {
+                            h.suspend(NbBundle.getMessage(MenuWarmUpTask.class, "MSG_Refresh_Suspend"));
+                        } catch (Throwable t) {
+                            // ignore any errors
+                        }
                     } else {
                         EventQueue.invokeLater(this);
                     }

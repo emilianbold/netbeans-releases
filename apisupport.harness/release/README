@@ -973,7 +973,7 @@ jnlp.indirect.jars [since 6.0] - optional pattern of JARs in the cluster to load
   entry META-INF/clusterpath/$path where $path is the ('/'-separated) path
   within the cluster where the JAR would be found in a normal installation.
 
-jnlp.indirect.files [since 7.0M1] - optional pattern of files in the cluster to
+jnlp.indirect.files [since 6.7 M1] - optional pattern of files in the cluster to
   load in JNLP mode. The module may load these files using InstalledFileLocator
   using the same path in regular as in JNLP mode. Note that the physical path on
   disk to the resulting file will not necessarily contain the directory prefix
@@ -1214,11 +1214,12 @@ When property 'continue.after.failing.tests' is set to 'false', this target fail
 immediately after tests in some module fail and does not continue testing the rest
 of the suite (this was the default up to version 6.7).
 
-test-generate-html - similar to the module-level target of the same name, only this 
-executes and reports on all unit and functional tests for all suite modules. [since 7.0]
+test-generate-html - similar to the module-level target of the same name, only
+this executes and reports on all unit and functional tests for all suite
+modules. [since 6.10]
 
-test-view-html - tests all modules in the suite, then opens the browser to display 
-the report generated from the results of those tests. [since 7.0]
+test-view-html - tests all modules in the suite, then opens the browser to
+display the report generated from the results of those tests. [since 6.10]
 
 testuserdir-delete - deletes just the testing user directory (if not currently in use).
 

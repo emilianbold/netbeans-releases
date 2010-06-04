@@ -51,8 +51,8 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
-import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -80,7 +80,8 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     ////////////////////////////////////////////////////////////////////////////
     // impl of abstract methods
     
-    protected boolean include(ResolvedPath resolvedPath, APTInclude apt, APTMacroMap.State postIncludeState) {
+    @Override
+    protected boolean include(ResolvedPath resolvedPath, APTInclude apt, PostIncludeData postIncludeState) {
         FileImpl included = null;
         boolean error = false;
         if (resolvedPath != null) {
@@ -111,10 +112,10 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
             }
         }
         postInclude(apt, included);
-        return (postIncludeState == null) && !error;
+        return ((postIncludeState == null) || !postIncludeState.hasPostIncludeMacroState()) && !error;
     }
     
-    abstract protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, APTMacroMap.State postIncludeState) throws IOException;
+    abstract protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, PostIncludeData postIncludeState) throws IOException;
 
     protected void postInclude(APTInclude apt, FileImpl included) {
     }

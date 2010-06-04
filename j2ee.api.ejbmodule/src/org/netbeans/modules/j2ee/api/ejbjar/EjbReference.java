@@ -44,8 +44,15 @@
 
 package org.netbeans.modules.j2ee.api.ejbjar;
 
+import java.io.IOException;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -147,5 +154,35 @@ public final class EjbReference {
 
     public ClasspathInfo getClasspathInfo(){
         return cpInfo;
+    }
+
+    public FileObject getComponentFO(EjbRefIType iType){
+        switch(iType){
+            case LOCAL: return findFileObject(getLocal());
+            case REMOTE: return findFileObject(getRemote());
+            case NO_INTERFACE: return findFileObject(getEjbClass());
+            default: return null;
+        }
+    }
+
+    private FileObject findFileObject(final String className){
+        if (cpInfo == null){
+            return null;
+        }
+        final FileObject[] result = new FileObject[]{null};
+        try{
+            JavaSource.create(cpInfo).runUserActionTask(new Task<CompilationController>() {
+                @Override
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = controller.getElements().getTypeElement(className);
+                    if (typeElement != null) {
+                        result[0] = SourceUtils.getFile(ElementHandle.create(typeElement), controller.getClasspathInfo());
+                    }
+                }
+            }, true);
+        }catch(IOException ex){}
+        
+        return result[0];
     }
 }

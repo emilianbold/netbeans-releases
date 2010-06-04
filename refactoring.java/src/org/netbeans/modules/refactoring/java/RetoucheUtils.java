@@ -692,7 +692,7 @@ public class RetoucheUtils {
      * @param result modifiable list that will contain referenced type parameters
      * @param tm parametrized type to analyze
      */
-    public static void findUsedGenericTypes(Types utils, List<TypeMirror> typeArgs, List<TypeMirror> result, TypeMirror tm) {
+    public static void findUsedGenericTypes(Types utils, List<TypeMirror> typeArgs, Set<TypeMirror> result, TypeMirror tm) {
         if (typeArgs.isEmpty()) {
             return;
         } else if (tm.getKind() == TypeKind.TYPEVAR) {
@@ -707,7 +707,7 @@ public class RetoucheUtils {
             }
             int index = findTypeIndex(utils, typeArgs, type);
             if (index >= 0) {
-                result.add(typeArgs.remove(index));
+                result.add(typeArgs.get(index));
             }
         } else if (tm.getKind() == TypeKind.DECLARED) {
             DeclaredType type = (DeclaredType) tm;
@@ -736,6 +736,18 @@ public class RetoucheUtils {
             }
         }
         return -1;
+    }
+
+    public static List<TypeMirror> filterTypes(List<TypeMirror> source, Set<TypeMirror> used) {
+        List<TypeMirror> result = new ArrayList<TypeMirror>(source.size());
+
+        for (TypeMirror tm : source) {
+            if (used.contains(tm)) {
+                result.add(tm);
+            }
+        }
+
+        return result;
     }
     
     /**

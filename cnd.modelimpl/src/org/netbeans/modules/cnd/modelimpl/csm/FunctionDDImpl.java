@@ -74,7 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
  * @author Vladimir Kvasihn
  */
 public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDefinition {
-    
+
     private final CsmCompoundStatement body;
 
     public FunctionDDImpl(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
@@ -163,13 +163,12 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         for(CsmOffsetableDeclaration candidate : prj.findDeclarations(uname)) {
             if ((candidate.getKind() == CsmDeclaration.Kind.FUNCTION ||
                 candidate.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND)) {
+                if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), candidate)) {
+                    decl = candidate;
+                    break;
+                }
                 if (decl == null) {
                     decl = candidate;
-                } else {
-                    if (candidate.getContainingFile().equals(getContainingFile())) {
-                        decl = candidate;
-                        break;
-                    }
                 }
             }
         }
@@ -191,33 +190,33 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         }
         return null;
     }
-    
+
     @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
-    
+
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
         Collection<CsmScopeElement> l = super.getScopeElements();
         l.add(getBody());
         return l;
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
-    
+
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.body != null: "null body in " + this.getQualifiedName();
         PersistentUtils.writeCompoundStatement(body, output);
     }
-    
+
     public FunctionDDImpl(DataInput input) throws IOException {
         super(input);
         this.body = PersistentUtils.readCompoundStatement(input);
         assert this.body != null: "read null body for " + this.getName();
-    }       
+    }
 }
 

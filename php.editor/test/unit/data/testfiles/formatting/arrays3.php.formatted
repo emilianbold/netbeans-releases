@@ -22,4 +22,5 @@ class Test {
   public $number2 = 1;
 
 }
+
 ?>
