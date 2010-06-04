@@ -44,17 +44,19 @@ package org.netbeans.modules.cnd.discovery.api;
 
 /**
  *
- * @author as204739
+ * @author Alexander Simon
  */
 public final class ApplicableImpl implements DiscoveryExtensionInterface.Applicable {
     private final String compiler;
     private final boolean applicable;
     private final int weight;
+    private final boolean sunStudio;
 
-    public ApplicableImpl(boolean applicable, String compiler, int weight) {
+    public ApplicableImpl(boolean applicable, String compiler, int weight, boolean sunStudio) {
         this.compiler = compiler;
         this.applicable = applicable;
         this.weight = weight;
+        this.sunStudio = sunStudio;
     }
 
     @Override
@@ -72,5 +74,10 @@ public final class ApplicableImpl implements DiscoveryExtensionInterface.Applica
         return weight;
     }
 
-    public static final DiscoveryExtensionInterface.Applicable NotApplicable = new ApplicableImpl(false, null, 0);
+    public static final DiscoveryExtensionInterface.Applicable NotApplicable = new ApplicableImpl(false, null, 0, false);
+
+    @Override
+    public boolean isSunStudio() {
+        return sunStudio;
+    }
 }
