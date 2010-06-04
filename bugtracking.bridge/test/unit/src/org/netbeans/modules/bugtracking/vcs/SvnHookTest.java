@@ -50,6 +50,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.logging.Level;
@@ -62,9 +63,8 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
-import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
-import org.netbeans.modules.versioning.hooks.HgHook;
-import org.netbeans.modules.versioning.hooks.HgHookContext;
+import org.netbeans.modules.versioning.hooks.SvnHook;
+import org.netbeans.modules.versioning.hooks.SvnHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.openide.util.Lookup;
 
@@ -72,9 +72,9 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Stupka
  */
-public class HgHookTest extends NbTestCase {
+public class SvnHookTest extends NbTestCase {
 
-    public HgHookTest(String arg0) {
+    public SvnHookTest(String arg0) {
         super(arg0);
     }
 
@@ -90,53 +90,48 @@ public class HgHookTest extends NbTestCase {
     }
 
     public void testPanel() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        HgHookImpl hook = getHook();
+        SvnHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setHgLink(true);
-        VCSHooksConfig.getInstance().setHgResolve(true);
-        VCSHooksConfig.getInstance().setHgAfterCommit(true);
+        VCSHooksConfig.getInstance().setSvnLink(true);
+        VCSHooksConfig.getInstance().setSvnResolve(true);
 
         HookPanel panel = getPanel(hook, getContext());
-        assertTrue(panel.pushRadioButton.isVisible());
-        assertTrue(panel.pushRadioButton.isVisible());
+        assertFalse(panel.pushRadioButton.isVisible());
+        assertFalse(panel.pushRadioButton.isVisible());
 
         assertTrue(panel.linkCheckBox.isSelected());
         assertTrue(panel.resolveCheckBox.isSelected());
-        assertTrue(panel.commitRadioButton.isSelected());
-        assertFalse(panel.pushRadioButton.isSelected());
 
-        VCSHooksConfig.getInstance().setHgLink(false);
-        VCSHooksConfig.getInstance().setHgResolve(false);
-        VCSHooksConfig.getInstance().setHgAfterCommit(false);
+        VCSHooksConfig.getInstance().setSvnLink(false);
+        VCSHooksConfig.getInstance().setSvnResolve(false);
 
         panel = getPanel(hook, getContext());
 
         assertFalse(panel.linkCheckBox.isSelected());
         assertFalse(panel.resolveCheckBox.isSelected());
-        assertFalse(panel.commitRadioButton.isSelected());
-        assertTrue(panel.pushRadioButton.isSelected());
     }
 
     public void testBeforeCommitNoLink() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        HgHookImpl hook = getHook();
+        SvnHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setHgLink(false);
+        VCSHooksConfig.getInstance().setSvnLink(false);
 
         String msg = "msg";
-        HgHookContext ctx = getContext(msg);
+        SvnHookContext ctx = getContext(msg);
         HookPanel panel = getPanel(hook, ctx); // initiate panel
 
         ctx = hook.beforeCommit(ctx);
-        assertNull(ctx);
+        assertNotNull(ctx);
+        assertSame(msg, ctx.getMessage());
     }
 
     public void testBeforeCommitWithLink() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        HgHookImpl hook = getHook();
+        SvnHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setHgLink(true);
+        VCSHooksConfig.getInstance().setSvnLink(true);
 
         String msg = "msg";
-        HgHookContext ctx = getContext(msg);
+        SvnHookContext ctx = getContext(msg);
         HookPanel panel = getPanel(hook, ctx); // initiate panel
 
         ctx = hook.beforeCommit(ctx);
@@ -147,14 +142,13 @@ public class HgHookTest extends NbTestCase {
     }
 
     public void testAfterCommitLink() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        HgHookImpl hook = getHook();
+        SvnHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setHgAfterCommit(true);
-        VCSHooksConfig.getInstance().setHgLink(true);
-        VCSHooksConfig.getInstance().setHgResolve(false);
+        VCSHooksConfig.getInstance().setSvnLink(true);
+        VCSHooksConfig.getInstance().setSvnResolve(false);
 
         String msg = "msg";
-        HgHookContext ctx = getContext(msg);
+        SvnHookContext ctx = getContext(msg);
         HookPanel panel = getPanel(hook, ctx); // initiate panel
 
         hook.afterCommit(ctx);
@@ -164,14 +158,13 @@ public class HgHookTest extends NbTestCase {
     }
 
     public void testAfterCommitResolve() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        HgHookImpl hook = getHook();
+        SvnHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setHgAfterCommit(true);
-        VCSHooksConfig.getInstance().setHgLink(false);
-        VCSHooksConfig.getInstance().setHgResolve(true);
+        VCSHooksConfig.getInstance().setSvnLink(false);
+        VCSHooksConfig.getInstance().setSvnResolve(true);
 
         String msg = "msg";
-        HgHookContext ctx = getContext(msg);
+        SvnHookContext ctx = getContext(msg);
         HookPanel panel = getPanel(hook, ctx); // initiate panel
 
         hook.afterCommit(ctx);
@@ -180,14 +173,13 @@ public class HgHookTest extends NbTestCase {
     }
 
     public void testAfterCommitLinkResolve() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        HgHookImpl hook = getHook();
+        SvnHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setHgAfterCommit(true);
-        VCSHooksConfig.getInstance().setHgLink(true);
-        VCSHooksConfig.getInstance().setHgResolve(true);
+        VCSHooksConfig.getInstance().setSvnLink(true);
+        VCSHooksConfig.getInstance().setSvnResolve(true);
 
         String msg = "msg";
-        HgHookContext ctx = getContext(msg);
+        SvnHookContext ctx = getContext(msg);
         HookPanel panel = getPanel(hook, ctx); // initiate panel
 
         hook.afterCommit(ctx);
@@ -196,53 +188,28 @@ public class HgHookTest extends NbTestCase {
         assertTrue(HookIssue.getInstance().closed);
     }
 
-    public void testAfterCommitLinkResolveAfterPush() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        HgHookImpl hook = getHook();
-
-        VCSHooksConfig.getInstance().setHgAfterCommit(false); // PUSH!
-        VCSHooksConfig.getInstance().setHgLink(true);
-        VCSHooksConfig.getInstance().setHgResolve(true);
-
-        String changeset = "#" + System.currentTimeMillis();
-        String msg = "msg";
-        HgHookContext ctx = getContext(msg, changeset);
-        HookPanel panel = getPanel(hook, ctx); // initiate panel
-
-        hook.afterCommit(ctx);
-        assertNull(HookIssue.getInstance().comment);
-        assertFalse(HookIssue.getInstance().closed);
-
-        PushOperation a = VCSHooksConfig.getInstance().popHGPushAction(changeset);
-        assertNotNull(a);
-        assertNotNull(a.getIssueID());
-        assertEquals(HookIssue.getInstance().getID(), a.getIssueID());
-        assertNotNull(a.getMsg());
-        assertNotSame("", a.getMsg());
-        assertNotSame(-1, msg);
-    }
-
-    private HgHookImpl getHook() {
-        Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
-        for (HgHook hgHook : hooks) {
-            if(hgHook instanceof HgHookImpl) {
-                assertNotNull(hgHook);
-                assertNotNull(hgHook.getDisplayName());
-                return (HgHookImpl) hgHook;
+    private SvnHookImpl getHook() {
+        Collection<SvnHook> hooks = VCSHooks.getInstance().getHooks(SvnHook.class);
+        for (SvnHook SvnHook : hooks) {
+            if(SvnHook instanceof SvnHookImpl) {
+                assertNotNull(SvnHook);
+                assertNotNull(SvnHook.getDisplayName());
+                return (SvnHookImpl) SvnHook;
             }
         }
         return null;
     }
 
-    public HgHookContext getContext() throws IOException {
+    public SvnHookContext getContext() throws IOException {
         return getContext("msg");
     }
 
-    public HgHookContext getContext(String msg) throws IOException {
-        return getContext(msg, "1");
+    public SvnHookContext getContext(String msg) throws IOException {
+        return getContext(msg, 1);
     }
 
-    private HgHookContext getContext(String msg, String changeset) throws IOException {
-        return new HgHookContext(new File[]{new File(getWorkDir(), "f")}, "msg", new HgHookContext.LogEntry("msg", "author", changeset, new Date(System.currentTimeMillis())));
+    private SvnHookContext getContext(String msg, long revision) throws IOException {
+        return new SvnHookContext(new File[]{new File(getWorkDir(), "f")}, "msg", Arrays.asList(new SvnHookContext.LogEntry("msg", "author", revision, new Date(System.currentTimeMillis()))));
     }
 
     private void setRepository(HookPanel panel) {
@@ -262,7 +229,7 @@ public class HgHookTest extends NbTestCase {
         m.invoke(qs, HookIssue.getInstance());
     }
 
-    private HookPanel getPanel(final HgHookImpl hook, final HgHookContext ctx) throws InterruptedException, InvocationTargetException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException {
+    private HookPanel getPanel(final SvnHookImpl hook, final SvnHookContext ctx) throws InterruptedException, InvocationTargetException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException {
         final HookPanel[] p = new HookPanel[] {null};
         EventQueue.invokeAndWait(new Runnable() {
             @Override
