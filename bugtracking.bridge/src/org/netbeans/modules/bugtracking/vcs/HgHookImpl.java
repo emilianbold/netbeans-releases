@@ -68,7 +68,6 @@ import org.openide.util.NbBundle;
  * Mercurial commit hook implementation
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.hooks.HgHook.class)
 public class HgHookImpl extends HgHook {
 
     private static final String[] SUPPORTED_ISSUE_INFO_VARIABLES = new String[] {"id", "summary"};                        // NOI18N
@@ -245,6 +244,7 @@ public class HgHookImpl extends HgHook {
             issue.addComment(operation.getMsg(), operation.isClose());
         }
         LOG.log(Level.FINE, "push hook end for {0}", file);                       // NOI18N
+        VCSHooksConfig.logHookUsage("HG", getSelectedRepository()); // NOI18N
     }
 
     @Override
