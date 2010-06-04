@@ -56,7 +56,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
@@ -65,10 +64,13 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
+import org.openide.util.WeakListeners;
 
 /**
  * The cnd.remote implementation of ServerList.
@@ -76,7 +78,7 @@ import org.openide.util.NbPreferences;
  * @author gordonp
  */
 @org.openide.util.lookup.ServiceProvider(service = ServerListImplementation.class)
-public class RemoteServerList implements ServerListImplementation {
+public class RemoteServerList implements ServerListImplementation, ConnectionListener {
 
     private static final String CND_REMOTE = "cnd.remote"; // NOI18N
     private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
@@ -111,6 +113,26 @@ public class RemoteServerList implements ServerListImplementation {
         }
         defaultIndex = Math.min(defaultIndex, items.size() - 1);
         refresh();
+        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, null));
+    }
+
+    @Override
+    public void connected(ExecutionEnvironment env) {
+        Collection<RemoteServerRecord> recordsToNotify = new ArrayList<RemoteServerRecord>();
+        synchronized (this) {
+            for (RemoteServerRecord rec : items) {
+                if (rec.getExecutionEnvironment().equals(env)) {
+                    recordsToNotify.add(rec);
+                }
+            }
+        }
+        for (RemoteServerRecord rec : recordsToNotify) {
+            rec.checkHostInfo();
+        }
+    }
+
+    @Override
+    public void disconnected(ExecutionEnvironment env) {
     }
 
     /**
@@ -121,6 +143,10 @@ public class RemoteServerList implements ServerListImplementation {
      */
     @Override
     public synchronized ServerRecord get(ExecutionEnvironment env) {
+        return get(env, true);
+    }
+
+    public synchronized RemoteServerRecord get(ExecutionEnvironment env, boolean create) {
 
         // Search the active server list
         for (RemoteServerRecord record : items) {
@@ -137,11 +163,16 @@ public class RemoteServerList implements ServerListImplementation {
             }
         }
 
-        // Create a new unlisted record and return it
-        RemoteServerRecord record = new RemoteServerRecord(env, null, RemoteSyncFactory.getDefault(), false);
-        unlisted.add(record);
-        return record;
+        if (create) {
+            // Create a new unlisted record and return it
+            RemoteServerRecord record = new RemoteServerRecord(env, null, RemoteSyncFactory.getDefault(), false);
+            unlisted.add(record);
+            return record;
+        } else {
+            return null;
+        }
     }
+
 
     @org.netbeans.api.annotations.common.SuppressWarnings("UG") // since get(ExecutionEnvironment) is synchronized
     @Override
@@ -166,7 +197,7 @@ public class RemoteServerList implements ServerListImplementation {
     }
 
     @Override
-    public void setDefaultRecord(ServerRecord record) {
+    public synchronized void setDefaultRecord(ServerRecord record) {
         assert record != null;
         for (int i = 0; i < items.size(); i++) {
             if (items.get(i).equals(record)) {
@@ -235,7 +266,7 @@ public class RemoteServerList implements ServerListImplementation {
         return record;
     }
 
-    private static RemoteServerList getInstance() {
+    public static RemoteServerList getInstance() {
         RemoteServerList instance = null;
         for (ServerListImplementation inst : Lookup.getDefault().lookupAll(ServerListImplementation.class)) {
             if (inst instanceof RemoteServerList) {
@@ -253,9 +284,11 @@ public class RemoteServerList implements ServerListImplementation {
             return;
         }
         List<RemoteServerRecord> records = new ArrayList<RemoteServerRecord>();
-        for (RemoteServerRecord record : instance.items) {
-            if (record.isRemote()) {
-                records.add(record);
+        synchronized (instance) {
+            for (RemoteServerRecord record : instance.items) {
+                if (record.isRemote()) {
+                    records.add(record);
+                }
             }
         }
         getPreferences().put(REMOTE_SERVERS, RemoteServerRecord.toString(records));
@@ -277,7 +310,7 @@ public class RemoteServerList implements ServerListImplementation {
         firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<RemoteServerRecord>(items));
     }
 
-    private Collection<ExecutionEnvironment> clear() {
+    private synchronized Collection<ExecutionEnvironment> clear() {
         Collection<ExecutionEnvironment> removed = new ArrayList<ExecutionEnvironment>();
         for (RemoteServerRecord record : items) {
             record.setDeleted(true);
