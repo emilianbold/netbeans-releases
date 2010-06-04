@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 
 /**
  *
- * @author as204739
+ * @author Alexander Simon
  */
 public interface DiscoveryExtensionInterface extends IteratorExtension {
     boolean canApply(Map<String,Object> map, Project project);
@@ -62,6 +62,7 @@ public interface DiscoveryExtensionInterface extends IteratorExtension {
         int getPriority();
 
         String getCompilerName();
-    }
 
+        boolean isSunStudio();
+    }
 }
