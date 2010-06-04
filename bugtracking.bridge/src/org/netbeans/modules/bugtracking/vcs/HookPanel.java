@@ -48,7 +48,6 @@
 
 package org.netbeans.modules.bugtracking.vcs;
 
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
@@ -71,7 +70,7 @@ import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
  */
 public class HookPanel extends VerticallyNonResizingPanel implements ItemListener, PropertyChangeListener {
 
-    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HookPanel");  // NOI18N
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HookPanel");  // NOI18N
 
     private QuickSearchComboBar qs;
     private Repository selectedRepository;
@@ -338,9 +337,10 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     final javax.swing.JCheckBox resolveCheckBox = new javax.swing.JCheckBox();
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void itemStateChanged(ItemEvent e) {
         if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("itemStateChanged() - selected item: " + e.getItem()); //NOI18N
+            LOG.log(Level.FINER, "itemStateChanged() - selected item: {0}", e.getItem()); //NOI18N
         }
         enableFields();
         if(e.getStateChange() == ItemEvent.SELECTED) {
@@ -365,6 +365,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         super.removeNotify();
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(QuickSearchComboBar.EVT_ISSUE_CHANGED)) {
             enableFields();
