@@ -1,10 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
- *
- * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
- * Other names may be trademarks of their respective owners.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -16,9 +13,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
+ * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -40,44 +37,18 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.api;
+package org.netbeans.api.visual.graph.layout;
 
 /**
- *
- * @author Alexander Simon
+ * This Enumeration is used to do the alignment in a TreeGraphLayout. It indicates the position within a level.
+ * @since 2.25
+ * @author Erhard Pointl
  */
-public final class ApplicableImpl implements DiscoveryExtensionInterface.Applicable {
-    private final String compiler;
-    private final boolean applicable;
-    private final int weight;
-    private final boolean sunStudio;
-
-    public ApplicableImpl(boolean applicable, String compiler, int weight, boolean sunStudio) {
-        this.compiler = compiler;
-        this.applicable = applicable;
-        this.weight = weight;
-        this.sunStudio = sunStudio;
-    }
-
-    @Override
-    public boolean isApplicable() {
-        return applicable;
-    }
-
-    @Override
-    public String getCompilerName() {
-        return compiler;
-    }
-
-    @Override
-    public int getPriority() {
-        return weight;
-    }
-
-    public static final DiscoveryExtensionInterface.Applicable NotApplicable = new ApplicableImpl(false, null, 0, false);
-
-    @Override
-    public boolean isSunStudio() {
-        return sunStudio;
-    }
+public enum TreeGraphLayoutAlignment {
+    /** Alignment at the top of each level. */
+    TOP,
+    /** Alignment at the center of each level. */
+    CENTER,
+    /** Alignment at the bottom of each level. */
+    BOTTOM
 }

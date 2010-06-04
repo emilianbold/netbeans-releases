@@ -237,7 +237,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
         if (set == null || set.length() == 0) {
             return ApplicableImpl.NotApplicable;
         }
-        return new ApplicableImpl(true, null, 80);
+        return new ApplicableImpl(true, null, 80, false);
     }
 
     @Override
