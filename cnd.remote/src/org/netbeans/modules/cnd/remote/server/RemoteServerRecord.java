@@ -60,7 +60,9 @@ import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
@@ -89,6 +91,9 @@ public class RemoteServerRecord implements ServerRecord {
     private RemoteSyncFactory syncFactory;
     private boolean x11forwarding;
 //    private boolean x11forwardingPossible;
+
+    HostInfo.OSFamily cachedOsFamily = null;
+    HostInfo.CpuFamily cachedCpuFamily = null;
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
@@ -115,6 +120,8 @@ public class RemoteServerRecord implements ServerRecord {
         }
         x11forwarding = Boolean.getBoolean("cnd.remote.X11"); //NOI18N;
 //        x11forwardingPossible = true;
+        
+        checkHostInfo(); // is this a paranoya?
     }
 
     @Override
@@ -423,9 +430,24 @@ public class RemoteServerRecord implements ServerRecord {
                 if (arr.length > 3) {
                     record.setX11Forwarding(Boolean.parseBoolean(arr[3]));
                 }
-//                    if (arr.length > 4) {
-//                        record.setX11forwardingPossible(Boolean.parseBoolean(arr[4]));
-//                    }
+                if (arr.length > 4) {
+                    if (arr[4].length() > 0) {
+                        try {
+                            record.cachedOsFamily = HostInfo.OSFamily.valueOf(arr[4]);
+                        } catch (IllegalArgumentException ex) {
+                            RemoteUtil.LOGGER.log(Level.WARNING, "Error restoring OS family", ex);
+                        }
+                    }
+                }
+                if (arr.length > 5) {
+                    if (arr[5].length() > 0) {
+                        try {
+                            record.cachedCpuFamily = HostInfo.CpuFamily.valueOf(arr[5]);
+                        } catch (IllegalArgumentException ex) {
+                            RemoteUtil.LOGGER.log(Level.WARNING, "Error restoring CPU family", ex);
+                        }
+                    }
+                }
             }
         }
 
@@ -440,13 +462,56 @@ public class RemoteServerRecord implements ServerRecord {
             }
             String displayName = record.getRawDisplayName();
             String hostKey = ExecutionEnvironmentFactory.toUniqueID(record.getExecutionEnvironment());
+
+            HostInfo.CpuFamily cpuFamily = record.getCpuFamily();
+            HostInfo.OSFamily osFamily = record.getOsFamily();
+
             String preferencesKey = hostKey + SERVER_RECORD_SEPARATOR +
                     ((displayName == null) ? "" : displayName) + SERVER_RECORD_SEPARATOR +
                     record.getSyncFactory().getID()  + SERVER_RECORD_SEPARATOR +
-                    record.getX11Forwarding();
+                    record.getX11Forwarding() + SERVER_RECORD_SEPARATOR +
+                    ((osFamily == null) ? "" : osFamily.name()) + SERVER_RECORD_SEPARATOR +
+                    ((cpuFamily == null) ? "" : cpuFamily.name());
             result.append(preferencesKey);
 
         }
         return result.toString();
+    }
+
+    public HostInfo.CpuFamily getCpuFamily() {
+        return cachedCpuFamily;
+    }
+
+    public HostInfo.OSFamily getOsFamily() {
+        return cachedOsFamily;
+    }
+
+    /*package-local*/ void checkHostInfo() {
+        if (HostInfoUtils.isHostInfoAvailable(executionEnvironment)) {
+            try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
+                HostInfo.OSFamily osFamily = hostInfo.getOSFamily();
+                HostInfo.CpuFamily cpuFamily = hostInfo.getCpuFamily();
+                if (!osFamily.equals(cachedOsFamily) || !cpuFamily.equals(cachedCpuFamily) ) {
+                    cachedOsFamily = osFamily;
+                    cachedCpuFamily = cpuFamily;
+                    if (!syncFactory.isApplicable(executionEnvironment)) {
+                        for (RemoteSyncFactory newFactory : RemoteSyncFactory.getFactories()) {
+                            if (newFactory.isApplicable(executionEnvironment)) {
+                                RemoteUtil.LOGGER.log(Level.WARNING, "Inapplicable factory for {0} : {1}; changing to {2}",
+                                        new Object[] { executionEnvironment.getDisplayName(), syncFactory.getDisplayName(), newFactory.getDisplayName() });
+                                syncFactory = newFactory;
+                                break;
+                            }
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+                // don't report
+            } catch (CancellationException ex) {
+                // don't report
+            }
+        }
+
     }
 }

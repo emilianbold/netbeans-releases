@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -87,6 +88,16 @@ class RfsSyncFactory extends BaseSyncFactory {
 
     @Override
     public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ENABLE_RFS && ! RemoteUtil.isForeign(execEnv);
+        if (ENABLE_RFS && execEnv.isRemote() && ! RemoteUtil.isForeign(execEnv)) {
+            Boolean applicable = RfsSetupProvider.isApplicable(execEnv);
+            if (applicable == null) {
+                RemoteUtil.LOGGER.log(Level.WARNING, "Can not determine whether RFS is applicable for {0}", execEnv.getDisplayName());
+                return true;
+            } else {
+                return applicable.booleanValue();
+            }
+        } else {
+            return false;
+        }
     }
 }

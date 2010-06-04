@@ -46,8 +46,8 @@ import java.io.File;
 import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -56,8 +56,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=100)
 class FtpSyncFactory extends BaseSyncFactory {
 
-    /*package*/ static final boolean ENABLE_FTP = CndUtils.getBoolean("cnd.remote.scp", false);
-    
     /** this factory ID -  public for test purposes */
     public static final String ID = "ftp"; //NOI18N
     
@@ -69,16 +67,12 @@ class FtpSyncFactory extends BaseSyncFactory {
 
     @Override
     public String getDisplayName() {
-        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        // return NbBundle.getMessage(getClass(), "FTP_Factory_Name");
-        return "FTP"; //NOI18N FIXUP
+        return NbBundle.getMessage(getClass(), "FTP_Factory_Name");
     }
 
     @Override
     public String getDescription() {
-        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        //return NbBundle.getMessage(getClass(), "FTP_Factory_Description");
-        return  "Use FTP protocol for synchronization."; // NOI18N FIXUP
+        return NbBundle.getMessage(getClass(), "FTP_Factory_Description");
     }
 
     @Override
@@ -88,6 +82,6 @@ class FtpSyncFactory extends BaseSyncFactory {
 
     @Override
     public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ENABLE_FTP && ! RemoteUtil.isForeign(execEnv);
+        return ! RemoteUtil.isForeign(execEnv);
     }
 }
