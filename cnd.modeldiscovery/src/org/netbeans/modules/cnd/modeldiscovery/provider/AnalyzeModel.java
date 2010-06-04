@@ -271,7 +271,7 @@ public class AnalyzeModel implements DiscoveryProvider {
     
     @Override
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
-        return new ApplicableImpl(true, null, 40);
+        return new ApplicableImpl(true, null, 40, false);
     }
     
     private class MyConfiguration implements Configuration{
