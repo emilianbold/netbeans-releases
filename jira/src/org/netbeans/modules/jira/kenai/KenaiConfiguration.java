@@ -44,6 +44,10 @@ package org.netbeans.modules.jira.kenai;
 
 import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
+import java.util.logging.Level;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
@@ -60,21 +64,37 @@ public class KenaiConfiguration extends JiraConfiguration {
         super(jiraClient, repository);
     }
 
-    void addProject(String projectName) {
+    void addProject(String projectName) throws CoreException {
         this.projectName = projectName;
+        ensureProject();
     }
 
     @Override
     public Project[] getProjects() {
-        if(projects == null) {
-            Project[] allProjects = super.getProjects();
-            for (Project p : allProjects) {
-                if(projectName.equals(p.getKey())) {
-                    projects = new Project[] {p};
-                }
-            }
-        }
         return projects;
     }
 
+    private void ensureProject() throws CoreException {
+        if(projects == null) {
+            projects = findProject();
+            if(projects == null) {
+                Jira.LOG.log(Level.FINE, "Project {0} missing in cached jira configuration. Will refresh one more time.", projectName); // NOI18N
+                Jira.getInstance().getRepositoryConnector().updateRepositoryConfiguration(repository.getTaskRepository(), new NullProgressMonitor());
+                projects = findProject();
+                if(projects == null) {
+                    Jira.LOG.log(Level.WARNING, "Could not find project {0} in jira configuration.", projectName); // NOI18N
+                }
+            }
+        }
+    }
+
+    private Project[] findProject() {
+        Project[] allProjects = super.getProjects();
+        for (Project p : allProjects) {
+            if(projectName.equals(p.getKey())) {
+                return new Project[] {p};
+            }
+        }
+        return null;
+    }
 }
