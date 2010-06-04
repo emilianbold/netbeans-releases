@@ -47,44 +47,25 @@ package org.netbeans.modules.cnd.discovery.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmListeners;
-import org.netbeans.modules.cnd.api.model.CsmModel;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
-import org.netbeans.modules.cnd.api.model.CsmProgressListener;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.projectimport.ImportExecutable;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel.MyProgress;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
-import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -92,7 +73,6 @@ import org.openide.util.RequestProcessor;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.class)
 public class DiscoveryExtension implements IteratorExtension, DiscoveryExtensionInterface {
-    private static final RequestProcessor RP = new RequestProcessor(RunDialogPanel.class.getName(), 2);
     
     /** Creates a new instance of DiscoveryExtension */
     public DiscoveryExtension() {
@@ -189,7 +169,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         return ApplicableImpl.NotApplicable;
     }
     
-    private DiscoveryExtensionInterface.Applicable isApplicable(Map<String,Object> map, Project project) {
+    public DiscoveryExtensionInterface.Applicable isApplicable(Map<String,Object> map, Project project) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         return isApplicable(descriptor);
     }
@@ -252,92 +232,10 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         return null;
     }
 
-    private static final List<CsmProgressListener> listeners = new ArrayList<CsmProgressListener>(1);
-
-    private void openFunction(final String functionName, Project makeProject) {
-        if (makeProject != null) {
-            final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
-            CsmProgressListener listener = new CsmProgressAdapter() {
-
-                @Override
-                public void projectParsingFinished(CsmProject project) {
-                    if (project.getPlatformProject().equals(np)) {
-                        CsmListeners.getDefault().removeProgressListener(this);
-                        listeners.remove(this);
-                        if (project instanceof ProjectBase) {
-                            String from = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + ':' + functionName + '('; // NOI18N
-                            Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)project).findDeclarationsByPrefix(from);
-                            for(CsmOffsetableDeclaration decl : decls){
-                                CsmUtilities.openSource(decl);
-                                break;
-                            }
-                        }
-                    }
-                }
-            };
-            listeners.add(listener);
-            CsmListeners.getDefault().addProgressListener(listener);
-        }
-    }
-
     @Override
     public void discoverProject(final Map<String, Object> map, final Project lastSelectedProject, final String functionToOpen) {
-        switchModel(false, lastSelectedProject);
-        RP.post(new Runnable() {
-
-            @Override
-            public void run() {
-                ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
-                Applicable applicable = isApplicable(map, lastSelectedProject);
-                if (applicable.isApplicable()) {
-                    String preferredCompiler = applicable.getCompilerName();
-                    resetCompilerSet(configurationDescriptor.getActiveConfiguration(), preferredCompiler);
-                    if (canApply(map, lastSelectedProject)) {
-                        try {
-                            apply(map, lastSelectedProject);
-                            configurationDescriptor.setModified();
-                            configurationDescriptor.save();
-                            configurationDescriptor.checkForChangedItems(lastSelectedProject, null, null);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                }
-                switchModel(true, lastSelectedProject);
-                if (functionToOpen != null) {
-                    openFunction(functionToOpen, lastSelectedProject);
-                }
-            }
-        });
-    }
-
-    private void switchModel(boolean state, Project makeProject) {
-        CsmModel model = CsmModelAccessor.getModel();
-        if (model instanceof ModelImpl && makeProject != null) {
-            NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
-            if (state) {
-                ((ModelImpl) model).enableProject(np);
-            } else {
-                ((ModelImpl) model).disableProject(np);
-            }
-        }
-    }
-
-    private void resetCompilerSet(MakeConfiguration configuration, String preferredCompiler){
-        if (configuration != null) {
-            if (preferredCompiler != null && preferredCompiler.length()>2) {
-                if (preferredCompiler.indexOf("GNU") >= 0 || // NOI18N
-                    preferredCompiler.indexOf("gcc") >= 0 || // NOI18N
-                    preferredCompiler.indexOf("g++") >= 0) { // NOI18N
-                    configuration.getCompilerSet().setCompilerSetName(new StringConfiguration(null, "GNU")); // NOI18N
-                } else if (preferredCompiler.indexOf("Sun") >= 0 || // NOI18N
-                           preferredCompiler.indexOf("CC") >= 0 || // NOI18N
-                           preferredCompiler.indexOf("cc") >= 0) { // NOI18N
-                    configuration.getCompilerSet().setCompilerSetName(new StringConfiguration(null, "OracleSolarisStudio")); // NOI18N
-                }
-            }
-        }
+        ImportExecutable importer = new ImportExecutable(map, lastSelectedProject, functionToOpen);
+        importer.process(this);
     }
 
     private static class ProjectProxyImpl implements ProjectProxy {

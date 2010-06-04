@@ -332,7 +332,10 @@ public class DwarfSource implements SourceFileProperties{
         return compilerName;
     }
 
-    
+    static boolean isSunStudioCompiler(CompilationUnit cu) throws IOException {
+        return cu.getCompileOptions() != null;
+    }
+
     private void initSourceSettings(CompilationUnit cu, boolean isCPP) throws IOException{
         userIncludes = new ArrayList<String>();
         userMacros = new HashMap<String,String>();

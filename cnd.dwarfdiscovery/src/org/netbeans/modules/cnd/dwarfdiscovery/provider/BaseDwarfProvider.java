@@ -187,6 +187,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     
     protected ApplicableImpl sizeComilationUnit(String objFileName){
         int res = 0;
+        int sunStudio = 0;
         Dwarf dump = null;
         Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
         try{
@@ -222,6 +223,9 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         }
                         count.incrementAndGet();
                     }
+                    if (DwarfSource.isSunStudioCompiler(cu)) {
+                        sunStudio++;
+                    }
                 }
             }
         } catch (FileNotFoundException ex) {
@@ -245,7 +249,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 top = entry.getKey();
             }
         }
-        return new ApplicableImpl(res > 0, top, res);
+        return new ApplicableImpl(res > 0, top, res, sunStudio > res/2);
     }
     
     protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project) {
