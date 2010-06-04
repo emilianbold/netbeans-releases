@@ -445,7 +445,8 @@ public class ProxySocketFactory extends SocketFactory {
         Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/core"); // NOI18N    
         if (prefs.getBoolean(USE_PROXY_AUTHENTICATION, false)) {
             cs.setProxyUsername(prefs.get(PROXY_AUTHENTICATION_USERNAME, null));
-            cs.setProxyPassword(prefs.get(PROXY_AUTHENTICATION_PASSWORD, null).toCharArray());
+            String psswd = prefs.get(PROXY_AUTHENTICATION_PASSWORD, null);
+            cs.setProxyPassword(psswd != null ? psswd.toCharArray() : null);
         }
         return cs;
     }
