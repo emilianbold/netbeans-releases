@@ -74,7 +74,7 @@ import org.openide.util.Exceptions;
 public class JiraConfiguration {
 
     private JiraClient client;
-    private final JiraRepository repository;
+    protected final JiraRepository repository;
 
     public JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
         this.client = jiraClient;
