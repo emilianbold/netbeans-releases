@@ -43,11 +43,8 @@
  */
 package org.netbeans.modules.ruby.railsprojects.classpath;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
@@ -60,12 +57,11 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.WeakListeners;
 
 /**
  * Defines the various load paths for a Rails project.
  */
-public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
+public final class ClassPathProviderImpl implements ClassPathProvider {
 
     private static final String JAVAC_CLASSPATH = "javac.classpath";    //NOI18N
     private static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath";  //NOI18N
@@ -77,7 +73,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
     private final Map<ClassPathCache, ClassPath> cache = new EnumMap<ClassPathCache, ClassPath>(ClassPathCache.class);
-    private final Map<String, FileObject> dirCache = new HashMap<String, FileObject>();
     private final RailsProject project;
 
     /**
@@ -115,19 +110,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
-        evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
-    }
-
-    private synchronized FileObject getDir(String propname) {
-        FileObject fo = this.dirCache.get(propname);
-        if (fo == null || !fo.isValid()) {
-            String prop = evaluator.getProperty(propname);
-            if (prop != null) {
-                fo = helper.resolveFileObject(prop);
-                this.dirCache.put(propname, fo);
-            }
-        }
-        return fo;
     }
 
     private FileObject[] getPrimarySrcPath() {
@@ -261,10 +243,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             return getSourcepath(FileType.SOURCE);
         }
         return null;
-    }
-
-    public synchronized void propertyChange(PropertyChangeEvent evt) {
-        dirCache.remove(evt.getPropertyName());
     }
 
     public String getPropertyName(SourceGroup sg, String type) {

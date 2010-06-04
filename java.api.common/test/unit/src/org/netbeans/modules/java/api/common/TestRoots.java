@@ -42,66 +42,54 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.dialogs;
+package org.netbeans.modules.java.api.common;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileObject;
 
 /**
- * Test of About dialog.
  *
- * @author  mmirilovic@netbeans.org
+ * @author Tomas Zezula
  */
-public class OpenKenaiProjectTest extends PerformanceTestCase {
+public class TestRoots extends Roots {
 
-    protected String menu, loginDialog;
+    public static final String TYPE_TEST = "test"; //NOI18N
 
-    /** Creates a new instance of About */
-    public OpenKenaiProjectTest(String testName) {
-        super(testName);
-        expectedTime = WINDOW_OPEN;
-    }
-    
-    /** Creates a new instance of About */
-    public OpenKenaiProjectTest(String testName, String performanceDataName) {
-        super(testName, performanceDataName);
-        expectedTime = WINDOW_OPEN;
+    private final Map<String,String> props = new HashMap<String, String>();
+    private final AntProjectHelper helper;
+
+    public TestRoots (final AntProjectHelper helper) {
+        super(true,true,TYPE_TEST,null);
+        this.helper=helper;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(OpenKenaiProjectTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public void addRoot(final String prop, final FileObject root, String name) {
+        props.put(prop, name);
+        final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        props.setProperty(prop, root.getName());
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        firePropertyChange(SourceRoots.PROP_ROOTS, null, null);
+    }
+
+    public void removeRoot(final String prop) {
+        props.remove(prop);
+        final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        props.remove(prop);
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        //fire by putProperties
     }
 
     @Override
-    public void initialize() {
-        menu = "Team|Kenai|Open Kenai Project";
-        loginDialog = Bundle.getStringTrimmed("org.netbeans.modules.kenai.ui.Bundle", "OpenKenaiProjectWindowTitle");
-    }
-    
-    public void prepare(){
-    }
-    
-    public void testOpenKenaiProject() {
-        doMeasurement();
-    }
-    
-    public ComponentOperator open(){
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(menu,"|");
-        return new org.netbeans.jellytools.NbDialogOperator(loginDialog);
+    public String[] getRootDisplayNames() {
+        return props.values().toArray(new String[props.size()]);
     }
 
-    public void close() {
-        new org.netbeans.jellytools.NbDialogOperator(loginDialog).cancel();
+    @Override
+    public String[] getRootProperties() {
+        return props.keySet().toArray(new String[props.size()]);
     }
+
 }

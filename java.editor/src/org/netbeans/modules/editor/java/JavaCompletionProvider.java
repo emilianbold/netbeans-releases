@@ -221,7 +221,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         private static final String SKIP_ACCESSIBILITY_CHECK = "org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck"; //NOI18N
         
         private List<JavaCompletionItem> results;
-        private boolean hasAdditionalItems;
+        private byte hasAdditionalItems = 0; //no additional items
         private JToolTip toolTip;
         private CompletionDocumentation documentation;
         private int anchorOffset;
@@ -290,9 +290,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                             if (results != null)
                                 resultSet.addAllItems(results);
-                            resultSet.setHasAdditionalItems(hasAdditionalItems);
-                            if (hasAdditionalItems)
+                            resultSet.setHasAdditionalItems(hasAdditionalItems > 0);
+                            if (hasAdditionalItems == 1)
                                 resultSet.setHasAdditionalItemsText(NbBundle.getMessage(JavaCompletionProvider.class, "JCP-imported-items")); //NOI18N
+                            if (hasAdditionalItems == 2)
+                                resultSet.setHasAdditionalItemsText(NbBundle.getMessage(JavaCompletionProvider.class, "JCP-instance-members")); //NOI18N
                         } else if (queryType == TOOLTIP_QUERY_TYPE) {
                             if (toolTip != null)
                                 resultSet.setToolTip(toolTip);
@@ -356,7 +358,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (results != null) {
                         if (filterPrefix != null) {
                             resultSet.addAllItems(getFilteredData(results, filterPrefix));
-                            resultSet.setHasAdditionalItems(hasAdditionalItems);
+                            resultSet.setHasAdditionalItems(hasAdditionalItems > 0);
                         } else {
                             Completion.get().hideDocumentation();
                             Completion.get().hideCompletion();
@@ -1436,11 +1438,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                         else if (type.getKind() == TypeKind.DECLARED)
                             addMemberConstantsAndTypes(env, (DeclaredType)type, el);
                         return;
-                    } else if (parent.getKind() == Tree.Kind.VARIABLE && ((VariableTree)parent).getType() == fa && grandParent.getKind() == Tree.Kind.CATCH) {
-                        if (queryType == COMPLETION_QUERY_TYPE)
-                            exs = controller.getTreeUtilities().getUncaughtExceptions(grandParentPath.getParentPath());
-                        kinds = EnumSet.of(CLASS, INTERFACE);
-                        baseType = controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")); //NOI18N
+                    } else if (parent.getKind() == Tree.Kind.VARIABLE && ((VariableTree)parent).getType() == fa) {
+                        if (grandParent.getKind() == Tree.Kind.CATCH) {
+                            kinds = EnumSet.of(CLASS, INTERFACE);
+                            if (queryType == COMPLETION_QUERY_TYPE)
+                                exs = controller.getTreeUtilities().getUncaughtExceptions(grandParentPath.getParentPath());
+                            baseType = controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable")); //NOI18N
+                        } else {
+                            kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE);
+                        }
                     } else if (parent.getKind() == Tree.Kind.METHOD && ((MethodTree)parent).getThrows().contains(fa)) {
                         Types types = controller.getTypes();
                         if (queryType == COMPLETION_QUERY_TYPE && ((MethodTree)parent).getBody() != null) {
@@ -2681,7 +2687,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void addMembers(final Env env, final TypeMirror type, final Element elem, final EnumSet<ElementKind> kinds, final DeclaredType baseType, final boolean inImport, final boolean insideNew) throws IOException {
-            Set<? extends TypeMirror> smartTypes = queryType == COMPLETION_QUERY_TYPE ? env.getSmartTypes() : null;
+            Set<? extends TypeMirror> smartTypes = env.getSmartTypes();
             final String prefix = env.getPrefix();
             final CompilationController controller = env.getController();
             final Trees trees = controller.getTrees();
@@ -2719,10 +2725,23 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 }
                                 return false;
                             }
+                            if (isStatic) {
+                                if (!e.getModifiers().contains(STATIC))
+                                    return false;
+                            } else {
+                                if (queryType == COMPLETION_QUERY_TYPE && e.getModifiers().contains(STATIC)) {
+                                    if ((Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))
+                                            && isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types)
+                                            && env.isAccessible(scope, e, t, isSuperCall)
+                                            && ((isStatic && !inImport) || !e.getSimpleName().contentEquals(CLASS_KEYWORD))) {
+                                        hasAdditionalItems = 2; //instance members only
+                                    }
+                                    return false;
+                                }
+                            }
                             return (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) &&
-                                    env.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t) &&
-                                    (!isStatic || e.getModifiers().contains(STATIC)) &&
+                                    env.isAccessible(scope, e, t, isSuperCall) &&
                                     ((isStatic && !inImport) || !e.getSimpleName().contentEquals(CLASS_KEYWORD));
                         case ENUM_CONSTANT:
                         case EXCEPTION_PARAMETER:
@@ -2731,14 +2750,28 @@ public class JavaCompletionProvider implements CompletionProvider {
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) &&
-                                    env.isAccessible(scope, e, t);
+                                    env.isAccessible(scope, e, t, isSuperCall);
                         case METHOD:
                             String sn = e.getSimpleName().toString();
+                            if (isStatic) {
+                                if (!e.getModifiers().contains(STATIC))
+                                    return false;
+                            } else {
+                                if (queryType == COMPLETION_QUERY_TYPE && e.getModifiers().contains(STATIC)) {
+                                    if (startsWith(env, sn, prefix)
+                                            && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))
+                                            && isOfKindAndType(((ExecutableType) asMemberOf(e, t, types)).getReturnType(), e, kinds, baseType, scope, trees, types)
+                                            && env.isAccessible(scope, e, t, isSuperCall)
+                                            && (!Utilities.isExcludeMethods() || !Utilities.isExcluded(Utilities.getElementName(e.getEnclosingElement(), true) + "." + sn))) { //NOI18N
+                                        hasAdditionalItems = 2; //instance members only
+                                    }
+                                    return false;
+                                }
+                            }
                             return startsWith(env, sn, prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(((ExecutableType)asMemberOf(e, t, types)).getReturnType(), e, kinds, baseType, scope, trees, types) &&
-                                    (isSuperCall && (e.getModifiers().contains(PROTECTED) || e.getModifiers().contains(PUBLIC)) || env.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t)) &&
-                                    (!isStatic || e.getModifiers().contains(STATIC)) &&
+                                    env.isAccessible(scope, e, t, isSuperCall) &&
                                     (!Utilities.isExcludeMethods() || !Utilities.isExcluded(Utilities.getElementName(e.getEnclosingElement(), true) + "." + sn)); //NOI18N
                         case CLASS:
                         case ENUM:
@@ -2749,12 +2782,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) &&
-                                    env.isAccessible(scope, e, t) && isStatic;
+                                    env.isAccessible(scope, e, t, isSuperCall) && isStatic;
                         case CONSTRUCTOR:
                             ctorSeen[0] = true;
                             return (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     isOfKindAndType(e.getEnclosingElement().asType(), e, kinds, baseType, scope, trees, types) &&
-                                    (env.isAccessible(scope, e, t) || (elem.getModifiers().contains(ABSTRACT) && !e.getModifiers().contains(PRIVATE))) &&
+                                    (env.isAccessible(scope, e, t, isSuperCall) || (elem.getModifiers().contains(ABSTRACT) && !e.getModifiers().contains(PRIVATE))) &&
                                     isStatic;
                     }
                     return false;
@@ -2886,7 +2919,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             } else {
                 addLocalAndImportedTypes(env, kinds, baseType);
-                hasAdditionalItems = true;
+                hasAdditionalItems = 1; //imported items only
             }
             addPackages(env, env.getPrefix(), false);
         }
@@ -4861,8 +4894,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return excludes;
             }
 
-            public boolean isAccessible(Scope scope, Element member, TypeMirror type) {
-                return !checkAccessibility || getController().getTreeUtilities().isAccessible(scope, member, type);
+            public boolean isAccessible(Scope scope, Element member, TypeMirror type, boolean selectSuper) {
+                if (!checkAccessibility)
+                    return true;
+                if (getController().getTreeUtilities().isAccessible(scope, member, type))
+                    return true;
+                return selectSuper && type.getKind() == TypeKind.DECLARED
+                        && member.getModifiers().contains(PROTECTED) && !member.getModifiers().contains(STATIC)
+                        && !member.getKind().isClass() && !member.getKind().isInterface()
+                        && getController().getTrees().isAccessible(scope, (TypeElement)((DeclaredType)type).asElement())
+                        && (member.getKind() != METHOD
+                        || getController().getElementUtilities().getImplementationOf((ExecutableElement)member, (TypeElement)((DeclaredType)type).asElement()) == member);
             }
         }
         

@@ -481,7 +481,7 @@ class DiffViewManager implements ChangeListener {
     }
 
     private int computeLeftOffsetToMatchDifference(DifferencePosition differenceMatchStart, int rightOffset, Rectangle[] positions) {
-        Rectangle leftStartRect = positions[0], leftEndRect = positions[0], rightStartRect = positions[2], rightEndRect = positions[3];
+        Rectangle leftStartRect = positions[0], leftEndRect = positions[1], rightStartRect = positions[2], rightEndRect = positions[3];
         Difference diff = differenceMatchStart.getDiff();
         boolean matchStart = differenceMatchStart.isStart();
         

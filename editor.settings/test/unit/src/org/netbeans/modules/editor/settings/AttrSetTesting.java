@@ -134,7 +134,8 @@ final class AttrSetTesting {
     }
 
     public static AttrSet add(Context context, Object... keyValuePairs) throws Exception {
-        List list = context.getInstance(List.class);
+        @SuppressWarnings("unchecked")
+        List<Item> list = (List<Item>) context.getInstance(List.class);
         MutableAttributeSet expected = new SimpleAttributeSet();
         for (int i = keyValuePairs.length; i > 0;) {
             Object value = keyValuePairs[--i];
@@ -153,7 +154,8 @@ final class AttrSetTesting {
     }
 
     public static void forget(Context context, int listIndex) throws Exception {
-        List list = context.getInstance(List.class);
+        @SuppressWarnings("unchecked")
+        List<Item> list = (List<Item>) context.getInstance(List.class);
         Object element = list.remove(listIndex);
 
         StringBuilder sb = context.logOpBuilder();
@@ -164,7 +166,8 @@ final class AttrSetTesting {
     }
 
     public static void merge(Context context, int... indexes) throws Exception {
-        List<Item> list = context.getInstance(List.class);
+        @SuppressWarnings("unchecked")
+        List<Item> list = (List<Item>) context.getInstance(List.class);
         StringBuilder sb = context.logOpBuilder();
         if (sb != null) {
             sb.append("Merge[");
@@ -259,16 +262,35 @@ final class AttrSetTesting {
 
     }
 
+    private static int equal;
+    private static int notEqual;
 
     private static final class AttrsCheck extends RandomTestContainer.Check {
 
         @Override
         protected void check(final Context context) throws Exception {
-            List<Item> list = context.getInstance(List.class);
+            @SuppressWarnings("unchecked")
+            List<Item> list = (List<Item>) context.getInstance(List.class);
             for (Item item : list) {
                 item.attrSet.checkIntegrity();
                 item.check();
+                for (Item item2 : list) {
+                    boolean expected = item2.expected.equals(item.expected);
+                    boolean tested = item2.attrSet.equals(item.attrSet);
+                    if (expected) {
+                        equal++;
+                    } else {
+                        notEqual++;
+                    }
+                    if (expected != tested) {
+                        throw new IllegalStateException("Equality: expected=" + expected + " != tested=" + tested);
+                    }
+                }
             }
+//            if (context.opCount() % 100 == 0) {
+//                System.err.println("Stats: opCount=" + context.opCount()
+//                        + ", equal=" + equal + ", notEqual=" + notEqual);
+//            }
         }
 
     }
@@ -289,8 +311,8 @@ final class AttrSetTesting {
         public void check() {
             Enumeration<?> keys1 = expected.getAttributeNames();
             Enumeration<?> keys2 = attrSet.getAttributeNames();
-            Set<?> keys1Set = new HashSet(Collections.list(keys1));
-            Set<?> keys2Set = new HashSet(Collections.list(keys2));
+            Set<?> keys1Set = new HashSet<Object>(Collections.list(keys1));
+            Set<?> keys2Set = new HashSet<Object>(Collections.list(keys2));
             if (!keys1Set.equals(keys2Set)) {
                 throw new IllegalStateException("Key sets not equal: expected: " + keys1Set + "\ntested: " + keys2Set);
             }

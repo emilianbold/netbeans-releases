@@ -44,7 +44,6 @@ package org.netbeans.modules.java.api.common;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -93,7 +92,7 @@ import org.w3c.dom.NodeList;
  * in project properties (see {@link #PROP_ROOTS}).
  * @author Tomas Zezula, Tomas Mysik
  */
-public final class SourceRoots {
+public final class SourceRoots extends Roots {
 
     /**
      * Property name of a event that is fired when Ant project metadata change.
@@ -125,7 +124,6 @@ public final class SourceRoots {
     private List<String> sourceRootNames;
     private List<FileObject> sourceRoots;
     private List<URL> sourceRootURLs;
-    private final PropertyChangeSupport support;
     private final ProjectMetadataListener listener;
     private final boolean isTest;
     private final File projectDir;
@@ -145,6 +143,7 @@ public final class SourceRoots {
 
     private SourceRoots(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper,
             String projectConfigurationNamespace, String elementName, boolean isTest, String newRootNameTemplate) {
+        super(true,true,JavaProjectConstants.SOURCES_TYPE_JAVA, isTest ? JavaProjectConstants.SOURCES_HINT_TEST : JavaProjectConstants.SOURCES_HINT_MAIN);
         assert helper != null;
         assert evaluator != null;
         assert refHelper != null;
@@ -160,7 +159,6 @@ public final class SourceRoots {
         this.isTest = isTest;
         this.newRootNameTemplate = newRootNameTemplate;
         this.projectDir = FileUtil.toFile(this.helper.getAntProjectHelper().getProjectDirectory());
-        this.support = new PropertyChangeSupport(this);
         this.listener = new ProjectMetadataListener();
         this.evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this.listener, this.evaluator));
         this.helper.getAntProjectHelper().addAntProjectListener(
@@ -187,10 +185,22 @@ public final class SourceRoots {
         });
     }
 
-    /**
-     * Returns names of Ant properties in the <i>project.properties</i> file holding the source roots.
-     * @return an array of String.
-     */
+    @Override
+    public String[] getRootDisplayNames() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+            public String[] run() {
+                final String[] props = getRootProperties();
+                final String[] names = getRootNames();
+                final String[] displayNames = new String[props.length];
+                for (int i=0; i< props.length; i++) {
+                    displayNames[i] = getRootDisplayName(names[i], props[i]);
+                }
+                return displayNames;
+            }
+        });
+    }
+
+    @Override
     public String[] getRootProperties() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
             public String[] run() {
@@ -304,25 +314,6 @@ public final class SourceRoots {
             }
         });
     }
-
-    /**
-     * Adds {@link PropertyChangeListener}, see class description for more information
-     * about listening to the source roots changes.
-     * @param listener a listener to add.
-     */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    /**
-     * Removes {@link PropertyChangeListener}, see class description for more information
-     * about listening to the source roots changes.
-     * @param listener a listener to remove.
-     */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
 
     /**
      * Replaces the current roots by the given ones.
@@ -477,9 +468,9 @@ public final class SourceRoots {
         }
         if (fire) {
             if (isXMLChange) {
-                support.firePropertyChange(PROP_ROOT_PROPERTIES, null, null);
+                firePropertyChange(PROP_ROOT_PROPERTIES, null, null);
             }
-            support.firePropertyChange(PROP_ROOTS, null, null);
+            firePropertyChange(PROP_ROOTS, null, null);
         }
     }
 

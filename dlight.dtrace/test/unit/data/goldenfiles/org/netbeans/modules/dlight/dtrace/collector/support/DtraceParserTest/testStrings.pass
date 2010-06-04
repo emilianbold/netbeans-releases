@@ -8,3 +8,10 @@
 400 | my'file | 
  *timestamp* | *filename* | *
 500 | my"file | 
+ *timestamp* | *filename* | *
+600 | foo
+bar | 
+ *timestamp* | *filename* | *
+700 | my"file | 
+ *timestamp* | *filename* | *
+800 |      my    file      | 

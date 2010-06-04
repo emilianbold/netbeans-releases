@@ -566,6 +566,20 @@ public class ELExpression {
 
 
         int diff = ts.move(contextOffset);
+
+        if( diff < 0 ) {
+            //the embedded EL token sequence obtained from the code above
+            //may start *after* the contextOffset. This is due to the start and end
+            //skip lengths used for the EL delimiters #{ and }
+            //In such case the diff may be negative and we have nothing to complete there
+            //
+            //Example:  #{ bean.property }
+            //          0123456789
+            //
+            //if the contextOffset is set to 0 or 1 the diff is -2 resp. -1
+            return NOT_EL;
+        }
+
         if (diff == 0) {
             if (!ts.movePrevious()) {
                 return EL_START;
