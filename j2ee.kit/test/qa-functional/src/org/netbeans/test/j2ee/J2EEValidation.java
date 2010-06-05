@@ -68,6 +68,7 @@ import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -295,11 +296,10 @@ public class J2EEValidation extends JellyTestCase {
 
     private void addServer() {
         if (GF_INSTALL_ROOT == null) return;
-        new Action("Tools|Servers", null).performMenu();
+        try{
+        new Action("Tools|Servers", null).perform();
+        }catch(TimeoutExpiredException e){}
         JDialogOperator servers = new JDialogOperator("Servers");
-        servers.close();
-        new Action("Tools|Servers", null).performMenu();
-        servers = new JDialogOperator("Servers");
         JButtonOperator addServer = new JButtonOperator(servers, "Add Server...");
         addServer.pushNoBlock();
         JDialogOperator addServerInstance = new JDialogOperator("Add Server Instance");
@@ -311,7 +311,6 @@ public class J2EEValidation extends JellyTestCase {
         }catch(org.netbeans.jemmy.TimeoutExpiredException e){
         }
         JDialogOperator addServerInstance2 = new JDialogOperator("Add Server Instance");
-        System.out.println("==============");
         System.out.println(new JTextFieldOperator(addServerInstance2).getText());
         new JTextFieldOperator(addServerInstance2).setText(GF_INSTALL_ROOT);
 
