@@ -134,6 +134,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
+                <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
