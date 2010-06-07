@@ -466,6 +466,50 @@ public class CommentCollectorTest extends NbTestCase {
 
     }
 
+    public void test186754() throws Exception {
+        File testFile = new File(work, "Test.java");
+        final String origin =
+                       "package test;\n" +
+                       "public class Test {\n public void test() {\n } //test\n /**foo*/\n private void t() {\n}\n }\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                final CommentHandlerService service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+
+                TreeScanner<Void, Void> w = new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitClass(ClassTree node, Void p) {
+                        GeneratorUtilities.get(workingCopy).importComments(node, workingCopy.getCompilationUnit());
+                        new CommentPrinter(service).scan(node, null);
+                        return super.visitClass(node, p);
+                    }
+                    @Override
+                    public Void visitMethod(MethodTree node, Void p) {
+                        if (node.getName().contentEquals("test")) {
+                            verify(node.getBody(), CommentSet.RelativePosition.PRECEDING, service);
+                            verify(node.getBody(), CommentSet.RelativePosition.INLINE, service, "//test");
+                            verify(node.getBody(), CommentSet.RelativePosition.TRAILING, service);
+                        }
+                        if (node.getName().contentEquals("t")) {
+                            verify(node, CommentSet.RelativePosition.PRECEDING, service, "/**foo*/");
+                            verify(node, CommentSet.RelativePosition.INLINE, service);
+                            verify(node, CommentSet.RelativePosition.TRAILING, service);
+                        }
+                        return super.visitMethod(node, p);
+                    }
+                };
+                w.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+
+        };
+        src.runModificationTask(task);
+
+    }
+    
     void verify(Tree tree, CommentSet.RelativePosition position, CommentHandler service, String... comments) {
         assertNotNull("Comments handler service not null", service);
         CommentSet set = service.getComments(tree);
