@@ -72,8 +72,10 @@ public class DeleteCreateTest extends NbTestCase {
     protected void setUp() throws Exception {    
         dataRootDir = getWorkDir();
         dataRootDir.mkdirs();
-        System.setProperty("netbeans.user", getWorkDir() + "/userdir");
-        // ping
+        File userdir = new File(dataRootDir + "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
+        
         FileObject fo = FileUtil.toFileObject(getWorkDir());
         MockServices.setServices(DeleteCreateTestAnnotationProvider.class);
         // interceptor init
