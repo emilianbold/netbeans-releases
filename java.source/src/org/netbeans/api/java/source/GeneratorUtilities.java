@@ -75,6 +75,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.SourceVersion;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -598,12 +599,10 @@ public final class GeneratorUtilities {
 
         if (supportsOverride(copy)) {
             //add @Override annotation:
-            SpecificationVersion thisFOVersion = new SpecificationVersion(SourceLevelQuery.getSourceLevel(copy.getFileObject()));
-            SpecificationVersion version15 = new SpecificationVersion("1.5"); //NOI18N
-            if (thisFOVersion.compareTo(version15) >= 0) {
+            if (copy.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0) {
                 boolean generate = true;
 
-                if (thisFOVersion.compareTo(version15) == 0) {
+                if (copy.getSourceVersion().compareTo(SourceVersion.RELEASE_5) == 0) {
                     generate = !element.getEnclosingElement().getKind().isInterface();
                 }
 
