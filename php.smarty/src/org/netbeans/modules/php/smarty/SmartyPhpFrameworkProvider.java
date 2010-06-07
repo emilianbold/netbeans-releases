@@ -220,7 +220,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
         }
     }
 
-    private class FoundSmarty {
+    private static class FoundSmarty {
         private boolean isFound;
 
         public FoundSmarty() {
