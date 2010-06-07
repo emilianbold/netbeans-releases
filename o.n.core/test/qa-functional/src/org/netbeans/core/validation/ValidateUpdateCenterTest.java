@@ -77,10 +77,10 @@ public class ValidateUpdateCenterTest extends NbTestCase {
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
                 clusters(".*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
-                clusters("(platform|harness|ide|websvccommon|gsf|java|profiler|nb)[0-9.]*").enableModules(".*").
+                clusters("platform|harness|ide|websvccommon|gsf|java|profiler|nb").enableModules(".*").
                 honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateUpdateCenterTest.class).
-                clusters("(platform|harness|ide)[0-9.]*").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
+                clusters("platform|harness|ide").enableModules(".*").honorAutoloadEager(true).gui(false).enableClasspathModules(false)));
         return suite;
     }
 
