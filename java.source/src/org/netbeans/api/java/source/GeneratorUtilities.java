@@ -56,6 +56,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
@@ -516,17 +517,23 @@ public final class GeneratorUtilities {
      *         them will be added during task commit.
      */
     public <T extends Tree> T importFQNs(T original) {
-        TranslateIdentifier translator = new TranslateIdentifier(copy, false, true, null);
+        TranslateIdentifier translator = new TranslateIdentifier(copy, null, true, null);
         return (T) translator.translate(original);
     }
 
     public <T extends Tree> T importComments(T original, CompilationUnitTree cut) {
+        return importComments(copy, original, cut);
+    }
+
+    static <T extends Tree> T importComments(CompilationInfo info, T original, CompilationUnitTree cut) {
         try {
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
-            TranslateIdentifier translator = new TranslateIdentifier(copy, true, false, seq, unit);
+            TreePath tp = TreePath.getPath(cut, original);
+            Tree toMap = (tp != null && original.getKind() != Kind.COMPILATION_UNIT) ? tp.getParentPath().getLeaf() : original;
+            TranslateIdentifier translator = new TranslateIdentifier(info, original, false, seq, unit);
             
-            translator.translate(original);
+            translator.translate(toMap);
 
             return original;
         } catch (IOException ex) {

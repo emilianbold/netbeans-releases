@@ -119,10 +119,8 @@ public class CommentCollectorTest extends NbTestCase {
 //                CommentCollector cc = CommentCollector.getInstance();
                 workingCopy.toPhase(JavaSource.Phase.PARSED);
 //                cc.collect(workingCopy);
-                TokenSequence<JavaTokenId> seq = (TokenSequence<JavaTokenId>) TokenHierarchy.create(origin, JavaTokenId.language()).tokenSequence();
                 CompilationUnitTree cu = workingCopy.getCompilationUnit();
-                TranslateIdentifier ti = new TranslateIdentifier(workingCopy, true, false, seq);
-                ti.translate(cu);
+                GeneratorUtilities.get(workingCopy).importComments(cu, cu);
 
                 service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
                 CommentPrinter printer = new CommentPrinter(service);
@@ -250,10 +248,8 @@ public class CommentCollectorTest extends NbTestCase {
 //                CommentCollector cc = CommentCollector.getInstance();
                 workingCopy.toPhase(JavaSource.Phase.PARSED);
 //                cc.collect(workingCopy);
-                TokenSequence<JavaTokenId> seq = (TokenSequence<JavaTokenId>) TokenHierarchy.create(origin, JavaTokenId.language()).tokenSequence();
-                TranslateIdentifier ti = new TranslateIdentifier(workingCopy, true, false, seq);
                 CompilationUnitTree cu = workingCopy.getCompilationUnit();
-                ti.translate(cu);
+                GeneratorUtilities.get(workingCopy).importComments(cu, cu);
 
                 service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
                 CommentPrinter printer = new CommentPrinter(service);
@@ -422,6 +418,41 @@ public class CommentCollectorTest extends NbTestCase {
                             verify(second, CommentSet.RelativePosition.TRAILING, service,
                                     "/*bylina*/"
                             );
+                        }
+                        return super.visitMethod(node, p);
+                    }
+                };
+                w.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+
+        };
+        src.runModificationTask(task);
+
+    }
+
+    public void test179202() throws Exception {
+        File testFile = new File(work, "Test.java");
+        final String origin =
+                       "package test;\n" +
+                       "public class Test {\n public void test() {\n int x = 0; // some comment\n System.currentTimeMillis();\n }\n }\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                final CommentHandlerService service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+
+                TreeScanner<Void, Void> w = new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethod(MethodTree node, Void p) {
+                        if (node.getName().contentEquals("test")) {
+                            StatementTree second = node.getBody().getStatements().get(1);
+                            GeneratorUtilities.get(workingCopy).importComments(second, workingCopy.getCompilationUnit());
+                            verify(second, CommentSet.RelativePosition.PRECEDING, service);
+                            verify(second, CommentSet.RelativePosition.INLINE, service);
+                            verify(second, CommentSet.RelativePosition.TRAILING, service);
                         }
                         return super.visitMethod(node, p);
                     }
