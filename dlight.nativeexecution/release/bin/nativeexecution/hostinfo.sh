@@ -10,10 +10,6 @@ LS=/bin/ls
 OSFAMILY=
 DATETIME=`date -u +'%Y-%m-%d %H:%M:%S'`
 
-if [ "${CPUTYPE}" = "unknown" ]; then
-   CPUTYPE=`uname -m`
-fi
-
 if [ "${OS}" = "SunOS" ]; then
    BITNESS=`isainfo -b`
    OSFAMILY="SUNOS"
@@ -57,6 +53,11 @@ OSFAMILY=${OSFAMILY:-`test "$OS" = "Linux" && echo LINUX`}
 OSFAMILY=${OSFAMILY:-${OS}}
 
 CPUFAMILY=`(echo ${CPUTYPE} | egrep "^i|x86_64|athlon|Intel" >/dev/null && echo x86) || echo ${CPUTYPE}`
+if [ "${CPUFAMILY}" != "x86" -a "${CPUFAMILY}" != "sparc" ]; then
+   CPUTYPE=`uname -m`
+fi
+CPUFAMILY=`(echo ${CPUTYPE} | egrep "^i|x86_64|athlon|Intel" >/dev/null && echo x86) || echo ${CPUTYPE}`
+
 USERDIRBASE=${HOME}
 
 if [ "${OSFAMILY}" = "LINUX" ]; then
