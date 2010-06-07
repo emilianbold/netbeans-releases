@@ -1422,10 +1422,9 @@ public class RADComponent {
     }
 
     private synchronized void createAccessibilityProperties() {
-        Object comp = getBeanInstance();
+        final Object comp = getBeanInstance();
         if (comp instanceof Accessible
-            && ((Accessible)comp).getAccessibleContext() != null)
-        {
+            && (!EventQueue.isDispatchThread() || ((Accessible)comp).getAccessibleContext() != null)) {
             if (accessibilityData == null)
                 accessibilityData = new MetaAccessibleContext();
             accessibilityProperties = accessibilityData.getProperties();
@@ -1435,6 +1434,33 @@ public class RADComponent {
                 setPropertyListener(prop);
                 prop.setPropertyContext(new FormPropertyContext.Component(this));
                 nameToProperty.put(prop.getName(), prop);
+            }
+
+            if (!EventQueue.isDispatchThread()) { // Issue 187131
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (((Accessible)comp).getAccessibleContext() == null) {
+                            // Remove accessible properties
+                            for (int i = 0; i < accessibilityProperties.length; i++) {
+                                FormProperty prop = accessibilityProperties[i];
+                                nameToProperty.remove(prop.getName());
+                            }
+                            Node.PropertySet[] newPS = new Node.PropertySet[propertySets.length-1];
+                            int idx = 0;
+                            for (Node.PropertySet ps : propertySets) {
+                                if (!"accessibility".equals(ps.getName())) { // NOI18N
+                                    newPS[idx++] = ps;
+                                }
+                            }
+                            Node.PropertySet[] oldPS = propertySets;
+                            propertySets = newPS;
+                            accessibilityData = null;
+                            accessibilityProperties = NO_PROPERTIES;
+                            getNodeReference().firePropertyChangeHelper(Node.PROP_PROPERTY_SETS, oldPS, newPS);
+                        }
+                    }
+                });
             }
         }
         else {
