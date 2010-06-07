@@ -1261,7 +1261,7 @@ public class CasualDiff {
         }
         if (oldT.args.nonEmpty()) {
             copyTo(localPointer, localPointer = getOldPos(oldT.args.head));
-        } else {
+        } else if (!enumConstantPrint) {
             moveFwdToToken(tokenSequence, oldT.pos, JavaTokenId.LPAREN);
             tokenSequence.moveNext();
             copyTo(localPointer, localPointer = tokenSequence.offset());
