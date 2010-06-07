@@ -112,6 +112,7 @@ public class FileStatusCache {
      */
     private void handleIgnoredFiles(final Set<File> files) {
         Runnable outOfAWT = new Runnable() {
+            @Override
             public void run() {
                 for (File f : files) {
                     if (HgUtils.isIgnored(f, true)) {
@@ -530,7 +531,7 @@ public class FileStatusCache {
         fireFileStatusChanged(file, current, fi);
     }
 
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         listenerSupport.addPropertyChangeListener(listener);
     }
 
@@ -734,6 +735,23 @@ public class FileStatusCache {
 
     public void notifyFileChanged(File file) {
         fireFileStatusChanged(file, null, FILE_INFORMATION_UPTODATE);
+    }
+
+    /**
+     * Refreshes cached information about file and all its descendants.
+     * Experimental method mainly for Ignore Action, SHOULD NOT be called elsewhere.
+     * We cannot use pure refresh because hg does not track folders and folder info is permanently kept in cache.
+     * @param file
+     */
+    public void refreshIgnores (File file) {
+        Map<File, FileInformation> files = getModifiedFiles(file, FileInformation.STATUS_ALL);
+        synchronized (this) {
+            for (File f : files.keySet()) {
+                refreshFileStatus(f, FILE_INFORMATION_UNKNOWN);
+            }
+        }
+        refresh(file);
+        LOG.log(Level.FINER, "refreshIgnores: File {0} refreshed", file); //NOI18N
     }
 
     public static class ChangedEvent {

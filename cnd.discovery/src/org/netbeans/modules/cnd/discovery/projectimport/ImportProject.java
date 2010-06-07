@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -800,7 +801,7 @@ public class ImportProject implements PropertyChangeListener {
         waitConfigurationDescriptor();
         boolean done = false;
         if (!manualCA) {
-            final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+            final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
             if (rc == 0) {
                 if (extension != null) {
                     final Map<String, Object> map = new HashMap<String, Object>();
@@ -1099,7 +1100,7 @@ public class ImportProject implements PropertyChangeListener {
         map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
         boolean does = false;
         if (!manualCA && !buildArifactWasAnalyzed) {
-            IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+            DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
                 if (extension.canApply(map, makeProject)) {
                     if (TRACE) {

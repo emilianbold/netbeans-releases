@@ -125,38 +125,45 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
      * @return true if the provided offset should be in a hyperlink
      *         false otherwise
      */
+    @Override
     public boolean isHyperlinkPoint(final Document doc, final int offset) {
 	final AtomicBoolean ret = new AtomicBoolean(false);
 	doc.render(new Runnable() {
 
+            @Override
 	    public void run() {
-		TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(doc);
-		TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
-		tokenSequence.move(offset);
-		if (!tokenSequence.moveNext()) {
-		    return; //no token
-		}
-
-		//check expression language
-		TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(ELTokenId.language());
-		if(elTokenSequence == null) {
-		    return ;
-		}
-		
- 		elTokenSequence.move(offset);
-		if (!elTokenSequence.moveNext()) {
-		    return; //no token
-		}
-
-		ret.set(elTokenSequence.token().id() == ELTokenId.IDENTIFIER);
-
+		ret.set(getELIdentifierSpan(doc, offset) != null);
 	    }
 	});
 
 	return ret.get();
     }
 
+    private int[] getELIdentifierSpan(Document doc, int offset) {
+        TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(doc);
+        TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
+        tokenSequence.move(offset);
+        if (!tokenSequence.moveNext()) {
+            return null; //no token
+        }
 
+        //check expression language
+        TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+        if (elTokenSequence == null) {
+            return null;
+        }
+
+        elTokenSequence.move(offset);
+        if (!elTokenSequence.moveNext()) {
+            return null; //no token
+        }
+
+        if (elTokenSequence.token().id() == ELTokenId.IDENTIFIER) {
+            return new int[]{elTokenSequence.offset(), elTokenSequence.offset() + elTokenSequence.token().length()};
+        }
+
+        return null;
+    }
 
     /**
      * Should determine the span of hyperlink on given offset. Generally, if
@@ -174,76 +181,14 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
      */
     @Override
     public int[] getHyperlinkSpan(final Document doc, final int offset) {
-        FileObject fObject = NbEditorUtilities.getFileObject(doc);
-        final WebModule wm = WebModule.getWebModule(fObject);
-        if(wm == null) {
-            return null;
-        }
-
-        final AtomicReference<Callable<int[]>> returnTaskRef = new AtomicReference<Callable<int[]>>();
-        doc.render(new Runnable() {
-
+        final AtomicReference<int[]> ret = new AtomicReference<int[]>();
+	doc.render(new Runnable() {
             @Override
-            public void run() {
-
-                BaseDocument bdoc = (BaseDocument) doc;
-                JTextComponent target = Utilities.getFocusedComponent();
-
-                if (target == null || target.getDocument() != bdoc) {
-                    return;
-                }
-
-                TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(bdoc);
-                TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
-                if (tokenSequence.move(offset) == Integer.MAX_VALUE) {
-                    return; //no token found
-                }
-                if (!tokenSequence.moveNext()) {
-                    return; //no token
-                }
-
-                // is it a bean in EL ?
-                TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
-                        ELTokenId.language());
-
-                if (elTokenSequence != null) {
-                    elTokenSequence.move(offset);
-                    if (!elTokenSequence.moveNext()) {
-                        return; //no token
-                    }
-                    //set the parse offset
-                    final int parseOffset = elTokenSequence.offset() + elTokenSequence.token().length();
-                    final int elStartOffset = elTokenSequence.offset();
-
-                    try {
-                        final JsfElExpression exp = new JsfElExpression(wm, doc, parseOffset);
-                        returnTaskRef.set(new Callable<int[]>() {
-
-                            @Override
-                            public int[] call() throws Exception {
-                                    int res = exp.parse(); //parse outside of the document's lock
-                                    if (res == JsfElExpression.EL_JSF_BEAN || res == JsfElExpression.EL_START || res == JsfElExpression.EL_JSF_BEAN_REFERENCE) {
-                                        return new int[]{elStartOffset, parseOffset};
-                                    }
-                                    return null;
-                            }
-                        });
-                        
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        });
-
-        try {
-            Callable<int[]> returnTask = returnTaskRef.get();
-            return returnTask == null ? null : returnTask.call();
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
-
+	    public void run() {
+		ret.set(getELIdentifierSpan(doc, offset));
+	    }
+	});
+	return ret.get();
     }
 
     /**

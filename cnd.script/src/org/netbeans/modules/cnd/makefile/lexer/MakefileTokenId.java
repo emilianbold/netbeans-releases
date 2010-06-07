@@ -117,6 +117,16 @@ public enum MakefileTokenId implements TokenId {
     SEMICOLON("separator"), // NOI18N
 
     /**
+     * <code>define</code> keyword
+     */
+    DEFINE("keyword"), // NOI18N
+
+    /**
+     * <code>endef</code> keyword
+     */
+    ENDEF("keyword"), // NOI18N
+
+    /**
      * <code>include</code> keyword
      */
     INCLUDE("keyword"), // NOI18N
@@ -151,7 +161,7 @@ public enum MakefileTokenId implements TokenId {
     private static final Language<MakefileTokenId> LANGUAGE =
             new MakefileLanguageHierarchy().language();
 
-    public static final Language<MakefileTokenId> language() {
+    public static Language<MakefileTokenId> language() {
         return LANGUAGE;
     }
 }

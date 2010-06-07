@@ -78,7 +78,8 @@ int main(int argc, char** argv) {
     }
 
     if (pid == 0) { /* child */
-        printf("%s\n", pty == NULL ? "null" : pty);
+        printf("PID=%d\n", getpid());
+        printf("TTY=%s\n", pty == NULL ? "null" : pty);
         fflush(stdout);
 
         if (noecho) {

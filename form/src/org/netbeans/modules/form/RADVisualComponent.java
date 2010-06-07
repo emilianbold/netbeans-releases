@@ -217,7 +217,7 @@ public class RADVisualComponent extends RADComponent {
     // Properties
 
     @Override
-    protected void createPropertySets(List<Node.PropertySet> propSets) {
+    protected synchronized void createPropertySets(List<Node.PropertySet> propSets) {
         super.createPropertySets(propSets);
         if (SUPPRESS_PROPERTY_TABS) {
             return;
@@ -285,7 +285,7 @@ public class RADVisualComponent extends RADComponent {
     } */
 
     @Override
-    protected void clearProperties() {
+    protected synchronized void clearProperties() {
         super.clearProperties();
         constraintsProperties = null;
     }
@@ -293,13 +293,13 @@ public class RADVisualComponent extends RADComponent {
     // ---------
     // constraints properties
 
-    public Node.Property[] getConstraintsProperties() {
+    public synchronized Node.Property[] getConstraintsProperties() {
         if (constraintsProperties == null)
             createConstraintsProperties();
         return constraintsProperties;
     }
 
-    public void resetConstraintsProperties() {
+    public synchronized void resetConstraintsProperties() {
         if (constraintsProperties != null) {
             for (int i=0; i < constraintsProperties.length; i++)
                 nameToProperty.remove(constraintsProperties[i].getName());
@@ -313,7 +313,7 @@ public class RADVisualComponent extends RADComponent {
         }
     }
 
-    private void createConstraintsProperties() {
+    private synchronized void createConstraintsProperties() {
         constraintsProperties = null;
 
         LayoutSupportManager layoutSupport = getParentLayoutSupport();

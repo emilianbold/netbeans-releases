@@ -72,7 +72,6 @@ public class KenaiConfiguration extends BugzillaConfiguration {
 
     @Override
     public List<String> getProducts() {
-        ensureProduct();
         if(!BugzillaUtil.isNbRepository(repository)) {
             return products;
         } else {
@@ -82,28 +81,16 @@ public class KenaiConfiguration extends BugzillaConfiguration {
 
     @Override
     public List<String> getComponents(String product) {
-        ensureProduct();
         return super.getComponents(product);
     }
 
     @Override
     public List<String> getVersions(String product) {
-        ensureProduct();
         return super.getVersions(product);
     }
 
-    private synchronized void ensureProduct() {
-        List<String> knownProducts = super.getProducts();
-        for (String product : products) {
-            if(!knownProducts.contains(product)) {
-                initialize(repository, true);
-                break;
-            }
-        }
-    }
-
     void reset() {
-        if(rcs != null) {
+        if(rcs  != null) {
             rcs.remove(repository.getUrl());
         }
     }
@@ -114,11 +101,28 @@ public class KenaiConfiguration extends BugzillaConfiguration {
             rcs = new HashMap<String, RepositoryConfiguration>(1);
         }
         RepositoryConfiguration rc = rcs.get(repository.getUrl());
-        if(rc == null) {
+        if(rc == null || forceRefresh) {
             rc = super.getRepositoryConfiguration(repository, forceRefresh);
             rcs.put(repository.getUrl(), rc);
+        }
+        if(rc != null && (!forceRefresh && !hasProduct(rc))) {
+            // mylyn is cashing the configuration for us so in case
+            // forceRefresh=false and it doesn't contain the given project
+            // we have to force refresh it one more time to get the needed
+            // project data from the server
+            forceRefresh = true;
+            rc = super.getRepositoryConfiguration(repository, forceRefresh);
         }
         return rc;
     }
 
+    private boolean hasProduct(RepositoryConfiguration rc) {
+        List<String> knownProducts = rc.getProducts();
+        for (String product : products) {
+            if(!knownProducts.contains(product)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

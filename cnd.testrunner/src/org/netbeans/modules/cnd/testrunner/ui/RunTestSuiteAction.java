@@ -92,7 +92,7 @@ final class RunTestSuiteAction extends BaseTestMethodNodeAction {
             for (Folder folder : testRootFolder.getAllTests()) {
                 Item[] items = folder.getAllItemsAsArray();
                 for (int k = 0; k < items.length; k++) {
-                    if(items[k].getPath().replaceFirst("\\..*", "").equals(testcase.getClassName())) { // NOI18N
+                    if(items[k].getName().replaceFirst("\\..*", "").equals(testcase.getClassName())) { // NOI18N
                         return folder;
                     }
                 }

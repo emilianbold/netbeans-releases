@@ -48,6 +48,8 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
 import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jellytools.actions.OptionsViewAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -93,15 +95,17 @@ public class OptionsTest extends PerformanceTestCase {
     }
     
     public ComponentOperator open(){
-        new OptionsViewAction().performMenu();
-        options = new OptionsOperator();
-        return options;
+//        new OptionsViewAction().performMenu();
+//        options = new OptionsOperator();
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("Tools|Options","|");
+        return new org.netbeans.jellytools.NbDialogOperator("Options");
+//        return options;
     }
-    
+    /*
     @Override
     public void close(){
         if(options != null)
             options.close();
     }
-    
+    */
 }

@@ -49,8 +49,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -90,6 +94,15 @@ public class RfsSetupProvider implements SetupProvider {
     @Override
     public Map<String, String> getBinaryFiles(ExecutionEnvironment env) {
         Map<String, String> result = new LinkedHashMap<String, String>();
+        Boolean applicable = isApplicable(env);
+        if (applicable == null) {
+            RemoteUtil.LOGGER.log(Level.WARNING, "Can not determine whether RFS is applicable for {0}", env.getDisplayName());
+            return result;
+        }
+        if (!applicable.booleanValue()) {
+            RemoteUtil.LOGGER.log(Level.WARNING, "RFS not applicable for {0}", env.getDisplayName());
+            return result;
+        }
         try {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
             String osName = getOsName(env);
@@ -131,6 +144,52 @@ public class RfsSetupProvider implements SetupProvider {
         }
         result += '/' + CONTROLLER; // NOI18N;
         return result;
+    }
+
+    public static Boolean isApplicable(ExecutionEnvironment env) {
+        if (env == null) {
+            throw new NullPointerException();
+        }
+
+        HostInfo.OSFamily osFamily = null;
+        HostInfo.CpuFamily cpuFamily = null;
+
+        if (HostInfoUtils.isHostInfoAvailable(env)) {
+            try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                osFamily = hostInfo.getOSFamily();
+                cpuFamily = hostInfo.getCpuFamily();
+            } catch (IOException ex) {
+                RemoteUtil.LOGGER.log(Level.WARNING, "Exception when getting host info:", ex);
+            } catch (CancellationException ex) {
+                // don't log CancellationException
+            }
+        }
+        
+        if (osFamily == null || cpuFamily == null) { // in fact either both or none is null
+            RemoteServerRecord record = RemoteServerList.getInstance().get(env, false);
+            if (record != null) {
+                osFamily = record.getOsFamily();
+                cpuFamily = record.getCpuFamily();
+            }
+        }
+
+        if (osFamily == null || cpuFamily == null) {
+            RemoteUtil.LOGGER.log(Level.WARNING, "RFS: can not determine host OS and CPU for {0}", env.getDisplayName());
+            return null;
+        }
+
+        switch (osFamily) {
+            case LINUX:
+                return (cpuFamily == HostInfo.CpuFamily.X86) ? Boolean.TRUE : Boolean.FALSE;
+            case SUNOS:
+                return (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) ? Boolean.TRUE : Boolean.FALSE;
+            case MACOSX:
+            case WINDOWS:
+            case UNKNOWN:
+            default:
+                return Boolean.FALSE;
+        }
     }
 
     public static String getLdLibraryPath(ExecutionEnvironment execEnv) throws ParseException {

@@ -48,26 +48,31 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.SequenceInputStream;
 import java.lang.reflect.Field;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.pty.PtyUtility;
 import org.netbeans.modules.nativeexecution.support.Win32APISupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public final class LocalNativeProcess extends AbstractNativeProcess {
 
     private Process process = null;
-    private final CountDownLatch additionalMsgLatch = new CountDownLatch(1);
+    private PipedInputStream errorPipedInputStream = null;
+    private PipedOutputStream errorPipedOutputStream = null;
     private boolean win1073741515added = false;
 
     public LocalNativeProcess(NativeProcessInfo info) {
@@ -76,19 +81,10 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
     @Override
     protected void create() throws Throwable {
-        boolean isWindows = hostInfo.getOSFamily() == OSFamily.WINDOWS;
-
-        try {
-            if (isWindows) {
-                createWin();
-            } else {
-                createNonWin();
-            }
-        } catch (Throwable ex) {
-            if (process != null) {
-                process.destroy();
-            }
-            throw ex;
+        if (hostInfo.getOSFamily() == OSFamily.WINDOWS) {
+            createWin();
+        } else {
+            createNonWin();
         }
     }
 
@@ -193,7 +189,10 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
 
         creation_ts = System.nanoTime();
 
-        setErrorStream(new ErrorStream(process.getErrorStream(), additionalMsgLatch));
+        errorPipedOutputStream = new PipedOutputStream();
+        errorPipedInputStream = new PipedInputStream(errorPipedOutputStream);
+
+        setErrorStream(new SequenceInputStream(process.getErrorStream(), errorPipedInputStream));
         setInputStream(process.getInputStream());
         setOutputStream(process.getOutputStream());
 
@@ -237,17 +236,26 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                 // Several threads may be here.
                 // Must be sure that message is added only once.
                 synchronized (this) {
-                    if (!win1073741515added) {
+                    if (!win1073741515added && errorPipedOutputStream != null) {
                         StringBuilder cmd = new StringBuilder();
                         Iterator<String> iterator = info.getCommand().iterator();
                         String exec;
 
                         if (info.isPtyMode()) {
-                            String s = iterator.next(); // pty wrapper
-                            s = iterator.next(); // quoted executable
-                            s = s.substring(1, s.length() - 1); // remove quotes before converting
-                            // remove quotes before converting
-                            exec = WindowsSupport.getInstance().convertToWindowsPath(s);
+                            exec = iterator.next();
+                            String ptyUtilityPath = null;
+
+                            try {
+                                ptyUtilityPath = PtyUtility.getInstance().getPath(ExecutionEnvironmentFactory.getLocal());
+                            } catch (IOException ex) {
+                            }
+
+                            if (ptyUtilityPath != null && exec.equals(ptyUtilityPath)) {
+                                exec = iterator.next(); // quoted executable
+                                exec = exec.substring(1, exec.length() - 1); // remove quotes before converting
+                                // remove quotes before converting
+                                exec = WindowsSupport.getInstance().convertToWindowsPath(exec);
+                            }
                         } else {
                             exec = iterator.next();
                         }
@@ -267,59 +275,43 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
                             errorMsg = errorMsg.replaceAll("\n", "\n\r"); // NOI18N
                         }
 
-                        ((ErrorStream) getErrorStream()).addErrorMessage(errorMsg);
+                        try {
+                            Charset charset = Charset.isSupported("UTF-8") // NOI18N
+                                    ? Charset.forName("UTF-8") // NOI18N
+                                    : Charset.defaultCharset();
+                            errorPipedOutputStream.write(errorMsg.getBytes(charset));
+                            errorPipedOutputStream.flush();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+
                         win1073741515added = true;
                     }
                 }
             }
             return exitcode;
         } finally {
-            additionalMsgLatch.countDown();
+            try {
+                if (errorPipedOutputStream != null) {
+                    errorPipedOutputStream.close();
+                }
+            } catch (IOException ex) {
+                // Exceptions.printStackTrace(ex);
+            }
         }
     }
 
     @Override
-    protected final synchronized void cancel() {
+    protected int destroyImpl() {
         if (process != null) {
-            ProcessUtils.destroy(process);
+            process.destroy();
+            return 1;
         }
+
+        return 0;
     }
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(LocalNativeProcess.class, key, params);
-    }
-
-    private static class ErrorStream extends InputStream {
-
-        private final InputStream orig;
-        private final CountDownLatch additionalMsgLatch;
-        private volatile ByteArrayInputStream additionalMsg = null;
-
-        public ErrorStream(InputStream orig, CountDownLatch additionalMsgLatch) {
-            this.orig = orig;
-            this.additionalMsgLatch = additionalMsgLatch;
-        }
-
-        @Override
-        public int read() throws IOException {
-            int c = orig.read();
-
-            if (c < 0) {
-                try {
-                    additionalMsgLatch.await();
-                } catch (InterruptedException ex) {
-                }
-            }
-
-            if (additionalMsg != null && c < 0) {
-                c = additionalMsg.read();
-            }
-
-            return c;
-        }
-
-        private void addErrorMessage(String additionalMsg) {
-            this.additionalMsg = new ByteArrayInputStream(additionalMsg.getBytes());
-        }
     }
 }

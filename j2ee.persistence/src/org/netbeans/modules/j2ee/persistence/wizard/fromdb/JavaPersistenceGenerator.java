@@ -208,7 +208,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         result = new Generator(entityClasses, generateNamedQueries, 
                 fullyQualifiedTableNames, regenTablesAttrs,
                 fetchType, collectionType,
-                progressContributor, panel).run();
+                progressContributor, panel, this).run();
         addToPersistenceUnit(result);
         progressContributor.progress(progressMax);
         PersistenceUtils.logUsage(JavaPersistenceGenerator.class, "USG_PERSISTENCE_ENTITY_DB_CREATED", new Integer[]{entityClasses.length});
@@ -229,7 +229,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         }
         
         Project project = FileOwnerQuery.getOwner(entities.iterator().next());
-        if (project != null && !Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {
+        if (project != null && !(Util.isSupportedJavaEEVersion(project) && Util.isContainerManaged(project)) && ProviderUtil.getDDFile(project) != null) {
             try {
                 PUDataObject pudo = ProviderUtil.getPUDataObject(project);
                 // no persistence unit was provider, we'll try find one
@@ -334,11 +334,13 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         private final CollectionType collectionType;
         private final Set<FileObject> generatedEntityFOs;
         private final Set<FileObject> generatedFOs;
+        private final PersistenceGenerator persistenceGen;
 
         public Generator(EntityClass[] entityClasses, boolean generateNamedQueries,
                 boolean fullyQualifiedTableNames, boolean regenTablesAttrs, 
                 FetchType fetchType, CollectionType collectionType,
-                ProgressContributor progressContributor, ProgressPanel progressPanel) {
+                ProgressContributor progressContributor, ProgressPanel progressPanel,
+                PersistenceGenerator persistenceGen) {
             this.entityClasses = entityClasses;
             this.generateNamedQueries = generateNamedQueries;
             this.fullyQualifiedTableNames = fullyQualifiedTableNames;
@@ -349,6 +351,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             this.progressPanel = progressPanel;
             generatedFOs = new HashSet<FileObject>();
             generatedEntityFOs = new HashSet<FileObject>();
+            this.persistenceGen = persistenceGen;
         }
 
         public Set<FileObject> run() throws IOException {
@@ -386,9 +389,19 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     progressPanel.setText(progressMsg);
                 }
 
-                FileObject entity = packageFileObject.getFileObject(entityClassName, "java"); //NOI18N
+                FileObject entity = packageFileObject.getFileObject(entityClassName, "java");
+
+                //NOI18N
                 switch (entityClass.getUpdateType()){
                     case RECREATE:
+                        if(entity == null){//we hit case when old entity position is different from target package
+                           String fqn = persistenceGen.getFQClassName(entityClass.getTableName());
+                           int ind = fqn.lastIndexOf(".");
+                           String pkg = ind>-1 ? fqn.substring(0, ind) : "";
+                           String rel = pkg.replaceAll("\\.", "/");
+                           FileObject oldPackage = entityClass.getRootFolder().getFileObject(rel);
+                           entity = oldPackage.getFileObject(entityClassName, "java");
+                        }
                         entity.delete();
                         entity = null;
                     case NEW:{
@@ -443,7 +456,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                     JPAClassPathHelper cpHelper = new JPAClassPathHelper(bootCPs, compileCPs, sourceCPs);
 
-                    JavaSource javaSource = (pkClassFO != null) ?
+                    JavaSource javaSource = (pkClassFO != null && entityClass.getUpdateType() != UpdateType.UPDATE) ?
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO, pkClassFO) :
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO);
                     javaSource.runModificationTask(new Task<WorkingCopy>() {
@@ -813,6 +826,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private String namedQueryPrefix;
 
             private Set<String> existingColumns = new HashSet<String>();
+            private Set<String> existingJoinColumns = new HashSet<String>();
 
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 super(copy, entityClass);
@@ -880,17 +894,29 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
             private void collectExistingColumns(){
                 for (Tree member: originalClassTree.getMembers()){
+                    List<? extends AnnotationTree> annotations = null;
                     if (Kind.VARIABLE.equals(member.getKind())){
                         VariableTree variable = (VariableTree)member;
-                        List<? extends AnnotationTree> annotations = variable.getModifiers().getAnnotations();
+                        annotations = variable.getModifiers().getAnnotations();
+                    } else if(Kind.METHOD.equals(member.getKind())) {
+                        MethodTree method = (MethodTree) member;
+                        annotations = method.getModifiers().getAnnotations();
+                    }
+                    if(annotations!=null)    {
                         for(AnnotationTree annTree: annotations){
-                            if (!((IdentifierTree)annTree.getAnnotationType()).getName().contentEquals("Column")){
+                            Name nm = ((IdentifierTree)annTree.getAnnotationType()).getName();
+                            Set<String> set = null;
+                            if (nm.contentEquals("Column")){//NOI18N
+                                set = existingColumns;
+                            } else if( nm.contentEquals("JoinColumn") ){//NOI18N
+                                set = existingJoinColumns;
+                            } else {//NOI18N
                                 continue;
                             }
                             for(ExpressionTree exTree: annTree.getArguments()){
                                 AssignmentTree aTree = (AssignmentTree)exTree;
-                                if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("name")){
-                                        existingColumns.add((String)((LiteralTree)aTree.getExpression()).getValue());
+                                if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("name")){//NOI18N
+                                        set.add((String)((LiteralTree)aTree.getExpression()).getValue());
                                         break;
                                 }
                             }
@@ -900,6 +926,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
             }
 
+            @Override
             protected void generateMember(EntityMember m) throws IOException {
                 //skip generating already exist members for UPDATE type
                 if (updateType.UPDATE.equals(updateType) && existingColumns.contains(m.getColumnName())){

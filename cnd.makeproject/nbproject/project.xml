@@ -340,6 +340,9 @@
                 <friend>com.microchip.mplab.modules.dsPICFD</friend>
                 <friend>com.microchip.mplab.modules.matlab</friend>
                 <friend>com.microchip.mplab.modules.smpsgui</friend>
+                <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
+                <friend>com.microchip.mplab.nbide.emcee</friend>
+                <friend>com.microchip.mplab.nbide.toolchains</friend>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.dlight</friend>
