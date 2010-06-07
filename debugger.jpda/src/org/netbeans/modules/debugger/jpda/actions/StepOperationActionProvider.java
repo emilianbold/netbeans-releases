@@ -43,41 +43,32 @@
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.spi.debugger.ActionsProviderSupport;
 
 
 /**
  *
  * @author  Martin Entlicher
  */
-public class StepOperationActionProvider extends ActionsProviderSupport
-                                       implements PropertyChangeListener,
-                                                  ActionsManagerListener {
-
-    private JPDADebugger debugger;
-    private ActionsManager lastActionsManager;
-    
+public class StepOperationActionProvider extends JPDADebuggerActionProvider {
     
     public StepOperationActionProvider (ContextProvider lookupProvider) {
-        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        debugger.addPropertyChangeListener (JPDADebugger.PROP_STATE, this);
+        super (
+            (JPDADebuggerImpl) lookupProvider.lookupFirst
+                (null, JPDADebugger.class)
+        );
+        setProviderToDisableOnLazyAction(this);
     }
-    
-    private void destroy () {
-        debugger.removePropertyChangeListener (JPDADebugger.PROP_STATE, this);
-    }
-    
+
     static ActionsManager getCurrentActionsManager () {
         return DebuggerManager.getDebuggerManager ().
             getCurrentEngine () == null ? 
@@ -85,38 +76,30 @@ public class StepOperationActionProvider extends ActionsProviderSupport
             DebuggerManager.getDebuggerManager ().getCurrentEngine ().
                 getActionsManager ();
     }
-    
-    private ActionsManager getActionsManager () {
-        ActionsManager current = getCurrentActionsManager();
-        if (current != lastActionsManager) {
-            if (lastActionsManager != null) {
-                lastActionsManager.removeActionsManagerListener(
-                        ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
-            }
-            current.addActionsManagerListener(
-                    ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
-            lastActionsManager = current;
-        }
-        return current;
-    }
 
-    public void propertyChange (PropertyChangeEvent evt) {
-        setEnabled (
-            ActionsManager.ACTION_STEP_OPERATION,
-            getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
-            (debugger.getState () == JPDADebugger.STATE_STOPPED)  &&
-            (debugger.getCurrentThread () != null)
-        );
-        if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) 
-            destroy ();
-    }
-    
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_STEP_OPERATION);
     }
     
+    @Override
     public void doAction (Object action) {
         doAction(debugger, null);
+    }
+
+    @Override
+    public void postAction(final Object action,
+                           final Runnable actionPerformedNotifier) {
+        doLazyAction(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doAction(getDebuggerImpl(), null);
+                } finally {
+                    actionPerformedNotifier.run();
+                }
+            }
+        });
     }
 
     static void doAction (JPDADebugger debugger, PropertyChangeListener listener) {
@@ -137,15 +120,15 @@ public class StepOperationActionProvider extends ActionsProviderSupport
         // Is never called
     }
 
-    /** Sync up with continue action state. */
-    public void actionStateChanged(Object action, boolean enabled) {
-        if (ActionsManager.ACTION_CONTINUE == action) {
+    @Override
+    protected void checkEnabled (int debuggerState) {
+        Iterator i = getActions ().iterator ();
+        while (i.hasNext ())
             setEnabled (
-                ActionsManager.ACTION_STEP_OPERATION,
-                enabled &&
-                (debugger.getState () == JPDADebugger.STATE_STOPPED)  &&
-                (debugger.getCurrentThread () != null)
+                i.next (),
+                (debuggerState == JPDADebugger.STATE_STOPPED) &&
+                (getDebuggerImpl ().getCurrentThread () != null)
             );
-        }
     }
+
 }
