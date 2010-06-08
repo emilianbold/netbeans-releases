@@ -163,8 +163,8 @@ public class NbModuleSuite {
         
         /** Regular expression to match clusters that shall be enabled.
          * To enable all cluster, one can use <code>".*"</code>. To enable
-         * ide and java clusters, it is handy to pass in <code>"ide[0-9]*|java[0-9]*</code>.
-         * There is no need to requrest presence of <code>platform.*</code> cluster,
+         * ide and java clusters, it is handy to pass in <code>"ide|java"</code>.
+         * There is no need to request presence of <code>platform</code> cluster,
          * as that is available all the time by default.
          * <p>
          * Since version 1.55 this method can be called multiple times.
@@ -438,7 +438,7 @@ public class NbModuleSuite {
      * determined from the actual classpath of a module, which is common
      * when in all NetBeans tests. All other modules are kept disabled.
      * In addition,it allows one limit the clusters that shall be made available.
-     * For example <code>ide[0-9]*|java[0-9]*</code> will start the container just
+     * For example <code>ide|java</code> will start the container just
      * with platform, ide and java clusters.
      * 
      * 
@@ -462,7 +462,7 @@ public class NbModuleSuite {
      * determined from the actual classpath of a module, which is common
      * when in all NetBeans tests. All other modules are kept disabled.
      * In addition,it allows one limit the clusters that shall be made available.
-     * For example <code>ide[0-9]*|java[0-9]*</code> will start the container just
+     * For example <code>ide|java</code> will start the container just
      * with platform, ide and java clusters.
      * 
      * 
