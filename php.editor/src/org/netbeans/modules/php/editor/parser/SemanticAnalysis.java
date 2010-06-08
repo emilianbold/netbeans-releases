@@ -157,6 +157,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             int start = snapshot.getOriginalOffset(node.getStartOffset());
             if (start > -1) {
                 int end = start + node.getEndOffset() - node.getStartOffset();
+                assert coloring != null : snapshot.getText().toString();
                 highlights.put(new OffsetRange(start, end), coloring);
             }
         }
