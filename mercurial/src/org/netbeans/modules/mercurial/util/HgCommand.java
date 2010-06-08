@@ -1055,11 +1055,6 @@ public class HgCommand {
         return messages.toArray(new HgLogMessage[0]);
     }
 
-    public static HgLogMessage[] getLogMessages(final File root, final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges, OutputLogger logger) {
-         return getLogMessages(root, files, fromRevision, toRevision,
-                                bShowMerges, true, -1, logger, true);
-    }
-
     public static HgLogMessage[] getLogMessagesNoFileInfo(final File root, final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges, int limitRevisions, OutputLogger logger) {
          return getLogMessages(root, files, fromRevision, toRevision, bShowMerges, false, limitRevisions, logger, true);
     }
@@ -1203,8 +1198,9 @@ public class HgCommand {
                 command.add(HG_LOG_LIMIT_CMD);
                 command.add(Integer.toString(limit));
         }
-        boolean doFollow = true;
+        boolean doFollow = false;
         if( files != null){
+            doFollow = true;
             for (File f : files) {
                 if (f.isDirectory()) {
                     doFollow = false;
@@ -2294,13 +2290,12 @@ public class HgCommand {
      * Returns parent revision of the given revision
      * @param repositoryUrl cannot be null
      * @param file if not null, parent revision limited on this file will be returned
-     * @param revision cannot be null
+     * @param revision if null, parent of the WC is returned
      * @return parent revision, -1 if has no parent and null if error occurs
      * @throws HgException
      */
     public static String getParent (String repositoryUrl, File file, String revision) throws HgException {
         if (repositoryUrl == null ) return null;
-        if (revision == null ) return null;
 
         String parentRevision = "-1";                                   //NOI18N
         String[] revisions = getParents(repositoryUrl, file, revision);
