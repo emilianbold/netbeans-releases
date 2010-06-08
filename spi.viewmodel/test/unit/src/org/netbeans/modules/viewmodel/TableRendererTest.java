@@ -175,6 +175,7 @@ public class TableRendererTest extends NbTestCase {
         System.out.println("table rows = "+t.getRowCount());
         TableCellEditor tce = t.getCellEditor(0, 0);
         assertTrue(tce+"is not editable.", tce.isCellEditable(getMouseClickAt(t, 0, 0)));
+        //assertTrue(t+"is not editable.", t.isCellEditable(0, 0));
         Component c = tce.getTableCellEditorComponent(t, null, true, 0, 0);
         //System.err.println("c = "+c);
         assertTrue("Editor component = "+c, c instanceof EditorComponent);
@@ -182,40 +183,47 @@ public class TableRendererTest extends NbTestCase {
 
         tce = t.getCellEditor(0, 1);
         assertTrue(tce+"is not editable.", tce.isCellEditable(getMouseClickAt(t, 0, 1)));
+        assertTrue(t+"is not editable.", t.isCellEditable(0, 1));
         c = tce.getTableCellEditorComponent(t, null, true, 0, 1);
         assertTrue("Editor component = "+c, c instanceof EditorComponent);
         assertEquals("Editor of 0:col1", ((EditorComponent) c).getText());
 
         tce = t.getCellEditor(0, 2);
         assertTrue(tce+"is not editable.", tce.isCellEditable(getMouseClickAt(t, 0, 2)));
+        assertTrue(t+"is not editable.", t.isCellEditable(0, 2));
         c = tce.getTableCellEditorComponent(t, null, true, 0, 2);
         assertTrue("Editor component = "+c, c instanceof EditorComponent);
         assertEquals("Editor of 0:col2", ((EditorComponent) c).getText());
 
         tce = t.getCellEditor(1, 0);
         assertFalse(tce+"is editable.", tce.isCellEditable(getMouseClickAt(t, 1, 0)));
+        assertFalse(t+"is editable.", t.isCellEditable(1, 0));
         c = tce.getTableCellEditorComponent(t, null, true, 1, 0);
         assertFalse("Editor component = "+c, c instanceof EditorComponent);
 
         tce = t.getCellEditor(1, 2);
         assertFalse(tce+"is editable.", tce.isCellEditable(getMouseClickAt(t, 1, 2)));
+        assertFalse(t+"is editable.", t.isCellEditable(1, 2));
         c = tce.getTableCellEditorComponent(t, null, true, 1, 2);
         assertFalse("Editor component = "+c, c instanceof EditorComponent);
 
         tce = t.getCellEditor(3, 1);
         assertTrue(tce+"is not editable.", tce.isCellEditable(getMouseClickAt(t, 3, 1)));
+        assertTrue(t+"is not editable.", t.isCellEditable(3, 1));
         c = tce.getTableCellEditorComponent(t, null, true, 3, 1);
         assertTrue("Editor component = "+c, c instanceof EditorComponent);
         assertEquals("Editor of 3:col1", ((EditorComponent) c).getText());
 
         tce = t.getCellEditor(6, 0);
         assertTrue(tce+"is not editable.", tce.isCellEditable(getMouseClickAt(t, 6, 0)));
+        assertTrue(t+"is not editable.", t.isCellEditable(6, 0));
         c = tce.getTableCellEditorComponent(t, null, true, 6, 0);
         assertTrue("Editor component = "+c, c instanceof EditorComponent);
         assertEquals("Editor of 6:DN", ((EditorComponent) c).getText());
 
         tce = t.getCellEditor(9, 2);
         assertTrue(tce+"is not editable.", tce.isCellEditable(getMouseClickAt(t, 9, 2)));
+        assertTrue(t+"is not editable.", t.isCellEditable(9, 2));
         c = tce.getTableCellEditorComponent(t, null, true, 9, 2);
         assertTrue("Editor component = "+c, c instanceof EditorComponent);
         assertEquals("Editor of 9:col2", ((EditorComponent) c).getText());
