@@ -41,6 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.glassfish.common;
 
 import java.awt.Color;
@@ -111,7 +112,7 @@ public class LogViewMgr {
      * Amount of time in milliseconds to wait between checks of the input
      * stream
      */
-    private static final int DELAY = 1000;
+    private static final int DELAY = 100;
     
     /**
      * Singleton model pattern
@@ -214,7 +215,7 @@ public class LogViewMgr {
 
             for(InputStream inputStream : inputStreams){
                 // LoggerRunnable will close the stream if necessary.
-                LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, false);
+                LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, false); 
                 readers.add(new WeakReference<LoggerRunnable>(logger));
                 RP.post(logger);
             }
