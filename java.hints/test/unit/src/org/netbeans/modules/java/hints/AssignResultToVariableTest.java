@@ -168,8 +168,8 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
 
     public void testAnonymousClass138223() throws Exception {
         performFixTest("test/Test.java",
-                "package test; public class Test {public void t() { new Run|nable() { public void run() {}}; } }",
-                "0:51-0:89:hint:Assign Return Value To New Variable",
+                "package test; public class Test {public void t() { new Run|nable() { public void run() { } }; } }",
+                "0:51-0:91:hint:Assign Return Value To New Variable",
                 "FixImpl",
                 "package test; public class Test {public void t() {Runnable runnable = new Runnable() { public void run() { } }; } }");
     }
@@ -219,8 +219,7 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        "package test; import java.util.List; public class Test {public Test() {List<?> l = null;\n  l.get(0);    //tttt|\n } }",
                        "1:2-1:7:hint:Assign Return Value To New Variable",
                        "FixImpl",
-                       //TODO: the comment is missing!
-                       "package test; import java.util.List; public class Test {public Test() {List<?> l = null; Object get = l.get(0); } }");
+                       "package test; import java.util.List; public class Test {public Test() {List<?> l = null; Object get = l.get(0); //tttt } }");
     }
 
     public void testForgiving7() throws Exception {
@@ -228,8 +227,7 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        "package test; import java.util.List; public class Test {public Test() {List<?> l = null;/*\n|*/  l.get(0);\n } }",
                        "1:4-1:9:hint:Assign Return Value To New Variable",
                        "FixImpl",
-                       //TODO: comment duplicated!
-                       "package test; import java.util.List; public class Test {public Test() {List<?> l = null;/* */ /* */ Object get = l.get(0); } }");
+                       "package test; import java.util.List; public class Test {public Test() {List<?> l = null;/* */ Object get = l.get(0); } }");
     }
 
     public void testForgivingNegative1() throws Exception {
@@ -249,12 +247,12 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
 
     public void testAddSemicolon1() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {public void t() { new Run|nable() { public void run() {}} } }",
-                       "0:51-0:89:hint:Assign Return Value To New Variable",
+                       "package test; public class Test {public void t() { new Run|nable() { public void run() { } } } }",
+                       "0:51-0:91:hint:Assign Return Value To New Variable",
                        "FixImpl",
                        "package test; public class Test {public void t() {Runnable runnable = new Runnable() { public void run() { } }; } }");
     }
-    
+
     public void testAddSemicolon2() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void t() {java.util.List<String> l = null; l.ge|t(0) }}",
