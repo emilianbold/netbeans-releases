@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.kenai.ui.nodes;
 
+import java.beans.PropertyVetoException;
 import java.net.MalformedURLException;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
@@ -55,8 +56,14 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeOp;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -69,9 +76,15 @@ public class AddInstanceAction extends AbstractAction {
 
     private Kenai kenai;
     private JDialog dialog;
+    private boolean expandRootNode = false;
 
     public AddInstanceAction() {
         super(NbBundle.getMessage(AddInstanceAction.class, "CTL_AddInstance"));
+    }
+
+    public AddInstanceAction(boolean expandRootNode) {
+        this();
+        this.expandRootNode = expandRootNode;
     }
 
     @Override
@@ -104,8 +117,22 @@ public class AddInstanceAction extends AbstractAction {
                                         if (ae != null && ae.getSource() instanceof JComboBox) {
                                             ((JComboBox) ae.getSource()).setSelectedItem(AddInstanceAction.this.kenai);
                                         }
+                                        if (expandRootNode) {
+                                            TopComponent tab = WindowManager.getDefault().findTopComponent("services"); // NOI18N
+                                            if (tab != null && (tab instanceof ExplorerManager.Provider)) {
+                                                final ExplorerManager mgr = ((ExplorerManager.Provider) tab).getExplorerManager();
+                                                final Node k = NodeOp.findChild(KenaiRootNode.getDefault(), AddInstanceAction.this.kenai.getUrl().toString());
+                                                try {
+                                                    if (mgr!=null && k!=null)
+                                                        mgr.setSelectedNodes(new Node[]{k});
+                                                } catch (PropertyVetoException ex) {
+                                                    Exceptions.printStackTrace(ex);
+                                                }
+                                            }
+                                        }
                                     }
                                 });
+
                             } catch (KenaiException ex) {
                                 if (kenai != null) {
                                     KenaiManager.getDefault().removeKenai(kenai);
