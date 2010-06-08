@@ -1873,6 +1873,16 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/blankLines/issue186738_01.php", options);
     }
 
+    public void testIssue187264_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/issue187264_01.php", options);
+    }
+
+    public void testIssue187264_02() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/issue187264_02.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
