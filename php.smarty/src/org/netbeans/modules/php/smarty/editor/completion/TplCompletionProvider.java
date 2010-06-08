@@ -203,9 +203,9 @@ public class TplCompletionProvider implements CompletionProvider {
                 }
             }
             TplCompletionItem tplItem = (TplCompletionItem) item;
-//            if (tplItem != null && tplItem.getHelp() != null) {
-//                resultSet.setDocumentation(new DocItem(tplItem));
-//            }
+            if (tplItem != null && tplItem.getHelp() != null) {
+                resultSet.setDocumentation(new DocItem(tplItem));
+            }
         }
     }
 
@@ -389,35 +389,36 @@ public class TplCompletionProvider implements CompletionProvider {
 //        }
 //    }
 //
-//    private static class DocItem implements CompletionDocumentation {
-//
-//        TplCompletionItem item;
-//
-//        public DocItem(TplCompletionItem ri) {
-//            this.item = ri;
-//        }
-//
-//        @Override
-//        public String getText() {
-//            return item.getHelp();
-//        }
-//
-//        @Override
-//        public URL getURL() {
-//            return item.getHelpURL();
-//        }
-//
-//        @Override
-//        public CompletionDocumentation resolveLink(String link) {
+    private static class DocItem implements CompletionDocumentation {
+
+        TplCompletionItem item;
+
+        public DocItem(TplCompletionItem tci) {
+            this.item = tci;
+        }
+
+        @Override
+        public String getText() {
+            return item.getHelp();
+        }
+
+        @Override
+        public URL getURL() {
+            return item.getHelpURL();
+        }
+
+        @Override
+        public CompletionDocumentation resolveLink(String link) {
 //            URL itemUrl = HelpManager.getDefault().getHelpURL(item.getHelpId());
 //            return itemUrl != null ?
 //                new LinkDocItem(HelpManager.getDefault().getRelativeURL(itemUrl, link)) :
 //                new NoDocItem();
-//        }
-//
-//        @Override
-//        public Action getGotoSourceAction() {
-//            return null;
-//        }
-//    }
+            return null;
+        }
+
+        @Override
+        public Action getGotoSourceAction() {
+            return null;
+        }
+    }
 }

@@ -73,12 +73,12 @@ public class TplCodeCompletionData {
             Collection<EntryMetadata> ccList = parseCCData(completionType);
             if (completionType.equals("built-in-functions")) {
                 for (EntryMetadata entryMetadata : ccList) {
-                    completionItems.add(new BuiltInFunction(entryMetadata.getKeyword(), 0, null));
+                    completionItems.add(new BuiltInFunction(entryMetadata.getKeyword(), 0, entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
                 }
             }
             else if (completionType.equals("variable-modifiers")) {
                 for (EntryMetadata entryMetadata : ccList) {
-                    completionItems.add(new VariableModifiers(entryMetadata.getKeyword(), 0, null));
+                    completionItems.add(new VariableModifiers(entryMetadata.getKeyword(), 0, entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
                 }
             }
         }

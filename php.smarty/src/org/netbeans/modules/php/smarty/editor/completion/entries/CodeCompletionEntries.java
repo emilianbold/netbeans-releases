@@ -80,14 +80,13 @@ public class CodeCompletionEntries {
                 if (ccNode.getNodeType() == Node.ELEMENT_NODE){
                     Element elem = (Element) ccNode;
                     NodeList desc = elem.getElementsByTagName("description");
-                    ccEntries.add(new CCDataBuiltInFunction(elem.getAttribute("name"), desc.item(0).getTextContent()));
+                    NodeList url = elem.getElementsByTagName("url");
+                    ccEntries.add(new CCDataBuiltInFunction(elem.getAttribute("name"), desc.item(0).getTextContent(), url.item(0).getTextContent()));
                 }
             }
         }
 
         return ccEntries;
     }
-
-    
     
 }

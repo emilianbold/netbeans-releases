@@ -47,10 +47,12 @@ public abstract class EntryMetadata {
 
     private String keyword;
     private String help;
+    private String helpUrl;
 
-    public EntryMetadata(String keyword, String help) {
+    public EntryMetadata(String keyword, String help, String helpUrl) {
         this.keyword = keyword;
         this.help = help;
+        this.helpUrl = helpUrl;
     }
 
     public String getKeyword() {
@@ -61,5 +63,7 @@ public abstract class EntryMetadata {
         return help;
     }
 
-    
+    public String getHelpUrl() {
+        return helpUrl;
+    }
 }

@@ -25,6 +25,7 @@
                 <description>The variable name where to assign the captured output to</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.builtin.functions.php#language.function.capture</url>
     </entry>
     
     <entry name="config_load">
@@ -55,10 +56,11 @@
                 <description>Whether or not variables are visible to the parent template, same as scope=parent. NOTE: This attribute is deprecated by the scope attribute, but still supported. If scope is supplied, this value is ignored. </description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.config.load.php</url>
     </entry>
 
     <entry name="foreach">
-        <description>{config_load} is used for loading config #variables#  from a configuration file into the template. </description>
+        <description>{foreach} is used to loop over an associative array as well a numerically-indexed array, unlike {section}  which is for looping over numerically-indexed arrays only. The syntax for {foreach} is much easier than {section}, but as a tradeoff it can only be used for a single array. Every {foreach}  tag must be paired with a closing {/foreach} tag. </description>
         <attributes>
             <attribute name="from">
                 <type>array</type>
@@ -85,10 +87,11 @@
                 <description>The name of the foreach loop for accessing foreach properties</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.config.load.php</url>
     </entry>
 
     <entry name="foreachelse">
-        <description>{config_load} is used for loading config #variables#  from a configuration file into the template. </description>
+        <description>{foreach} is used to loop over an associative array as well a numerically-indexed array, unlike {section}  which is for looping over numerically-indexed arrays only. The syntax for {foreach} is much easier than {section}, but as a tradeoff it can only be used for a single array. Every {foreach}  tag must be paired with a closing {/foreach} tag. </description>
         <attributes>
             <attribute name="from">
                 <type>array</type>
@@ -115,18 +118,22 @@
                 <description>The name of the foreach loop for accessing foreach properties</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.config.load.php</url>
     </entry>
 
     <entry name="if">
         <description>{if} statements in Smarty have much the same flexibility as PHP if statements, with a few added features for the template engine. Every {if} must be paired with a matching {/if}. {else} and {elseif} are also permitted. All PHP conditionals and functions are recognized, such as ||, or, &amp;&amp;, and, is_array(), etc. If $security is enabled, only PHP functions from the IF_FUNCS array from $security_settings are allowed.</description>
+        <url>http://www.smarty.net/manual/en/language.function.if.php</url>
     </entry>
 
     <entry name="else">
         <description>{if} statements in Smarty have much the same flexibility as PHP if statements, with a few added features for the template engine. Every {if} must be paired with a matching {/if}. {else} and {elseif} are also permitted. All PHP conditionals and functions are recognized, such as ||, or, &amp;&amp;, and, is_array(), etc. If $security is enabled, only PHP functions from the IF_FUNCS array from $security_settings are allowed.</description>
+        <url>http://www.smarty.net/manual/en/language.function.if.php</url>
     </entry>
 
     <entry name="elseif">
         <description>{if} statements in Smarty have much the same flexibility as PHP if statements, with a few added features for the template engine. Every {if} must be paired with a matching {/if}. {else} and {elseif} are also permitted. All PHP conditionals and functions are recognized, such as ||, or, &amp;&amp;, and, is_array(), etc. If $security is enabled, only PHP functions from the IF_FUNCS array from $security_settings are allowed.</description>
+        <url>http://www.smarty.net/manual/en/language.function.if.php</url>
     </entry>
 
     <entry name="include">
@@ -145,6 +152,7 @@
                 <description>The name of the variable that the output of include will be assigned to</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.include.php</url>
     </entry>
 
     <entry name="include_php">
@@ -169,6 +177,7 @@
                 <description>The name of the variable that the output of include_php will be assigned to</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.include.php.php</url>
     </entry>
 
     <entry name="insert">
@@ -193,22 +202,27 @@
                 <description>The name of the php script that is included before the insert function is called</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.insert.php</url>
     </entry>
 
     <entry name="ldelim">
         <description>{ldelim} and {rdelim} are used for escaping  template delimiters, by default { and }. You can also use {literal}{/literal}  to escape blocks of text eg Javascript or CSS. See also the complimentary {$smarty.ldelim}. </description>
+        <url>http://www.smarty.net/manual/en/language.function.ldelim.php</url>
     </entry>
 
     <entry name="rdelim">
         <description>{ldelim} and {rdelim} are used for escaping  template delimiters, by default { and }. You can also use {literal}{/literal}  to escape blocks of text eg Javascript or CSS. See also the complimentary {$smarty.ldelim}. </description>
+        <url>http://www.smarty.net/manual/en/language.function.ldelim.php</url>
     </entry>
 
     <entry name="literal">
         <description>{literal} tags allow a block of data to be taken literally. This is typically used around Javascript or stylesheet blocks where {curly braces} would interfere with the template delimiter  syntax. Anything within {literal}{/literal} tags is not interpreted, but displayed as-is. If you need template tags embedded in a {literal}  block, consider using {ldelim}{rdelim} to escape the individual delimiters instead. </description>
+        <url>http://www.smarty.net/manual/en/language.function.literal.php</url>
     </entry>
 
     <entry name="php">
         <description>The {php} tags allow PHP code to be embedded directly into the template. They will not be escaped, regardless of the $php_handling setting. This is for advanced users only, not normally needed and not recommended. </description>
+        <url>http://www.smarty.net/manual/en/language.function.php.php</url>
     </entry>
 
     <entry name="section">
@@ -251,6 +265,7 @@
                 <description>Determines whether or not to show this section</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.section.php</url>
     </entry>
 
     <entry name="sectionelse">
@@ -293,9 +308,11 @@
                 <description>Determines whether or not to show this section</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.function.section.php</url>
     </entry>
 
     <entry name="strip">
         <description> Many times web designers run into the issue where white space and carriage returns affect the output of the rendered HTML (browser "features"), so you must run all your tags together in the template to get the desired results. This usually ends up in unreadable or unmanageable templates. Anything within {strip}{/strip} tags are stripped of the extra spaces or carriage returns at the beginnings and ends of the lines before they are displayed. This way you can keep your templates readable, and not worry about extra white space causing problems. Note: {strip}{/strip} does not affect the contents of template variables, see the strip modifier instead.  </description>
+        <url>http://www.smarty.net/manual/en/language.function.strip.php</url>
     </entry>
 </entries>

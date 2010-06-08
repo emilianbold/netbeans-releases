@@ -43,11 +43,14 @@ package org.netbeans.modules.php.smarty.editor.completion.entries;
  *
  * @author Martin Fousek
  */
-public class CCDataBuiltInFunction extends EntryMetadata {
+public class CodeCompletionItemAttributes {
+    private String attType, attRequired, attDefault, addDescription;
 
-    public CCDataBuiltInFunction(String keyword, String help, String helpUrl) {
-       super(keyword, help, helpUrl);
+    public CodeCompletionItemAttributes(String attType, String attRequired, String attDefault, String addDescription) {
+        this.attType = attType;
+        this.attRequired = attRequired;
+        this.attDefault = attDefault;
+        this.addDescription = addDescription;
     }
-
 
 }

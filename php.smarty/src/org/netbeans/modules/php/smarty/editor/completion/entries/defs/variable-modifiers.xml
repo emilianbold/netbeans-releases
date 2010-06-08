@@ -19,6 +19,7 @@
                 <description>This determines whether or not words with digits will be uppercased</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifiers.php#language.modifier.capitalize</url>
     </entry>
     
     <entry name="cat">
@@ -31,6 +32,7 @@
                 <description>This value to catenate to the given variable.</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.cat.php</url>
     </entry>
 
     <entry name="count_characters">
@@ -43,18 +45,22 @@
                 <description>This determines whether or not to include whitespace characters in the count.</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.count.characters.php</url>
     </entry>
 
     <entry name="count_paragraphs">
         <description>This is used to count the number of paragraphs in a variable. </description>
+        <url>http://www.smarty.net/manual/en/language.modifier.count.paragraphs.php</url>
     </entry>
 
     <entry name="count_sentences">
         <description>This is used to count the number of sentences in a variable. </description>
+        <url>http://www.smarty.net/manual/en/language.modifier.count.sentences.php</url>
     </entry>
 
     <entry name="count_words">
         <description>This is used to count the number of words in a variable. </description>
+        <url>http://www.smarty.net/manual/en/language.modifier.count.words.php</url>
     </entry>
 
     <entry name="date_format">
@@ -74,6 +80,7 @@
                 <description>This is the default date if the input is empty.</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.date.format.php</url>
     </entry>
 
     <entry name="default">
@@ -86,6 +93,7 @@
                 <description>This is the default value to output if the variable is empty..</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.default.php</url>
     </entry>
 
     <entry name="escape">
@@ -107,6 +115,7 @@
                 <description>The character set encoding passed to htmlentities() et. al.</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.escape.php</url>
     </entry>
 
     <entry name="indent">
@@ -126,14 +135,17 @@
                 <description>This is the character used to indent with.</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.indent.php</url>
     </entry>
 
     <entry name="lower">
         <description>This is used to lowercase a variable. This is equivalent to the PHP  strtolower() function.</description>
+        <url>http://www.smarty.net/manual/en/language.modifier.indent.php</url>
     </entry>
 
     <entry name="nl2br">
         <description>All "\n" line breaks will be converted to html <br /> tags in the given variable. This is equivalent to the PHP's  nl2br() function. </description>
+        <url>http://www.smarty.net/manual/en/language.modifier.nl2br.php</url>
     </entry>
 
     <entry name="regex_replace">
@@ -153,6 +165,7 @@
                 <description>This is the string of text to replace with.</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.regex.replace.php</url>
     </entry>
 
     <entry name="replace">
@@ -172,6 +185,7 @@
                 <description>This is the string of text to replace with.</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.replace.php</url>
     </entry>
 
     <entry name="spacify">
@@ -184,6 +198,7 @@
                 <description>This what gets inserted between each character of the variable.</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.spacify.php</url>
     </entry>
 
     <entry name="string_format">
@@ -196,10 +211,12 @@
                 <description>This is what format to use. (sprintf)</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.string.format.php</url>
     </entry>
 
     <entry name="strip">
         <description> This replaces all repeated spaces, newlines and tabs with a single space, or with the supplied string. Note: If you want to strip blocks of template text, use the built-in {strip} function. </description>
+        <url>http://www.smarty.net/manual/en/language.modifier.strip.php</url>
     </entry>
 
     <entry name="strip_tags">
@@ -212,6 +229,7 @@
                 <description>This determines whether the tags are replaced by ' ' or ''.</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.strip.tags.php</url>
     </entry>
 
     <entry name="truncate">
@@ -245,10 +263,12 @@
                 <description>This determines whether the truncation happens at the end of the string with FALSE, or in the middle of the string with TRUE. Note that if this setting is TRUE, then word boundaries are ignored. </description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.truncate.php</url>
     </entry>
 
     <entry name="upper">
         <description> This is used to uppercase a variable. This is equivalent to the PHP  strtoupper() function. </description>
+        <url>http://www.smarty.net/manual/en/language.modifier.upper.php</url>
     </entry>
 
     <entry name="wordwrap">
@@ -275,6 +295,7 @@
                 <description>This determines whether or not to wrap at a word boundary (FALSE), or at the exact character (TRUE).</description>
             </attribute>
         </attributes>
+        <url>http://www.smarty.net/manual/en/language.modifier.wordwrap.php</url>
     </entry>
 
 </entries>

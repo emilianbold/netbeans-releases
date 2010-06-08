@@ -70,7 +70,7 @@ public class TplCompletionItem implements CompletionItem {
 
     //------------------------------------------
     protected int substitutionOffset;
-    protected String text, helpId;
+    protected String text, help, helpUrl;
     protected boolean shift;
 
     protected TplCompletionItem(String text, int substituteOffset) {
@@ -78,13 +78,18 @@ public class TplCompletionItem implements CompletionItem {
         this.text = text;
     }
 
-    protected TplCompletionItem(String text, int substituteOffset, String helpId) {
+    protected TplCompletionItem(String text, int substituteOffset, String help, String helpUrl) {
         this(text, substituteOffset);
-        this.helpId = helpId;
+        this.help = help;
+        this.helpUrl = helpUrl;
     }
 
     public String getItemText() {
         return text;
+    }
+
+    public String getItemHelp() {
+        return help;
     }
 
     public int getSortPriority() {
@@ -234,34 +239,30 @@ public class TplCompletionItem implements CompletionItem {
         return null;
     }
 
-    public String getHelpId() {
-        return this.helpId;
-    }
-
-    /** Returns a url or null, if the help is not URL or the help is not defined.
-     */
-    public URL getHelpURL() {
-        if (helpId == null || helpId.equals("")) {
-            return null;
-        }
-        try {
-            return new URL(helpId);
-        } catch (java.io.IOException e) {
-        }
-        return null;
-    }
-
-    /** Returns help for the item. It can be only url. If the item doesn't have a help
-     *  than returns null. The class can overwrite this method and compounds the help realtime.
+    /** Returns help for the item. If the item doesn't have a help than returns null.
+     *  The class can overwrite this method and compounds the help realtime.
      */
     public String getHelp() {
-        return null;
+        return getItemHelp();
     }
 
     /** Returns whether the item has a help.
      */
     public boolean hasHelp() {
-        return (helpId != null && helpId.length() > 0);
+        return (help != null && help.length() > 0);
+    }
+
+    /** Returns a url or null, if the help is not URL or the help is not defined.
+     */
+    public URL getHelpURL() {
+        if (help == null || help.equals("")) {
+            return null;
+        }
+        try {
+            return new URL(helpUrl);
+        } catch (java.io.IOException e) {
+        }
+        return null;
     }
 
     public CompletionTask createDocumentationTask() {
@@ -276,8 +277,8 @@ public class TplCompletionItem implements CompletionItem {
 
         protected static final String ATTR_NAME_COLOR = hexColorCode(Color.green.darker());
 
-        public BuiltInFunction(String value, int offset, String helpId) {
-            super(value, offset, helpId);
+        public BuiltInFunction(String value, int offset, String help, String helpUrl) {
+            super(value, offset, help, helpUrl);
         }
 
         @Override
@@ -296,8 +297,8 @@ public class TplCompletionItem implements CompletionItem {
 
         protected static final String ATTR_NAME_COLOR = hexColorCode(Color.blue.darker());
 
-        public VariableModifiers(String value, int offset, String helpId) {
-            super(value, offset, helpId);
+        public VariableModifiers(String value, int offset, String help, String helpUrl) {
+            super(value, offset, help, helpUrl);
         }
 
         @Override
