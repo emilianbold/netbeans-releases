@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.source.save;
 
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.util.Names;
 import java.util.*;
 import com.sun.source.tree.*;
@@ -76,6 +77,9 @@ import static com.sun.tools.javac.code.Flags.*;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 public class CasualDiff {
+
+    public static boolean OLD_TREES_VERBATIM = Boolean.parseBoolean(System.getProperty(WorkingCopy.class.getName() + ".keep-old-trees", "true"));
+
     protected ListBuffer<Diff> diffs;
     protected CommentHandler comments;
     protected JCCompilationUnit oldTopLevel;
@@ -90,13 +94,14 @@ public class CasualDiff {
     private Map<Integer, String> diffInfo = new HashMap<Integer, String>();
     private final Map<Tree, ?> tree2Tag;
     private final Map<Object, int[]> tag2Span;
+    private final Set<Tree> oldTrees;
 
     // used for diffing var def, when parameter is printed, annotation of
     // such variable should not provide new line at the end.
     private boolean parameterPrint = false;
     private boolean enumConstantPrint = false;
 
-    protected CasualDiff(Context context, WorkingCopy workingCopy, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span) {
+    protected CasualDiff(Context context, WorkingCopy workingCopy, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, Set<Tree> oldTrees) {
         diffs = new ListBuffer<Diff>();
         comments = CommentHandlerService.instance(context);
         this.workingCopy = workingCopy;
@@ -106,6 +111,8 @@ public class CasualDiff {
         this.tree2Tag = tree2Tag;
         this.tag2Span = (Map<Object, int[]>) tag2Span;//XXX
         printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, origText);
+        printer.oldTrees = oldTrees;
+        this.oldTrees = oldTrees;
     }
 
     public com.sun.tools.javac.util.List<Diff> getDiffs() {
@@ -118,9 +125,10 @@ public class CasualDiff {
             JCTree newTree,
             Map<Integer, String> userInfo,
             Map<Tree, ?> tree2Tag,
-            Map<?, int[]> tag2Span)
+            Map<?, int[]> tag2Span,
+            Set<Tree> oldTrees)
     {
-        CasualDiff td = new CasualDiff(context, copy, tree2Tag, tag2Span);
+        CasualDiff td = new CasualDiff(context, copy, tree2Tag, tag2Span, oldTrees);
         JCTree oldTree = (JCTree) oldTreePath.getLeaf();
         td.oldTopLevel =  (JCCompilationUnit) (oldTree.getKind() == Kind.COMPILATION_UNIT ? oldTree : copy.getCompilationUnit());
 
@@ -201,9 +209,10 @@ public class CasualDiff {
             List<? extends ImportTree> nue,
             Map<Integer, String> userInfo,
             Map<Tree, ?> tree2Tag,
-            Map<?, int[]> tag2Span)
+            Map<?, int[]> tag2Span,
+            Set<Tree> oldTrees)
     {
-        CasualDiff td = new CasualDiff(context, copy, tree2Tag, tag2Span);
+        CasualDiff td = new CasualDiff(context, copy, tree2Tag, tag2Span, oldTrees);
             td.oldTopLevel = (JCCompilationUnit) copy.getCompilationUnit();
         int start = td.oldTopLevel.getPackageName() != null ? td.endPos(td.oldTopLevel.getPackageName()) : 0;
 
@@ -2589,6 +2598,7 @@ public class CasualDiff {
                                 int old = oldPrinter.indent();
                                 this.printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                                 this.printer.reset(old);
+                                this.printer.oldTrees = oldTrees;
                                 int index = oldList.indexOf(oldT);
                                 int[] poss = estimator.getPositions(index);
                                 int end = diffTree(oldT, item.element, poss);
@@ -2606,6 +2616,7 @@ public class CasualDiff {
                             int old = oldPrinter.indent();
                             this.printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                             this.printer.reset(old);
+                            this.printer.oldTrees = oldTrees;
                             int index = oldList.indexOf(lastdel);
                             int[] poss = estimator.getPositions(index);
                             //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
@@ -2817,7 +2828,7 @@ public class CasualDiff {
             return c.pos();
     }
 
-    private int commentStart(CommentSet comments, CommentSet.RelativePosition pos) {
+    public static int commentStart(CommentSet comments, CommentSet.RelativePosition pos) {
         List<Comment> list = comments.getComments(pos);
 
         if (list.isEmpty()) {
@@ -2827,7 +2838,7 @@ public class CasualDiff {
         }
     }
 
-    private int commentEnd(CommentSet comments, CommentSet.RelativePosition pos) {
+    public static int commentEnd(CommentSet comments, CommentSet.RelativePosition pos) {
         List<Comment> list = comments.getComments(pos);
 
         if (list.isEmpty()) {
@@ -2950,6 +2961,10 @@ public class CasualDiff {
             while (tokenSequence.token().id() == JavaTokenId.WHITESPACE && tokenSequence.moveNext())
                 ;
             return tokenSequence.offset();
+        }
+
+        if (printer.handlePossibleOldTrees(Collections.singletonList(newT), false)) {
+            return getCommentCorrectedEndPos(oldT);
         }
 
         elementBounds[0] = diffPrecedingComments(oldT, newT, elementBounds[0]);
@@ -3430,11 +3445,15 @@ public class CasualDiff {
         return Math.min(getOldPos(tree), commentStart(ch, CommentSet.RelativePosition.PRECEDING));
     }
 
-    private int[] getCommentCorrectedBounds(JCTree tree) {
+    private int getCommentCorrectedEndPos(JCTree tree) {
         CommentSet ch = comments.getComments(tree);
+        return Math.max(endPos(tree), Math.max(commentEnd(ch, CommentSet.RelativePosition.INLINE), commentEnd(ch, CommentSet.RelativePosition.TRAILING)));
+    }
+
+    private int[] getCommentCorrectedBounds(JCTree tree) {
         return new int[] {
             getCommentCorrectedOldPos(tree),
-            Math.max(endPos(tree), Math.max(commentEnd(ch, CommentSet.RelativePosition.INLINE), commentEnd(ch, CommentSet.RelativePosition.TRAILING)))
+            getCommentCorrectedEndPos(tree)
         };
     }
 
@@ -3446,7 +3465,7 @@ public class CasualDiff {
         copyTo(from, to, printer);
     }
 
-    private void copyTo(int from, int to, VeryPretty loc) {
+    public void copyTo(int from, int to, VeryPretty loc) {
         if (from == to) {
             return;
         } else if (from > to || from < 0 || to < 0) {

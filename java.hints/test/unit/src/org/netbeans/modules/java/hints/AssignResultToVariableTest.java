@@ -168,8 +168,8 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
 
     public void testAnonymousClass138223() throws Exception {
         performFixTest("test/Test.java",
-                "package test; public class Test {public void t() { new Run|nable() { public void run() {}}; } }",
-                "0:51-0:89:hint:Assign Return Value To New Variable",
+                "package test; public class Test {public void t() { new Run|nable() { public void run() { } }; } }",
+                "0:51-0:91:hint:Assign Return Value To New Variable",
                 "FixImpl",
                 "package test; public class Test {public void t() {Runnable runnable = new Runnable() { public void run() { } }; } }");
     }
@@ -247,8 +247,8 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
 
     public void testAddSemicolon1() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {public void t() { new Run|nable() { public void run() {}} } }",
-                       "0:51-0:89:hint:Assign Return Value To New Variable",
+                       "package test; public class Test {public void t() { new Run|nable() { public void run() { } } } }",
+                       "0:51-0:91:hint:Assign Return Value To New Variable",
                        "FixImpl",
                        "package test; public class Test {public void t() {Runnable runnable = new Runnable() { public void run() { } }; } }");
     }
