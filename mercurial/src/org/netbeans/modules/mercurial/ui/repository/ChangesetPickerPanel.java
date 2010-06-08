@@ -73,7 +73,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 public class ChangesetPickerPanel extends javax.swing.JPanel {
 
     private File                            repository;
-    private File[]                          roots;
+    private File[]                          roots; // MAY be null
     private RequestProcessor.Task           refreshViewTask;
     private static final RequestProcessor   rp = new RequestProcessor("ChangesetPicker", 1, true);  // NOI18N
     private HgLogMessage[] messages;
@@ -86,7 +86,7 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
     private HgProgressSupport hgProgressSupport;
 
     /** Creates new form ReverModificationsPanel */
-     public ChangesetPickerPanel(File repo, File[] files) {
+    public ChangesetPickerPanel(File repo, File[] files) {
         repository = repo;
         roots = files;
         refreshViewTask = rp.create(new RefreshViewTask());
@@ -322,9 +322,8 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
         changesetPanel1.clearInfo();
 
         OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-        Set<File> setRoots = new HashSet<File>(Arrays.asList(roots));
         MessageInfoFetcher fetcher = getMessageInfoFetcher();
-        messages = fetcher.getMessageInfo(repository, setRoots, fetchRevisionLimit, logger);
+        messages = fetcher.getMessageInfo(repository, roots == null ? null : new HashSet<File>(Arrays.asList(roots)), fetchRevisionLimit, logger);
         String id = messages.length > 0 ? HgCommand.getCurrentHeadChangeset(repository, logger) : "";
 
         Set<String>  targetRevsSet = new LinkedHashSet<String>();

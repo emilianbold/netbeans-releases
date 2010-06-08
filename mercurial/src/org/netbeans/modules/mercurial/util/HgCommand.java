@@ -1203,8 +1203,9 @@ public class HgCommand {
                 command.add(HG_LOG_LIMIT_CMD);
                 command.add(Integer.toString(limit));
         }
-        boolean doFollow = true;
+        boolean doFollow = false;
         if( files != null){
+            doFollow = true;
             for (File f : files) {
                 if (f.isDirectory()) {
                     doFollow = false;
