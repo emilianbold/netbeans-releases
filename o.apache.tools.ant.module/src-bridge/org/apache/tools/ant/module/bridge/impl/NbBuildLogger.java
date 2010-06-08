@@ -121,7 +121,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private final Runnable interestingOutputCallback;
     private final ProgressHandle handle;
     private boolean insideRunTask = false; // #95201
-    private final RequestProcessor.Task sleepTask = RequestProcessor.getDefault().create(new Runnable() {
+    private final RequestProcessor.Task sleepTask = new RequestProcessor(NbBuildLogger.class.getName(), 1, false, false).create(new Runnable() {
         public void run() {
             handle.suspend(insideRunTask ? NbBundle.getMessage(NbBuildLogger.class, "MSG_sleep_running") : "");
         }
