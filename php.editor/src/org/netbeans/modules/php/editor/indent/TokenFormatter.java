@@ -390,6 +390,7 @@ public class TokenFormatter {
                     String newText = null;
                     String oldText = null;
                     int changeOffset = -1;
+                    int deltaForLastRightParen = 0;
                     FormatToken.AnchorToken lastAnchor = null;
 
                     while (index < formatTokens.size()) {
@@ -1098,7 +1099,6 @@ public class TokenFormatter {
                                     }
                                     afterSemi = false;
                                 }
-
 //                                if (indentLine && indentRule && formatToken.getId() != FormatToken.Kind.CLOSE_TAG) {
 //                                    countSpaces = Math.max(countSpaces, indent);
 //                                }
@@ -1123,6 +1123,25 @@ public class TokenFormatter {
                                         }
                                         caretInTemplateSolved = true;
                                     } 
+                                }
+                                if (formatToken.getId() == FormatToken.Kind.TEXT
+                                        && "{".equals(formatToken.getOldText())      //NOI18N
+                                        && newLines == 0
+                                        && isAfterLineComment(formatTokens, index - 2)) {
+                                    // there has to be moved '{' after ')'
+                                    int hIndex = index - 2;
+                                    while (hIndex > 0 && formatTokens.get(hIndex).getId() != FormatToken.Kind.TEXT) {
+                                        hIndex--;
+                                    }
+                                    if (hIndex > 0 && formatTokens.get(hIndex).getId() == FormatToken.Kind.TEXT
+                                            && ")".equals(formatTokens.get(hIndex).getOldText())) {
+                                        int origDelta = delta;
+                                        delta = replaceString(doc, formatTokens.get(hIndex).getOffset() + 1 - (delta - deltaForLastRightParen), hIndex + 1, "", newText + "{", delta, templateEdit);
+                                        delta = replaceString(doc, changeOffset, index, oldText, "", delta, templateEdit);
+                                        delta = replaceString(doc, formatToken.getOffset(), index, formatToken.getOldText(), "", delta, templateEdit);
+                                        newText = null;
+                                    }
+
                                 }
                             }
                             index--;
@@ -1188,6 +1207,13 @@ public class TokenFormatter {
                                         }
                                         oldText = null;
                                         newText = null;
+                                    }
+                                    break;
+                                case TEXT:
+                                    if (")".equals(formatToken.getOldText())) {
+                                        // remember the delta for last paren due to
+                                        // possible moving { after the )
+                                        deltaForLastRightParen = delta;
                                     }
                                     break;
                             }
