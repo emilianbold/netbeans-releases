@@ -709,6 +709,9 @@ public class TreeModelNode extends AbstractNode {
                     Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
                 }
             }
+            if (displayName == null) {
+                displayName = "";
+            }
             return displayName;
         }
     }
