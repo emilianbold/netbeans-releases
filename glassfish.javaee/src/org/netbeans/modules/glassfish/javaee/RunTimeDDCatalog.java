@@ -146,7 +146,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         "-//GlassFish.org//DTD GlassFish Application Server 3.1 Java EE Application 6.0//EN"   , "glassfish-application_6_0-1.dtd",
         "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Application Client 6.0//EN"    , "sun-application-client_6_0-0.dtd" ,
         "-//GlassFish.org//DTD GlassFish Application Server 3.1 Java EE Application Client 6.0//EN"    , "glassfish-application-client_6_0-1.dtd" ,
-        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.1 EJB 3.1//EN"                   , "sun-ejb-jar_3_1-0.dtd",
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 EJB 3.1//EN"                   , "sun-ejb-jar_3_1-0.dtd",
         "-//GlassFish.org//DTD GlassFish Application Server 3.1 EJB 3.1//EN"                   , "glassfish-ejb-jar_3_1-1.dtd",
         "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Servlet 3.0//EN"                         , "sun-web-app_3_0-0.dtd" ,
         "-//GlassFish.org//DTD GlassFish Application Server 3.1 Servlet 3.0//EN"                         , "glassfish-web-app_3_0-1.dtd" ,
