@@ -2290,13 +2290,12 @@ public class HgCommand {
      * Returns parent revision of the given revision
      * @param repositoryUrl cannot be null
      * @param file if not null, parent revision limited on this file will be returned
-     * @param revision cannot be null
+     * @param revision if null, parent of the WC is returned
      * @return parent revision, -1 if has no parent and null if error occurs
      * @throws HgException
      */
     public static String getParent (String repositoryUrl, File file, String revision) throws HgException {
         if (repositoryUrl == null ) return null;
-        if (revision == null ) return null;
 
         String parentRevision = "-1";                                   //NOI18N
         String[] revisions = getParents(repositoryUrl, file, revision);
