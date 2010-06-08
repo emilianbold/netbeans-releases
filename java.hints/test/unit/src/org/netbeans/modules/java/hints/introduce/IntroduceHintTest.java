@@ -381,32 +381,32 @@ public class IntroduceHintTest extends NbTestCase {
     }
     
     public void testConstantFixNoVariable() throws Exception {
-        performFixTest("package test; public class Test {int y = 3 + 4;}",
-                       66 - 25, 71 - 25,
+        performFixTest("package test; public class Test { int y = 3 + 4;}",
+                       67 - 25, 72 - 25,
                        "package test; public class Test { private static final int NAME = 3 + 4; int y = NAME;}",
                        new DialogDisplayerImpl(null, false, false, true),
                        1, 0);
     }
     
     public void testConstantFix2() throws Exception {
-        performFixTest("package test; public class Test {int y = 3 + 4; int z = 3 + 4;}",
-                       66 - 25, 71 - 25,
+        performFixTest("package test; public class Test { int y = 3 + 4; int z = 3 + 4;}",
+                       67 - 25, 72 - 25,
                        "package test; public class Test { private static final int NAME = 3 + 4; int y = NAME; int z = NAME;}",
                        new DialogDisplayerImpl(null, true, false, true),
                        1, 0);
     }
     
     public void testConstantFix106490a() throws Exception {
-        performFixTest("package test; public class Test {int y = 3 + 4; int z = 3 + 4;}",
-                       66 - 25, 71 - 25,
+        performFixTest("package test; public class Test { int y = 3 + 4; int z = 3 + 4;}",
+                       67 - 25, 72 - 25,
                        "package test; public class Test { public static final int NAME = 3 + 4; int y = NAME; int z = NAME;}",
                        new DialogDisplayerImpl(null, true, false, true, EnumSet.of(Modifier.PUBLIC)),
                        1, 0);
     }
     
     public void testConstantFix106490b() throws Exception {
-        performFixTest("package test; public class Test {int y = 3 + 4; int z = 3 + 4;}",
-                       66 - 25, 71 - 25,
+        performFixTest("package test; public class Test { int y = 3 + 4; int z = 3 + 4;}",
+                       67 - 25, 72 - 25,
                        "package test; public class Test { static final int NAME = 3 + 4; int y = NAME; int z = NAME;}",
                        new DialogDisplayerImpl(null, true, false, true, EnumSet.noneOf(Modifier.class)),
                        1, 0);
@@ -569,9 +569,9 @@ public class IntroduceHintTest extends NbTestCase {
     }
     
     public void testIntroduceFieldFix20() throws Exception {
-        performFixTest("package test; public class Test {public void test() {int y = 3 + 4; int z = 3 + 4;}}",
-                       86 - 25, 91 - 25,
-                       "package test; public class Test { private int name; public Test() { name = 3 + 4; } public void test() {int y = name; int z = 3 + 4;}}",
+        performFixTest("package test; public class Test {public void test() { int y = 3 + 4; int z = 3 + 4;}}",
+                       87 - 25, 92 - 25,
+                       "package test; public class Test { private int name; public Test() { name = 3 + 4; } public void test() { int y = name; int z = 3 + 4;}}",
                        new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
                        4, 2);
     }

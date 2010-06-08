@@ -139,7 +139,7 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
     
     public void test143965() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test { { int h; thr|ow new Exception();} }",
+                       "package test; public class Test { {\n int h; thr|ow new Exception();} }",
                        "FixImpl",
                        "package test; import java.util.logging.Level; import java.util.logging.Logger; public class Test { { try { int h; throw new Exception(); } catch (Exception ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } } }");
     }
