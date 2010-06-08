@@ -1615,6 +1615,10 @@ public class TreeModelNode extends AbstractNode {
         */
         @Override
         public boolean canWrite () {
+            try {
+                return model.canEditCell(object, columnModel.getID());
+            } catch (UnknownTypeException ex) {
+            }
             if (nodeColumn) return false;
             try {
                 return !model.isReadOnly (object, columnModel.getID ());
