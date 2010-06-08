@@ -30,12 +30,13 @@
  */
 package org.netbeans.modules.j2ee.jpa.refactoring.rename;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.LiteralTree;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -75,11 +76,11 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Erno Mononen
  */
-public class EntityRename implements JPARefactoring{
-    
+public class EntityRename implements JPARefactoring {
+
     private final RenameRefactoring rename;
     private TreePathHandle treePathHandle;
-    
+
     public EntityRename(RenameRefactoring rename) {
         this.rename = rename;
         try {
@@ -88,31 +89,31 @@ public class EntityRename implements JPARefactoring{
             Exceptions.printStackTrace(ex);
         }
     }
-    
-    private PersistenceScope getPersistenceScope(){
-        if (treePathHandle == null){
+
+    private PersistenceScope getPersistenceScope() {
+        if (treePathHandle == null) {
             return null;
         }
         Project project = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
-        if (project == null){
+        if (project == null) {
             return null;
         }
-        
+
         PersistenceScopes scopes = PersistenceScopes.getPersistenceScopes(project);
-        
-        if (scopes == null){
+
+        if (scopes == null) {
             return null; // project of this type doesn't provide a list of persistence scopes
         }
-        
-        if (scopes.getPersistenceScopes().length == 0){
+
+        if (scopes.getPersistenceScopes().length == 0) {
             return null;
         }
-        
+
         return scopes.getPersistenceScopes()[0];
-        
+
     }
-    
-    private MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(){
+
+    private MetadataModel<EntityMappingsMetadata> getEntityMappingsModel() {
         PersistenceScope scope = getPersistenceScope();
         // XXX should retrieve the model for each PU (see the javadoc of the 
         // the scope#getEMM(String) method), but it is currently not supported
@@ -120,111 +121,125 @@ public class EntityRename implements JPARefactoring{
         return scope != null ? scope.getEntityMappingsModel(null) : null;
     }
 
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElementsBag) {
-        
+
         MetadataModel<EntityMappingsMetadata> emModel = getEntityMappingsModel();
-        if (emModel == null){
+        if (emModel == null) {
             return null;
         }
-        
+
         EntityAssociationResolver resolver = new EntityAssociationResolver(treePathHandle, emModel);
-        try{
+        try {
             List<EntityAnnotationReference> references = resolver.resolveReferences();
-            for (EntityAnnotationReference ref : references){
+            for (EntityAnnotationReference ref : references) {
                 EntityRenameElement element = new EntityRenameElement(ref, rename);
                 refactoringElementsBag.add(rename, element);
             }
-        }catch (IOException ioe){
+        } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
         return null;
     }
-    
-    
+
+    @Override
     public Problem preCheck() {
         return null;
     }
-    
-    private static class EntityRenameElement extends SimpleRefactoringElementImplementation{
-        
+
+    private static class EntityRenameElement extends SimpleRefactoringElementImplementation {
+
         private final RenameRefactoring rename;
         private final EntityAnnotationReference reference;
-        
+
         public EntityRenameElement(EntityAnnotationReference reference, RenameRefactoring rename) {
             this.reference = reference;
             this.rename = rename;
         }
-        
-        public String getText(){
+
+        @Override
+        public String getText() {
             return getDisplayText();
         }
-        
+
+        @Override
         public String getDisplayText() {
-            Object[] args = new Object [] {reference.getHandle().getFileObject().getNameExt(), reference.getAttributeValue(), rename.getNewName()};
+            Object[] args = new Object[]{reference.getHandle().getFileObject().getNameExt(), reference.getAttributeValue(), rename.getNewName()};
             return MessageFormat.format(NbBundle.getMessage(EntityRename.class, "TXT_EntityAnnotationRename"), args);
         }
-        
+
+        @Override
         public void performChange() {
-            try{
+            try {
                 JavaSource source = JavaSource.forFileObject(reference.getHandle().getFileObject());
-                source.runModificationTask(new CancellableTask<WorkingCopy>(){
-                    
+                source.runModificationTask(new CancellableTask<WorkingCopy>() {
+
+                    @Override
                     public void cancel() {
                     }
-                    
+
+                    @Override
                     public void run(WorkingCopy workingCopy) throws Exception {
-                        
+
                         workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                         Element element = reference.getHandle().resolveElement(workingCopy);
-                        
-                        for (AnnotationMirror annotation : element.getAnnotationMirrors()){
-                            
-                            if (!annotation.getAnnotationType().toString().equals(reference.getAnnotation())){
+
+                        for (AnnotationMirror annotation : element.getAnnotationMirrors()) {
+
+                            if (!annotation.getAnnotationType().toString().equals(reference.getAnnotation())) {
                                 continue;
                             }
-                            
+
                             Map<? extends ExecutableElement, ? extends AnnotationValue> values = annotation.getElementValues();
 
-                            for(ExecutableElement each : values.keySet()){
-                                if (each.getSimpleName().contentEquals(reference.getAttribute())){
-                                    AnnotationValue value = values.get(each);
-                                    if (reference.getAttributeValue().equals(value.getValue().toString())){
-                                        TreeMaker make = workingCopy.getTreeMaker();
-                                        ///XXX: should rewrite only assignments
-                                        ExpressionTree argumentValueTree = make.Literal(rename.getNewName());
-                                        AssignmentTree assignmentTree = make.Assignment(make.Identifier(reference.getAttribute()), argumentValueTree);
-                                        TypeElement typeElement = workingCopy.getElements().getTypeElement(reference.getAnnotation());
-                                        Tree newAt = make.Annotation(make.QualIdent(typeElement), Collections.singletonList(assignmentTree));
-                                        Tree oldAt = workingCopy.getTrees().getTree(element, annotation, value);
-                                        workingCopy.rewrite(oldAt, newAt);
+                            TreeMaker make = workingCopy.getTreeMaker();
+                            AnnotationTree oldAt = (AnnotationTree) workingCopy.getTrees().getTree(element, annotation);
+                            List<? extends ExpressionTree> arguments = oldAt.getArguments();
+                            ArrayList<ExpressionTree> newArguments = new ArrayList<ExpressionTree>();
+                            for (ExpressionTree argument : arguments) {
+                                ExpressionTree tmp = argument;
+                                if (argument instanceof AssignmentTree) {
+                                    AssignmentTree assignment = (AssignmentTree) argument;
+                                    ExpressionTree expression = assignment.getExpression();
+                                    ExpressionTree variable = assignment.getVariable();
+                                    if (expression instanceof LiteralTree) {
+                                        LiteralTree literal = (LiteralTree) expression;
+                                        String value = literal.getValue().toString();
+                                        if (reference.getAttributeValue().equals(value)) {
+                                            tmp = make.Assignment(make.Identifier(reference.getAttribute()), make.Literal(rename.getNewName()));
+                                        }
                                     }
                                 }
+                                newArguments.add(tmp);
                             }
+                            TypeElement typeElement = workingCopy.getElements().getTypeElement(reference.getAnnotation());
+                            AnnotationTree newAt = make.Annotation(make.QualIdent(typeElement), newArguments);
+
+                            workingCopy.rewrite(oldAt, newAt);
                         }
-                        
+
                     }
-                    
                 }).commit();
-                
-            } catch (IOException ioe){
+
+            } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
         }
-        
-        
-        
+
+        @Override
         public Lookup getLookup() {
             return Lookups.singleton(reference.getHandle().getFileObject());
         }
-        
+
+        @Override
         public FileObject getParentFile() {
             return reference.getHandle().getFileObject();
         }
-        
+
+        @Override
         public PositionBounds getPosition() {
-            
+
             return null;
         }
-        
     }
 }

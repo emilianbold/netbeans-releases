@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.PropertyResourceBundle;
@@ -486,7 +487,7 @@ public class ShLauncher extends CommonLauncher {
                 String value =  rb.getString(name);
                 sb.append(SH_INDENT + "\"" + name + "\")" + SH_LINE_SEPARATOR);
                 String printString = value;
-                if(locale==null || locale.equals("")) {
+                if(Arrays.equals(printString.getBytes("ISO-8859-1"), printString.getBytes("UTF-8"))) {
                     printString = escapeChars(changePropertyCounterStyle(printString));
                 } else {
                     printString = getUTF8(printString, true);
