@@ -203,7 +203,7 @@ public class FSCompletion implements CompletionProvider {
                 if (pathPrefix != null) {
                     File toFile = FileUtil.toFile(f);
                     if (toFile != null) {
-                        URI resolve = toFile.toURI().resolve(pathPrefix);
+                        URI resolve = toFile.toURI().resolve(pathPrefix).normalize();
                         f = FileUtil.toFileObject(new File(resolve));
                     } else {
                         f = f.getFileObject(pathPrefix);
