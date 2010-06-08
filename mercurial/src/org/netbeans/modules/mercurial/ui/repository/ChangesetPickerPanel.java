@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 import java.util.LinkedHashSet;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -57,6 +58,7 @@ import javax.swing.JPanel;
 import javax.swing.border.Border;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -73,7 +75,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 public class ChangesetPickerPanel extends javax.swing.JPanel {
 
     private File                            repository;
-    private File[]                          roots;
+    private File[]                          roots; // MAY be null
     private RequestProcessor.Task           refreshViewTask;
     private static final RequestProcessor   rp = new RequestProcessor("ChangesetPicker", 1, true);  // NOI18N
     private HgLogMessage[] messages;
@@ -86,7 +88,7 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
     private HgProgressSupport hgProgressSupport;
 
     /** Creates new form ReverModificationsPanel */
-     public ChangesetPickerPanel(File repo, File[] files) {
+    public ChangesetPickerPanel(File repo, File[] files) {
         repository = repo;
         roots = files;
         refreshViewTask = rp.create(new RefreshViewTask());
@@ -322,10 +324,16 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
         changesetPanel1.clearInfo();
 
         OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-        Set<File> setRoots = new HashSet<File>(Arrays.asList(roots));
         MessageInfoFetcher fetcher = getMessageInfoFetcher();
-        messages = fetcher.getMessageInfo(repository, setRoots, fetchRevisionLimit, logger);
-        String id = messages.length > 0 ? HgCommand.getCurrentHeadChangeset(repository, logger) : "";
+        messages = fetcher.getMessageInfo(repository, roots == null ? null : new HashSet<File>(Arrays.asList(roots)), fetchRevisionLimit, logger);
+        String parentRevision = "";
+        if (messages.length > 0) {
+            try {
+                parentRevision = HgCommand.getParent(repository.getAbsolutePath(), null, null);
+            } catch (HgException ex) {
+                Mercurial.LOG.log(Level.FINE, null, ex);
+            }
+        }
 
         Set<String>  targetRevsSet = new LinkedHashSet<String>();
 
@@ -338,7 +346,7 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             int i = 0 ;
             while(i < size){
                 StringBuilder sb = new StringBuilder().append(messages[i].getRevision()).append(" (").append(messages[i].getCSetShortID()); //NOI18N
-                if (id.equals(messages[i].getCSetShortID())) {
+                if (parentRevision != null && parentRevision.equals(messages[i].getRevision())) {
                     sb.append(" - ").append(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_ChangesetPickerPanel.currentHead")); //NOI18N
                 }
                 sb.append(")"); //NOI18N
