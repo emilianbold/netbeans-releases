@@ -146,6 +146,8 @@ public class DebugSession extends SingleThread {
                     sleepTillNewCommand();
                 } catch (SocketException exc) {
                     log(exc);
+                    detachRequest.set(true);
+                    stop();
                 } catch (IOException e) {
                     log(e);
                 } catch (Throwable e) {

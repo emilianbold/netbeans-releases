@@ -61,7 +61,7 @@ public class BackoutPanel extends ChangesetPickerPanel {
     private final RepositoryRevision repoRev;
 
     public BackoutPanel(File repo, RepositoryRevision repoRev) {
-        super(repo, new File[] {repo});
+        super(repo, null);
         this.repoRev = repoRev;
         initComponents();
         loadRevisions();

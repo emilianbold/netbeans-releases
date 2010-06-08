@@ -51,6 +51,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -63,8 +64,11 @@ import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.ViewCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -85,12 +89,15 @@ import org.xml.sax.InputSource;
 public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory {
     public static final String PROP_ENCODING = "Content-Encoding"; // NOI18N
     public static final String DEFAULT_ENCODING = new InputStreamReader(System.in).getEncoding();
+    private static final Logger LOG = Logger.getLogger(HtmlDataObject.class.getName());
     static final long serialVersionUID =8354927561693097159L;
     
     //constants used when finding html document content type
     private static final String CHARSET_DECL = "CHARSET="; //NOI18N
     
     private HtmlEditorSupport htmlEditorSupport;
+    private volatile String cachedEncoding;
+    private final AtomicBoolean listeningOnContentChange = new AtomicBoolean();
     
     /** New instance.
      * @param pf primary file object for this data object
@@ -182,7 +189,11 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     
     /** Checks the file for UTF-16 marks and calls findEncoding with properly loaded document content then. */
     String getFileEncoding() {
-        String encoding = null;
+        String encoding = cachedEncoding;
+        if (encoding != null) {
+            LOG.log(Level.FINEST, "HtmlDataObject.getFileEncoding cached {0}", new Object[] {encoding});   //NOI18N
+            return encoding;
+        }
         //detect encoding from input stream
         InputStream is = null;
         try {
@@ -209,19 +220,30 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             
             
         } catch (IOException ex) {
-            Logger.getLogger("global").log(Level.WARNING, null, ex);
+            LOG.log(Level.WARNING, null, ex);
         } finally {
             try {
                 if (is != null) {
                     is.close();
                 }
             } catch (IOException ex) {
-                Logger.getLogger("global").log(Level.WARNING, null, ex);
+                LOG.log(Level.WARNING, null, ex);
             }
         }
         if (encoding != null) {
             encoding = encoding.trim();
         }
+        if (!listeningOnContentChange.getAndSet(true)) {
+            final FileObject primaryFile = getPrimaryFile();
+            primaryFile.addFileChangeListener(FileUtil.weakFileChangeListener(new FileChangeAdapter(){
+                @Override
+                public void fileChanged(FileEvent fe) {
+                    cachedEncoding = null;
+                }
+            },primaryFile));
+        }
+        cachedEncoding = encoding;
+        LOG.log(Level.FINEST, "HtmlDataObject.getFileEncoding noncached {0}", new Object[] {encoding});   //NOI18N
         return encoding;
     }
     
