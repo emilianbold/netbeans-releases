@@ -44,6 +44,7 @@ Other names may be trademarks of their respective owners.
 package org.netbeans.modules.db.dataview.output;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -384,7 +385,16 @@ class DataViewUI extends JXPanel {
         button.setFocusable(false);
     }
 
-    private void initToolbar(JToolBar toolbar, ActionListener outputListener) {
+    private void initToolbarWest(JToolBar toolbar, ActionListener outputListener, boolean nbOutputComponent) {
+
+        if (!nbOutputComponent) {
+            JButton[] btns = getEditButtons();
+            for (JButton btn : btns) {
+                if (btn != null) {
+                    toolbar.add(btn);
+                }
+            }
+        }
 
         toolbar.addSeparator(new Dimension(10, 10));
 
@@ -467,11 +477,10 @@ class DataViewUI extends JXPanel {
         toolbar.add(totalRowsLabel);
 
         toolbar.addSeparator(new Dimension(10, 10));
+    }
 
-        Box.Filler filler = new Box.Filler(new Dimension(getWidth(), getHeight()), new Dimension(800, getHeight()), new Dimension(getWidth(), getHeight()));
-        toolbar.add(filler);
-
-        // match box labble 
+    private void initToolbarEast(JToolBar toolbar) {
+        // match box labble
         JXLabel matchBoxRow = new JXLabel(NbBundle.getMessage(DataViewUI.class, "LBL_matchbox"));
         matchBoxRow.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
         toolbar.add(matchBoxRow);
@@ -568,31 +577,41 @@ class DataViewUI extends JXPanel {
 
         ActionListener outputListener = createOutputListener();
         initVerticalToolbar(outputListener);
-        JToolBar toolbar = new JToolBar();
-        toolbar.setFloatable(false);
-        toolbar.setRollover(true);
 
-        if (!nbOutputComponent) {
-            JButton[] btns = getEditButtons();
-            for (JButton btn : btns) {
-                if (btn != null) {
-                    toolbar.add(btn);
-                }
-            }
-        }
-        initToolbar(toolbar, outputListener);
+        JToolBar toolbarWest = new JToolBar();
+        toolbarWest.setFloatable(false);
+        toolbarWest.setRollover(true);
 
-        GroupLayout layout = new GroupLayout(panel);
-        panel.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(toolbar, GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE))
+        initToolbarWest(toolbarWest, outputListener, nbOutputComponent);
+        
+        JToolBar toolbarCentral = new JToolBar();
+        toolbarCentral.setFloatable(false);
+        toolbarCentral.setRollover(true);
+
+        JToolBar toolbarEast = new JToolBar();
+        toolbarEast.setFloatable(false);
+        toolbarEast.setRollover(true);
+        initToolbarEast(toolbarEast);
+
+        javax.swing.GroupLayout groupLayout = new javax.swing.GroupLayout(panel);
+        panel.setLayout(groupLayout);
+        groupLayout.setHorizontalGroup(
+            groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(groupLayout.createSequentialGroup()
+                .addComponent(toolbarWest, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(toolbarCentral, javax.swing.GroupLayout.PREFERRED_SIZE, 178, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(toolbarEast, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(toolbar, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE))
+        groupLayout.setVerticalGroup(
+            groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(groupLayout.createSequentialGroup()
+                //.addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(toolbarEast, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(toolbarWest, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(toolbarCentral, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
         return panel;
     }

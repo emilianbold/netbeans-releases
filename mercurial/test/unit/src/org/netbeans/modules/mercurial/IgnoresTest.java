@@ -179,7 +179,7 @@ public class IgnoresTest extends AbstractHgTest {
         getCache().refreshAllRoots(Collections.singleton(workDir));
 
         Set<File> ignoredFiles = new HashSet<File>();
-        File[] parentFiles = new File[] { folderA };
+        File[] parentFiles = new File[] { workDir };
         // ignoredFiles is empty
         assertIgnoreStatus(parentFiles, ignoredFiles);
         // ignoring folderAA and all its descendants
@@ -214,6 +214,19 @@ public class IgnoresTest extends AbstractHgTest {
         toggleIgnore(folderAB, ignoredFiles);
         ignoredFiles.removeAll(getFiles(folderAB));
         assertIgnoreStatus(parentFiles, ignoredFiles);
+
+        // bug #187304
+        ignoredFiles.clear();
+        File obscureFile = new File(folderA, "This + File + Might + Crash + Mercurial");
+        obscureFile.createNewFile();
+        // ignoring the file
+        toggleIgnore(obscureFile, ignoredFiles);
+        ignoredFiles.add(obscureFile);
+        assertIgnoreStatus(parentFiles, ignoredFiles);
+        // unignoring the file
+        toggleIgnore(obscureFile, ignoredFiles);
+        ignoredFiles.clear();
+        assertIgnoreStatus(parentFiles, ignoredFiles);
     }
 
     private void assertIgnoreStatus (File[] parents, Set<File> ignoredFiles) {
@@ -230,9 +243,9 @@ public class IgnoresTest extends AbstractHgTest {
         FileInformation info = getCache().getCachedStatus(file);
         int status = info.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
         if (expectedIgnored(file, ignoredFiles)) {
-            assertTrue(status != 0);
+            assertTrue("Supposed to be ignored: " + file.getAbsolutePath(), status != 0);
         } else {
-            assertTrue(status == 0);
+            assertTrue("Supposed to be normal: " + file.getAbsolutePath(), status == 0);
         }
     }
 
