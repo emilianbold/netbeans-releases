@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -182,7 +183,7 @@ public final class SuiteProject implements Project {
      *         platform specified, or an invalid platform is specified, or even if
      *         fallback is true but even the default platform is not available
      */
-    public NbPlatform getPlatform(boolean fallback) {
+    public @CheckForNull NbPlatform getPlatform(boolean fallback) {
         NbPlatform p;
         // #65652: more reliable to use the dest dir, in case nbplatform.active is not set.
         String destdir = getEvaluator().getProperty("netbeans.dest.dir"); // NOI18N
