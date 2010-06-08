@@ -69,7 +69,6 @@ import javax.swing.JPanel;
 import org.netbeans.lib.profiler.heap.Heap;
 import org.netbeans.lib.profiler.heap.HeapSummary;
 import org.netbeans.lib.profiler.heap.JavaClass;
-import org.netbeans.modules.profiler.utils.GoToSourceHelper;
 import org.netbeans.modules.profiler.utils.JavaSourceLocation;
 import org.openide.util.NbBundle;
 
@@ -307,8 +306,6 @@ public class OverviewController extends AbstractController {
             String className = parts[0];
             String method = parts[1];
             int linenumber = Integer.parseInt(parts[2]);
-            GoToSourceHelper.openSource(heapFragmentWalker.getHeapDumpProject(),
-                    new JavaSourceLocation(className, method, linenumber));
         } else if (urls.startsWith(INSTANCE_URL_PREFIX)) {
             urls = urls.substring(INSTANCE_URL_PREFIX.length());
 
@@ -449,19 +446,7 @@ public class OverviewController extends AbstractController {
                                 StackTraceElement stackElement = stack[i];
                                 String stackElementText = htmlize(stackElement.toString());
                                 
-                                if (heapFragmentWalker.getHeapDumpProject() != null) {
-                                    String className = stackElement.getClassName();
-                                    String method = stackElement.getMethodName();
-                                    int lineNo = stackElement.getLineNumber();
-                                    String stackUrl = OPEN_THREADS_URL+className+"|"+method+"|"+lineNo; // NOI18N
-                                    
-                                    // --- Use this to enable VisualVM color scheme for threads dumps: ---
-                                    // stackElHref = "&nbsp;&nbsp;<a style=\"color: #CC3300;\" href=\""+stackUrl+"\">"+stackElement+"</a>"; // NOI18N
-                                    stackElHref = "<a href=\""+stackUrl+"\">"+stackElementText+"</a>";    // NOI18N
-                                    // -------------------------------------------------------------------
-                                } else {
                                     stackElHref = stackElementText;
-                                }
                                 sb.append("\tat "+stackElHref+"<br>");  // NOI18N
                                 if (localsMap != null) {
                                     List<JavaFrameGCRoot> locals = localsMap.get(Integer.valueOf(i));

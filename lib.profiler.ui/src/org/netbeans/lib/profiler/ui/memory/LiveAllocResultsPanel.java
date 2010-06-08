@@ -87,7 +87,6 @@ public class LiveAllocResultsPanel extends AllocResultsPanel implements LiveResu
 
     private ClassHistoryActionsHandler historyActionsHandler;
     private ClassHistoryDataManager classHistoryManager;
-    private JMenuItem popupShowSource;
     private JMenuItem popupShowStacks;
     private JMenuItem startHisto;
     private JPopupMenu memoryResPopupMenu;
@@ -125,8 +124,6 @@ public class LiveAllocResultsPanel extends AllocResultsPanel implements LiveResu
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == popupShowStacks) {
             actionsHandler.showStacksForClass(selectedClassId, getSortingColumn(), getSortingOrder());
-        } else if (e.getSource() == popupShowSource) {
-            showSourceForClass(selectedClassId);
         } else if (e.getSource() == startHisto) {
             String selectedClassName = StringUtils.userFormClassName(
                                                 getClassName(selectedClassId));
@@ -275,15 +272,6 @@ public class LiveAllocResultsPanel extends AllocResultsPanel implements LiveResu
     protected JPopupMenu getPopupMenu() {
         if (memoryResPopupMenu == null) {
             memoryResPopupMenu = new JPopupMenu();
-
-            Font boldfont = memoryResPopupMenu.getFont().deriveFont(Font.BOLD);
-
-            popupShowSource = new JMenuItem();
-            popupShowSource.setFont(boldfont);
-            popupShowSource.setText(GO_SOURCE_POPUP_ITEM_NAME);
-            memoryResPopupMenu.add(popupShowSource);
-
-            popupShowSource.addActionListener(this);
 
             if (runner.getProfilerEngineSettings().getAllocStackTraceLimit() != 0) {
                 memoryResPopupMenu.addSeparator();
