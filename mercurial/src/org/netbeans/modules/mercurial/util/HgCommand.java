@@ -1055,11 +1055,6 @@ public class HgCommand {
         return messages.toArray(new HgLogMessage[0]);
     }
 
-    public static HgLogMessage[] getLogMessages(final File root, final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges, OutputLogger logger) {
-         return getLogMessages(root, files, fromRevision, toRevision,
-                                bShowMerges, true, -1, logger, true);
-    }
-
     public static HgLogMessage[] getLogMessagesNoFileInfo(final File root, final Set<File> files, String fromRevision, String toRevision, boolean bShowMerges, int limitRevisions, OutputLogger logger) {
          return getLogMessages(root, files, fromRevision, toRevision, bShowMerges, false, limitRevisions, logger, true);
     }
