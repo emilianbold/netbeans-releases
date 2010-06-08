@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerClient;
 import org.netbeans.lib.profiler.ProfilerEngineSettings;
 import org.netbeans.lib.profiler.ProfilerLogger;
@@ -65,13 +64,11 @@ import org.netbeans.lib.profiler.ui.cpu.CodeRegionLivePanel;
 import org.netbeans.lib.profiler.ui.cpu.FlatProfilePanel;
 import org.netbeans.lib.profiler.ui.cpu.LiveFlatProfilePanel;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModuleContainer;
-import org.netbeans.modules.profiler.ui.stats.drilldown.DrillDownListener;
 import org.netbeans.lib.profiler.ui.memory.LiveAllocResultsPanel;
 import org.netbeans.lib.profiler.ui.memory.LiveLivenessResultsPanel;
 import org.netbeans.lib.profiler.ui.memory.MemoryResUserActionsHandler;
 import org.netbeans.modules.profiler.actions.ResetResultsAction;
 import org.netbeans.modules.profiler.actions.TakeSnapshotAction;
-import org.netbeans.modules.profiler.ui.stats.drilldown.DrillDown;
 import org.netbeans.modules.profiler.ui.stp.ProfilingSettingsManager;
 import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.openide.util.HelpCtx;
@@ -82,8 +79,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
-import org.openide.windows.TopComponentGroup;
-import org.openide.windows.WindowManager;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -116,13 +111,14 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.lib.profiler.results.ExportDataDumper;
 import org.netbeans.lib.profiler.results.memory.ClassHistoryDataManager;
 import org.netbeans.lib.profiler.results.memory.PresoObjAllocCCTNode;
+import org.netbeans.lib.profiler.ui.components.FlatToolBar;
+import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.lib.profiler.ui.graphs.AllocationsHistoryGraphPanel;
 import org.netbeans.lib.profiler.ui.graphs.LivenessHistoryGraphPanel;
 import org.netbeans.lib.profiler.ui.memory.ClassHistoryActionsHandler;
 import org.netbeans.lib.profiler.ui.memory.ClassHistoryModels;
 import org.netbeans.lib.profiler.utils.VMUtils;
 import org.netbeans.modules.profiler.ui.ProfilerDialogs;
-import org.netbeans.modules.profiler.ui.stats.drilldown.DrillDownFactory;
 
 
 /**
@@ -212,13 +208,6 @@ public final class LiveResultsWindow extends TopComponent
             //      System.out.println("ActivateDrillDownAction Invoked");
             if (TopComponent.getRegistry().getActivated() == LiveResultsWindow.getDefault()) {
                 // LiveResultsWindow is active
-                TopComponent drillDown = DrillDownWindow.getDefault();
-
-                //        System.out.println(" Drill window: "+drillDown.isOpened());
-                if (drillDown.isOpened()) {
-                    // DrillDown is visible
-                    drillDown.requestActive();
-                }
             }
         }
     }
@@ -227,9 +216,8 @@ public final class LiveResultsWindow extends TopComponent
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
         public void addMethodToRoots(final String className, final String methodName, final String methodSig) {
-            Project project = ((NetBeansProfiler) Profiler.getDefault()).getProfiledProject();
 
-            ProfilingSettings[] projectSettings = ProfilingSettingsManager.getDefault().getProfilingSettings(project)
+            ProfilingSettings[] projectSettings = ProfilingSettingsManager.getDefault().getProfilingSettings()
                                                                           .getProfilingSettings();
             List<ProfilingSettings> cpuSettings = new ArrayList<ProfilingSettings>();
 
@@ -251,7 +239,7 @@ public final class LiveResultsWindow extends TopComponent
                 }
             }
 
-            ProfilingSettings settingsToModify = IDEUtils.selectSettings(project, ProfilingSettings.PROFILE_CPU_PART,
+            ProfilingSettings settingsToModify = IDEUtils.selectSettings(ProfilingSettings.PROFILE_CPU_PART,
                                                                          cpuSettings.toArray(new ProfilingSettings[cpuSettings
                                                                                                                                                                                                                                                    .size()]),
                                                                          lastProfilingSettings);
@@ -263,12 +251,12 @@ public final class LiveResultsWindow extends TopComponent
             settingsToModify.addRootMethod(className, methodName, methodSig);
 
             if (cpuSettings.contains(settingsToModify)) {
-                ProfilingSettingsManager.getDefault().storeProfilingSettings(projectSettings, settingsToModify, project);
+                ProfilingSettingsManager.getDefault().storeProfilingSettings(projectSettings, settingsToModify);
             } else {
                 ProfilingSettings[] newProjectSettings = new ProfilingSettings[projectSettings.length + 1];
                 System.arraycopy(projectSettings, 0, newProjectSettings, 0, projectSettings.length);
                 newProjectSettings[projectSettings.length] = settingsToModify;
-                ProfilingSettingsManager.getDefault().storeProfilingSettings(newProjectSettings, settingsToModify, project);
+                ProfilingSettingsManager.getDefault().storeProfilingSettings(newProjectSettings, settingsToModify);
             }
         }
 
@@ -443,7 +431,7 @@ public final class LiveResultsWindow extends TopComponent
 
     private CPUResUserActionsHandler cpuActionsHandler;
     private Component lastFocusOwner;
-    private DrillDown dd = null;
+//    private DrillDown dd = null;
     private EmptyLiveResultsPanel noResultsPanel;
     private JButton runGCButton;
     private JButton updateNowButton;
@@ -480,7 +468,7 @@ public final class LiveResultsWindow extends TopComponent
         getAccessibleContext().setAccessibleDescription(LIVE_RESULTS_ACCESS_DESCR);
         //        setBorder(new EmptyBorder(5, 5, 5, 5));
         setLayout(new BorderLayout());
-
+        setOpaque(false);
         memoryActionsHandler = new MemoryActionsHandler();
         historyActionsHandler = new HistoryActionsHandler();
         cpuActionsHandler = new CPUActionsHandler();
@@ -502,16 +490,18 @@ public final class LiveResultsWindow extends TopComponent
         noResultsLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/profiler/ui/resources/monitoring.png", false)); //NOI18N
         noResultsLabel.setIconTextGap(10);
         noResultsLabel.setEnabled(false);
+        noResultsLabel.setOpaque(false);
         noResultsPanel.add(noResultsLabel, BorderLayout.NORTH);
-
+        noResultsPanel.setOpaque(false);
         currentDisplay = null;
         currentDisplayComponent = noResultsPanel;
         add(noResultsPanel, BorderLayout.CENTER);
 
         //*************
         memoryTabPanel = new JPanel(new java.awt.BorderLayout());
-
+        memoryTabPanel.setOpaque(false);
         tabs = new JTabbedPane();
+        
         // Fix for Issue 115062 (CTRL-PageUp/PageDown should move between snapshot tabs)
         tabs.getActionMap().getParent().remove("navigatePageUp"); // NOI18N
         tabs.getActionMap().getParent().remove("navigatePageDown"); // NOI18N
@@ -535,6 +525,9 @@ public final class LiveResultsWindow extends TopComponent
                             toolBar.remove(b);
                         graphButtonsSeparator.setVisible(false);
                     }
+                    toolBar.invalidate();
+                    toolBar.validate();
+                    toolBar.repaint();
                 }
             }
         });
@@ -554,21 +547,6 @@ public final class LiveResultsWindow extends TopComponent
             }
         };
         toolbarSpacer.setOpaque(false);
-
-        final DrillDownWindow drillDownWin = DrillDownWindow.getDefault();
-        DrillDownWindow.closeIfOpened();
-        drillDownWin.getPresenter().addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (drillDownWin.getPresenter().isSelected()) {
-                        drillDownWin.open();
-                    } else {
-                        drillDownWin.close();
-                    }
-                }
-            });
-
-        toolBar.add(toolbarSpacer);
-        toolBar.add(drillDownWin.getPresenter());
 
         hideDrillDown();
         //******************
@@ -601,7 +579,7 @@ public final class LiveResultsWindow extends TopComponent
         if (hasDefault()) {
             IDEUtils.runInEventDispatchThread(new Runnable() {
                     public void run() {
-                        if (defaultLiveInstance.isOpened()) {
+                        if (defaultLiveInstance.isShowing()) {
                             defaultLiveInstance.close();
                         }
                     }
@@ -991,22 +969,12 @@ public final class LiveResultsWindow extends TopComponent
     }
 
     private void hideDrillDown() {
-        IDEUtils.runInEventDispatchThread(new Runnable() {
-                public void run() {
-                    TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("LiveResultsGroup"); //NOI18N
-
-                    if (group != null) {
-                        group.close();
-                    }
-                    drillDownGroupOpened = false;
-                    DrillDownWindow.getDefault().getPresenter().setEnabled(false);
-                }
-            });
+ 
     }
 
     private LiveResultsPanel preparePanelForInstrType(int instrumentationType) {
         LiveResultsPanel aPanel = null;
-        dd = null;
+//        dd = null;
 
         switch (instrumentationType) {
             case ProfilerEngineSettings.INSTR_OBJECT_ALLOCATIONS: {
@@ -1049,35 +1017,14 @@ public final class LiveResultsWindow extends TopComponent
             }
             case ProfilerEngineSettings.INSTR_RECURSIVE_FULL:
             case ProfilerEngineSettings.INSTR_RECURSIVE_SAMPLED: {
-                Project project = NetBeansProfiler.getDefaultNB().getProfiledProject();
-//                ProjectTypeProfiler ptp = org.netbeans.modules.profiler.utils.ProjectUtilities.getProjectTypeProfiler(project);
 
                 List additionalStats = new ArrayList();
 
-                dd = Lookup.getDefault().lookup(DrillDownFactory.class).createDrillDown(project, runner.getProfilerClient());
-                if (dd != null) {
-                    StatisticalModuleContainer container = Lookup.getDefault().lookup(StatisticalModuleContainer.class);
-                    additionalStats.addAll(container.getAllModules());
 
-
-                    DrillDownWindow.getDefault().setDrillDown(dd, additionalStats);
-                    showDrillDown();
-                } else {
-                    hideDrillDown();
-                }
+                StatisticalModuleContainer container = Lookup.getDefault().lookup(StatisticalModuleContainer.class);
+                additionalStats.addAll(container.getAllModules());
 
                 final LiveFlatProfilePanel cpuPanel = new LiveFlatProfilePanel(runner, cpuActionsHandler, additionalStats);
-
-                if (dd != null) {
-                    dd.addListener(new DrillDownListener() {
-                        public void dataChanged() {
-                        }
-
-                        public void drillDownPathChanged(List list) {
-                            cpuPanel.updateLiveResults();
-                        }
-                    });
-                }
 
                 currentDisplayComponent = cpuPanel;
 
@@ -1109,7 +1056,7 @@ public final class LiveResultsWindow extends TopComponent
                         return;
                     }
 
-                    if (!isProfiling() || !isOpened()) {
+                    if (!isProfiling() || !isShowing()) {
                         return;
                     }
 
@@ -1124,10 +1071,10 @@ public final class LiveResultsWindow extends TopComponent
     }
 
     private void resetDrillDown() {
-        if (dd != null) {
-            dd.reset();
+//        if (dd != null) {
+//            dd.reset();
+//        }
         }
-    }
 
     private void resetResultsDisplay() {
         if ((currentDisplayComponent != null) && (currentDisplayComponent != noResultsPanel)) {
@@ -1144,21 +1091,7 @@ public final class LiveResultsWindow extends TopComponent
     }
 
     private void showDrillDown() {
-        IDEUtils.runInEventDispatchThread(new Runnable() {
-                public void run() {
-                    TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("LiveResultsGroup"); //NOI18N
 
-                    if (group != null) {
-                        group.open();
-                        drillDownGroupOpened = true;
-                        DrillDownWindow.getDefault().getPresenter().setEnabled(true);
-
-                        //          if (DrillDownWindow.getDefault().needsDocking()) DrillDownWindow.getDefault().open(); // Do not open DrillDown by default, only on demand by DrillDownWindow.getDefault().getPresenter()
-                    } else {
-                        LOGGER.severe("LiveResultsGroup not existing!"); // NOI18N
-                    }
-                }
-            });
     }
 
     private void updateActions(int newState) {
@@ -1167,31 +1100,10 @@ public final class LiveResultsWindow extends TopComponent
     }
 
     private void updateDrillDown() {
-        if (dd != null) {
-            dd.refresh(); // TODO race condition by cleaning the dd variable!
-        }
-
-        if (LOGGER.isLoggable(Level.FINE) && (currentDisplayComponent != null)) {
-            LOGGER.fine("updating drilldown: " + currentDisplayComponent.getClass().getName()); // NOI18N
-        }
-
-        if (profilerRunning && currentDisplayComponent instanceof LiveFlatProfilePanel && (dd != null) && dd.isValid()) {
-            LOGGER.fine("Showing drilldown"); // NOI18N
-
-            if (!drillDownGroupOpened && isVisible()) {
-                showDrillDown();
-            }
-        } else {
-            LOGGER.fine("Hiding drilldown"); // NOI18N
-
-            if (drillDownGroupOpened) {
-                hideDrillDown();
-            }
-        }
     }
 
     private void updateResultsDisplay() {
-        if (!isOpened()) {
+        if (!isShowing()) {
             return; // do nothing if i'm closed
         }
 

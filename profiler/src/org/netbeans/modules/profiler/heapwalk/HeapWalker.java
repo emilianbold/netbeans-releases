@@ -48,7 +48,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.heap.*;
 import org.netbeans.lib.profiler.utils.StringUtils;
 import org.netbeans.modules.profiler.heapwalk.ui.HeapWalkerUI;
@@ -87,7 +86,6 @@ public class HeapWalker {
     private File heapDumpFile;
     private HeapFragmentWalker mainHeapWalker;
     private HeapWalkerUI heapWalkerUI;
-    private Project heapDumpProject;
     private String heapWalkerName;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
@@ -102,7 +100,6 @@ public class HeapWalker {
         this(createHeap(heapFile));
 
         heapDumpFile = heapFile;
-        heapDumpProject = computeHeapDumpProject(heapDumpFile);
 
         String fileName = heapDumpFile.getName();
         String fileNamePart;
@@ -137,10 +134,6 @@ public class HeapWalker {
         return heapDumpFile;
     }
 
-    public Project getHeapDumpProject() {
-        return heapDumpProject;
-    }
-
     // --- Internal interface ----------------------------------------------------
     public HeapFragmentWalker getMainHeapWalker() {
         return mainHeapWalker;
@@ -162,7 +155,7 @@ public class HeapWalker {
         HeapWalkerManager.getDefault().openHeapWalker(this);
     }
 
-    TopComponent getTopComponent() {
+    public TopComponent getTopComponent() {
         if (heapWalkerUI == null) {
             heapWalkerUI = new HeapWalkerUI(this);
         }
@@ -191,25 +184,6 @@ public class HeapWalker {
     }
 
     // --- Private implementation ------------------------------------------------
-    private static Project computeHeapDumpProject(File heapDumpFile) {
-        if (heapDumpFile == null) {
-            return null;
-        }
-
-        File heapDumpDir = heapDumpFile.getParentFile();
-
-        if (heapDumpDir == null) {
-            return null;
-        }
-
-        FileObject heapDumpDirObj = FileUtil.toFileObject(heapDumpDir);
-
-        if ((heapDumpDirObj == null) || !heapDumpDirObj.isValid()) {
-            return null;
-        }
-
-        return IDEUtils.getProjectFromSettingsFolder(heapDumpDirObj);
-    }
 
     private static Heap createHeap(File heapFile) throws FileNotFoundException, IOException {
         ProgressHandle pHandle = null;
