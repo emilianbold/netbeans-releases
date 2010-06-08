@@ -324,6 +324,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 }
             }
             addOffsetRange(fnName, ColoringAttributes.STATIC_SET);
+            super.visit(node);
         }
 
         @Override
