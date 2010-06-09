@@ -203,9 +203,40 @@ public final class PhpProjectUtils {
         }
 
         // save
+        saveFile(dataObject);
+    }
+
+    /**
+     * Save a file.
+     * @param dataObject file to save
+     */
+    public static void saveFile(DataObject dataObject) {
+        assert dataObject != null;
+
         SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
         if (saveCookie != null) {
-            saveCookie.save();
+            try {
+                saveCookie.save();
+            } catch (IOException ioe) {
+                LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
+            }
+        }
+    }
+
+    /**
+     * Save a file.
+     * @param fileObject file to save
+     */
+    public static void saveFile(FileObject fileObject) {
+        assert fileObject != null;
+
+        try {
+            DataObject dobj = DataObject.find(fileObject);
+            if (dobj != null) {
+                saveFile(dobj);
+            }
+        } catch (DataObjectNotFoundException donfe) {
+            LOGGER.log(Level.SEVERE, donfe.getLocalizedMessage(), donfe);
         }
     }
 

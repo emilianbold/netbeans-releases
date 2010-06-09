@@ -100,14 +100,17 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             final OffsetsBag bagFin = bag;
             DocumentListener l = new DocumentListener() {
 
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     bagFin.removeHighlights(e.getOffset(), e.getOffset(), false);
                 }
 
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     bagFin.removeHighlights(e.getOffset(), e.getOffset(), false);
                 }
 
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                 }
             };
@@ -134,6 +137,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     private boolean valid = true;
     // PhaseRunner
 
+    @Override
     public void run(Phase phase) {
         InterrupterImpl interrupter = new InterrupterImpl();
         try {
@@ -234,10 +238,12 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         }
     }
 
+    @Override
     public boolean isValid() {
         return valid;
     }
 
+    @Override
     public boolean isHighPriority() {
         return true;
     }
@@ -437,38 +443,47 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             this.end = end;
         }
 
+        @Override
         public CsmReferenceKind getKind() {
             throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
+        @Override
         public CsmObject getReferencedObject() {
             throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
+        @Override
         public CsmObject getOwner() {
             throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
+        @Override
         public CsmFile getContainingFile() {
             throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
+        @Override
         public int getStartOffset() {
             return start;
         }
 
+        @Override
         public int getEndOffset() {
             return end;
         }
 
+        @Override
         public Position getStartPosition() {
             throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
+        @Override
         public Position getEndPosition() {
             throw new UnsupportedOperationException("Must not be called"); //NOI18N
         }
 
+        @Override
         public CharSequence getText() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }

@@ -81,7 +81,9 @@ import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
+import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
@@ -228,12 +230,13 @@ public final class EarProject implements Project, AntProjectListener {
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
-            new EarSources(this, helper, evaluator()),
+            QuerySupport.createSources(this, helper, evaluator(),
+                    Roots.propertyBased(new String[]{EarProjectProperties.META_INF}, new String[]{NbBundle.getMessage(EarProject.class, "LBL_Node_ConfigBase")}, false, null, null)),
             new RecommendedTemplatesImpl(),
             helper.createSharabilityQuery(evaluator(),
                     new String[] {"${"+EarProjectProperties.SOURCE_ROOT+"}"}, // NOI18N
                     new String[] {
-                "${"+EarProjectProperties.BUILD_DIR+"}", // NOI18N
+                "${"+ProjectProperties.BUILD_DIR+"}", // NOI18N
                 "${"+EarProjectProperties.DIST_DIR+"}"} // NOI18N
             ),
             this,

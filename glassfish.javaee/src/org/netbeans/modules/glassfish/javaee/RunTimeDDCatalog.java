@@ -143,9 +143,13 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     
     private static final String JavaEE6TypeToURLMap[] = {
         "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Java EE Application 6.0//EN"   , "sun-application_6_0-0.dtd",
-        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 EJB 3.1//EN"                   , "sun-ejb-jar_3_1-0.dtd",
+        "-//GlassFish.org//DTD GlassFish Application Server 3.1 Java EE Application 6.0//EN"   , "glassfish-application_6_0-1.dtd",
         "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Application Client 6.0//EN"    , "sun-application-client_6_0-0.dtd" ,
+        "-//GlassFish.org//DTD GlassFish Application Server 3.1 Java EE Application Client 6.0//EN"    , "glassfish-application-client_6_0-1.dtd" ,
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 EJB 3.1//EN"                   , "sun-ejb-jar_3_1-0.dtd",
+        "-//GlassFish.org//DTD GlassFish Application Server 3.1 EJB 3.1//EN"                   , "glassfish-ejb-jar_3_1-1.dtd",
         "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Servlet 3.0//EN"                         , "sun-web-app_3_0-0.dtd" ,
+        "-//GlassFish.org//DTD GlassFish Application Server 3.1 Servlet 3.0//EN"                         , "glassfish-web-app_3_0-1.dtd" ,
     };
 
         /*******NetBeans 3.6 is NOT ready yet to support schemas for code completion... What a pity!:        */
@@ -183,6 +187,14 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         "SCHEMA:http://java.sun.com/xml/ns/javaee/web-common_3_0.xsd"                    , "web-common_3_0",
         "SCHEMA:http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd"                    , "web-fragment_3_0",
 
+        "SCHEMA:http://xmlns.oracle.com/weblogic/weblogic-application-client/1.2/weblogic-application-client.xsd", "weblogic-application-client",
+        "SCHEMA:http://xmlns.oracle.com/weblogic/weblogic-application/1.2/weblogic-application.xsd", "weblogic-application",
+        "SCHEMA:http://xmlns.oracle.com/weblogic/weblogic-connector/1.0/weblogic-connector.xsd", "weblogic-connector",
+        "SCHEMA:http://xmlns.oracle.com/weblogic/weblogic-ejb-jar/1.2/weblogic-ejb-jar.xsd", "weblogic-ejb-jar",
+        "SCHEMA:http://xmlns.oracle.com/weblogic/weblogic-javaee/1.2/weblogic-javaee.xsd", "weblogic-javaee",
+        "SCHEMA:http://xmlns.oracle.com/weblogic/weblogic-jms/1.1/weblogic-jms.xsd", "weblogic-jms",
+        "SCHEMA:http://xmlns.oracle.com/weblogic/weblogic-web-app/1.2/weblogic-web-app.xsd", "weblogic-web-app",
+        "SCHEMA:http://xmlns.oracle.com/weblogic/weblogic-webservices/1.1/weblogic-webservices.xsd", "weblogic-webservices"
     };
 
     private static Map<ServerInstanceProvider, RunTimeDDCatalog> ddCatalogMap = new HashMap<ServerInstanceProvider, RunTimeDDCatalog>();
@@ -233,6 +245,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * Get String iterator representing all public IDs registered in catalog.
      * @return null if cannot proceed, try later.
      */
+    @Override
     public Iterator getPublicIDs() {
         if (platformRootDir == null) {
             return null;
@@ -271,6 +284,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * Get registered systemid for given public Id or null if not registered.
      * @return null if not registered
      */
+    @Override
     public String getSystemID(String publicId) {
         if (platformRootDir == null) {
             return null;
@@ -341,6 +355,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     /**
      * Refresh content according to content of mounted catalog.
      */
+    @Override
     public void refresh() {
         fireCatalogListeners();
     }
@@ -362,6 +377,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * Optional operation allowing to listen at catalog for changes.
      * @throws UnsupportedOpertaionException if not supported by the implementation.
      */
+    @Override
     public void addCatalogListener(CatalogListener l) {
         if (null == l)
             return;
@@ -374,6 +390,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * Optional operation couled with addCatalogListener.
      * @throws UnsupportedOpertaionException if not supported by the implementation.
      */
+    @Override
     public void removeCatalogListener(CatalogListener l) {
         if (null == l)
             return;
@@ -390,12 +407,14 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     }
     
     /** Registers new listener.  */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
     }
     
     /**
      * @return I18N display name
      */
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(RunTimeDDCatalog.class, displayNameKey);
     }
@@ -405,6 +424,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @param type of icon defined by JavaBeans specs
      * @return icon representing current state or null
      */
+    @Override
     public java.awt.Image getIcon(int type) {
         return ImageUtilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png"); // NOI18N
     }
@@ -412,11 +432,13 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     /**
      * @return I18N short description
      */
+    @Override
     public String getShortDescription() {
         return NbBundle.getMessage(RunTimeDDCatalog.class, shortDescriptionKey);
     }
     
     /** Unregister the listener.  */
+    @Override
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
     }
     
@@ -513,6 +535,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @param systemId systemId for resolved entity
      * @return InputSource for
      */
+    @Override
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         
         if (SCHEMASLOCATION == null) {
@@ -598,6 +621,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     
     
     
+    @Override
     public Enumeration enabled(GrammarEnvironment ctx) {
         if (ctx.getFileObject() == null) return null;
         Enumeration en = ctx.getDocumentChildren();
@@ -712,12 +736,14 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         return null;
     }
     
+    @Override
     public FeatureDescriptor getDescriptor() {
         return new FeatureDescriptor();
     }
     
     /** Returns pseudo DTD for code completion
      */
+    @Override
     public GrammarQuery getGrammar(GrammarEnvironment ctx) {
         UserCatalog catalog = UserCatalog.getDefault();
         ///System.out.println("bbb");
@@ -788,6 +814,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * Get registered URI for the given name or null if not registered.
      * @return null if not registered
      */
+    @Override
     public String resolveURI(String name) {
         // System.out.println("resolveURI(String name)="+name);
         if (platformRootDir == null) {
@@ -822,6 +849,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * Get registered URI for the given publicId or null if not registered.
      * @return null if not registered
      */ 
+    @Override
     public String resolvePublic(String publicId) {
         return null;
     }    

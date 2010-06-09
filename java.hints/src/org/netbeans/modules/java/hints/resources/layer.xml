@@ -303,6 +303,9 @@ made subject to such option by the copyright holder.
                     <file name="RawTypes.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createRawTypes"/>
                     </file>
+                    <file name="CanUseDiamond.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createCanUseDiamond"/>
+                    </file>
                 </folder>
 
                 <folder name="apisupport">

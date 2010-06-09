@@ -128,7 +128,7 @@ public final class PhpProjectGenerator {
             } else {
                 switch (runAsType) {
                     case SCRIPT:
-                        template = FileUtil.getConfigFile("Templates/Scripting/EmptyPHP"); // NOI18N
+                        template = FileUtil.getConfigFile("Templates/Scripting/EmptyPHP.php"); // NOI18N
                         break;
                     default:
                         template = Templates.getTemplate(projectPropertiesCopy.getDescriptor());

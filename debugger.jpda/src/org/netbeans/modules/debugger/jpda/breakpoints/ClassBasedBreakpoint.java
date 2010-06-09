@@ -154,60 +154,56 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     
     @Override
     protected boolean isEnabled() {
-        synchronized (SOURCE_ROOT_LOCK) {
-            String sourceRoot = getSourceRoot();
-            if (sourceRoot == null) {
+        String sourceRoot = getSourceRoot();
+        if (sourceRoot == null) {
+            return true;
+        }
+        String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
+        for (int i = 0; i < sourceRoots.length; i++) {
+            if (sourceRoot.equals(sourceRoots[i])) {
                 return true;
             }
-            String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
-            for (int i = 0; i < sourceRoots.length; i++) {
-                if (sourceRoot.equals(sourceRoots[i])) {
-                    return true;
-                }
-            }
-            String[] projectSourceRoots = getDebugger().getEngineContext().getProjectSourceRoots();
-            for (int i = 0; i < projectSourceRoots.length; i++) {
-                if (sourceRoot.equals(projectSourceRoots[i])) {
-                    setValidity(VALIDITY.INVALID,
-                                NbBundle.getMessage(ClassBasedBreakpoint.class,
-                                            "MSG_DisabledSourceRoot",
-                                            sourceRoot));
-                    return false;
-                }
-            }
-            // Breakpoint is not in debugger's source roots,
-            // though it still might get hit if the app loads additional classes...
-            return true;
-            /*if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Breakpoint "+getBreakpoint()+
-                            " NOT submitted because it's source root "+sourceRoot+
-                            " is not contained in debugger's source roots: "+
-                            java.util.Arrays.asList(sourceRoots));
-            }
-            return false;
-             */
         }
+        String[] projectSourceRoots = getDebugger().getEngineContext().getProjectSourceRoots();
+        for (int i = 0; i < projectSourceRoots.length; i++) {
+            if (sourceRoot.equals(projectSourceRoots[i])) {
+                setValidity(VALIDITY.INVALID,
+                            NbBundle.getMessage(ClassBasedBreakpoint.class,
+                                        "MSG_DisabledSourceRoot",
+                                        sourceRoot));
+                return false;
+            }
+        }
+        // Breakpoint is not in debugger's source roots,
+        // though it still might get hit if the app loads additional classes...
+        return true;
+        /*if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Breakpoint "+getBreakpoint()+
+                        " NOT submitted because it's source root "+sourceRoot+
+                        " is not contained in debugger's source roots: "+
+                        java.util.Arrays.asList(sourceRoots));
+        }
+        return false;
+         */
     }
     
     /** Check whether the breakpoint belongs to the first matched source root. */
     protected boolean isEnabled(String sourcePath, String[] preferredSourceRoot) {
-        synchronized (SOURCE_ROOT_LOCK) {
-            String sourceRoot = getSourceRoot();
-            if (sourceRoot == null) {
-                return true;
-            }
-            String url = getDebugger().getEngineContext().getURL(sourcePath, true);
-            if (url == null) { // In some pathological situations, the source is not found.
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "No URL found for source path "+sourcePath);
-                return false;
-            }
-            String urlRoot = getDebugger().getEngineContext().getSourceRoot(url);
-            if (urlRoot == null) {
-                return true;
-            }
-            preferredSourceRoot[0] = urlRoot;
-            return sourceRoot.equals(urlRoot);
+        String sourceRoot = getSourceRoot();
+        if (sourceRoot == null) {
+            return true;
         }
+        String url = getDebugger().getEngineContext().getURL(sourcePath, true);
+        if (url == null) { // In some pathological situations, the source is not found.
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "No URL found for source path "+sourcePath);
+            return false;
+        }
+        String urlRoot = getDebugger().getEngineContext().getSourceRoot(url);
+        if (urlRoot == null) {
+            return true;
+        }
+        preferredSourceRoot[0] = urlRoot;
+        return sourceRoot.equals(urlRoot);
     }
     
     protected void setClassRequests (

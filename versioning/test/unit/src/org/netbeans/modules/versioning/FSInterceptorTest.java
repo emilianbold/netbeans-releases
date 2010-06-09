@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -148,7 +149,7 @@ public class FSInterceptorTest extends NbTestCase {
         // doCreate
         w = new W() {
             void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.fileDataCreated(new FileEvent(FileUtil.toFileObject(wFile)));
+                fi.createSuccess(FileUtil.toFileObject(wFile));
             }
         };
         w.test(new String[] {"afterCreate", "doCreate"}); // ignore both
@@ -180,7 +181,7 @@ public class FSInterceptorTest extends NbTestCase {
         // afterDelete
         w = new W() {
             void callInterceptorMethod(FilesystemInterceptor fi) {
-                fi.fileDeleted(new FileEvent(FileUtil.toFileObject(wFile)));
+                fi.deleteSuccess(FileUtil.toFileObject(wFile));
             }
         };
         w.test();
@@ -247,6 +248,13 @@ public class FSInterceptorTest extends NbTestCase {
         };
         w.test();
 
+        // refreshRecursively
+        w = new W() {
+            void callInterceptorMethod(FilesystemInterceptor fi) {
+                fi.refreshRecursively(wFile, -1, null);
+            }
+        };
+        w.test();
 
         Method[] methods = VCSInterceptor.class.getDeclaredMethods();
         for (Method method : methods) {
@@ -307,6 +315,7 @@ public class FSInterceptorTest extends NbTestCase {
         }
 
         private boolean ignore(String name, String[] toBeIgnored) {
+            if(toBeIgnored == null) return false;
             for (String i : toBeIgnored) {
                 if(i.equals(name)) {
                     return true;
@@ -408,6 +417,12 @@ public class FSInterceptorTest extends NbTestCase {
             return super.isMutable(file);
         }
 
+        @Override
+        public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+            storeMethodName();
+            return super.refreshRecursively(dir, lastTimeStamp, children);
+        }
+
         private void storeMethodName() {
             StackTraceElement[] st = Thread.currentThread().getStackTrace();
             for (int i = 0; i < st.length; i++) {
@@ -416,9 +431,9 @@ public class FSInterceptorTest extends NbTestCase {
                     methodNames.add(st[i+1].getMethodName());
                     return;
                 }
-
             }
         }
+
     }
 
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
@@ -461,8 +476,14 @@ public class FSInterceptorTest extends NbTestCase {
         @Override
         public void publish(LogRecord record) {            
             String msg = record.getMessage();
-            if(msg == null || msg.trim().equals("") || !msg.startsWith("needsLocalHistory")) return;
-            methodNames.add((String) record.getParameters()[0]);
+            if(msg == null || msg.trim().equals("")) {
+                return;
+            }
+            if(msg.startsWith("refreshRecursively")) {
+                methodNames.add("refreshRecursively");
+            } else if(msg.startsWith("needsLocalHistory")) {
+                methodNames.add((String) record.getParameters()[0]);
+            }
         }
 
         void reset () {

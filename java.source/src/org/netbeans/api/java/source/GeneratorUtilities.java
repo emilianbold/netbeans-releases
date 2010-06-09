@@ -56,6 +56,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
@@ -74,6 +75,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.SourceVersion;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -516,17 +518,23 @@ public final class GeneratorUtilities {
      *         them will be added during task commit.
      */
     public <T extends Tree> T importFQNs(T original) {
-        TranslateIdentifier translator = new TranslateIdentifier(copy, false, true, null);
+        TranslateIdentifier translator = new TranslateIdentifier(copy, null, true, null);
         return (T) translator.translate(original);
     }
 
     public <T extends Tree> T importComments(T original, CompilationUnitTree cut) {
+        return importComments(copy, original, cut);
+    }
+
+    static <T extends Tree> T importComments(CompilationInfo info, T original, CompilationUnitTree cut) {
         try {
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;            
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
-            TranslateIdentifier translator = new TranslateIdentifier(copy, true, false, seq, unit);
+            TreePath tp = TreePath.getPath(cut, original);
+            Tree toMap = (tp != null && original.getKind() != Kind.COMPILATION_UNIT) ? tp.getParentPath().getLeaf() : original;
+            TranslateIdentifier translator = new TranslateIdentifier(info, original, false, seq, unit);
             
-            translator.translate(original);
+            translator.translate(toMap);
 
             return original;
         } catch (IOException ex) {
@@ -591,12 +599,10 @@ public final class GeneratorUtilities {
 
         if (supportsOverride(copy)) {
             //add @Override annotation:
-            SpecificationVersion thisFOVersion = new SpecificationVersion(SourceLevelQuery.getSourceLevel(copy.getFileObject()));
-            SpecificationVersion version15 = new SpecificationVersion("1.5"); //NOI18N
-            if (thisFOVersion.compareTo(version15) >= 0) {
+            if (copy.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0) {
                 boolean generate = true;
 
-                if (thisFOVersion.compareTo(version15) == 0) {
+                if (copy.getSourceVersion().compareTo(SourceVersion.RELEASE_5) == 0) {
                     generate = !element.getEnclosingElement().getKind().isInterface();
                 }
 

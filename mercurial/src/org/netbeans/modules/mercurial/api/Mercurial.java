@@ -214,7 +214,7 @@ public class Mercurial {
 
         HgURL hgUrl, pullPath, pushPath;
         try {
-            hgUrl = new HgURL(repositoryUrl, username, password.toCharArray());
+            hgUrl = new HgURL(repositoryUrl, username, password != null ? password.toCharArray() : null);
         } catch (URISyntaxException ex) {
             throw new MalformedURLException(ex.getMessage());
         }

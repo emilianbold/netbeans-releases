@@ -70,8 +70,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.text.Position.Bias;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.DisabledReason;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.UpdateType;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -419,9 +417,9 @@ public class TableUISupport {
                 if (getModel() instanceof TableClassNamesModel) {
                     TableClassNamesModel model = (TableClassNamesModel)getModel();
                     Table table = model.getTableAt(row);
-                    SelectedTables selectedTables = model.getSelectedTables();
-                    FileObject classFO = selectedTables.getTargetFolder() != null ? selectedTables.getTargetFolder().getFileObject(selectedTables.getClassName(table), "java") : null; //NOI18N
-                    if (classFO != null){
+                    DisabledReason dr = table.getDisabledReason();
+                    boolean existing = dr instanceof Table.ExistingDisabledReason;
+                    if (existing){
                         return new DefaultCellEditor(new JComboBox(new UpdateType[]{UpdateType.UPDATE, UpdateType.RECREATE}));
                     } else {
                         return new DefaultCellEditor(new JComboBox(new UpdateType[]{UpdateType.NEW}));

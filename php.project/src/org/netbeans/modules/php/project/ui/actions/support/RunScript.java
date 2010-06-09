@@ -58,12 +58,14 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Radek Matous, Tomas Mysik
  */
 public class RunScript {
     protected static final Logger LOGGER = Logger.getLogger(RunScript.class.getName());
+    protected static final RequestProcessor RP = new RequestProcessor(RunScript.class);
 
     private final Provider provider;
 
@@ -74,11 +76,16 @@ public class RunScript {
     }
 
     public void run() {
-        try {
-            getCallable().call();
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    getCallable().call();
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
 
     protected final Callable<Cancellable> getCallable()  {

@@ -78,8 +78,13 @@ public class AttrSetTest extends NbTestCase {
         AttrSet empty2 = AttrSet.get(new Object[0]); // Empty
         assertSame(empty, empty2);
         AttrSet fgr = AttrSet.get(StyleConstants.Foreground, Color.red);
-        AttrSet fgr2 = AttrSet.get(StyleConstants.Foreground, Color.red);
+        AttrSet fgr2 = AttrSet.get(StyleConstants.Foreground, new Color(255, 0, 0));
+        AttrSet fgr3 = AttrSet.get(StyleConstants.Foreground, Color.red, StyleConstants.Foreground, Color.blue);
         assertSame(fgr, fgr2);
+        assertSame(fgr, fgr3);
+        AttrSet fgrA = AttrSet.get("MyKey", "MyValue", StyleConstants.Foreground, Color.red);
+        AttrSet fgrB = AttrSet.get(StyleConstants.Foreground, Color.red, "MyKey", "MyValue");
+        assertSame(fgrA, fgrB);
         AttrSet fgb = AttrSet.get(StyleConstants.Foreground, Color.blue);
         AttrSet m = AttrSet.merge(fgb, fgr);
         assertSame(m, fgb);
@@ -103,12 +108,9 @@ public class AttrSetTest extends NbTestCase {
         AttrSet myKeyValue = AttrSet.get("MyKey", "MyValue"); // not cached
         AttrSet myKeyValue1 = AttrSet.get("MyKey1", "MyValue1"); // not cached
         AttrSet myKeyValue1Copy = AttrSet.get("MyKey1", "MyValue1"); // not cached
-        if (myKeyValue1 == myKeyValue1Copy) {
-            fail("Not expected to have the same instance. Test update necessary.");
-        }
-        if (!myKeyValue1.equals(myKeyValue1Copy)) {
-            fail("Expecting equals() with same attrs to return true. Test update necessary.");
-        }
+        // Current impl will return the same object for the following although
+        // these are extra attrs but they are weakly cached from the AttrSet.EMTY.
+        assertSame(myKeyValue1, myKeyValue1Copy);
         AttrSet em = AttrSet.merge(myKeyValue1, myKeyValue);
         AttrSet em2 = AttrSet.merge(myKeyValue1Copy, myKeyValue);
         if (em != em2) {
@@ -125,8 +127,11 @@ public class AttrSetTest extends NbTestCase {
         container.runInit(1274962532005L);
         container.runOps(9);
         container.runOps(1);
+        container.runOps(0);
+
         container.runInit(1274381066314L);
         container.runOps(0); // Run till end
+
         container.run(0L);
 //        container.runOps(263);
 //        container.runOps(1);

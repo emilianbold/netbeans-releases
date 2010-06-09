@@ -62,7 +62,6 @@ public class DefaultProjectActionHandlerFactory implements ProjectActionHandlerF
     @Override
     public boolean canHandle(ProjectActionEvent.Type type, Configuration configuration) {
         if (type == PredefinedType.DEBUG ||
-            type == PredefinedType.DEBUG_LOAD_ONLY ||
             type == PredefinedType.DEBUG_STEPINTO) {
             return false;
         } else {

@@ -85,7 +85,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
 
     /** Creates a new instance of GraphContainer */
     public GraphContainer(ProjectBase project) {
-        super(new GraphContainerKey(project.getUniqueName().toString()), false);
+        super(new GraphContainerKey(project.getUniqueName()), false);
         put();
     }
 

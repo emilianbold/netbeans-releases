@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.io.File;
 import java.util.ResourceBundle;
+import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -63,6 +64,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
@@ -70,6 +72,10 @@ public class RunDialogAction extends NodeAction {
 
     protected JButton runButton = null;
     private Object options[];
+    private FileObject contextFileObject;
+
+    public RunDialogAction(){
+    }
 
     private void init() {
         if (runButton == null) {
@@ -87,6 +93,12 @@ public class RunDialogAction extends NodeAction {
     }
 
     @Override
+    public Action createContextAwareInstance(Lookup actionContext) {
+        contextFileObject = actionContext.lookup(FileObject.class);
+        return super.createContextAwareInstance(actionContext);
+    }
+
+    @Override
     protected void performAction(final Node[] activatedNodes) {
         String path = null;
         if (activatedNodes != null && activatedNodes.length == 1) {
@@ -100,6 +112,11 @@ public class RunDialogAction extends NodeAction {
                         path = file.getPath();
                     }
                 }
+            }
+        } else if (contextFileObject != null) {
+            File file = FileUtil.toFile(contextFileObject);
+            if (file != null) {
+                path = file.getPath();
             }
         }
         perform(path);

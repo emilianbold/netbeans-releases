@@ -67,6 +67,9 @@ public class SourceListNode extends SectionNode {
         ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
         SourceAccessor accessor = SourceAccessor.getDefault();
         List<SourceHandle> sources = accessor.getSources(project);
+        if (sources.isEmpty() && project.getKenaiProject().getKenai().getUrl().toString().equals("https://netbeans.org")) {//NOI!18N
+            res.add(new OpenNetBeansIDEProjects(project.getKenaiProject().getKenai(), this));
+        }
         for (SourceHandle s : sources) {
             res.add(new SourceNode(s, this));
             res.addAll(getRecentProjectsNodes(s));

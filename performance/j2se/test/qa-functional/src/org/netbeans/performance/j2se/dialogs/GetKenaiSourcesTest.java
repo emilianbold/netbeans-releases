@@ -85,8 +85,8 @@ public class GetKenaiSourcesTest extends PerformanceTestCase {
 
     @Override
     public void initialize() {
-        menu = "Team|Kenai|Get Sources";
-        loginDialog = Bundle.getStringTrimmed("org.netbeans.modules.kenai.ui.Bundle", "GetSourcesFromKenaiTitle");
+        menu = "Team|Team Server|Get Sources";
+        loginDialog = "Get Sources";
     }
     
     public void prepare(){
