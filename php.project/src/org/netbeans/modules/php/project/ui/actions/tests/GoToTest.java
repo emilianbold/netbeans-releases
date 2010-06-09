@@ -60,6 +60,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Support for PHP Unit.
@@ -68,6 +69,7 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.gototest.TestLocator.class)
 public class GoToTest implements TestLocator {
     private static final Logger LOGGER = Logger.getLogger(GoToTest.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(GoToTest.class.getName(), 2);
 
     public GoToTest() {
     }
@@ -83,8 +85,13 @@ public class GoToTest implements TestLocator {
     }
 
     @Override
-    public void findOpposite(FileObject fo, int caretOffset, LocationListener callback) {
-        throw new UnsupportedOperationException("GotoTest is synchronous");
+    public void findOpposite(final FileObject fo, final int caretOffset, final LocationListener callback) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                callback.foundLocation(fo, findOpposite(fo, caretOffset));
+            }
+        });
     }
 
     @Override
