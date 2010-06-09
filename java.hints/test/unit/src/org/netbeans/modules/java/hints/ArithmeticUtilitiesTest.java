@@ -64,6 +64,10 @@ public class ArithmeticUtilitiesTest extends TestBase {
         performTest("package test; public class Test { private static final short A = 0, B = 1; | }", "A + B", 1);
     }
 
+    public void test185010() throws Exception {
+        performTest("package test; public class Test { private static final byte[] a; | }", "a[0]", null);
+    }
+
     private void performTest(String context, String expression, Number golden) throws Exception {
         int pos = context.indexOf('|');
         prepareTest("test/Test.java", context.replaceAll(Pattern.quote("|"), ""));

@@ -263,14 +263,24 @@ public class FormatVisitor extends DefaultVisitor {
 	    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION_LEFT_BRACE, ts.offset()));
 	    } else if (parent instanceof IfStatement) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_LEFT_BRACE, ts.offset()));
+                IfStatement ifStatement = (IfStatement) parent;
+                if (ifStatement.getFalseStatement() != null
+                        && ifStatement.getFalseStatement().getStartOffset() <= node.getStartOffset()) {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ELSE_LEFT_BRACE, ts.offset()));
+                } else {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_LEFT_BRACE, ts.offset()));
+                }
 	    } else if (parent instanceof ForStatement || parent instanceof ForEachStatement) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FOR_LEFT_BRACE, ts.offset()));
-	    } else if (parent instanceof WhileStatement || parent instanceof DoStatement) {
+	    } else if (parent instanceof WhileStatement) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE_LEFT_BRACE, ts.offset()));
+            } else if (parent instanceof DoStatement) {
+		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_DO_LEFT_BRACE, ts.offset()));
 	    } else if (parent instanceof SwitchStatement) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_SWITCH_LEFT_BACE, ts.offset()));
-	    } else if (parent instanceof CatchClause || parent instanceof TryStatement) {
+            } else if (parent instanceof TryStatement) {
+		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_TRY_LEFT_BRACE, ts.offset()));
+	    } else if (parent instanceof CatchClause) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH_LEFT_BRACE, ts.offset()));
 	    } else {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OTHER_LEFT_BRACE, ts.offset()));
