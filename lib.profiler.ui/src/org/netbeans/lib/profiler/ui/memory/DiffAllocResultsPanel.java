@@ -197,13 +197,6 @@ public class DiffAllocResultsPanel extends SnapshotAllocResultsPanel {
         if (memoryResPopupMenu == null) {
             memoryResPopupMenu = new JPopupMenu();
 
-            Font boldfont = memoryResPopupMenu.getFont().deriveFont(Font.BOLD);
-
-            popupShowSource = new JMenuItem();
-            popupShowSource.setFont(boldfont);
-            popupShowSource.setText(GO_SOURCE_POPUP_ITEM_NAME);
-            memoryResPopupMenu.add(popupShowSource);
-            popupShowSource.addActionListener(this);
         }
 
         return memoryResPopupMenu;

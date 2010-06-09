@@ -43,11 +43,8 @@
 
 package org.netbeans.modules.profiler.ui.panels;
 
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.lib.profiler.ui.components.JExtendedSpinner;
 import org.netbeans.modules.profiler.ProfilerIDESettings;
-import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
 import org.openide.util.NbBundle;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -226,18 +223,6 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    public JavaPlatform getSelectedJavaPlatform() {
-        int selectedJavaPlatformIndex = javaPlatformCombo.getSelectedIndex();
-
-        if ((selectedJavaPlatformIndex == -1) || (selectedJavaPlatformIndex == 0)) {
-            return null; // not selected, or <use project> selected
-        }
-
-        selectedJavaPlatformIndex--;
-
-        return (JavaPlatform) supportedJavaPlatforms.get(selectedJavaPlatformIndex);
-    }
-
     /**
      * Invoked when an action occurs.
      */
@@ -246,8 +231,6 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
             ProfilerIDESettings.getInstance().clearDoNotShowAgainMap();
             resetConfirmationsButton.setEnabled(false);
         } else if (e.getSource() == managePlatformsButton) {
-            JavaPlatform platform = getSelectedJavaPlatform();
-            PlatformsCustomizer.showCustomizer(platform);
             updateJavaPlatformComboItems();
         } else if (e.getSource() == oomeDetectionChooseDirButton) {
             JFileChooser chooser = new JFileChooser();
@@ -267,9 +250,6 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         // GlobalProfilingSettings
         pis.setPortNo(((Number) portNoSpinner.getValue()).intValue());
 
-        JavaPlatform sel = getSelectedJavaPlatform();
-
-        pis.setJavaPlatformForProfiling((sel == null) ? null : sel.getDisplayName());
 
         // ProfilerIDESettings
         pis.setDisplayLiveResultsCPU(cpuLiveResultsCheckbox.isSelected());
@@ -388,18 +368,6 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
             }
         } else if (openThreadsViewCombo.getSelectedItem() == KEY_OPEN_NEVER) {
             if (settings.getThreadsViewBehavior() != ProfilerIDESettings.OPEN_NEVER) {
-                return false;
-            }
-        }
-
-        JavaPlatform sel = getSelectedJavaPlatform();
-
-        if (sel == null) {
-            if (settings.getJavaPlatformForProfiling() != null) {
-                return false;
-            }
-        } else {
-            if (!sel.getDisplayName().equals(settings.getJavaPlatformForProfiling())) {
                 return false;
             }
         }
@@ -920,21 +888,5 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         supportedJavaPlatforms.clear();
         supportedJavaPlatformsNames.clear();
 
-        Iterator supportedPlatforms = JavaPlatformSelector.getSupportedPlatforms().iterator();
-
-        JavaPlatform supportedJavaPlatform;
-        String supportedJavaPlatformName;
-
-        while (supportedPlatforms.hasNext()) {
-            supportedJavaPlatform = (JavaPlatform) supportedPlatforms.next();
-            supportedJavaPlatformName = supportedJavaPlatform.getDisplayName();
-
-            if (!supportedJavaPlatformsNames.contains(supportedJavaPlatformName)) {
-                supportedJavaPlatforms.add(supportedJavaPlatform);
-                supportedJavaPlatformsNames.add(supportedJavaPlatformName);
-            }
-        }
-
-        supportedJavaPlatforms.addAll(JavaPlatformSelector.getSupportedPlatforms());
-    }
+     }
 }
