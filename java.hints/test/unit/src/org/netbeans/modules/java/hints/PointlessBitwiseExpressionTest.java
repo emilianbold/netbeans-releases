@@ -457,6 +457,18 @@ public class PointlessBitwiseExpressionTest extends TestBase {
         );
     }
     
+    public void test185010() throws Exception {
+        performAnalysisTest (
+            "test/Test.java",
+            "package test;\n" +
+            "class Test {\n" +
+            "    void test () {\n" +
+	    "        byte[] b = null;\n" +
+	    "        int a = b[0] & 0x80;\n" +
+            "    }\n" +
+            "}");
+    }
+
     static {
         NbBundle.setBranding ("test");
     }

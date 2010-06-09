@@ -86,6 +86,12 @@ public class ArithmeticUtilities {
         }
 
 	@Override
+	public Number scan(TreePath tree, Void p) {
+	    if (!ACCEPTED_KINDS.contains(tree.getLeaf().getKind())) return null;
+	    return super.scan(tree, p);
+	}
+
+	@Override
 	public Number scan(Tree tree, Void p) {
 	    if (tree == null) return null;
 	    if (!ACCEPTED_KINDS.contains(tree.getKind())) return null;
