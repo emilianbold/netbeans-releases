@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Specification-Version: 6.9
 OpenIDE-Module: org.netbeans.modules.soa.dndbridge
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/soa/dndbridge/resources/Bundle.properties
