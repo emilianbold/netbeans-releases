@@ -206,7 +206,7 @@ public class EntityRename implements JPARefactoring {
                                         LiteralTree literal = (LiteralTree) expression;
                                         String value = literal.getValue().toString();
                                         if (reference.getAttributeValue().equals(value)) {
-                                            tmp = make.Assignment(make.Identifier(reference.getAttribute()), make.Literal(rename.getNewName()));
+                                            tmp = make.Assignment(variable, make.Literal(rename.getNewName()));
                                         }
                                     }
                                 }
