@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -104,7 +105,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     }
     
     public void doAction (Object action) {
-        runAction(action, true);
+        runAction(action, true, null);
     }
     
     @Override
@@ -112,7 +113,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         doLazyAction(new Runnable() {
             public void run() {
                 try {
-                    runAction(action, true);
+                    runAction(action, true, null);
                 } finally {
                     actionPerformedNotifier.run();
                 }
@@ -120,11 +121,11 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         });
     }
     
-    public void runAction(Object action, boolean doResume) {
+    public void runAction(Object action, boolean doResume, Lock lock) {
         if (ActionsManager.ACTION_STEP_INTO.equals(action) && doMethodSelection()) {
             return; // action performed
         }
-        stepInto.runAction(action, doResume);
+        stepInto.runAction(action, doResume, lock);
     }
     
     protected void checkEnabled (int debuggerState) {
