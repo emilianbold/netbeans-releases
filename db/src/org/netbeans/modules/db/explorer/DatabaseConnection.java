@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -103,7 +103,7 @@ import org.openide.windows.TopComponent;
  * Instances of this class uses explorer option to store information about
  * open connection.
  */
-public class DatabaseConnection implements DBConnection {
+public final class DatabaseConnection implements DBConnection {
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseConnection.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
@@ -187,6 +187,7 @@ public class DatabaseConnection implements DBConnection {
     static {
         openConnectionLookupResult = Lookup.getDefault().lookup(new Lookup.Template<OpenConnectionInterface>(OpenConnectionInterface.class));
         openConnectionLookupResult.addLookupListener(new LookupListener() {
+            @Override
             public void resultChanged(LookupEvent ev) {
                 synchronized (DatabaseConnection.class) {
                     openConnectionServices = null;
@@ -196,6 +197,7 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Default constructor */
+    @SuppressWarnings("LeakingThisInConstructor")
     public DatabaseConnection() {
         dbconn = DatabaseConnectionAccessor.DEFAULT.createDatabaseConnection(this);
         propertySupport = new PropertyChangeSupport(this);
@@ -301,7 +303,7 @@ public class DatabaseConnection implements DBConnection {
                 LOGGER.log(Level.FINE, "Warnings while trying vitality of connection: " + warnings);
             }
             return ! conn.isClosed();
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             if (dbconn != null) {
                 try {
                     dbconn.disconnect();
@@ -365,6 +367,7 @@ public class DatabaseConnection implements DBConnection {
      }
 
     /** Returns driver class */
+    @Override
     public String getDriver() {
         return drv;
     }
@@ -373,6 +376,7 @@ public class DatabaseConnection implements DBConnection {
      * Fires propertychange event.
      * @param driver DNew driver URL
      */
+    @Override
     public void setDriver(String driver) {
         if (driver == null || driver.equals(drv)) {
             return;
@@ -384,10 +388,12 @@ public class DatabaseConnection implements DBConnection {
         openConnection = null;
     }
 
+    @Override
     public String getDriverName() {
         return drvname;
     }
 
+    @Override
     public void setDriverName(String name) {
         if (name == null || name.equals(drvname)) {
             return;
@@ -401,6 +407,7 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Returns database URL */
+    @Override
     public String getDatabase() {
         if (db == null) {
             db = "";
@@ -413,6 +420,7 @@ public class DatabaseConnection implements DBConnection {
      * Fires propertychange event.
      * @param database New database URL
      */
+    @Override
     public void setDatabase(String database) {
         if (database == null || database.equals(db)) {
             return;
@@ -428,6 +436,7 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Returns user login name */
+    @Override
     public String getUser() {
         if (usr == null) {
             usr = "";
@@ -440,6 +449,7 @@ public class DatabaseConnection implements DBConnection {
      * Fires propertychange event.
      * @param user New login name
      */
+    @Override
     public void setUser(String user) {
         if (user == null || user.equals(usr)) {
             return;
@@ -455,6 +465,7 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Returns name of the connection */
+    @Override
     public String getName() {
         if(name == null) {
             if((getSchema()==null)||(getSchema().length()==0)) {
@@ -471,6 +482,7 @@ public class DatabaseConnection implements DBConnection {
      * Fires propertychange event.
      * @param value New connection name
      */
+    @Override
     public void setName(String value) {
         if (name == null || name.equals(value)) {
             return;
@@ -483,10 +495,12 @@ public class DatabaseConnection implements DBConnection {
         }
     }
 
+    @Override
     public String getDisplayName() {
         return (displayName != null && displayName.length() > 0) ? displayName : getName();
     }
 
+    @Override
     public void setDisplayName(String value) {
         if ((displayName == null && value == null) || (displayName != null && displayName.equals(value))) {
             return;
@@ -500,6 +514,7 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Returns user schema name */
+    @Override
     public String getSchema() {
         if (schema == null) {
             schema = "";
@@ -512,6 +527,7 @@ public class DatabaseConnection implements DBConnection {
      * Fires propertychange event.
      * @param schema_name New login name
      */
+    @Override
     public void setSchema(String schema_name) {
         if (schema_name == null || schema_name.equals(schema)) {
             return;
@@ -581,6 +597,7 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Returns if password should be remembered */
+    @Override
     public boolean rememberPassword() {
         if (rpwd == null) {
             restorePassword();
@@ -591,6 +608,7 @@ public class DatabaseConnection implements DBConnection {
     /** Sets password should be remembered
      * @param flag New flag
      */
+    @Override
     public void setRememberPassword(boolean flag) {
         Boolean oldrpwd = rpwd;
         rpwd = Boolean.valueOf(flag);
@@ -600,6 +618,7 @@ public class DatabaseConnection implements DBConnection {
     }
 
     /** Returns password */
+    @Override
     public String getPassword() {
         if (pwd == null) {
             restorePassword();
@@ -611,6 +630,7 @@ public class DatabaseConnection implements DBConnection {
      * Fires propertychange event.
      * @param password New password
      */
+    @Override
     public void setPassword(String password) {
         if (password == null || password.equals(pwd)) {
             return;
@@ -630,6 +650,7 @@ public class DatabaseConnection implements DBConnection {
      * DDLException if none of driver/database/user/password is set or if
      * driver or database does not exist or is inaccessible.
      */
+    @Override
     public Connection createJDBCConnection() throws DDLException {
         if (LOG) {
             LOGGER.log(Level.FINE, "createJDBCConnection()");
@@ -681,9 +702,7 @@ public class DatabaseConnection implements DBConnection {
             getOpenConnection().disable();
 
             initSQLException(e);
-            DDLException ddle = new DDLException(message);
-            ddle.initCause(e);
-            throw ddle;
+            throw new DDLException(message, e);
         } catch (Exception exc) {
             String message = NbBundle.getMessage (DatabaseConnection.class, "EXC_CannotEstablishConnection", db, drv, exc.getMessage()); // NOI18N
 
@@ -691,10 +710,7 @@ public class DatabaseConnection implements DBConnection {
 
             // For Java Studio Enterprise.
             getOpenConnection().disable();
-
-            DDLException ddle = new DDLException(message);
-            ddle.initCause(exc);
-            throw ddle;
+            throw new DDLException(message, exc);
         }
     }
 
@@ -718,6 +734,7 @@ public class DatabaseConnection implements DBConnection {
             return errorCode;
         }
 
+    @SuppressWarnings("deprecation")
     private void doConnect() throws DDLException {
         if (drv == null || db == null || usr == null ) {
             sendException(new DDLException(NbBundle.getMessage(DatabaseConnection.class, "EXC_InsufficientConnInfo")));
@@ -803,6 +820,7 @@ public class DatabaseConnection implements DBConnection {
         }
 
         Runnable runnable = new Runnable() {
+            @Override
             public void run() {
                 try {
                     doConnect();
@@ -1020,6 +1038,7 @@ public class DatabaseConnection implements DBConnection {
             final ConnectionNode cni = findConnectionNode(getName());
             if (cni != null && cni.getDatabaseConnection().getConnector().isDisconnected()) {
                 Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
                     public void run() {
                         new ConnectAction.ConnectionDialogDisplayer().showDialog(DatabaseConnection.this, false);
                     }
