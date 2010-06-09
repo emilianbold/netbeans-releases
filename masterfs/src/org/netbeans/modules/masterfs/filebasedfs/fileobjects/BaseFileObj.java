@@ -328,6 +328,7 @@ public abstract class BaseFileObj extends FileObject {
 
         synchronized (FileObjectFactory.AllFactories) {
             FileNaming oldFileName = getFileName();
+            assert oldFileName != null;
             FileNaming[] allRenamed = NamingFactory.rename(oldFileName, newNameExt, handler);
             if (allRenamed == null) {
                 FileObject parentFo = getExistingParent();
@@ -731,7 +732,7 @@ public abstract class BaseFileObj extends FileObject {
     private void updateFileName(FileNaming oldName, FileNaming oldRoot, FileNaming newRoot) {
         Stack<String> names = new Stack<String>();
 
-        while (oldRoot != oldName) {
+        while (oldRoot != oldName && oldName != null) {
             names.add(oldName.getName());
             oldName = oldName.getParent();
         }
