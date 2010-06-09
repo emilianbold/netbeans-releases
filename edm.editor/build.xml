@@ -19,14 +19,4 @@
 -->
 <project name="edm.editor" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-    <target name="netbeans-extra" depends="init">
-        <mkdir dir="${cluster}/modules/ext/edm"/>
-        <!--antcall target="compile-i18"/-->
-        <copy todir="${cluster}/modules/ext/edm">
-            <fileset dir="${basedir}/external">
-                <include name="*.jar"/>
-                <include name="*.zip"/>
-            </fileset>
-        </copy>
-    </target>
 </project>

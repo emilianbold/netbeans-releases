@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.encoder.coco.ui
-OpenIDE-Module-Layer: org/netbeans/modules/encoder/coco/ui/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/encoder/coco/ui/Bundle.properties
-OpenIDE-Module-Install: org/netbeans/modules/encoder/coco/ui/CocoModuleInstaller.class
-OpenIDE-Module-Specification-Version: 1.0

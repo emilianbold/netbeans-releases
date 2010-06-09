@@ -1,6 +1,7 @@
 Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Specification-Version: 6.9
 OpenIDE-Module: org.netbeans.modules.encoder.custom.aip
 OpenIDE-Module-Layer: org/netbeans/modules/encoder/custom/aip/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/encoder/custom/aip/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/encoder/custom/aip/CustomAIPModuleInstaller.class
-OpenIDE-Module-Specification-Version: 1.0

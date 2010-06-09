@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.modules.soa.kit</code-name-base>
+            <module-dependencies>
+
+            <!-- xml -->
+            <dependency><code-name-base>org.netbeans.modules.xml.libs.jxpath</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.libs.prefuse</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.catalogsupport</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.xpath.ext</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.misc</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.xam.ui</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.search</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.nbprefuse</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.refactoring</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.schema.ui.basic</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.schema.abe</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.schema</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.schema.refactoring</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.wsdl.bindingsupport.api</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.wsdl.bindingsupport</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.wsdl.extensions</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.wsdlui</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.wsdl.refactoring</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xml.wsdlextui</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            <!-- libs -->
+            <dependency><code-name-base>org.netbeans.modules.soa.libs.httpunit</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.libs.jbiadmincommon</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.libs.jgo</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.libs.mail</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.libs.pojo</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.libs.sap</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.libs.wsdl4j</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.libs.xmlbeans</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.libs.xslt</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            <!-- soa -->
+            <dependency><code-name-base>org.netbeans.modules.soa.wsdlui.api</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.wsdl.bindingsupport</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.bindingwizard</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.ldap</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.ui</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.mappercore</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.reportgenerator</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.dndbridge</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.xpath.mapper</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.jca.base</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.jca.jms</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.pojo</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.soa.palette.java</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            <!-- compapp -->
+            <dependency><code-name-base>org.netbeans.modules.compapp.help</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.compapp.projects.wizard</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.compapp.manager.jbi</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.compapp.projects.jbi</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.compapp.casaeditor</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.compapp.projects.base</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.compapp.configextension</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.compapp.configextension.msgtracking</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            <!-- bpel -->
+            <dependency><code-name-base>org.netbeans.modules.bpel.help</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.bpel.model</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.bpel.editors.api</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.bpel.debugger.api</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.bpel.core</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.bpel.project</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.bpel.debugger.bdi</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.bpel.debugger</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.bpel.debugger.ui</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.bpel.mapper</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.bpel.editors</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.bpel.refactoring</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.bpel.validation</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.bpel.samples</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            <!-- xslt -->
+            <dependency><code-name-base>org.netbeans.modules.xslt.help</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xslt.model</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xslt.tmap</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xslt.project</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xslt.core</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xslt.validation</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.xslt.samples</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            <!-- wlm -->
+            <dependency><code-name-base>org.netbeans.modules.wlm.model</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wlm.editor</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wlm.project</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wlm.bridge</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wlm.validation</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wlm.samples</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            <!-- iep -->
+            <dependency><code-name-base>org.netbeans.modules.iep.help</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.iep.editor</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.iep.project</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.iep.samples</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            <!-- sql -->
+            <dependency><code-name-base>org.netbeans.modules.sql.help</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.sql.project</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.sql.wizard</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            <!-- dm -->
+            <dependency><code-name-base>org.netbeans.modules.dm.virtual.db</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.dm.di.core</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            <!-- edm -->
+            <dependency><code-name-base>org.netbeans.modules.edm.editor</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.edm.project</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            <!-- etl -->
+            <dependency><code-name-base>org.netbeans.modules.etl.editor</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.etl.project</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            <!-- encoder -->
+            <dependency><code-name-base>org.netbeans.modules.encoder</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.encoder.custom</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.encoder.ui.basic</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.encoder.custom.aip</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.encoder.ui.tester</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            <!-- wsdlextensions -->
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.email</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.file</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.ftp</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.hl7</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.ims</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.jdbc</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.jms</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.ldap</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.mq</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.rest</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.sap</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.scheduler</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.smtp</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.snmp</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+            <dependency><code-name-base>org.netbeans.modules.wsdlextensions.swift</code-name-base><run-dependency><specification-version>6.9</specification-version></run-dependency></dependency>
+
+            </module-dependencies>
+            <public-packages/>
+        </data>
+    </configuration>
+</project>
