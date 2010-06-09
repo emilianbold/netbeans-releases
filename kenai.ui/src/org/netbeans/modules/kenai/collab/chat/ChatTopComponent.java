@@ -358,9 +358,12 @@ public class ChatTopComponent extends TopComponent {
         try {
             if (!chatPanel.isPrivate()) {
                 Kenai k = KenaiConnection.getKenai(chatPanel.getName());
-                chats.setTitleAt(idx, k.getProject(chatPanel.getShortName()).getDisplayName());
+                String displayName = k.getProject(chatPanel.getShortName()).getDisplayName();
+                chats.setTitleAt(idx, displayName);
+                chats.setToolTipTextAt(idx, chatPanel.getName());
             } else {
                 chats.setTitleAt(idx, new KenaiUserUI(chatPanel.getName()).getUserName());
+                chats.setToolTipTextAt(idx, chatPanel.getName());
             }
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);

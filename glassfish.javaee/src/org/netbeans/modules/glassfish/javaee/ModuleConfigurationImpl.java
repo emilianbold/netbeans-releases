@@ -82,9 +82,9 @@ public class ModuleConfigurationImpl implements
     private J2eeModule module;
     private Lookup lookup;
 
-    ModuleConfigurationImpl(J2eeModule module) throws ConfigurationException {
+    ModuleConfigurationImpl(J2eeModule module, Hk2Configuration config) throws ConfigurationException {
         this.module = module;
-        this.config = new Hk2Configuration(module);
+        this.config = config;
         ResourcesHelper.addSampleDatasource(module);
     }
 
@@ -95,6 +95,7 @@ public class ModuleConfigurationImpl implements
     // ------------------------------------------------------------------------
     // Implementation of ModuleConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public synchronized Lookup getLookup() {
         if (null == lookup) {
             lookup = Lookups.fixed(this);
@@ -102,10 +103,12 @@ public class ModuleConfigurationImpl implements
         return lookup;
     }
 
+    @Override
     public J2eeModule getJ2eeModule() {
         return module;
     }
 
+    @Override
     public void dispose() {
         config.dispose();
     }
@@ -113,10 +116,12 @@ public class ModuleConfigurationImpl implements
     // ------------------------------------------------------------------------
     // Implementation of ContextRootConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public String getContextRoot() throws ConfigurationException {
         return config.getContextRoot();
     }
 
+    @Override
     public void setContextRoot(String contextRoot) throws ConfigurationException {
         config.setContextRoot(contextRoot);
     }
@@ -124,6 +129,7 @@ public class ModuleConfigurationImpl implements
     // ------------------------------------------------------------------------
     // Implementation of DeploymentPlanConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public void save(OutputStream outputStream) throws ConfigurationException {
         config.saveConfiguration(outputStream);
     }
@@ -131,30 +137,37 @@ public class ModuleConfigurationImpl implements
     // ------------------------------------------------------------------------
     // Implementation of DatasourceConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
         return config.getDatasources();
     }
 
+    @Override
     public boolean supportsCreateDatasource() {
         return config.supportsCreateDatasource();
     }
 
+    @Override
     public Datasource createDatasource(String jndiName, String url, String username, String password, String driver) throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException {
         return config.createDatasource(jndiName, url, username, password, driver);
     }
 
+    @Override
     public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
         config.bindDatasourceReference(referenceName, jndiName);
     }
 
+    @Override
     public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, String referenceName, String jndiName) throws ConfigurationException {
         config.bindDatasourceReferenceForEjb(ejbName, ejbType, referenceName, jndiName);
     }
 
+    @Override
     public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
         return config.findDatasourceJndiName(referenceName);
     }
 
+    @Override
     public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
         return config.findDatasourceJndiNameForEjb(ejbName, referenceName);
     }
@@ -162,42 +175,52 @@ public class ModuleConfigurationImpl implements
     // ------------------------------------------------------------------------
     // Implementation of EjbResourceConfiguration
     // ------------------------------------------------------------------------
+    @Override
     public String findJndiNameForEjb(String ejbName) throws ConfigurationException {
         return config.findJndiNameForEjb(ejbName);
     }
 
+    @Override
     public void bindEjbReference(String referenceName, String jndiName) throws ConfigurationException {
         config.bindEjbReference(referenceName, jndiName);
     }
 
+    @Override
     public void bindEjbReferenceForEjb(String ejbName, String ejbType, String referenceName, String jndiName) throws ConfigurationException {
         config.bindEjbReferenceForEjb(ejbName, ejbType, referenceName, jndiName);
     }
 
+    @Override
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
         return config.getMessageDestinations();
  }
 
+    @Override
     public boolean supportsCreateMessageDestination() {
         return config.supportsCreateMessageDestination();
     }
 
+    @Override
     public MessageDestination createMessageDestination(String name, Type type) throws UnsupportedOperationException, ConfigurationException {
         return config.createMessageDestination(name, type);
     }
 
+    @Override
     public void bindMdbToMessageDestination(String mdbName, String name, Type type) throws ConfigurationException {
         config.bindMdbToMessageDestination(mdbName, name, type);
     }
 
+    @Override
     public String findMessageDestinationName(String mdbName) throws ConfigurationException {
         return config.findMessageDestinationName(mdbName);
     }
 
+    @Override
     public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, String destName, Type type) throws ConfigurationException {
         config.bindMessageDestinationReference(referenceName, connectionFactoryName, destName, type);
     }
 
+    @Override
     public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType, String referenceName, String connectionFactoryName, String destName, Type type) throws ConfigurationException {
         config.bindMessageDestinationReferenceForEjb(ejbName, ejbType, referenceName, connectionFactoryName, destName, type);
     }

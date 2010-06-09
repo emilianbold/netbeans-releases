@@ -65,6 +65,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -146,7 +147,14 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         }
         SourcePath sourcePath = ((JPDADebuggerImpl) debugger).getEngineContext();
         boolean[] setStoppedStateNoContinue = new boolean[] { false };
-        trImpl.accessLock.readLock().lock();
+        int suspendPolicy = debuggerImpl.getSuspend();
+        Lock lock;
+        if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
+            lock = trImpl.accessLock.writeLock();
+        } else {
+            lock = debuggerImpl.accessLock.writeLock();
+        }
+        lock.lock();
         try {
             ((JPDAThreadImpl) tr).waitUntilMethodInvokeDone();
             EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
@@ -216,7 +224,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         } catch (VMDisconnectedExceptionWrapper ex) {
         } catch (ObjectCollectedExceptionWrapper ex) {
         } finally {
-            trImpl.accessLock.readLock().unlock();
+            lock.unlock();
         }
         if (setStoppedStateNoContinue[0]) {
             debuggerImpl.setStoppedStateNoContinue(trImpl.getThreadReference());

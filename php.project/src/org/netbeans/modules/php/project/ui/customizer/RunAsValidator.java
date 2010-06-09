@@ -102,16 +102,46 @@ public final class RunAsValidator {
      * @param phpInterpreter PHP interpreter path to validate.
      * @param projectDirectory parent directory of the indexFile.
      * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
-     * @param arguments arguments to validate, can be <code>null</code>.
+     * @param arguments script arguments to validate, can be <code>null</code>.
+     * @param workDir working directory, can be {@code null}
+     * @param arguments PHP arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
-    public static String validateScriptFields(String phpInterpreter, File projectDirectory, String indexFile, String arguments) {
+    public static String validateScriptFields(String phpInterpreter, File projectDirectory, String indexFile, String arguments, String workDir, String phpArgs) {
         try {
             PhpInterpreter.getCustom(phpInterpreter);
         } catch (InvalidPhpProgramException ex) {
             return ex.getLocalizedMessage();
         }
+        String err = validateWorkDir(workDir, true);
+        if (err != null) {
+            return err;
+        }
         return validateIndexFile(projectDirectory, indexFile, arguments);
+    }
+
+    /**
+     * Validate working directory and return an error message or {@code null}.
+     * @param workDir working directory
+     * @param allowEmpty if {@code true} then {@code null} or empty String is allowed
+     * @return an error message or {@code null} if working directory is valid
+     */
+    public static String validateWorkDir(String workDir, boolean allowEmpty) {
+        boolean hasText = StringUtils.hasText(workDir);
+        if (allowEmpty && !hasText) {
+            return null;
+        }
+        if (!hasText) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_FolderEmpty");
+        }
+        File workDirFile = new File(workDir);
+        if (!workDirFile.isAbsolute()) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_WorkDirNotAbsolute");
+        }
+        if (!workDirFile.isDirectory()) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_WorkDirDirectory");
+        }
+        return null;
     }
 
     private static final String INVALID_SEPARATOR = "\\";

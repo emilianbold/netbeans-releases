@@ -30,6 +30,9 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.tree.Tree;
+import org.netbeans.api.java.source.Comment;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -57,7 +60,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
@@ -75,8 +77,10 @@ import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.LifecycleManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -117,6 +121,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         suite.addTest(new GuardedBlockTest("test119962"));
         suite.addTest(new GuardedBlockTest("testRenameTypeParameter125385"));
 //        suite.addTest(new GuardedBlockTest("test119345"));
+        suite.addTest(new GuardedBlockTest("testComplex186754"));
         return suite;
     }
     
@@ -758,6 +763,97 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         };
         src.runModificationTask(task).commit();
         String res = doc.getText(0, doc.getLength());
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testComplex186754() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "   public Test() {\n" +
+            "   }\n" +
+            "    // <editor-fold defaultstate=\"collapsed\" desc=\"Generated Code\">//GEN-BEGIN:initComponents\n" +
+            "    private void initComponents() {\n" +
+            "    }// </editor-fold>//GEN-END:initComponents\n" +
+            "   /**\n" +
+            "    * @Action\n" +
+            "    */\n" +
+            "   public void method1() {\n" +
+            "   }\n" +
+            "    // Variables declaration - do not modify//GEN-BEGIN:variables\n" +
+            "    private Object jButton1;\n" +
+            "    // End of variables declaration//GEN-END:variables\n" +
+            "   /**\n" +
+            "    * @Action\n" +
+            "    */\n" +
+            "   public void method2() {\n" +
+            "   }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "   public Test() {\n" +
+            "   }\n" +
+            "    // <editor-fold defaultstate=\"collapsed\" desc=\"Generated Code\">//GEN-BEGIN:initComponents\n" +
+            "    private void initComponents() {\n" +
+            "    }// </editor-fold>//GEN-END:initComponents\n" +
+            "\n" + //XXX 186759
+            "   public void method1() {\n" +
+            "   }\n" +
+            "    // Variables declaration - do not modify//GEN-BEGIN:variables\n" +
+            "    private Object jButton1;\n" +
+            "    // End of variables declaration//GEN-END:variables\n" +
+            "\n" + //XXX 186759
+            "   public void method2() {\n" +
+            "   }\n" +
+            "}\n";
+
+        DataObject dataObject = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie editorCookie = ((GuardedDataObject) dataObject).getCookie(EditorCookie.class);
+        Document doc = editorCookie.openDocument();
+        JavaSource src = getJavaSource(testFile);
+
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                final TreeMaker make = workingCopy.getTreeMaker();
+                final TreeUtilities tu = workingCopy.getTreeUtilities();
+                new TreeScanner<Void, Void>() {
+                  @Override
+                  public Void visitMethod(MethodTree mt, Void p) {
+                     Tree nt = make.setLabel(mt, mt.getName());
+                     GeneratorUtilities.get(workingCopy).copyComments(mt, nt, true);
+                     final List<Comment> comments = tu.getComments(nt, true);
+                     int size = comments.size();
+
+                     if (size == 0) {
+                        return super.visitMethod(mt, p);
+                     }
+
+                     for (int i = size - 1; i >= 0; i--) {
+                        if (comments.get(i).isDocComment()) {
+                           make.removeComment(nt, i, true);
+                        }
+                     }
+
+                     workingCopy.rewrite(mt, nt);
+
+                     return super.visitMethod(mt, p);
+                  }
+                }.scan(cut, null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        LifecycleManager.getDefault().saveAll();
+        String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
     }

@@ -433,10 +433,20 @@ public class SourcePath {
         int lineNumber = t.getLineNumber (stratumn);
         if (lineNumber < 1) return null;
         String url;
+        String sourcePath;
         try {
-            url = getURL (convertSlash (t.getSourcePath (stratumn)), true);
+            sourcePath = t.getSourcePath (stratumn);
         } catch (AbsentInformationException e) {
-            url = getURL (convertClassNameToRelativePath (t.getClassName ()), true);
+            sourcePath = "";
+        }
+        if (sourcePath.length() > 0) {
+            url = getURL (convertSlash (sourcePath), true);
+        } else {
+            String className = t.getClassName ();
+            if (className.length() == 0) {
+                return null; // nothing to annotate.
+            }
+            url = getURL (convertClassNameToRelativePath (className), true);
         }
         Operation operation;
         List operationsAnn;
