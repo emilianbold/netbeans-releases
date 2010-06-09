@@ -437,7 +437,7 @@ public final class FileObjectFactory {
     private Set<BaseFileObj> collectForRefresh() {
         final Set<BaseFileObj> all2Refresh;
         synchronized (allIBaseFileObjects) {
-            all2Refresh = new WeakSet<BaseFileObj>(allIBaseFileObjects.size() * 3);
+            all2Refresh = new WeakSet<BaseFileObj>(allIBaseFileObjects.size() * 3 + 11);
             final Iterator<Object> it = allIBaseFileObjects.values().iterator();
             while (it.hasNext()) {
                 final Object obj = it.next();
