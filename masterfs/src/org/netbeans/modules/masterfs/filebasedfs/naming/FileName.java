@@ -57,7 +57,7 @@ import org.openide.util.CharSequences;
 public class FileName implements FileNaming {
     private final CharSequence name;
     private final FileNaming parent;
-    private Integer id;
+    private final Integer id;
 
     protected FileName(final FileNaming parent, final File file) {
         this.parent = parent;
@@ -110,13 +110,6 @@ public class FileName implements FileNaming {
     }
 
     public final Integer getId() {
-        return getId(false);
-    }
-
-    public Integer getId(boolean recompute) {
-        if (recompute) {
-            id = NamingFactory.createID(getFile());
-        }
         return id;
     }
 

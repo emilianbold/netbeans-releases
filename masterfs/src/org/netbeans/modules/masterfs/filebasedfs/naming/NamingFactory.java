@@ -157,7 +157,7 @@ public final class NamingFactory {
             FileNaming fN = (FileNaming)entry.getValue(); 
             all.add(fN);    
             removeImpl(fN, id);
-            fN.getId(true);
+            fN.getId();
             NamingFactory.registerInstanceOfFileNaming(fN.getParent(), fN.getFile(), fN,false, FileType.unknown);            
         }
     }

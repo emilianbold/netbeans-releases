@@ -305,11 +305,6 @@ public class ChildrenSupport {
                 return id.intValue();
             }
 
-            public Integer getId(boolean recompute) {
-                return id;
-
-            }
-
             public boolean isFile() {
                 return this.getFile().isFile();
             }
