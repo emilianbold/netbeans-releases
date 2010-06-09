@@ -102,7 +102,6 @@
             <attribute position="1">
                 <type>string</type>
                 <required>no</required>
-                <possible_values>No	html, htmlall, url, urlpathinfo, quotes, hex, hexentity, javascript, mail</possible_values>
                 <default>html</default>
                 <description>This is the escape format to use.</description>
             </attribute>
@@ -110,7 +109,6 @@
             <attribute position="2">
                 <type>string</type>
                 <required>no</required>
-                <possible_values>ISO-8859-1, UTF-8, and any character set supported by  htmlentities()  </possible_values>
                 <default>ISO-8859-1</default>
                 <description>The character set encoding passed to htmlentities() et. al.</description>
             </attribute>

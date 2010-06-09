@@ -89,7 +89,7 @@ public class TplCodeCompletionData {
         InputStream inputStream = TplCodeCompletionData.class.getResourceAsStream("defs/" + filePath + ".xml"); //NOI18N
 
         try {
-            Collection<EntryMetadata> ccData = CodeCompletionEntries.readAllCodeCompletionEntriesFromXML(inputStream);
+            Collection<EntryMetadata> ccData = CodeCompletionEntries.readAllCodeCompletionEntriesFromXML(inputStream, filePath);
             ccList.addAll(ccData);
 
         } catch (Exception ex) {

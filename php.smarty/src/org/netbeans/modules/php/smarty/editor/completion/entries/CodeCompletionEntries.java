@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.smarty.editor.completion.entries;
 
 import java.io.IOException;
@@ -64,29 +63,83 @@ public class CodeCompletionEntries {
     public CodeCompletionEntries() {
     }
 
-    protected static Collection<EntryMetadata> readAllCodeCompletionEntriesFromXML(InputStream inputStream) throws IOException, ParserConfigurationException, SAXException {
-        Collection<EntryMetadata> ccEntries = null;
-        if (ccEntries == null) {
-            ccEntries = new ArrayList<EntryMetadata>();
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(inputStream);
-            doc.getDocumentElement().normalize();
+    protected static Collection<EntryMetadata> readAllCodeCompletionEntriesFromXML(InputStream inputStream, String completionType) throws IOException, ParserConfigurationException, SAXException {
+        Collection<EntryMetadata> ccEntries = new ArrayList<EntryMetadata>();
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(inputStream);
+        doc.getDocumentElement().normalize();
 
-            NodeList allEntriesList = doc.getElementsByTagName("entry");
-            for (int i = 0; i < allEntriesList.getLength(); i++) {
-                Node ccNode = allEntriesList.item(i);
+        NodeList allEntriesList = doc.getElementsByTagName("entry");
+        for (int i = 0; i < allEntriesList.getLength(); i++) {
+            Node ccNode = allEntriesList.item(i);
 
-                if (ccNode.getNodeType() == Node.ELEMENT_NODE){
-                    Element elem = (Element) ccNode;
-                    NodeList desc = elem.getElementsByTagName("description");
-                    NodeList url = elem.getElementsByTagName("url");
-                    ccEntries.add(new CCDataBuiltInFunction(elem.getAttribute("name"), desc.item(0).getTextContent(), url.item(0).getTextContent()));
+            if (ccNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element elem = (Element) ccNode;
+                String desc = elem.getElementsByTagName("description").item(0).getTextContent();
+                String url = elem.getElementsByTagName("url").item(0).getTextContent();
+                String help = "";
+                NodeList attributes = elem.getElementsByTagName("attributes");
+                if (completionType.equals("built-in-functions")) {
+                    help = generateHelpForBuiltInFunctions(desc, attributes);
+                } else {
+                    help = generateHelpForVariableModifiers(desc, attributes);
                 }
+                ccEntries.add(new CCDataBuiltInFunction(elem.getAttribute("name"), help, url));
             }
         }
 
         return ccEntries;
     }
-    
+
+    private static String generateHelpForBuiltInFunctions(String desc, NodeList attributesRoot) {
+        Element parent = (Element) (attributesRoot.item(0));
+        if (parent != null) {
+            String help = desc + "<br><br><table border=1>"
+                    + "<tr style=\"font-weight:bold\"><td>Attribute name</td><td>Type</td><td>Required</td><td>Default</td><td>Description</td></tr>";
+            NodeList attributes = parent.getChildNodes();
+            for (int i = 0; i < attributes.getLength(); i++) {
+                if (attributes.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                    Element attribute = (Element) attributes.item(i);
+                    help += "<tr><td>" + attribute.getAttribute("name") + "</td>";
+                    help += getRestOfAttributeParams(attribute);
+                    help += "</tr>";
+                }
+            }
+            help += "</table>";
+            return help;
+        } else {
+            return desc;
+        }
+    }
+
+    private static String generateHelpForVariableModifiers(String desc, NodeList attributesRoot) {
+        Element parent = (Element) (attributesRoot.item(0));
+        if (parent != null) {
+            String help = desc + "<br><br><table border=1>"
+                    + "<tr style=\"font-weight:bold\"><td>Parameter Position</td><td>Type</td><td>Required</td><td>Default</td><td>Description</td></tr>";
+            NodeList attributes = parent.getChildNodes();
+            for (int i = 0; i < attributes.getLength(); i++) {
+                if (attributes.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                    Element attribute = (Element) attributes.item(i);
+                    help += "<tr><td>" + attribute.getAttribute("position") + "</td>";
+                    help += getRestOfAttributeParams(attribute);
+                    help += "</tr>";
+                }
+            }
+            help += "</table>";
+            return help;
+        } else {
+            return desc;
+        }
+    }
+
+    private static String getRestOfAttributeParams(Element attributeParams) {
+        String help = "";
+        help += "<td>" + attributeParams.getElementsByTagName("type").item(0).getTextContent() + "</td>";
+        help += "<td>" + attributeParams.getElementsByTagName("required").item(0).getTextContent() + "</td>";
+        help += "<td>" + attributeParams.getElementsByTagName("default").item(0).getTextContent() + "</td>";
+        help += "<td>" + attributeParams.getElementsByTagName("description").item(0).getTextContent() + "</td>";
+        return help;
+    }
 }
