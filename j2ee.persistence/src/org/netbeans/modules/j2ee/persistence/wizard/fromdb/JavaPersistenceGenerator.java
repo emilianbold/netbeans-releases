@@ -826,7 +826,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private String namedQueryPrefix;
 
             private Set<String> existingColumns = new HashSet<String>();
-            private Set<String> existingJoinColumns = new HashSet<String>();
+            private HashMap<String, Tree> existingJoinColumns = new HashMap<String, Tree>();
+            private HashMap<Tree, Tree> existingMappings = new HashMap<Tree, Tree>();
 
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 super(copy, entityClass);
@@ -905,21 +906,38 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     if(annotations!=null)    {
                         for(AnnotationTree annTree: annotations){
                             Name nm = ((IdentifierTree)annTree.getAnnotationType()).getName();
-                            Set<String> set = null;
                             if (nm.contentEquals("Column")){//NOI18N
-                                set = existingColumns;
+                                for(ExpressionTree exTree: annTree.getArguments()){
+                                    AssignmentTree aTree = (AssignmentTree)exTree;
+                                    if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("name")){//NOI18N
+                                            existingColumns.add((String)((LiteralTree)aTree.getExpression()).getValue());
+                                            break;
+                                    }
+                                }
                             } else if( nm.contentEquals("JoinColumn") ){//NOI18N
-                                set = existingJoinColumns;
-                            } else {//NOI18N
+                                for(ExpressionTree exTree: annTree.getArguments()){
+                                    AssignmentTree aTree = (AssignmentTree)exTree;
+                                    if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("name")){//NOI18N
+                                            existingJoinColumns.put((String)((LiteralTree)aTree.getExpression()).getValue(), annTree);
+                                            break;
+                                    }
+                                }                            } else if (nm.contentEquals("OneToOne") || nm.contentEquals("OneToMany")){//NOI18
+                                //may be relation with mappedTo
+                                for(ExpressionTree expression : annTree.getArguments()){
+                                    if(expression instanceof AssignmentTree){
+                                        AssignmentTree aTree = (AssignmentTree) expression;
+                                        if(aTree.getVariable().toString().equals("mappedBy")){//NOI18N
+                                            existingMappings.put(member, expression);
+                                            break;
+                                        }
+                                    }
+                                }
                                 continue;
                             }
-                            for(ExpressionTree exTree: annTree.getArguments()){
-                                AssignmentTree aTree = (AssignmentTree)exTree;
-                                if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("name")){//NOI18N
-                                        set.add((String)((LiteralTree)aTree.getExpression()).getValue());
-                                        break;
-                                }
+                            else {//NOI18N
+                                continue;
                             }
+
                         }
                     }
                 }
