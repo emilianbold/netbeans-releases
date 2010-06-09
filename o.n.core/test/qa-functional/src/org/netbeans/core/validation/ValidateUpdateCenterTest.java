@@ -134,7 +134,7 @@ public class ValidateUpdateCenterTest extends NbTestCase {
     public void clusterVersions() throws Exception {
         for (String clusterLocation : System.getProperty("cluster.path.final").split(File.pathSeparator)) {
             File cluster = new File(clusterLocation);
-            if (cluster.getName().equals("harness")) {
+            if (cluster.getName().matches("ergonomics|harness")) {
                 // Not used for module dependencies, so exempted.
                 continue;
             }
