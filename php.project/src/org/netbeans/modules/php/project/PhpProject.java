@@ -748,7 +748,6 @@ public final class PhpProject implements Project {
                 PhpCoverageProvider.notifyProjectOpened(PhpProject.this);
             }
 
-            getCopySupport().projectOpened();
 
             // #164073 - for the first time, let's do it not in AWT thread
             PhpUnit.validateVersion(CommandUtils.getPhpUnit(false));
@@ -760,34 +759,39 @@ public final class PhpProject implements Project {
                 frameworkProvider.phpModuleOpened(phpModule);
             }
 
+            // #187060 - exception in projectOpened => project IS NOT opened (so move it at the end of the hook)
+            getCopySupport().projectOpened();
+
             // log usage
             PhpProjectUtils.logUsage(PhpProject.class, "USG_PROJECT_OPEN_PHP", Arrays.asList(PhpProjectUtils.getFrameworksForUsage(frameworkProviders))); // NOI18N
         }
 
         @Override
         protected void projectClosed() {
-            assert sourcesDirectory != null;
-            sourcesDirectory.removeFileChangeListener(sourceDirectoryFileChangeListener);
-            LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", sourcesDirectory);
-            PhpFrameworks.removeFrameworksListener(frameworksListener);
+            try {
+                assert sourcesDirectory != null;
+                sourcesDirectory.removeFileChangeListener(sourceDirectoryFileChangeListener);
+                LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", sourcesDirectory);
+                PhpFrameworks.removeFrameworksListener(frameworksListener);
 
-            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
-            ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
-            GlobalPathRegistry.getDefault().unregister(PhpSourcePath.BOOT_CP, bootClassPaths);
-            GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
-            for (ClassPath classPath : bootClassPaths) {
-                IncludePathClassPathProvider.removeProjectIncludePath(classPath);
+                ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
+                ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
+                GlobalPathRegistry.getDefault().unregister(PhpSourcePath.BOOT_CP, bootClassPaths);
+                GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
+                for (ClassPath classPath : bootClassPaths) {
+                    IncludePathClassPathProvider.removeProjectIncludePath(classPath);
+                }
+
+                // frameworks
+                PhpModule phpModule = getPhpModule();
+                assert phpModule != null;
+                for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
+                    frameworkProvider.phpModuleClosed(phpModule);
+                }
+            } finally {
+                // #187060 - exception in projectClosed => project IS closed (so do it in finally block)
+                getCopySupport().projectClosed();
             }
-
-            getCopySupport().projectClosed();
-
-            // frameworks
-            PhpModule phpModule = getPhpModule();
-            assert phpModule != null;
-            for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
-                frameworkProvider.phpModuleClosed(phpModule);
-            }
-
         }
     }
 
