@@ -79,7 +79,7 @@ public class GoToTest implements TestLocator {
 
     @Override
     public boolean asynchronous() {
-        return true;
+        return false;
     }
 
     @Override
