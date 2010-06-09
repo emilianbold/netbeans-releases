@@ -139,7 +139,7 @@ public class DeleteCreateTestAnnotationProvider extends AnnotationProvider {
         }
                 
         public void fileFolderCreated(FileEvent fe) {
-            events.add("fileFolderCreated");
+            // ignore this
         }
 
         public void fileDataCreated(FileEvent fe) {
