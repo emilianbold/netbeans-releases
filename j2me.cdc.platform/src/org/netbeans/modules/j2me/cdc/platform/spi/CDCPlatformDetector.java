@@ -47,7 +47,13 @@ package org.netbeans.modules.j2me.cdc.platform.spi;
 import java.io.IOException;
 
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
+import org.netbeans.modules.j2me.cdc.platform.platformdefinition.PlatformConvertor;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -77,6 +83,23 @@ public abstract class CDCPlatformDetector {
      * @return CDCPlatform
      */
     public abstract CDCPlatform detectPlatform(FileObject dir) throws IOException;    
+
+    /**
+     * Installs platform detected using CDCPlatformDetector.detectPlatform method
+     * @param platform CDCPlatform as a result of detection
+     * @param systemName name of platform, this name should not exist, otherwise IllegalStateException will be thrown
+     * @throws IOException when some I/O issue occur
+     */
+    public final void  installPlatform(CDCPlatform platform, String systemName) throws IOException {
+        FileObject platformsFolder = FileUtil.getConfigFile(
+                "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
+        if (platformsFolder.getFileObject(systemName,"xml")!=null) {   //NOI18N
+            String msg = NbBundle.getMessage(CDCPlatformDetector.class,"ERROR_InvalidName");
+            throw (IllegalStateException)ErrorManager.getDefault().annotate(
+                new IllegalStateException(msg), ErrorManager.USER, null, msg,null, null);
+        }
+        PlatformConvertor.create(platform, DataFolder.findFolder(platformsFolder),systemName);
+    }
 
     /**
      * @return configurator for platform tools or null if none is available
