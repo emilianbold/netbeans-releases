@@ -145,12 +145,11 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.soa.libs.jgo</code-name-base>
+                    <code-name-base>org.netbeans.modules.soa.libs.jgo</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -307,15 +306,15 @@
                 <package>org.netbeans.modules.edm.utils</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/edm/velocity-1.4.jar</runtime-relative-path>
+                <runtime-relative-path>ext/velocity-1.4.jar</runtime-relative-path>
                 <binary-origin>external/velocity-1.4.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/edm/commons-collections-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>ext/commons-collections-3.0.jar</runtime-relative-path>
                 <binary-origin>external/commons-collections-3.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/edm/avalon-logkit-current.jar</runtime-relative-path>
+                <runtime-relative-path>ext/avalon-logkit-current.jar</runtime-relative-path>
                 <binary-origin>external/avalon-logkit-current.jar</binary-origin>
             </class-path-extension>
         </data>

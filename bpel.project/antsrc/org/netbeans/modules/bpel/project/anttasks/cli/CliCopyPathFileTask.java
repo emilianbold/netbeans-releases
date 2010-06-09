@@ -126,6 +126,6 @@ public class CliCopyPathFileTask extends Task {
       "xml/modules/org-netbeans-modules-xml-xam-ui.jar",
       "xml/modules/org-netbeans-modules-xml-xpath.jar",
       "xml/modules/org-netbeans-modules-xml-xpath-ext.jar",
-      "xml/modules/ext/jxpath/jxpath1.1.jar",
+      "xml/modules/ext/jxpath-1.2.jar",
     };
 }
