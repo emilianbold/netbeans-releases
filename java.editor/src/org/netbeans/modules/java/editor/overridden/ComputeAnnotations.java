@@ -103,7 +103,11 @@ public class ComputeAnnotations extends JavaParserResultTask<Result> {
 
         if (cancel.get()) return ;
         
-        AnnotationsHolder.get(info.getFileObject()).setNewAnnotations(annotations);
+        AnnotationsHolder holder = AnnotationsHolder.get(info.getFileObject());
+
+        if (holder != null) {
+            holder.setNewAnnotations(annotations);
+        }
 
         long end = System.currentTimeMillis();
 
