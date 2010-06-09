@@ -44,9 +44,4 @@
 -->
 <project name="bpel.debugger.bdi" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy file="external/bdi-1.0.0.jar" tofile="${cluster}/modules/ext/bdi/bdi-1.0.0.jar"/>
-    </target>
 </project>
