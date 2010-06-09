@@ -19,12 +19,29 @@
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+
+    <folder name="Templates">
+        <folder name="SOA_BPEL">
+            <file name="LTemplate.ldif" url="LTemplate.ldif">
+                <attr name="position" intvalue="100"/>
+
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/resources/ldiffile16x16.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.resources.Bundle"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.wsdlextensions.resources.NewFileIterator"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/resources/LTemplate.html"/>
+                <attr name="templateCategory" stringvalue="SOA_BPEL"/>
+            </file>
+        </folder>
+    </folder>    
+
     <folder name="Actions">
         <folder name="Other">
             <file name="org-netbeans-modules-wsdlextensions-ldap-ldif-GenerateWSDLAction.instance"/>
             <file name="org-netbeans-modules-wsdlextensions-ldap-ldif-ImportFileAction.instance"/>
         </folder>
     </folder>
+
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-ldif">
@@ -81,6 +98,7 @@
             </folder>
         </folder>
     </folder>
+    
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="LResolver.xml" url="LResolver.xml">
@@ -88,19 +106,7 @@
             </file>
         </folder>
     </folder>
-    <folder name="Templates">
-        <folder name="ESB">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ldap.resources.Bundle"/>
-            <attr name="position" intvalue="110"/>
-
-            <file name="LTemplate.ldif" url="LTemplate.ldif">
-                <attr name="position" intvalue="110"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ldap.resources.Bundle"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="ESB"/>
-            </file>
-        </folder>
-    </folder>
+    
     <folder name="WSDLEditor">
         <file name="ldap-ext.xsd" url="ldap-ext.xsd">
             <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/ldap/"/>
@@ -252,5 +258,4 @@
             </folder>
         </folder>
     </folder>
-    
 </filesystem>
