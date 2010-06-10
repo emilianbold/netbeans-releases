@@ -66,6 +66,7 @@ import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -107,6 +108,7 @@ public class SvnConfigFiles implements PreferenceChangeListener {
             parseGlobalIgnores("*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store");                                          // NOI18N
 
     private String recentUrl;
+    private final static String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword"; //NOI18N
 
     private interface IniFilePatcher {
         void patch(Ini file);
@@ -269,7 +271,7 @@ public class SvnConfigFiles implements PreferenceChangeListener {
                 boolean useAuth = prefs.getBoolean ("useProxyAuthentication", false);                   // NOI18N
                 if(useAuth) {
                     String username = prefs.get ("proxyAuthenticationUsername", "");                    // NOI18N
-                    String password = prefs.get ("proxyAuthenticationPassword", "");                    // NOI18N
+                    String password = getProxyPassword(prefs);
 
                     nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
                     nbGlobalSection.put("http-proxy-password", password);                               // NOI18N
@@ -694,6 +696,15 @@ public class SvnConfigFiles implements PreferenceChangeListener {
             appdataPath = appdataPath.substring(0, appdataPath.length() - 1);
         }
         return appdataPath;
+    }
+
+    private String getProxyPassword (Preferences prefs) {
+        String retval = prefs.get(PROXY_AUTHENTICATION_PASSWORD, null);
+        if (retval == null) {
+            char[] pwd = KeyringSupport.read(PROXY_AUTHENTICATION_PASSWORD, null);
+            retval = pwd == null ? "" : new String(pwd); //NOI18N
+        }
+        return retval;
     }
     
 }

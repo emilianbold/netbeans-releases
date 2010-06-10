@@ -50,6 +50,7 @@ import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.io.*;
 import java.nio.channels.SocketChannel;
+import org.netbeans.api.keyring.Keyring;
 
 /**
  * Creates sockets capable of connecting through HTTPS and SOCKS proxies.
@@ -445,10 +446,20 @@ public class ProxySocketFactory extends SocketFactory {
         Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/core"); // NOI18N    
         if (prefs.getBoolean(USE_PROXY_AUTHENTICATION, false)) {
             cs.setProxyUsername(prefs.get(PROXY_AUTHENTICATION_USERNAME, null));
-            String psswd = prefs.get(PROXY_AUTHENTICATION_PASSWORD, null);
-            cs.setProxyPassword(psswd != null ? psswd.toCharArray() : null);
+            cs.setProxyPassword(getProxyPassword(prefs));
         }
         return cs;
+    }
+
+    private char[] getProxyPassword (Preferences prefs) {
+        char[] password = null;
+        String old = prefs.get(PROXY_AUTHENTICATION_PASSWORD, null);
+        if (old == null) {
+            password = Keyring.read(PROXY_AUTHENTICATION_PASSWORD);
+        } else {
+            password = old.toCharArray();
+        }
+        return password;
     }
 
     private void setupProxy(ConnectivitySettings cs, int connectionType, InetSocketAddress inetSocketAddress) {

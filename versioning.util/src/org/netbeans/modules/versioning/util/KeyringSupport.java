@@ -73,7 +73,7 @@ public class KeyringSupport {
     /**
      * Returns a stored password for the key constructed from keyPrefix and key
      * @param keyPrefix key prefix for each versioning system
-     * @param key will be hashed and used with keyPrefix as a key for the keyring
+     * @param key will be hashed and used with keyPrefix as a key for the keyring. If set to <code>null</code> only keyPrefix is used as the final key
      * @return stored password or null
      */
     public static char[] read (String keyPrefix, String key) {
@@ -85,12 +85,14 @@ public class KeyringSupport {
     }
 
     private static String getKeyringKey (String keyPrefix, String keyToHash) {
-        String keyPart;
-        try {
-            keyPart = Utils.getHash("SHA-1", keyToHash.getBytes()); //NOI18N
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(KeyringSupport.class.getName()).log(Level.INFO, null, ex);
-            keyPart = keyToHash;
+        String keyPart = ""; //NOI18N
+        if (keyToHash != null) {
+            try {
+                keyPart = Utils.getHash("SHA-1", keyToHash.getBytes()); //NOI18N
+            } catch (NoSuchAlgorithmException ex) {
+                Logger.getLogger(KeyringSupport.class.getName()).log(Level.INFO, null, ex);
+                keyPart = keyToHash;
+            }
         }
         return keyPrefix + keyPart;
     }
