@@ -55,6 +55,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.*;
@@ -186,6 +187,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (elements.size() > 0) {
             for (PhpBaseElement element : elements) {
                 if (element instanceof PhpVariable) {
+                    assert element != null;
                     PhpVariable phpVariable = (PhpVariable) element;
                     Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
                     for (NamespaceScope namespace : declaredNamespaces) {
@@ -193,15 +195,16 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         if (namespaceScope != null) {
                             final String varName = phpVariable.getName();
                             VariableNameImpl variable = findVariable(namespace, varName);
+                            final PhpClass type = phpVariable.getType();
                             if (variable != null) {
                                 variable.indexedElement = VariableElementImpl.create(
                                          varName, phpVariable.getOffset(), phpVariable.getFile(),
-                                        null, TypeResolverImpl.parseTypes(phpVariable.getType().getFullyQualifiedName()));
+                                        null, type != null ? TypeResolverImpl.parseTypes(type.getFullyQualifiedName()) : Collections.<TypeResolver>emptySet());
                             } else {
                                 int offset = namespaceScope.getOffset();
                                 VariableElementImpl var = VariableElementImpl.create(
                                          varName, offset, phpVariable.getFile(),
-                                        null, TypeResolverImpl.parseTypes(phpVariable.getType().getFullyQualifiedName()));
+                                        null, type != null ? TypeResolverImpl.parseTypes(type.getFullyQualifiedName()) : Collections.<TypeResolver>emptySet());
                                 namespaceScope.createElement(var);
                             }
                         }
