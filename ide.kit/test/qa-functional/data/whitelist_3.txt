@@ -7136,3 +7136,28 @@ org.netbeans.modules.project.libraries.LibrariesStorage$Libs
 org.netbeans.modules.project.ui.ProjectTab$KeepExpansion
 org.netbeans.modules.projectapi.ProjectFileBuiltQuery
 
+# OK on June 10, 2010:
+org.netbeans.modules.java.JavaNode
+org.netbeans.modules.java.JavaNode$BuildStatusTask
+org.netbeans.modules.java.JavaNode$ExecutableTask
+org.netbeans.modules.java.api.common.Roots
+org.netbeans.modules.java.api.common.Roots$MyAccessor
+org.netbeans.modules.java.api.common.Roots$NonSourceRoots
+org.netbeans.modules.java.api.common.impl.RootsAccessor
+org.netbeans.modules.java.api.common.project.BaseActionProvider
+org.netbeans.modules.java.api.common.project.BaseActionProvider$Callback
+org.netbeans.modules.java.api.common.project.BaseActionProvider$CallbackImpl
+org.netbeans.modules.java.api.common.queries.AnnotationProcessingQueryImpl
+org.netbeans.modules.java.api.common.queries.ProjectInfoImpl
+org.netbeans.modules.java.api.common.queries.QuerySupport$AntUpdateHelper
+org.netbeans.modules.java.api.common.queries.SourcesImpl
+org.netbeans.modules.java.api.common.queries.SourcesImpl$FireAction
+org.netbeans.modules.java.debug.TreeNavigatorJavaSourceFactory$CaretAwareFactoryImpl
+org.netbeans.modules.java.freeform.AnnotationProcessingQueryImpl
+org.netbeans.modules.java.freeform.JavaProjectGenerator
+org.netbeans.modules.java.hints.infrastructure.EmbeddedLazyHintComputation$FactoryImpl
+org.netbeans.modules.java.hints.introduce.IntroduceHint$HLFImpl
+org.netbeans.modules.java.hints.jackpot.impl.hints.HintsTask$CaretFactoryImpl
+org.netbeans.modules.java.hints.jackpot.impl.hints.HintsTask$FactoryImpl
+org.netbeans.modules.java.hints.options.HintsSettings
+org.netbeans.modules.java.hints.spi.AbstractHint$HintSeverity
