@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.cncppunit.editor.filecreation;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,6 +72,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -111,9 +113,12 @@ public class TestCUnitIterator extends AbstractUnitTestIterator {
                 }
             }
         }
+
+        FileObject rootFolder = getRootFolder();
+        File rootFolderFile = FileUtil.toFile(rootFolder);
         params.putAll(CUnitCodeGenerator.generateTemplateParamsForFunctions(
                 getTestFileName().replaceFirst("[.].*", ""), // NOI18N
-                targetFolder.getPrimaryFile().getPath(),
+                rootFolderFile.getAbsolutePath(),
                 fs));
         
         DataObject formDataObject = NewTestCUnitPanel.getTemplateDataObject("cunittestfile.c"); // NOI18N
@@ -193,6 +198,10 @@ public class TestCUnitIterator extends AbstractUnitTestIterator {
 
     private String getTestName() {
         return ((NewTestCUnitPanelGUI)targetChooserDescriptorPanel.getComponent()).getTestName();
+    }
+
+    private FileObject getRootFolder() {
+        return ((NewTestCppUnitPanelGUI)targetChooserDescriptorPanel.getComponent()).getTargetGroup().getRootFolder();
     }
 
     private void setCUnitLinkerOptions(Project project, Folder testFolder) {
