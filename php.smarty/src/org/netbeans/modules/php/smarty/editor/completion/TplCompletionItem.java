@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.php.smarty.editor.completion;
 
-import java.util.Arrays;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.net.URL;
@@ -57,7 +56,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
-import org.openide.xml.XMLUtil;
 
 /**
  * Code completion result item base class
@@ -273,17 +271,17 @@ public class TplCompletionItem implements CompletionItem {
         return null;
     }
 
-    public static class BuiltInFunction extends TplCompletionItem {
+    public static class BuiltInFunctionsCompletionItem extends TplCompletionItem {
 
-        protected static final String ATTR_NAME_COLOR = hexColorCode(Color.green.darker());
+        protected static final String BUILT_IN_FUNC_COLOR = "529854";
 
-        public BuiltInFunction(String value, int offset, String help, String helpUrl) {
+        public BuiltInFunctionsCompletionItem(String value, int offset, String help, String helpUrl) {
             super(value, offset, help, helpUrl);
         }
 
         @Override
         protected String getLeftHtmlText() {
-            return "<font color=#" + ATTR_NAME_COLOR + ">" + getItemText() + "</font>"; //NOI18N
+            return "<font color=#" + BUILT_IN_FUNC_COLOR + ">" + getItemText() + "</font>"; //NOI18N
         }
 
         @Override
@@ -293,11 +291,26 @@ public class TplCompletionItem implements CompletionItem {
 
     }
 
-    public static class VariableModifiers extends TplCompletionItem {
+    public static class CustomFunctionsCompletionItem extends BuiltInFunctionsCompletionItem {
+
+        protected static final String CUSTOM_FUNC_COLOR = "3B713B";
+
+        public CustomFunctionsCompletionItem(String value, int offset, String help, String helpUrl) {
+            super(value, offset, help, helpUrl);
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return "<font color=#" + CUSTOM_FUNC_COLOR + ">" + getItemText() + "</font>"; //NOI18N
+        }
+
+    }
+
+    public static class VariableModifiersCompletionItem extends TplCompletionItem {
 
         protected static final String ATTR_NAME_COLOR = hexColorCode(Color.blue.darker());
 
-        public VariableModifiers(String value, int offset, String help, String helpUrl) {
+        public VariableModifiersCompletionItem(String value, int offset, String help, String helpUrl) {
             super(value, offset, help, helpUrl);
         }
 

@@ -40,25 +40,21 @@ package org.netbeans.modules.php.smarty.editor.completion.entries;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem;
-import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.BuiltInFunction;
-import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.VariableModifiers;
-import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.BuiltInFunctionsCompletionItem;
+import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.CustomFunctionsCompletionItem;
+import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.VariableModifiersCompletionItem;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author Martin Fousek
  */
-public class TplCodeCompletionData {
+public class SmartyCodeCompletionOffer {
 
     private final static Collection<TplCompletionItem> completionItems = new ArrayList<TplCompletionItem>();
-    private final static String[] completionTypes = {"built-in-functions", "variable-modifiers"};
+    private final static String[] completionTypes = {"built-in-functions", "variable-modifiers", "custom-functions"};
 
     static {
         loadCCData();
@@ -70,26 +66,31 @@ public class TplCodeCompletionData {
 
     private static void loadCCData() {
         for (String completionType : completionTypes) {
-            Collection<EntryMetadata> ccList = parseCCData(completionType);
-            if (completionType.equals("built-in-functions")) {
-                for (EntryMetadata entryMetadata : ccList) {
-                    completionItems.add(new BuiltInFunction(entryMetadata.getKeyword(), 0, entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
+            Collection<CodeCompletionEntryMetadata> ccList = parseCCData(completionType);
+            if (completionType.equals("built-in-functions") ) {
+                for (CodeCompletionEntryMetadata entryMetadata : ccList) {
+                    completionItems.add(new BuiltInFunctionsCompletionItem(entryMetadata.getKeyword(), 0, entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
+                }
+            }
+            else if (completionType.equals("custom-functions")) {
+                for (CodeCompletionEntryMetadata entryMetadata : ccList) {
+                    completionItems.add(new CustomFunctionsCompletionItem(entryMetadata.getKeyword(), 0, entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
                 }
             }
             else if (completionType.equals("variable-modifiers")) {
-                for (EntryMetadata entryMetadata : ccList) {
-                    completionItems.add(new VariableModifiers(entryMetadata.getKeyword(), 0, entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
+                for (CodeCompletionEntryMetadata entryMetadata : ccList) {
+                    completionItems.add(new VariableModifiersCompletionItem(entryMetadata.getKeyword(), 0, entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
                 }
             }
         }
     }
 
-    private static Collection<EntryMetadata> parseCCData(String filePath) {
-        Collection<EntryMetadata> ccList = new ArrayList<EntryMetadata>();
-        InputStream inputStream = TplCodeCompletionData.class.getResourceAsStream("defs/" + filePath + ".xml"); //NOI18N
+    private static Collection<CodeCompletionEntryMetadata> parseCCData(String filePath) {
+        Collection<CodeCompletionEntryMetadata> ccList = new ArrayList<CodeCompletionEntryMetadata>();
+        InputStream inputStream = SmartyCodeCompletionOffer.class.getResourceAsStream("defs/" + filePath + ".xml"); //NOI18N
 
         try {
-            Collection<EntryMetadata> ccData = CodeCompletionEntries.readAllCodeCompletionEntriesFromXML(inputStream, filePath);
+            Collection<CodeCompletionEntryMetadata> ccData = CodeCompletionEntries.readAllCodeCompletionEntriesFromXML(inputStream, filePath);
             ccList.addAll(ccData);
 
         } catch (Exception ex) {

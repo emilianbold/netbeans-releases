@@ -42,9 +42,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -63,8 +60,8 @@ public class CodeCompletionEntries {
     public CodeCompletionEntries() {
     }
 
-    protected static Collection<EntryMetadata> readAllCodeCompletionEntriesFromXML(InputStream inputStream, String completionType) throws IOException, ParserConfigurationException, SAXException {
-        Collection<EntryMetadata> ccEntries = new ArrayList<EntryMetadata>();
+    protected static Collection<CodeCompletionEntryMetadata> readAllCodeCompletionEntriesFromXML(InputStream inputStream, String completionType) throws IOException, ParserConfigurationException, SAXException {
+        Collection<CodeCompletionEntryMetadata> ccEntries = new ArrayList<CodeCompletionEntryMetadata>();
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(inputStream);
@@ -80,12 +77,12 @@ public class CodeCompletionEntries {
                 String url = elem.getElementsByTagName("url").item(0).getTextContent();
                 String help = "";
                 NodeList attributes = elem.getElementsByTagName("attributes");
-                if (completionType.equals("built-in-functions")) {
+                if (completionType.equals("built-in-functions") || completionType.equals("custom-functions")) {
                     help = generateHelpForBuiltInFunctions(desc, attributes);
                 } else {
                     help = generateHelpForVariableModifiers(desc, attributes);
                 }
-                ccEntries.add(new CCDataBuiltInFunction(elem.getAttribute("name"), help, url));
+                ccEntries.add(new CodeCompletionEntryMetadata(elem.getAttribute("name"), help, url));
             }
         }
 

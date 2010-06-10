@@ -43,14 +43,27 @@ package org.netbeans.modules.php.smarty.editor.completion.entries;
  *
  * @author Martin Fousek
  */
-public class CodeCompletionItemAttributes {
-    private String attType, attRequired, attDefault, addDescription;
+public class CodeCompletionEntryMetadata {
 
-    public CodeCompletionItemAttributes(String attType, String attRequired, String attDefault, String addDescription) {
-        this.attType = attType;
-        this.attRequired = attRequired;
-        this.attDefault = attDefault;
-        this.addDescription = addDescription;
+    private String keyword;
+    private String help;
+    private String helpUrl;
+
+    public CodeCompletionEntryMetadata(String keyword, String help, String helpUrl) {
+        this.keyword = keyword;
+        this.help = help;
+        this.helpUrl = helpUrl;
     }
 
+    public String getKeyword() {
+        return keyword;
+    }
+
+    public String getHelp() {
+        return help;
+    }
+
+    public String getHelpUrl() {
+        return helpUrl;
+    }
 }

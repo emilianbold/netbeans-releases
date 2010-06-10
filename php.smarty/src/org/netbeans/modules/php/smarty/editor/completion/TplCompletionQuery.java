@@ -50,8 +50,8 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.php.smarty.editor.completion.entries.EntryMetadata;
-import org.netbeans.modules.php.smarty.editor.completion.entries.TplCodeCompletionData;
+import org.netbeans.modules.php.smarty.editor.completion.entries.CodeCompletionEntryMetadata;
+import org.netbeans.modules.php.smarty.editor.completion.entries.SmartyCodeCompletionOffer;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 
@@ -92,7 +92,7 @@ public class TplCompletionQuery extends UserTask {
     }
 
     private CompletionResult query(ResultIterator resultIterator) {
-        return new CompletionResult(TplCodeCompletionData.getCCData());
+        return new CompletionResult(SmartyCodeCompletionOffer.getCCData());
     }
 
     public static class CompletionResult {
