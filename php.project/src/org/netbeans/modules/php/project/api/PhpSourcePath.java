@@ -230,7 +230,7 @@ public final class PhpSourcePath {
             List<FileObject> dirs = new ArrayList<FileObject>(paths.length + internalPath.size());
             dirs.addAll(internalPath);
             for (String path : paths) {
-                FileObject resolvedFile = FileUtil.toFileObject(new File(path));
+                FileObject resolvedFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
                 if (resolvedFile != null) { // XXX check isValid() as well?
                     dirs.add(resolvedFile);
                 }
