@@ -276,7 +276,13 @@ public final class NbProxySelector extends ProxySelector {
             } else {
                 String start = token.substring (0, star - 1 < 0 ? 0 : star - 1);
                 String end = token.substring (star + 1 > token.length () ? token.length () : star + 1);
-                dontUseProxy = host.startsWith(start) && host.endsWith(end);
+
+                //Compare left of * if and only if * is not first character in token
+                boolean compareStart = star > 0; // not first character
+                //Compare right of * if and only if * is not the last character in token
+                boolean compareEnd = star < (token.length() - 1); // not last character
+                dontUseProxy = (compareStart && host.startsWith(start)) || (compareEnd && host.endsWith(end));
+
                 if (dontUseProxy) {
                     log.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () + "]. Host " + host + " found in nonProxyHosts: " + nonProxyHosts);                    
                 }
