@@ -3,14 +3,14 @@
         <extends>org.netbeans.modules.j2ee.sun.dd.impl.common.SunBaseBean</extends>
 	<meta-element>
                 <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_3_0_0.SecurityRoleMapping</import>
-		<dtd-name>sun-ejb-jar</dtd-name>
-		<bean-name>SunEjbJar</bean-name>
+		<dtd-name>glassfish-ejb-jar</dtd-name>
+		<bean-name>GlassFishEjbJar</bean-name>
                 <implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar</implements>
 		<user-code>
                 public void setVersion(java.math.BigDecimal value) {
                 }
                 public java.math.BigDecimal getVersion() {
-                    return new java.math.BigDecimal("3.1");
+                    return new java.math.BigDecimal("3.11");
                 }
                 public org.xml.sax.SAXParseException getError() {
                     return null;
@@ -38,28 +38,28 @@
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans</implements>
                 <user-code>
                     public void setPropertyElement(int index, org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement value) throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_1_0);
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(GlassFishEjbJar.VERSION_3_1_1);
                     }
                     public org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement getPropertyElement(int index) throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_1_0);
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(GlassFishEjbJar.VERSION_3_1_1);
                     }
                     public int sizePropertyElement() throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_1_0);
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(GlassFishEjbJar.VERSION_3_1_1);
                     }
                     public void setPropertyElement(org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement[] value) throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_1_0);
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(GlassFishEjbJar.VERSION_3_1_1);
                     }
                     public org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement[] getPropertyElement() throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_1_0);
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(GlassFishEjbJar.VERSION_3_1_1);
                     }
                     public int addPropertyElement(org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement value) throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_1_0);
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(GlassFishEjbJar.VERSION_3_1_1);
                     }
                     public int removePropertyElement(org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement value) throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_1_0);
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(GlassFishEjbJar.VERSION_3_1_1);
                     }
                     public org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement newPropertyElement() throws VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_3_1_0);
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(GlassFishEjbJar.VERSION_3_1_1);
                     }
                 </user-code>
 	</meta-element>

@@ -10,15 +10,15 @@ and open the template in the editor.
     <localizing-bundle>org/netbeans/soa/libs/pojose/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.soa.libs.pojo/modules/ext/jbi/sun-pojo-engine-api.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.soa.libs.pojo/modules/ext/jbi/jbi.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.soa.libs.pojo/modules/ext/sun-pojo-engine-api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.soa.libs.pojo/modules/ext/jbi.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>            
-        <resource>jar:nbinst://org.netbeans.soa.libs.pojo/modules/ext/jbi/sun-pojo-engine-api-javadoc.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.soa.libs.pojo/modules/ext/sun-pojo-engine-api-javadoc.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>            
-        <resource>jar:nbinst://org.netbeans.soa.libs.pojo/modules/ext/jbi/sun-pojo-engine-api-src.jar!/</resource>
-    </volume>	
+        <resource>jar:nbinst://org.netbeans.soa.libs.pojo/modules/ext/sun-pojo-engine-api-src.jar!/</resource>
+    </volume>   
 </library>

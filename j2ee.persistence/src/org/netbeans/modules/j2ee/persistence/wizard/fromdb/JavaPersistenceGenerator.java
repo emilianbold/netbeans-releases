@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -104,6 +105,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import sun.reflect.generics.tree.TypeTree;
 
 /**
  * Generator of Java Persistence API ORM classes from DB.
@@ -827,7 +829,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
             private Set<String> existingColumns = new HashSet<String>();
             private HashMap<String, Tree> existingJoinColumns = new HashMap<String, Tree>();
-            private HashMap<Tree, Tree> existingMappings = new HashMap<Tree, Tree>();
+            private HashMap<String, Tree> existingMappings = new HashMap<String, Tree>();
 
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 super(copy, entityClass);
@@ -896,12 +898,15 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private void collectExistingColumns(){
                 for (Tree member: originalClassTree.getMembers()){
                     List<? extends AnnotationTree> annotations = null;
+                    Tree memberType = null;
                     if (Kind.VARIABLE.equals(member.getKind())){
                         VariableTree variable = (VariableTree)member;
                         annotations = variable.getModifiers().getAnnotations();
+                        memberType = variable.getType();
                     } else if(Kind.METHOD.equals(member.getKind())) {
                         MethodTree method = (MethodTree) member;
                         annotations = method.getModifiers().getAnnotations();
+                        memberType = method.getReturnType();
                     }
                     if(annotations!=null)    {
                         for(AnnotationTree annTree: annotations){
@@ -927,7 +932,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                                     if(expression instanceof AssignmentTree){
                                         AssignmentTree aTree = (AssignmentTree) expression;
                                         if(aTree.getVariable().toString().equals("mappedBy")){//NOI18N
-                                            existingMappings.put(member, expression);
+                                            TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                            existingMappings.put(tm.toString(), expression);
                                             break;
                                         }
                                     }
@@ -1040,7 +1046,17 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     annArguments.add(genUtils.createAnnotationArgument("cascade", "javax.persistence.CascadeType", "ALL")); // NOI18N
                 }
                 if (role.equals(role.getParent().getRoleB())) { // Role B
-                    annArguments.add(genUtils.createAnnotationArgument("mappedBy", role.getParent().getRoleA().getFieldName())); // NOI18N
+                    String fName = role.getParent().getRoleA().getFieldName();
+                    AssignmentTree aTree = (AssignmentTree) existingMappings.get(fieldType.toString());
+                    if(aTree != null){
+                        ExpressionTree expr = aTree.getExpression();
+                        if(expr instanceof LiteralTree){
+                            LiteralTree literal = (LiteralTree) expr;
+                            String value = literal.getValue().toString();
+                            if(fName.equals(value))return;//???may not need to compare value, type may be enouth????
+                        }
+                    }
+                    annArguments.add(genUtils.createAnnotationArgument("mappedBy", fName)); // NOI18N
                 } else {  // Role A
                     if (role.isMany() && role.isToMany()) { // ManyToMany
                         List<ExpressionTree> joinTableAnnArguments = new ArrayList<ExpressionTree>();
@@ -1082,6 +1098,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         CMPMappingModel relatedMappings = beanMap.get(role.getParent().getRoleB().getEntityName()).getCMPMapping();
                         ColumnData[] invColumns = (ColumnData[]) relatedMappings.getCmrFieldMapping().get(role.getParent().getRoleB().getFieldName());
                         if (columns.length == 1) {
+                            if(existingJoinColumns.get(columns[0].getColumnName()) != null){
+                                return;
+                            }
                             List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
                             attrs.add(genUtils.createAnnotationArgument("name", columns[0].getColumnName())); //NOI18N
                             attrs.add(genUtils.createAnnotationArgument("referencedColumnName", invColumns[0].getColumnName())); //NOI18N
@@ -1157,7 +1176,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 TreeMaker make = copy.getTreeMaker();
                 VariableTree serialVersionUID = make.Variable(make.Modifiers(serialVersionUIDModifiers), 
                         "serialVersionUID", genUtils.createType("long", typeElement), make.Literal(Long.valueOf("1"))); //NOI18N
-                
+       
                 return serialVersionUID;
             }
             
