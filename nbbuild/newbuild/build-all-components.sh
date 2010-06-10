@@ -93,6 +93,7 @@ fi
 
 #Remove file created during commit validation
 rm -rf $NB_ALL/nbbuild/netbeans/nb?.*/servicetag
+rm -rf $NB_ALL/nbbuild/netbeans/enterprise/config/GlassFishEE6
 
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-test-dist -Dtest.fail.on.error=false -Dbuild.compiler.debuglevel=source,lines 
 ERROR_CODE=$?
