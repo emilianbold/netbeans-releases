@@ -990,6 +990,7 @@ public class FormatVisitor extends DefaultVisitor {
 		}
 		break;
 	    case PHP_OPENTAG:
+            case T_OPEN_TAG_WITH_ECHO:
 		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OPEN_PHP_TAG, ts.offset()));
 		tokens.add(new FormatToken(FormatToken.Kind.OPEN_TAG, ts.offset(), ts.token().text().toString()));
 //		tokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.initialIndent));
