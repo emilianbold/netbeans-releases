@@ -474,6 +474,10 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         return result;
     }
 
+    static synchronized void clearDoc2DictionaryCache() {
+        doc2DictionaryCache.clear();
+    }
+
     private boolean isCanceled() {
         return cancel.get();
     }
