@@ -85,13 +85,13 @@ public class DontUseProxyTest extends NbTestCase {
     }
     
     public void testWildcardHostName () {
-        String nonProxyHosts = "*.netbeans.org|*.other.org|*netbeans.com|*.our.intranet";
+        String nonProxyHosts = "*.netbeans.org|*.other.org|*netbeans.com|netbeans.org|*.our.intranet|private.*";
         assertTrue (NbProxySelector.dontUseProxy (nonProxyHosts, "www.netbeans.org"));
         assertTrue (NbProxySelector.dontUseProxy (nonProxyHosts, "www.netbeans.com"));
         assertFalse (NbProxySelector.dontUseProxy (nonProxyHosts, "www.dummynetbeans.org"));
         assertTrue (NbProxySelector.dontUseProxy (nonProxyHosts, "subversion.our.intranet"));
-        
-                
+        assertTrue (NbProxySelector.dontUseProxy (nonProxyHosts, "private"));
+        assertTrue (NbProxySelector.dontUseProxy (nonProxyHosts, "private.all"));
     }
-    
+
 }
