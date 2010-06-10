@@ -16,7 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.wsdlextensions.resources;
+package org.netbeans.modules.wsdlextensions.ldap.resources;
 
 import java.awt.Component;
 import java.util.ArrayList;
@@ -42,10 +42,6 @@ final class NewFilePanel implements WizardDescriptor.Panel<WizardDescriptor> {
         return templateWizard;
     }
     
-    void setNameTF(JTextField nameTF) {
-        gui.attachFileNameListener(nameTF);
-    }
-
     public Component getComponent() {
         if (gui == null) {
             gui=new NewOptionsPanel(this);
@@ -58,12 +54,7 @@ final class NewFilePanel implements WizardDescriptor.Panel<WizardDescriptor> {
     }
 
     public boolean isValid() {
-        boolean valid = true;
-        
-        if(gui.getNamespaceTextField().contains(" ")) {
-            valid = false;
-        }
-        return valid;
+        return true;
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -97,22 +88,13 @@ final class NewFilePanel implements WizardDescriptor.Panel<WizardDescriptor> {
         settings.putProperty ("NewFileWizard_Title", null); // NOI18N
     }
     
-    String getNS() {
-        return gui.getNamespaceTextField();
-    }
-    
-    String getWsName() {
-        return gui.getWsName();
-    }
-    
     Project getProject() {
         return project;
     }
 
-    private final List listeners = new ArrayList();
     private NewOptionsPanel gui;
-
     private Project project;
     private SourceGroup[] folders;
     private TemplateWizard templateWizard;
+    private final List listeners = new ArrayList();
 }
