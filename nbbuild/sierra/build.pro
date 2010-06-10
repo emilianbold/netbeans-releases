@@ -65,7 +65,7 @@
     <property name="netbeans.host" value="http://smetiste.czech.sun.com"/>
     <property name="netbeans.path" value="builds/netbeans/6.9/rc2/latest/zip"/>
     <property name="netbeans.zip"  value="netbeans-6.9.zip"/>
-    <property name="netbeans.user" value=".netbeans/dev"/>
+    <property name="netbeans.user" value=".netbeans/6.9rc2"/>
 
     <!-- cvs -->
     <property name="test.cvs.host" value=":pserver:guest@cvs.dev.java.net:/cvs"/>
