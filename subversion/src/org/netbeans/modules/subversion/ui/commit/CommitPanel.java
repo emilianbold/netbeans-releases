@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
+import org.netbeans.modules.versioning.util.UndoRedoSupport;
 import java.awt.Component;
 import java.awt.Container;
 import org.netbeans.modules.subversion.SvnModuleConfig;
@@ -143,6 +144,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private SvnHookContext hookContext;
     private JTabbedPane tabbedPane;
     private HashMap<File, MultiDiffPanel> displayedDiffs = new HashMap<File, MultiDiffPanel>();
+    private UndoRedoSupport um;
 
     /** Creates new form CommitPanel */
     public CommitPanel() {
@@ -188,12 +190,17 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             messageTextArea.setText(lastCommitMessage);
         }
         messageTextArea.selectAll();
+        um = UndoRedoSupport.register(messageTextArea);
     }
 
     @Override
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
         SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        if (um != null) {
+            um.unregister();
+            um = null;
+        }
         super.removeNotify();
     }
 
