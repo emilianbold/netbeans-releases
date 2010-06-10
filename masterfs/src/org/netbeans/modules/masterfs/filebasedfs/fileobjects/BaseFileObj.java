@@ -294,6 +294,12 @@ public abstract class BaseFileObj extends FileObject {
         final File parent = file.getParentFile();
 
         final String newNameExt = FileInfo.composeName(name, ext);
+
+        if (newNameExt.equals(getNameExt())) {
+            // nothing to rename
+            return;
+        }
+
         final File file2Rename = new File(parent, newNameExt);
         if (parent == null || !FileChangedManager.getInstance().exists(parent) ||
                 // #128818 - slash or backslash not allowed in name
