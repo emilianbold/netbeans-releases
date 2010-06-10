@@ -49,6 +49,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -59,7 +60,6 @@ import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -68,9 +68,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -78,7 +75,6 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
-import org.netbeans.modules.java.source.parsing.AptSourceFileManager;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
@@ -385,8 +381,41 @@ final class MultiPassCompileWorker extends CompileWorker {
 
     private void dumpSymFiles(JavaFileManager jfm, JavacTaskImpl jti) throws IOException {
         if (jti != null) {
+            final Types types = Types.instance(jti.getContext());
+            final Enter enter = Enter.instance(jti.getContext());
+            class ScanNested extends TreeScanner {
+                private Env<AttrContext> env;
+                private Set<Env<AttrContext>> dependencies = new LinkedHashSet<Env<AttrContext>>();
+                public ScanNested(Env<AttrContext> env) {
+                    this.env = env;
+                }
+                @Override
+                public void visitClassDef(JCClassDecl node) {
+                    if (node.sym != null) {
+                        Type st = types.supertype(node.sym.type);
+                        if (st.tag == TypeTags.CLASS) {
+                            ClassSymbol c = st.tsym.outermostClass();
+                            Env<AttrContext> stEnv = enter.getEnv(c);
+                            if (stEnv != null && env != stEnv) {
+                                if (dependencies.add(stEnv))
+                                    scan(stEnv.tree);
+                            }
+                        }
+                    }
+                    super.visitClassDef(node);
+                }
+            }
+            final Set<Env<AttrContext>> processedEnvs = new HashSet<Env<AttrContext>>();
             for (Env<AttrContext> env : jti.getTodo()) {
-                TreeLoader.dumpSymFile(jfm, jti, env.enclClass.sym);
+                if (processedEnvs.add(env)) {
+                    ScanNested scanner = new ScanNested(env);
+                    scanner.scan(env.tree);
+                    for (Env<AttrContext> dep: scanner.dependencies) {
+                        if (processedEnvs.add(dep))
+                            TreeLoader.dumpSymFile(jfm, jti, dep.enclClass.sym);
+                    }
+                    TreeLoader.dumpSymFile(jfm, jti, env.enclClass.sym);                    
+                }
             }
         }
     }
