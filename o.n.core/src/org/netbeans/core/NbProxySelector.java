@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -72,24 +72,25 @@ import java.util.regex.PatternSyntaxException;
 public final class NbProxySelector extends ProxySelector {
     
     private ProxySelector original = null;
-    private static Logger log = Logger.getLogger (NbProxySelector.class.getName ());
+    private static final Logger LOG = Logger.getLogger (NbProxySelector.class.getName ());
     private static Object useSystemProxies;
         
     /** Creates a new instance of NbProxySelector */
     public NbProxySelector () {
         original = ProxySelector.getDefault ();
         if (original == null) {
-            log.warning ("No default system ProxySelector was found thus NetBeans ProxySelector won't delegate on it");
+            LOG.warning ("No default system ProxySelector was found thus NetBeans ProxySelector won't delegate on it");
         } else {
-            log.fine ("Override the original ProxySelector: " + original);
+            LOG.fine ("Override the original ProxySelector: " + original);
         }
-        log.fine ("java.net.useSystemProxies has been set to " + useSystemProxies ());
-        log.fine ("In launcher was detected netbeans.system_http_proxy: " + System.getProperty ("netbeans.system_http_proxy", "N/A"));
-        log.fine ("In launcher was detected netbeans.system_socks_proxy: " + System.getProperty ("netbeans.system_socks_proxy", "N/A"));
+        LOG.fine ("java.net.useSystemProxies has been set to " + useSystemProxies ());
+        LOG.fine ("In launcher was detected netbeans.system_http_proxy: " + System.getProperty ("netbeans.system_http_proxy", "N/A"));
+        LOG.fine ("In launcher was detected netbeans.system_socks_proxy: " + System.getProperty ("netbeans.system_socks_proxy", "N/A"));
         ProxySettings.addPreferenceChangeListener (new ProxySettingsListener ());
         copySettingsToSystem ();
     }
     
+    @Override
     public List<Proxy> select(URI uri) {
         List<Proxy> res = new ArrayList<Proxy> ();
         int proxyType = ProxySettings.getProxyType ();
@@ -142,9 +143,9 @@ public final class NbProxySelector extends ProxySelector {
                     Proxy p = new Proxy (Proxy.Type.HTTP,  new InetSocketAddress (hosts, porti));
                     res.add (p);
                 } else {
-                    log.info ("Incomplete HTTP Proxy [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
+                    LOG.info ("Incomplete HTTP Proxy [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
                     if (original != null) {
-                        log.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
+                        LOG.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
                         res.addAll (original.select (uri));
                     }
                 }
@@ -156,9 +157,9 @@ public final class NbProxySelector extends ProxySelector {
                     Proxy p = new Proxy (Proxy.Type.SOCKS,  new InetSocketAddress (hosts, porti));
                     res.add (p);
                 } else {
-                    log.info ("Incomplete SOCKS Server [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
+                    LOG.info ("Incomplete SOCKS Server [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
                     if (original != null) {
-                        log.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
+                        LOG.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
                         res.addAll (original.select (uri));
                     }
                 }
@@ -167,18 +168,20 @@ public final class NbProxySelector extends ProxySelector {
         } else {
             assert false : "Invalid proxy type: " + ProxySettings.getProxyType ();
         }
-        log.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () +
+        LOG.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () +
                 ", Use HTTP for all protocols: " + ProxySettings.useProxyAllProtocols ()+
                 "] returns " + res + " for URI " + uri);
         return res;
     }
     
+    @Override
     public void connectFailed (URI arg0, SocketAddress arg1, IOException arg2) {
-        log.log  (Level.INFO, "connectionFailed(" + arg0 + ", " + arg1 +")", arg2);
+        LOG.log  (Level.INFO, "connectionFailed(" + arg0 + ", " + arg1 +")", arg2);
     }
     
     // several modules listenes on these properties and propagates it futher
     private class ProxySettingsListener implements PreferenceChangeListener {
+        @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             if (evt.getKey ().startsWith ("proxy") || evt.getKey ().startsWith ("useProxy")) {
                 copySettingsToSystem ();
@@ -226,9 +229,9 @@ public final class NbProxySelector extends ProxySelector {
         setOrClearProperty ("https.nonProxyHosts", nonProxyHosts, false);
         setOrClearProperty ("socksProxyHost", sHost, false);
         setOrClearProperty ("socksProxyPort", sPort, true);
-        log.fine ("Set System's http.proxyHost/Port/NonProxyHost to " + host + "/" + port + "/" + nonProxyHosts);
-        log.fine ("Set System's https.proxyHost/Port to " + httpsHost + "/" + httpsPort);
-        log.fine ("Set System's socksProxyHost/Port to " + sHost + "/" + sPort);
+        LOG.fine ("Set System's http.proxyHost/Port/NonProxyHost to " + host + "/" + port + "/" + nonProxyHosts);
+        LOG.fine ("Set System's https.proxyHost/Port to " + httpsHost + "/" + httpsPort);
+        LOG.fine ("Set System's socksProxyHost/Port to " + sHost + "/" + sPort);
     }
     
     private void setOrClearProperty (String key, String value, boolean isInteger) {
@@ -240,7 +243,7 @@ public final class NbProxySelector extends ProxySelector {
                 try {
                     Integer.parseInt (value);
                 } catch (NumberFormatException nfe) {
-                    log.log (Level.INFO, nfe.getMessage(), nfe);
+                    LOG.log (Level.INFO, nfe.getMessage(), nfe);
                 }
             }
             System.setProperty (key, value);
@@ -271,7 +274,7 @@ public final class NbProxySelector extends ProxySelector {
             if (star == -1) {
                 dontUseProxy = token.equals (host);
                 if (dontUseProxy) {
-                    log.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () + "]. Host " + host + " found in nonProxyHosts: " + nonProxyHosts);                    
+                    LOG.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () + "]. Host " + host + " found in nonProxyHosts: " + nonProxyHosts);
                 }
             } else {
                 String start = token.substring (0, star - 1 < 0 ? 0 : star - 1);
@@ -284,7 +287,7 @@ public final class NbProxySelector extends ProxySelector {
                 dontUseProxy = (compareStart && host.startsWith(start)) || (compareEnd && host.endsWith(end));
 
                 if (dontUseProxy) {
-                    log.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () + "]. Host " + host + " found in nonProxyHosts: " + nonProxyHosts);                    
+                    LOG.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () + "]. Host " + host + " found in nonProxyHosts: " + nonProxyHosts);
                 }
             }
         }
@@ -298,7 +301,7 @@ public final class NbProxySelector extends ProxySelector {
         try {
             ip = InetAddress.getByName (host).getHostAddress ();
         } catch (UnknownHostException ex) {
-            log.log (Level.FINE, ex.getLocalizedMessage (), ex);
+            LOG.log (Level.FINE, ex.getLocalizedMessage (), ex);
         }
         
         if (ip == null) {
@@ -313,14 +316,14 @@ public final class NbProxySelector extends ProxySelector {
             if (star == -1) {
                 dontUseProxy = nonProxyHost.equals (ip);
                 if (dontUseProxy) {
-                    log.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () + "]. Host's IP " + ip + " found in nonProxyHosts: " + nonProxyHosts);
+                    LOG.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () + "]. Host's IP " + ip + " found in nonProxyHosts: " + nonProxyHosts);
                 }
             } else {
                 // match with given dotted-quad IP
                 try {
                     dontUseProxy = Pattern.matches (nonProxyHost, ip);
                     if (dontUseProxy) {
-                        log.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () + "]. Host's IP" + ip + " found in nonProxyHosts: " + nonProxyHosts);
+                        LOG.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () + "]. Host's IP" + ip + " found in nonProxyHosts: " + nonProxyHosts);
                     }
                 } catch (PatternSyntaxException pse) {
                     // may ignore it here
@@ -334,11 +337,11 @@ public final class NbProxySelector extends ProxySelector {
     static boolean useSystemProxies () {
         if (useSystemProxies == null) {
             try {
-                Class clazz = Class.forName ("sun.net.NetProperties");
+                Class<?> clazz = Class.forName ("sun.net.NetProperties");
                 Method getBoolean = clazz.getMethod ("getBoolean", String.class);
                 useSystemProxies = getBoolean.invoke (null, "java.net.useSystemProxies");
             } catch (Exception x) {
-                log.log (Level.FINEST, "Cannot get value of java.net.useSystemProxies bacause " + x.getMessage(), x);
+                LOG.log (Level.FINEST, "Cannot get value of java.net.useSystemProxies bacause " + x.getMessage(), x);
             }
         }
         return useSystemProxies != null && "true".equalsIgnoreCase (useSystemProxies.toString ());
