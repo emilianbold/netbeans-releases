@@ -130,7 +130,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     "http://serverplugins.netbeans.org/glassfishv3/post69v3.txt", // NOI18N
                     "last-v3ee6-install-root", // NOI18N
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
-                    new String[]{"lib" + File.separator + "dtds" + File.separator + "glassfish-web-app_3_0-0.dtd"}, // NOI18N
+                    new String[]{"lib" + File.separator + "dtds" + File.separator + "glassfish-web-app_3_0-1.dtd"}, // NOI18N
                     true, new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
                     new String[]{"--nopassword"}, // NOI18N
                     new CommandFactory() {
@@ -157,7 +157,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     "http://java.net/download/glassfish/3.1/promoted/latest-glassfish.zip", // NOI18N
                     "http://serverplugins.netbeans.org/glassfishv3/post69v3-1.txt", // NOI18N
                     "last-v3ee6wc-install-root", // NOI18N
-                    new String[]{"lib" + File.separator + "dtds" + File.separator + "glassfish-web-app_3_0-0.dtd"}, // NOI18N
+                    new String[]{"lib" + File.separator + "dtds" + File.separator + "glassfish-web-app_3_0-1.dtd"}, // NOI18N
                     new String[0],
                     true, new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
                     new String[]{"--nopassword"}, // NOI18N

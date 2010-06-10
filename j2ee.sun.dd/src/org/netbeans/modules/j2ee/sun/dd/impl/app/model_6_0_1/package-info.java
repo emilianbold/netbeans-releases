@@ -37,45 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.classpath;
+@Schema2Beans(
+    schema="../../resources/glassfish-application_6_0-1.dtd",
+    schemaType=SchemaType.DTD,
+    mddFile="../../resources/glassfish-application_6_0-1.mdd",
+    outputType=OutputType.TRADITIONAL_BASEBEAN,
+    docRoot="glassfish-application",
+    useInterfaces=true,
+    validate=false,
+    attrProp=true
+)
+package org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_1;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
-/**
- * Helper class for sharing the same code between {@link org.netbeans.modules.php.project.api.PhpSourcePath}
- * and {@link ClassPathProviderImpl}.
- * @author Tomas Mysik
- */
-public final class CommonPhpSourcePath {
-
-    // GuardedBy(CommonPhpSourcePath.class)
-    private static List<FileObject> internalFolders = null;
-
-    private CommonPhpSourcePath() {
-    }
-
-    public static synchronized List<FileObject> getInternalPath() {
-        if (internalFolders == null) {
-            internalFolders = getInternalFolders();
-        }
-        return internalFolders;
-    }
-
-    private static List<FileObject> getInternalFolders() {
-        assert Thread.holdsLock(CommonPhpSourcePath.class);
-
-        List<FileObject> preindexedFolders = PhpSourcePath.getPreindexedFolders();
-        FileObject sfsFolder = FileUtil.getConfigFile("PHP/RuntimeLibraries"); // NOI18N
-        List<FileObject> folders = new ArrayList<FileObject>(preindexedFolders.size() + 1);
-        folders.add(sfsFolder);
-        folders.addAll(preindexedFolders);
-        return folders;
-    }
-}
+import org.netbeans.modules.schema2beans.Schema2Beans;
+import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
+import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
