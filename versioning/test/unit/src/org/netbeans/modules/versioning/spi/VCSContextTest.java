@@ -75,9 +75,11 @@ public class VCSContextTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        dataRootDir = getWorkDir();
-        System.setProperty("netbeans.user", getWorkDir() + "/userdir");
-        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        dataRootDir = getDataDir();
+        File userdir = new File(getWorkDir() + "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
+        FileObject fo = FileUtil.toFileObject(getDataDir());
     }
 
     public void testForEmptyNodes() {
