@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,43 +34,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-/*
- * SunEjbJar.java
  *
- * Created on November 17, 2004, 4:26 PM
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.sun.dd.api.ejb;
-import org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping;
-/**
- *
- * @author  Nitya Doraisamy
- */
-public interface SunEjbJar extends org.netbeans.modules.j2ee.sun.dd.api.RootInterface {
-    public static final String VERSION_3_1_1 = "3.11"; //NOI18N
-    public static final String VERSION_3_1_0 = "3.10"; //NOI18N
-    public static final String VERSION_3_0_1 = "3.01"; //NOI18N
-    public static final String VERSION_3_0_0 = "3.00"; //NOI18N
-    public static final String VERSION_2_1_1 = "2.11"; //NOI18N
-    public static final String VERSION_2_1_0 = "2.10"; //NOI18N
-    public static final String VERSION_2_0_0 = "2.00"; //NOI18N
-        
-    public static final String SECURITY_ROLE_MAPPING = "SecurityRoleMapping";	// NOI18N
-    public static final String ENTERPRISE_BEANS = "EnterpriseBeans";	// NOI18N
-        
-    public SecurityRoleMapping[] getSecurityRoleMapping();
-    public SecurityRoleMapping getSecurityRoleMapping(int index);
-    public void setSecurityRoleMapping(SecurityRoleMapping[] value);
-    public void setSecurityRoleMapping(int index, SecurityRoleMapping value);
-    public int addSecurityRoleMapping(SecurityRoleMapping value);
-    public int removeSecurityRoleMapping(SecurityRoleMapping value);
-    public int sizeSecurityRoleMapping();
-    public SecurityRoleMapping newSecurityRoleMapping();
-    
-    public EnterpriseBeans getEnterpriseBeans();
-    public void setEnterpriseBeans(EnterpriseBeans value);
-    public EnterpriseBeans newEnterpriseBeans();
-    
-    
-}
+@Schema2Beans(
+    schema="../../resources/glassfish-web-app_3_0-1.dtd",
+    schemaType=SchemaType.DTD,
+    mddFile="../../resources/glassfish-web-app_3_0-1.mdd",
+    outputType=OutputType.TRADITIONAL_BASEBEAN,
+    docRoot="glassfish-web-app",
+    useInterfaces=true,
+    validate=false,
+    attrProp=true
+)
+package org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_1;
+
+import org.netbeans.modules.schema2beans.Schema2Beans;
+import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
+import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
