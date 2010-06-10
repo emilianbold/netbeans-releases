@@ -3,14 +3,14 @@
         <extends>org.netbeans.modules.j2ee.sun.dd.impl.common.SunBaseBean</extends>
 	<meta-element>
                 <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_3_0_0.SecurityRoleMapping</import>
-		<dtd-name>sun-application</dtd-name>
-		<bean-name>SunApplication</bean-name>
+		<dtd-name>glassfish-application</dtd-name>
+		<bean-name>GlassFishApplication</bean-name>
                 <implements>org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication</implements>
                 <user-code>
                 public void setVersion(java.math.BigDecimal value) {
                 }
                 public java.math.BigDecimal getVersion() {
-                    return new java.math.BigDecimal("6.0");
+                    return new java.math.BigDecimal("6.01");
                 }
                 public org.xml.sax.SAXParseException getError() {
                     return null;

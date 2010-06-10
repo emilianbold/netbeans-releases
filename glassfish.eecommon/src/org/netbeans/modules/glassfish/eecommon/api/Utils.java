@@ -177,7 +177,7 @@ public final class Utils {
             // replace the illegal characters in file name
             //  \ / : * ? " < > | with _
             moduleID = moduleID.replace('\\', '_').replace('/', '_');
-            moduleID = moduleID.replace(':', '_').replace('*', '_');
+            moduleID = moduleID.replace('*', '_');
             moduleID = moduleID.replace('?', '_').replace('"', '_');
             moduleID = moduleID.replace('<', '_').replace('>', '_');
             moduleID = moduleID.replace('|', '_');

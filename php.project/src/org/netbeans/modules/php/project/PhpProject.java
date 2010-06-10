@@ -503,7 +503,7 @@ public final class PhpProject implements Project {
             }
             File file = new File(item.getFilePath());
             if (!file.isAbsolute()) {
-                file = PropertyUtils.resolveFile(projectDir, item.getFilePath());
+                file = helper.resolveFile(item.getFilePath());
             }
             ignored.add(file);
         }

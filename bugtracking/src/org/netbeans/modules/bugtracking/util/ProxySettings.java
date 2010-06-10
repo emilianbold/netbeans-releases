@@ -44,6 +44,7 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.util.prefs.Preferences;
+import org.netbeans.api.keyring.Keyring;
 
 /**
  *
@@ -98,7 +99,7 @@ class ProxySettings {
         } else if(isManualSetProxy()) {
             useAuth             = prefs.getBoolean ( USE_PROXY_AUTHENTICATION,       false );   // NOI18N
             username            = prefs.get        ( PROXY_AUTHENTICATION_USERNAME,  ""    );   // NOI18N
-            password            = prefs.get        ( PROXY_AUTHENTICATION_PASSWORD,  ""    );   // NOI18N                
+            password            = getProxyPassword(prefs);
 
             notProxyHosts       = prefs.get        ( NOT_PROXY_HOSTS,                ""    ).replace("|", " ,");   // NOI18N
             httpHost            = prefs.get        ( PROXY_HTTP_HOST,                ""    );   // NOI18N                
@@ -213,6 +214,13 @@ class ProxySettings {
     public int hashCode() {
         return toString().hashCode();
     }
-    
-    
+
+    private String getProxyPassword (Preferences prefs) {
+        String retval = prefs.get(PROXY_AUTHENTICATION_PASSWORD, null);
+        if (retval == null) {
+            char[] pwd = Keyring.read(PROXY_AUTHENTICATION_PASSWORD);
+            retval = pwd == null ? "" : new String(pwd); //NOI18N
+        }
+        return retval;
+    }
 }

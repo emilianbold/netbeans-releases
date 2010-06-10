@@ -53,6 +53,7 @@ import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import java.awt.event.ActionEvent;
 import java.beans.*;
+import java.util.WeakHashMap;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
@@ -91,6 +92,8 @@ import org.netbeans.spi.lexer.MutableTextInput;
  * @version 1.5
  */
 public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider{
+
+    private static final WeakHashMap<Document, String /* source level id */> SOURCE_LEVEL_MAP = new WeakHashMap<Document, String>();
 
     public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
@@ -295,10 +298,16 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     public static Syntax getSyntaxForLanguage(Document doc, String language) {
         EditorKit kit = CloneableEditorSupport.getEditorKit(language);
         if (kit instanceof JavaKit) {
-            JavaKit jkit = (JavaKit)kit;
-            String sourceLevel = jkit.getSourceLevel((BaseDocument)doc);
-            //create a special javasyntax patched for use in JSPs (fix of #55628)
-            return new JavaSyntax(sourceLevel, true);
+            synchronized (SOURCE_LEVEL_MAP) {
+                String sourceLevel = SOURCE_LEVEL_MAP.get(doc);
+                if(sourceLevel == null) {
+                    JavaKit jkit = (JavaKit)kit;
+                    sourceLevel = jkit.getSourceLevel((BaseDocument)doc);
+                    SOURCE_LEVEL_MAP.put(doc, sourceLevel);
+                }
+                //create a special javasyntax patched for use in JSPs (fix of #55628)
+                return new JavaSyntax(sourceLevel, true);
+            }
         } else {
             return new HtmlSyntax();
         }

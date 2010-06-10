@@ -59,6 +59,15 @@ made subject to such option by the copyright holder.
         </resolver>
     </file>
 
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-sun-web+xml">
+            <xml-rule>
+                <element name="glassfish-web-app"/>
+            </xml-rule>
+        </resolver>
+    </file>
+
     <!-- sun-ejb-jar.xml -->
     <file>
         <ext name="xml"/>
@@ -69,6 +78,15 @@ made subject to such option by the copyright holder.
         </resolver>
     </file>
     
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-sun-ejb-jar+xml">
+            <xml-rule>
+                <element name="glassfish-ejb-jar"/>
+            </xml-rule>
+        </resolver>
+    </file>
+
     <!-- sun-application.xml -->
     <file>
         <ext name="xml"/>
@@ -79,6 +97,15 @@ made subject to such option by the copyright holder.
         </resolver>
     </file>
     
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-sun-application+xml">
+            <xml-rule>
+                <element name="glassfish-application"/>
+            </xml-rule>
+        </resolver>
+    </file>
+
     <!-- sun-application-client.xml -->
     <file>
         <ext name="xml"/>
@@ -89,4 +116,12 @@ made subject to such option by the copyright holder.
         </resolver>
     </file>
     
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-sun-app-client+xml">
+            <xml-rule>
+                <element name="glassfish-application-client"/>
+            </xml-rule>
+        </resolver>
+    </file>
 </MIME-resolver>
