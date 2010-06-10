@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.encoder.hl7.aip
-OpenIDE-Module-Layer: org/netbeans/modules/encoder/hl7/aip/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/encoder/hl7/aip/Bundle.properties
-OpenIDE-Module-Install: org/netbeans/modules/encoder/hl7/aip/HL7AIPModuleInstaller.class
-OpenIDE-Module-Specification-Version: 1.0

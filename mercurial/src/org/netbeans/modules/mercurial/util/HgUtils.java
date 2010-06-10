@@ -709,7 +709,7 @@ public class HgUtils {
         String name = "^" + file.getAbsolutePath().substring(directory.getAbsolutePath().length()+1) + "$"; //NOI18N
         // # should be escaped, otherwise works as a comment
         // . should be escaped, otherwise works as a special char in regexp
-        return name.replace(File.separatorChar, '/').replace("#", "\\#").replace(".", "\\."); //NOI18N
+        return name.replace(File.separatorChar, '/').replace("#", "\\#").replace(".", "\\.").replace("+", "\\+"); //NOI18N
     }
 
     private static void writeIgnoreEntries(File directory, Set entries) throws IOException {

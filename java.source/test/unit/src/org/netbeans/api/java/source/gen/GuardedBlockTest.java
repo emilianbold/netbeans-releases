@@ -30,7 +30,10 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import org.netbeans.api.editor.settings.SimpleValueNames;
+import java.util.prefs.Preferences;
 import com.sun.source.tree.Tree;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import com.sun.source.tree.BlockTree;
@@ -816,6 +819,11 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         DataObject dataObject = DataObject.find(FileUtil.toFileObject(testFile));
         EditorCookie editorCookie = ((GuardedDataObject) dataObject).getCookie(EditorCookie.class);
         Document doc = editorCookie.openDocument();
+
+        //XXX: strip whitespaces on modified line on save, so that the actual output matches the "golden" output:
+        Preferences prefs = MimeLookup.getLookup("text/x-java").lookup(Preferences.class);
+        prefs.put(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, "modified-lines"); //NOI18N
+
         JavaSource src = getJavaSource(testFile);
 
         Task task = new Task<WorkingCopy>() {
@@ -857,7 +865,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     @Override
     String getGoldenPckg() {
         return "";

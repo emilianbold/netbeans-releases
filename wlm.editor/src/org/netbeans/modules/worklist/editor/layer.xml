@@ -138,6 +138,7 @@ Portions Copyrighted 1997-2009 Sun Microsystems, Inc.
 
     <folder name="Templates">
         <folder name="SOA">
+            <attr name="position" intvalue="444"/>
             <!--
             <file name="WorklistTemplate.wf" url="WorklistTemplate.wf">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.worklist.editor.Bundle"/>

@@ -44,11 +44,15 @@
 
 package org.netbeans.modules.html;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -166,18 +170,18 @@ public class EncodingTest extends NbTestCase {
             FileObject data = FileUtil.createData (fs.getRoot (), "UTF8.html"); //NOI18N
             copy("UTF8.html",data); //NOI18N
             handler.cached = null;
-            FileEncodingQuery.getEncoding(data);
+            read(data);
             assertFalse("Encoding should be calculated",handler.cached);    //NOI18N
             handler.cached = null;
-            FileEncodingQuery.getEncoding(data);
+            read(data);
             assertTrue("Encoding should be cached",handler.cached);        //NOI18N
             //Modify file
             copy("UTF8.html",data); //NOI18N
             handler.cached = null;
-            FileEncodingQuery.getEncoding(data);
+            read(data);
             assertFalse("Encoding should be calculated",handler.cached);    //NOI18N
             handler.cached = null;
-            FileEncodingQuery.getEncoding(data);
+            read(data);
             assertTrue("Encoding should be cached",handler.cached);        //NOI18N
         } finally {
             log.setLevel(origLevel);
@@ -206,6 +210,19 @@ public class EncodingTest extends NbTestCase {
     }
 
     
+    private void read(final FileObject data) throws IOException {
+        final Charset cs = FileEncodingQuery.getEncoding(data);
+        final BufferedReader in = new BufferedReader(new InputStreamReader(data.getInputStream(), cs));
+        try {
+            CharBuffer buffer = CharBuffer.allocate(1024);
+            while (in.read(buffer)>0) {
+                buffer.clear();
+            }
+        } finally {
+            in.close();
+        }
+    }
+
     /** @param enc expected encoding
      *  @param res resource path
      *  @param withCmp should also document content be compared?

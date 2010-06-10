@@ -156,12 +156,11 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.soa.libs.wsdl4j</code-name-base>
+                    <code-name-base>org.netbeans.modules.soa.libs.wsdl4j</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -265,9 +264,6 @@
                 <package>org.netbeans.modules.masterindex.plugin.datamodel</package>
                 <package>org.netbeans.modules.masterindex.plugin.util</package>
             </public-packages>
-            <!--class-path-extension>
-                <runtime-relative-path>ext/dm/virtual/db/axiondb.jar</runtime-relative-path>
-            </class-path-extension-->
         </data>
     </configuration>
 </project>

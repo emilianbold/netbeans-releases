@@ -58,9 +58,9 @@ import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -246,11 +246,8 @@ public abstract class PhpElementImpl implements PhpElement {
     public final boolean isPlatform() {
         FileObject fo = getFileObject();
         if (fo != null) {
-            try {
-                return Repository.getDefault().getDefaultFileSystem().equals(fo.getFileSystem());
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            FileType fileType = PhpSourcePath.getFileType(fo);
+            return fileType.equals(FileType.INTERNAL);
         }
         return false;
     }
