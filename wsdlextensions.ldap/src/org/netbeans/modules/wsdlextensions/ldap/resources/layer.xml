@@ -23,13 +23,12 @@
     <folder name="Templates">
         <folder name="SOA_BPEL">
             <file name="LTemplate.ldif" url="LTemplate.ldif">
-                <attr name="position" intvalue="100"/>
-
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/resources/ldiffile16x16.png"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.resources.Bundle"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.wsdlextensions.resources.NewFileIterator"/>
+                <attr name="position" intvalue="200"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ldap/resources/ldiffile16x16.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ldap.resources.Bundle"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.wsdlextensions.ldap.resources.NewFileIterator"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/resources/LTemplate.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ldap/resources/LTemplate.html"/>
                 <attr name="templateCategory" stringvalue="SOA_BPEL"/>
             </file>
         </folder>
@@ -47,19 +46,18 @@
             <folder name="x-ldif">
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance"/>
-                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <!--attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/-->
                     <file name="org-openide-actions-FileSystemAction.instance"/>
                     <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
-                    <attr name="org-openide-actions-FileSystemAction.instance/org-netbeans-modules-wsdlextensions-ldap-ldif-GenerateWSDLAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-wsdlextensions-ldap-ldif-GenerateWSDLAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Other/org-netbeans-modules-wsdlextensions-ldap-ldif-GenerateWSDLAction.instance"/>
                     </file>
-                    <attr name="org-netbeans-modules-wsdlextensions-ldap-ldif-GenerateWSDLAction.shadow/org-netbeans-modules-wsdlextensions-ldap-ldif-separatorAfter.instance" boolvalue="true"/>
-                    <attr name="org-openide-actions-FileSystemAction.instance/org-netbeans-modules-wsdlextensions-ldap-ldif-ImportFileAction.shadow" boolvalue="true"/>
+                    <!--attr name="org-netbeans-modules-wsdlextensions-ldap-ldif-GenerateWSDLAction.shadow/org-netbeans-modules-wsdlextensions-ldap-ldif-separatorAfter.instance" boolvalue="true"/-->
+                    <!--attr name="org-openide-actions-FileSystemAction.instance/org-netbeans-modules-wsdlextensions-ldap-ldif-ImportFileAction.shadow" boolvalue="true"/-->
                     <file name="org-netbeans-modules-wsdlextensions-ldap-ldif-ImportFileAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Other/org-netbeans-modules-wsdlextensions-ldap-ldif-ImportFileAction.instance"/>
                     </file>
-                    <attr name="org-netbeans-modules-wsdlextensions-ldap-ldif-ImportFileAction.shadow/org-netbeans-modules-wsdlextensions-ldap-ldif-separatorAfter.instance" boolvalue="true"/>
+                    <!--attr name="org-netbeans-modules-wsdlextensions-ldap-ldif-ImportFileAction.shadow/org-netbeans-modules-wsdlextensions-ldap-ldif-separatorAfter.instance" boolvalue="true"/-->
                     <file name="org-netbeans-modules-wsdlextensions-ldap-ldif-separatorAfter.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
@@ -69,7 +67,7 @@
                     </file>
                     <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-CutAction.instance"/>
-                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    <!--attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/-->
                     <file name="org-openide-actions-CopyAction.instance"/>
                     <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
                     <file name="sep-2.instance">
@@ -77,13 +75,13 @@
                     </file>
                     <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-DeleteAction.instance"/>
-                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
+                    <!--attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/-->
                     <file name="org-openide-actions-RenameAction.instance"/>
                     <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <!--attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/-->
                     <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
                     <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
                     <file name="sep-4.instance">
@@ -91,9 +89,9 @@
                     </file>
                     <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-ToolsAction.instance"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <!--attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/-->
                     <file name="org-openide-actions-PropertiesAction.instance"/>
-                    <attr name="org-netbeans-modules-wsdlextensions-ldap-ldif-separatorAfter.instance/org-netbeans-modules-wsdlextensions-ldap-ldif-GenerateWSDLAction.shadow" boolvalue="true"/>
+                    <!--attr name="org-netbeans-modules-wsdlextensions-ldap-ldif-separatorAfter.instance/org-netbeans-modules-wsdlextensions-ldap-ldif-GenerateWSDLAction.shadow" boolvalue="true"/-->
                 </folder>
             </folder>
         </folder>

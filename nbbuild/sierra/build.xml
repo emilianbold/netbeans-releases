@@ -163,8 +163,8 @@
     </target>
 
     <!-- clean, build, nbm -->
-    <target name="clean" depends="clean-01, clean-02, clean-03, clean-04, clean-soa-pack"/>
-    <target name="build" depends="build-01, build-02, build-03, build-04, build-soa-pack"/>
+    <target name="clean" depends="clean-01, clean-02, clean-03, clean-04, clean-kit"/>
+    <target name="build" depends="build-01, build-02, build-03, build-04, build-kit"/>
 
     <target name="clean-01" depends="clean-platform, clean-ide"/>
     <target name="build-01" depends="build-platform, build-ide"/>
@@ -402,10 +402,11 @@
         <antcall target="do-module"><param name="module" value="wsdlextensions.swift"/></antcall>
     </target>
 
-    <!-- SOA PACK -->
-    <target name="build-soa-pack"><antcall target="do-soa-pack"><param name="action" value="netbeans"/></antcall></target>
-    <target name="clean-soa-pack"><antcall target="do-soa-pack"><param name="action" value="clean"/></antcall></target>
-    <target name=   "do-soa-pack">
+    <!-- kit -->
+    <target name="build-kit"><antcall target="do-kit"><param name="action" value="nbm"/></antcall></target>
+    <target name="clean-kit"><antcall target="do-kit"><param name="action" value="clean"/></antcall></target>
+    <target name=   "do-kit">
+        <antcall target="do-module"><param name="module" value="xml.kit"/></antcall>
         <antcall target="do-module"><param name="module" value="soa.kit"/></antcall>
     </target>
 </project>

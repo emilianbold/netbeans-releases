@@ -50,6 +50,7 @@
             <attr name="position" intvalue="102"/>
 
             <file name="Process.bpel" url="BpelProcess.template">
+                <attr name="position" intvalue="100"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/bpel/core/resources/bp_file.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.wizard.Bundle"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.bpel.core.wizard.NewBpelFileIterator"/>
