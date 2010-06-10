@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.mercurial.ui.commit;
 
+import org.netbeans.modules.versioning.util.UndoRedoSupport;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.versioning.util.TemplateSelector;
@@ -144,6 +145,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private HgHookContext hookContext;
     private JTabbedPane tabbedPane;
     private HashMap<File, MultiDiffPanel> displayedDiffs = new HashMap<File, MultiDiffPanel>();
+    private UndoRedoSupport um;
 
     /** Creates new form CommitPanel */
     public CommitPanel() {
@@ -181,6 +183,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             messageTextArea.setText(lastCommitMessage);
         }
         messageTextArea.selectAll();
+        um = UndoRedoSupport.register(messageTextArea);
     }
 
     private void initCollapsibleSections() {
@@ -292,6 +295,10 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
         HgModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        if (um != null) {
+            um.unregister();
+            um = null;
+        }
         super.removeNotify();
     }
 

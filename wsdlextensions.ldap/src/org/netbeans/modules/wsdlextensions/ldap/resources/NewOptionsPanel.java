@@ -16,7 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.wsdlextensions.resources;
+package org.netbeans.modules.wsdlextensions.ldap.resources;
 
 import java.text.MessageFormat;
 import javax.swing.JTextField;
@@ -30,14 +30,9 @@ import org.netbeans.api.project.ProjectUtils;
 
 public class NewOptionsPanel extends javax.swing.JPanel {
     
-    private static final long serialVersionUID = 1L;
-    
     public NewOptionsPanel(NewFilePanel newFilePanel) {
         initComponents();
-        
         this.newFilePanel = newFilePanel;
-        NameSpaceListener namespaceListener = new NameSpaceListener();
-        namespaceTextField.getDocument().addDocumentListener(namespaceListener);
     }
     
     /** This method is called from within the constructor to
@@ -86,86 +81,23 @@ public class NewOptionsPanel extends javax.swing.JPanel {
     }
     
     void store(WizardDescriptor d) {
-        // Set value for namespace
-//        d.putProperty(WizardProperties.NAMESPACE, namespaceTextField.getText());
     }
     
     void read(WizardDescriptor d) {
     }
-    
-    protected void setNamespaceTextField(String namespace) {
-        namespaceTextField.setText(namespace);
-    }
-    
-    protected String getNamespaceTextField() {
-        return namespaceTextField.getText();
-    }
-    
+
     String getWsName() {
         if (fileNameTF!=null) {
             return fileNameTF.getText();
         }
         return null;
-//        else {
-//            return DEFAULT_SERVICE_NAME;
-//        }
     }
-    
-    void attachFileNameListener(JTextField aFileNameTF) {
-        
-        this.fileNameTF = aFileNameTF;
 
-        if (fileNameTF!=null) {
-            DocListener listener = new DocListener();
-            javax.swing.text.Document doc = fileNameTF.getDocument();
-            doc.addDocumentListener(listener);
-        }
-    }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JTextField namespaceTextField;
     // End of variables declaration//GEN-END:variables
     
     private NewFilePanel newFilePanel;
     private JTextField fileNameTF;
-    private String prevNamespace;
-    private boolean nameSpaceModifiedFlag;
-    
-    private void doUpdate() {
-        if(namespaceTextField.getText()!=null && prevNamespace != null) {
-            if(!namespaceTextField.getText().equals(prevNamespace)) {
-                nameSpaceModifiedFlag = true;
-            }
-        }
-    }
-    
-    private class DocListener implements javax.swing.event.DocumentListener {
-        public void changedUpdate(javax.swing.event.DocumentEvent e) {
-            doUpdate();
-        }
-        
-        public void insertUpdate(javax.swing.event.DocumentEvent e) {
-            doUpdate();
-        }
-        
-        public void removeUpdate(javax.swing.event.DocumentEvent e) {
-            doUpdate();
-        }
-    };
-    
-    private class NameSpaceListener implements javax.swing.event.DocumentListener {
-        public void changedUpdate(javax.swing.event.DocumentEvent e) {
-            newFilePanel.fireChange();
-        }
-        
-        public void insertUpdate(javax.swing.event.DocumentEvent e) {
-            newFilePanel.fireChange();
-        }
-        
-        public void removeUpdate(javax.swing.event.DocumentEvent e) {
-            newFilePanel.fireChange();
-        }
-    };
 }

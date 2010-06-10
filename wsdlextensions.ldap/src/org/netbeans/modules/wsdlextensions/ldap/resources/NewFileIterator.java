@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.wsdlextensions.resources;
+package org.netbeans.modules.wsdlextensions.ldap.resources;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -117,10 +117,7 @@ public class NewFileIterator implements TemplateWizard.Iterator {
             }
         }
         WizardDescriptor.Panel firstPanel = Templates.createSimpleTargetChooser(project,sourceGroups,folderPanel);
-        JComponent c = (JComponent)firstPanel.getComponent();
-        String fileNameLabel = NbBundle.getMessage(NewFileIterator.class, "LBL_SimpleTargetChooserPanel_FileName_Label"); // NOI18N
-        ((NewFilePanel)folderPanel).setNameTF((JTextField) findTextFieldForLabel(c,fileNameLabel));
-        
+
         return new WizardDescriptor.Panel[] {
             firstPanel
         };
