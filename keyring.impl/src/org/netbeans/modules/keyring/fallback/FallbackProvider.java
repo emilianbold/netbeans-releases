@@ -51,7 +51,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.keyring.Utils;
+import org.netbeans.api.keyring.Keyring;
+import org.netbeans.modules.keyring.impl.Utils;
 import org.netbeans.modules.keyring.spi.EncryptionProvider;
 import org.netbeans.spi.keyring.KeyringProvider;
 import org.openide.DialogDisplayer;
@@ -145,7 +146,7 @@ public class FallbackProvider implements KeyringProvider, Callable<Void> {
     }
 
     private Preferences prefs() {
-        return NbPreferences.forModule(FallbackProvider.class).node(encryption.id());
+        return NbPreferences.forModule(Keyring.class).node(encryption.id());
     }
 
     public char[] read(String key) {

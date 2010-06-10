@@ -57,7 +57,8 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
-import org.netbeans.modules.keyring.Utils;
+import org.netbeans.api.keyring.Keyring;
+import org.netbeans.modules.keyring.impl.Utils;
 import org.netbeans.modules.keyring.spi.EncryptionProvider;
 import org.openide.util.Mutex;
 import org.openide.util.NbPreferences;
@@ -89,7 +90,7 @@ public class MasterPasswordEncryption implements EncryptionProvider {
             KEY_FACTORY = SecretKeyFactory.getInstance(ENCRYPTION_ALGORITHM);
             encrypt = Cipher.getInstance(ENCRYPTION_ALGORITHM);
             decrypt = Cipher.getInstance(ENCRYPTION_ALGORITHM);
-            Preferences prefs = NbPreferences.forModule(MasterPasswordEncryption.class);
+            Preferences prefs = NbPreferences.forModule(Keyring.class);
             Utils.goMinusR(prefs);
             String saltKey = "salt"; // NOI18N
             byte[] salt = prefs.getByteArray(saltKey, null);
