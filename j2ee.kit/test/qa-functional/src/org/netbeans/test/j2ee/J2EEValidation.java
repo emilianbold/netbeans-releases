@@ -147,7 +147,7 @@ public class J2EEValidation extends JellyTestCase {
     public void testWebApplication() throws Exception {
         // workaround for jelly issue
         NewProjectWizardOperator.invoke().cancel();
-        addServer();
+        //addServer();
         // create new web application project
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         // "Web"

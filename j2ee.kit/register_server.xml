@@ -26,7 +26,7 @@
         <java classname="org.netbeans.modules.glassfish.common.registration.AutomaticRegistration"
               fork="true">
             <arg value="${netbeans.dest.dir}/enterprise"/>
-            <arg value="${glassfish.home}"/>
+            <arg value="${glassfish.home}/glassfish"/>
             <classpath>
                 <fileset dir="${netbeans.dest.dir}">
                     <include name="platform/core/core.jar"/>
