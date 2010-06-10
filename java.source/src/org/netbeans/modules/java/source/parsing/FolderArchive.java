@@ -109,8 +109,8 @@ public class FolderArchive implements Archive {
                 List<JavaFileObject> result = new ArrayList<JavaFileObject>(content.length);
                 for (File f : content) {
                     if ((kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(f.getName())))) &&
-                        (entry == null || entry.includes(f.toURI().toURL())) &&
-                        f.isFile()) {
+                        f.isFile() &&
+                        (entry == null || entry.includes(f.toURI().toURL()))) {
                         result.add(FileObjects.fileFileObject(f,this.root,filter, encoding));
                     }
                 }
