@@ -928,17 +928,22 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             // There are new additional source roots added. We need to update
             // unorderedOriginalSourcePath, originalSourcePath, projectSourceRoots,
             // smartSteppingSourcePath, sourcePathPermutation and additionalSourceRoots
+            Set<String> addedOriginalRoots = new LinkedHashSet<String>(newOriginalRoots.size());
             for (String root : newOriginalRoots) {
                 FileObject fo = getFileObject(root);
                 if (fo != null && fo.canRead()) {
                     sourcePathOriginal.add(fo);
                     unorderedSourcePathOriginal.add(fo);
+                    addedOriginalRoots.add(root);
                 }
             }
-            if (additionalSourceRoots == null) {
-                additionalSourceRoots = new LinkedHashSet<String>();
+            newOriginalRoots = addedOriginalRoots;
+            if (!newOriginalRoots.isEmpty()) {
+                if (additionalSourceRoots == null) {
+                    additionalSourceRoots = new LinkedHashSet<String>();
+                }
+                additionalSourceRoots.addAll(newOriginalRoots);
             }
-            additionalSourceRoots.addAll(newOriginalRoots);
         }
 
         // Then correct the smart-stepping path
@@ -1165,7 +1170,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      */
     private static FileObject getFileObject (String file) {
         File f = new File (file);
-        FileObject fo = FileUtil.toFileObject (f);
+        FileObject fo = FileUtil.toFileObject (FileUtil.normalizeFile(f));
         String path = null;
         if (fo == null && file.contains("!/")) {
             int index = file.indexOf("!/");
