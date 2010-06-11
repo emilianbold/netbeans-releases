@@ -42,15 +42,10 @@ package org.netbeans.modules.php.smarty.editor.completion;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Locale;
 import java.net.URL;
 import javax.swing.Action;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -63,7 +58,6 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  * Implementation of {@link CompletionProvider} for Tpl documents.
@@ -94,7 +88,6 @@ public class TplCompletionProvider implements CompletionProvider {
 
     private static class Query extends AbstractQuery {
 
-        private int anchor;
         private volatile Collection<? extends CompletionItem> items =  Collections.<CompletionItem>emptyList();
         private JTextComponent component;
 
@@ -121,62 +114,34 @@ public class TplCompletionProvider implements CompletionProvider {
 
         @Override
         protected boolean canFilter(JTextComponent component) {
-            try {
-                Document doc = component.getDocument();
-                int offset = component.getCaretPosition();
-                if(offset < anchor) {
-                    return false;
-                }
+            String prefix = CodeCompletionUtils.getTextPrefix(component.getDocument(), component.getCaretPosition());
 
-                String prefix = doc.getText(anchor, offset - anchor);
-
-                //check the items
-                for(CompletionItem item : items) {
-                    if(item instanceof TplCompletionItem) {
-                        if(startsWithIgnoreCase( ((TplCompletionItem)item).getItemText(), prefix)) {
-                            return true; //at least one item will remain
-                        }
+            //check the items
+            for(CompletionItem item : items) {
+                if(item instanceof TplCompletionItem) {
+                    if(CodeCompletionUtils.startsWithIgnoreCase( ((TplCompletionItem)item).getItemText(), prefix)) {
+                        return true; //at least one item will remain
                     }
                 }
-
-
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
             }
 
             return false;
-
         }
 
         @Override
         protected void filter(CompletionResultSet resultSet) {
-            try {
-                Document doc = component.getDocument();
-                int offset = component.getCaretPosition();
-                String prefix = doc.getText(anchor, offset - anchor);
+            String prefix = CodeCompletionUtils.getTextPrefix(component.getDocument(), component.getCaretPosition());
 
-                //check the items
-                for(CompletionItem item : items) {
-                    if(item instanceof TplCompletionItem) {
-                        if(startsWithIgnoreCase(((TplCompletionItem)item).getItemText(), prefix)) {
-                            resultSet.addItem(item);
-                        }
+            //check the items
+            for(CompletionItem item : items) {
+                if(item instanceof TplCompletionItem) {
+                    if(CodeCompletionUtils.startsWithIgnoreCase(((TplCompletionItem)item).getItemText(), prefix)) {
+                        resultSet.addItem(item);
                     }
                 }
-
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                resultSet.setAnchorOffset(anchor);
-                resultSet.finish();
             }
-
+            resultSet.finish();
         }
-
-        private static boolean startsWithIgnoreCase(String text, String prefix) {
-            return text.toLowerCase(Locale.ENGLISH).startsWith(prefix.toLowerCase(Locale.ENGLISH));
-        }
-
     }
 
     public static class DocQuery extends AbstractQuery {
@@ -409,10 +374,6 @@ public class TplCompletionProvider implements CompletionProvider {
 
         @Override
         public CompletionDocumentation resolveLink(String link) {
-//            URL itemUrl = HelpManager.getDefault().getHelpURL(item.getHelpId());
-//            return itemUrl != null ?
-//                new LinkDocItem(HelpManager.getDefault().getRelativeURL(itemUrl, link)) :
-//                new NoDocItem();
             return null;
         }
 

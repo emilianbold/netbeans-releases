@@ -67,17 +67,15 @@ public class TplCompletionItem implements CompletionItem {
     protected static final int DEFAULT_SORT_PRIORITY = 22;
 
     //------------------------------------------
-    protected int substitutionOffset;
     protected String text, help, helpUrl;
     protected boolean shift;
 
-    protected TplCompletionItem(String text, int substituteOffset) {
-        this.substitutionOffset = substituteOffset;
+    protected TplCompletionItem(String text) {
         this.text = text;
     }
 
-    protected TplCompletionItem(String text, int substituteOffset, String help, String helpUrl) {
-        this(text, substituteOffset);
+    protected TplCompletionItem(String text, String help, String helpUrl) {
+        this(text);
         this.help = help;
         this.helpUrl = helpUrl;
     }
@@ -113,7 +111,7 @@ public class TplCompletionItem implements CompletionItem {
                 Completion.get().hideCompletion();
             }
             int caretOffset = component.getSelectionEnd();
-            substituteText(component, caretOffset - substitutionOffset);
+            substituteText(component, CodeCompletionUtils.getSubstitutionLenght(component.getDocument(), component.getCaretPosition()));
         }
 
     }
@@ -147,6 +145,7 @@ public class TplCompletionItem implements CompletionItem {
 
             public void run() {
                 try {
+                    int substitutionOffset = c.getCaretPosition() - CodeCompletionUtils.getSubstitutionLenght(c.getDocument(), c.getCaretPosition());
                     //test whether we are trying to insert sg. what is already present in the text
                     String currentText = doc.getText(substitutionOffset, (doc.getLength() - substitutionOffset) < substituteText.length() ? (doc.getLength() - substitutionOffset) : substituteText.length());
                     if (!substituteText.equals(currentText)) {
@@ -203,6 +202,7 @@ public class TplCompletionItem implements CompletionItem {
     public boolean instantSubstitution(JTextComponent component) {
         if (component != null) {
             try {
+                int substitutionOffset = CodeCompletionUtils.getSubstitutionLenght(component.getDocument(), component.getCaretPosition());
                 int caretOffset = component.getSelectionEnd();
                 if (caretOffset > substitutionOffset) {
                     String currentText = component.getDocument().getText(substitutionOffset, caretOffset - substitutionOffset);
@@ -275,8 +275,8 @@ public class TplCompletionItem implements CompletionItem {
 
         protected static final String BUILT_IN_FUNC_COLOR = "529854";
 
-        public BuiltInFunctionsCompletionItem(String value, int offset, String help, String helpUrl) {
-            super(value, offset, help, helpUrl);
+        public BuiltInFunctionsCompletionItem(String value, String help, String helpUrl) {
+            super(value, help, helpUrl);
         }
 
         @Override
@@ -295,8 +295,8 @@ public class TplCompletionItem implements CompletionItem {
 
         protected static final String CUSTOM_FUNC_COLOR = "3B713B";
 
-        public CustomFunctionsCompletionItem(String value, int offset, String help, String helpUrl) {
-            super(value, offset, help, helpUrl);
+        public CustomFunctionsCompletionItem(String value, String help, String helpUrl) {
+            super(value, help, helpUrl);
         }
 
         @Override
@@ -310,8 +310,8 @@ public class TplCompletionItem implements CompletionItem {
 
         protected static final String ATTR_NAME_COLOR = hexColorCode(Color.blue.darker());
 
-        public VariableModifiersCompletionItem(String value, int offset, String help, String helpUrl) {
-            super(value, offset, help, helpUrl);
+        public VariableModifiersCompletionItem(String value, String help, String helpUrl) {
+            super(value, help, helpUrl);
         }
 
         @Override

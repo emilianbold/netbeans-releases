@@ -69,17 +69,17 @@ public class SmartyCodeCompletionOffer {
             Collection<CodeCompletionEntryMetadata> ccList = parseCCData(completionType);
             if (completionType.equals("built-in-functions") ) {
                 for (CodeCompletionEntryMetadata entryMetadata : ccList) {
-                    completionItems.add(new BuiltInFunctionsCompletionItem(entryMetadata.getKeyword(), 0, entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
+                    completionItems.add(new BuiltInFunctionsCompletionItem(entryMetadata.getKeyword(), entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
                 }
             }
             else if (completionType.equals("custom-functions")) {
                 for (CodeCompletionEntryMetadata entryMetadata : ccList) {
-                    completionItems.add(new CustomFunctionsCompletionItem(entryMetadata.getKeyword(), 0, entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
+                    completionItems.add(new CustomFunctionsCompletionItem(entryMetadata.getKeyword(), entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
                 }
             }
             else if (completionType.equals("variable-modifiers")) {
                 for (CodeCompletionEntryMetadata entryMetadata : ccList) {
-                    completionItems.add(new VariableModifiersCompletionItem(entryMetadata.getKeyword(), 0, entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
+                    completionItems.add(new VariableModifiersCompletionItem(entryMetadata.getKeyword(), entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
                 }
             }
         }

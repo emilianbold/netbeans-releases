@@ -41,19 +41,15 @@
 package org.netbeans.modules.php.smarty.editor.completion;
 
 import java.util.*;
-import java.util.Collections;
 import javax.swing.text.Document;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.php.smarty.editor.completion.entries.CodeCompletionEntryMetadata;
 import org.netbeans.modules.php.smarty.editor.completion.entries.SmartyCodeCompletionOffer;
 import org.netbeans.spi.editor.completion.CompletionItem;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -64,14 +60,12 @@ import org.openide.filesystems.FileObject;
 public class TplCompletionQuery extends UserTask {
 
     private Document document;
-    private FileObject file;
     private int offset;
     private CompletionResult completionResult;
 
     public TplCompletionQuery(Document document, int offset) {
         this.document = document;
         this.offset = offset;
-        this.file = DataLoadersBridge.getDefault().getFileObject(document);
     }
 
     public CompletionResult query() throws ParseException {
@@ -108,4 +102,3 @@ public class TplCompletionQuery extends UserTask {
         }
     }
 }
-
