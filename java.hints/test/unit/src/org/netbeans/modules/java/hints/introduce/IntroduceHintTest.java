@@ -371,6 +371,18 @@ public class IntroduceHintTest extends NbTestCase {
     public void testConstant5() throws Exception {
         performConstantAccessTest("package test; public class Test {private static final int i = 0; public void test() {int x = 1 + i;}}", 129 - 36, 134 - 36, true);
     }
+
+    public void testConstant187444a() throws Exception {
+        performConstantAccessTest("package test; public class Test {private static final double i = |-2.4|;}", true);
+    }
+
+    public void testConstant187444b() throws Exception {
+        performConstantAccessTest("package test; public class Test {private static final int i = |~(2 + 4)|;}", true);
+    }
+
+    public void testConstant187444c() throws Exception {
+        performConstantAccessTest("package test; public class Test {int y = 1; private final int i = |~(2 + y)|; }", false);
+    }
     
     public void testConstantFix1() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3 + 4;}}",
@@ -1306,6 +1318,14 @@ public class IntroduceHintTest extends NbTestCase {
         }
     }
     
+    private void performConstantAccessTest(String code, boolean awaited) throws Exception {
+        int[] span = new int[2];
+
+        code = TestUtilities.detectOffsets(code, span);
+
+        performConstantAccessTest(code, span[0], span[1], awaited);
+    }
+
     private void performConstantAccessTest(String code, int start, int end, boolean awaited) throws Exception {
         prepareTest(code);
         

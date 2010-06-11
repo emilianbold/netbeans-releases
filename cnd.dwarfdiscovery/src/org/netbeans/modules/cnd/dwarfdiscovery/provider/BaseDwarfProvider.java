@@ -314,6 +314,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                 }
             }
+            //System.out.println("Required DLLs:"); // NOI18N
+            //for(String dll : dump.readPubNames()) {
+            //    System.out.println("\t"+dll); // NOI18N
+            //}
         } catch (FileNotFoundException ex) {
             // Skip Exception
             if (TRACE_READ_EXCEPTIONS) {
