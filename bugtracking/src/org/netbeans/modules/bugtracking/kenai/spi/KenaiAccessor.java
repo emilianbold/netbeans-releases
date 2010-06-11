@@ -198,7 +198,7 @@ public abstract class KenaiAccessor {
                     Query query = qtc.getQuery();
                     if(query == null) {
                         return;
-}
+                    }
                     Repository repository = query.getRepository();
                     if(repository == null) {
                         return;
