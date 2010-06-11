@@ -364,6 +364,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     generatedFO.delete();
                 }
                 throw e;
+            } finally {
+
             }
             return generatedEntityFOs;
         }
@@ -919,6 +921,22 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                                             break;
                                     }
                                 }
+                            } else if( nm.contentEquals("EmbeddedId") ){//NOI18N
+
+                            } else if( nm.contentEquals("JoinTable") ){//NOI18N
+                                for(ExpressionTree exTree: annTree.getArguments()){
+                                    AssignmentTree aTree = (AssignmentTree)exTree;
+                                    if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("joinTables")){//NOI18N
+                                            ExpressionTree value = aTree.getExpression();
+                                            break;
+                                    }
+                                }
+                            } else if( nm.contentEquals("JoinColumns") ){//NOI18N
+                                for(ExpressionTree exTree: annTree.getArguments()){
+                                    AssignmentTree aTree = (AssignmentTree)exTree;
+                                            ExpressionTree value = aTree.getExpression();
+                                            break;
+                                 }
                             } else if( nm.contentEquals("JoinColumn") ){//NOI18N
                                 for(ExpressionTree exTree: annTree.getArguments()){
                                     AssignmentTree aTree = (AssignmentTree)exTree;
@@ -926,7 +944,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                                             existingJoinColumns.put((String)((LiteralTree)aTree.getExpression()).getValue(), annTree);
                                             break;
                                     }
-                                }                            } else if (nm.contentEquals("OneToOne") || nm.contentEquals("OneToMany")){//NOI18
+                                }
+                            } else if (nm.contentEquals("OneToOne") || nm.contentEquals("OneToMany")){//NOI18
                                 //may be relation with mappedTo
                                 for(ExpressionTree expression : annTree.getArguments()){
                                     if(expression instanceof AssignmentTree){
