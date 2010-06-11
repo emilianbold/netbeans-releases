@@ -133,12 +133,16 @@ class KenaiHandler {
     }
 
     List<QueryHandle> getQueryHandles(ProjectHandle project, Query... queries) {
+        return getQueryHandles(project.getKenaiProject().getName(), queries);
+    }
+
+    List<QueryHandle> getQueryHandles(String projectId, Query... queries) {
         List<QueryHandle> ret = new ArrayList<QueryHandle>();
         synchronized (queryHandles) {
-            Map<String, QueryHandle> m = queryHandles.get(project.getId());
+            Map<String, QueryHandle> m = queryHandles.get(projectId);
             if (m == null) {
                 m = new HashMap<String, QueryHandle>();
-                queryHandles.put(project.getId(), m);
+                queryHandles.put(projectId, m);
             } else {
                 List<String> l = new ArrayList<String>();
                 for (Query q : queries) {

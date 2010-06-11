@@ -186,4 +186,8 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
         return true;
     }
 
+    void fireQueryActivated() {
+        changeSupport.firePropertyChange(QueryHandle.PROP_QUERY_ACTIVATED, null, null);
+    }
+
 }
