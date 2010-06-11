@@ -177,38 +177,41 @@ implements Executor {
     }
     
     public void runAction(final Object action) {
-        runAction(action, true);
+        runAction(action, true, null);
     }
 
-    private void runAction(final Object action, boolean doResume) {
+    private void runAction(final Object action, boolean doResume, Lock lock) {
         //S ystem.out.println("\nStepAction.doAction");
         int suspendPolicy = getDebuggerImpl().getSuspend();
         JPDAThreadImpl resumeThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
-        Lock lock;
-        if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
-            lock = resumeThread.accessLock.writeLock();
-        } else {
-            lock = getDebuggerImpl().accessLock.writeLock();
-        }
-        lock.lock();
+        boolean locked = lock == null;
         try {
-            // 1) init info about current state & remove old
-            //    requests in the current thread
-            // We have to assure that the thread is suspended so that we
-            // do not randomly resume threads
-            while (!resumeThread.isSuspended()) {
-                // The thread is not suspended, release the lock so that others
-                // can process what they want with the resumed thread...
-                lock.unlock();
-                Thread.yield();
-                try {
-                    Thread.sleep(100); // Wait for a moment
-                } catch (InterruptedException iex) {}
-                lock.lock(); // Take the lock again to repeat the test
-                if (!resumeThread.isSuspended() && !resumeThread.isInStep() && !resumeThread.isMethodInvoking()) {
-                    // Explicitely suspend the thread if it's not in a step
-                    // or in a method invocation:
-                    resumeThread.suspend();
+            if (lock == null) {
+                if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
+                    lock = resumeThread.accessLock.writeLock();
+                } else {
+                    lock = getDebuggerImpl().accessLock.writeLock();
+                }
+                lock.lock();
+
+                // 1) init info about current state & remove old
+                //    requests in the current thread
+                // We have to assure that the thread is suspended so that we
+                // do not randomly resume threads
+                while (!resumeThread.isSuspended()) {
+                    // The thread is not suspended, release the lock so that others
+                    // can process what they want with the resumed thread...
+                    lock.unlock();
+                    Thread.yield();
+                    try {
+                        Thread.sleep(100); // Wait for a moment
+                    } catch (InterruptedException iex) {}
+                    lock.lock(); // Take the lock again to repeat the test
+                    if (!resumeThread.isSuspended() && !resumeThread.isInStep() && !resumeThread.isMethodInvoking()) {
+                        // Explicitely suspend the thread if it's not in a step
+                        // or in a method invocation:
+                        resumeThread.suspend();
+                    }
                 }
             }
             resumeThread.waitUntilMethodInvokeDone();
@@ -279,7 +282,9 @@ implements Executor {
         } catch (ObjectCollectedExceptionWrapper e) {
             // Thread was collected - ignore the step
         } finally {
-            lock.unlock();
+            if (locked && lock != null) {
+                lock.unlock();
+            }
         }
         //S ystem.out.println("/nStepAction.doAction end");
     }
@@ -430,17 +435,17 @@ implements Executor {
             boolean stepThrough = useStepFilters && p.getBoolean("StepThroughFilters", false);
             if (!stepThrough || smartSteppingStepOut) {
                 // Assure that the action does not resume anything. Resume is done by Operator.
-                getStepIntoActionProvider ().runAction(ActionsManager.ACTION_STEP_OUT, false);
+                getStepIntoActionProvider ().runAction(ActionsManager.ACTION_STEP_OUT, false, lock);
             } else {
                 // Assure that the action does not resume anything. Resume is done by Operator.
                 int origDepth = StepRequestWrapper.depth(sr);
                 if (origDepth == StepRequest.STEP_OVER) {
-                    runAction(ActionsManager.ACTION_STEP_OVER, false);
+                    runAction(ActionsManager.ACTION_STEP_OVER, false, lock);
                     //getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false);
                 } else if (origDepth == StepRequest.STEP_OUT) {
-                    runAction(ActionsManager.ACTION_STEP_OUT, false);
+                    runAction(ActionsManager.ACTION_STEP_OUT, false, lock);
                 } else { // if (origDepth == StepRequest.STEP_INTO) {
-                    getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false);
+                    getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false, lock);
                 }
             }
             //S ystem.out.println("/nStepAction.exec end - resume");
