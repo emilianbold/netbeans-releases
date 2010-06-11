@@ -44,8 +44,12 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
+import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -55,7 +59,13 @@ import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 
 public class SmartSteppingImpl extends SmartSteppingCallback implements 
@@ -97,6 +107,59 @@ PropertyChangeListener {
         SourcePath ectx = getEngineContext (lookupProvider);
         boolean b = ectx.sourceAvailable (thread, null, false);
         if (b) return true;
+
+        try {
+            String sourcePath = thread.getSourcePath(null);
+            sourcePath = sourcePath.replace(java.io.File.pathSeparatorChar, '/');
+            FileObject sourceFO = GlobalPathRegistry.getDefault().findResource(sourcePath);
+            if (sourceFO != null) {
+                Set<ClassPath> cpaths = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
+                FileObject rootFO = null;
+                for (ClassPath cp : cpaths) {
+                    FileObject fo = cp.findOwnerRoot(sourceFO);
+                    if (fo != null) {
+                        if (rootFO == null) {
+                            rootFO = fo;
+                        } else {
+                            // More than one source root
+                            rootFO = null;
+                            break;
+                        }
+                    }
+                }
+                if (rootFO != null) {
+                    java.io.File file = FileUtil.toFile(rootFO);
+                    String sourceRoot;
+                    try {
+                        sourceRoot = file.getCanonicalPath();
+                    } catch (IOException ex) {
+                        sourceRoot = file.getAbsolutePath();
+                    }
+
+                    String[] additionalSourceRoots = ectx.getAdditionalSourceRoots();
+                    String[] originalSourceRoots = ectx.getOriginalSourceRoots();
+                    if (Arrays.asList(additionalSourceRoots).contains(sourceRoot)) {
+                        // Source root is known, but disabled.
+                        return false;
+                    }
+                    if (Arrays.asList(originalSourceRoots).contains(sourceRoot)) {
+                        // Source root is known, but disabled.
+                        return false;
+                    }
+                    String[] sourceRoots = ectx.getSourceRoots();
+                    String[] new_additionalSourceRoots = new String[additionalSourceRoots.length + 1];
+                    String[] new_sourceRoots = new String[sourceRoots.length + 1];
+                    System.arraycopy(additionalSourceRoots, 0, new_additionalSourceRoots, 0, additionalSourceRoots.length);
+                    System.arraycopy(sourceRoots, 0, new_sourceRoots, 0, sourceRoots.length);
+                    new_additionalSourceRoots[additionalSourceRoots.length] = sourceRoot;
+                    new_sourceRoots[sourceRoots.length] = sourceRoot;
+                    ectx.setSourceRoots(new_sourceRoots, new_additionalSourceRoots);
+                    return true;
+                }
+            }
+        } catch (AbsentInformationException ex) {
+        }
+        
         
         // find pattern
         String name, n1 = className.replace ('.', '/');

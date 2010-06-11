@@ -361,6 +361,7 @@ NodeActionsProvider {
         for (int x = 0; x < roots.length; x++) {
             sourceRootsSet.add(roots[x]);
         }
+        additionalSourceRoots = new LinkedHashSet(Arrays.asList(sourcePath.getAdditionalSourceRoots()));
     }
 
     /*// ExtendedNodeModelFilter:
