@@ -133,10 +133,10 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
     }
 
     public void runAction(boolean doResume) {
-        runAction(null, doResume);
+        runAction(null, doResume, null);
     }
 
-    public void runAction(Object action, boolean doResume) {
+    public void runAction(Object action, boolean doResume, Lock lock) {
         smartLogger.finer("STEP INTO NEXT METHOD.");
         JPDAThread t = getDebuggerImpl ().getCurrentThread ();
         if (t == null) {
@@ -144,20 +144,22 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
             smartLogger.finer("Can not step into next method! No current thread!");
             return ;
         }
-        Lock lock;
-        if (getDebuggerImpl().getSuspend() == JPDADebugger.SUSPEND_EVENT_THREAD) {
-            lock = ((JPDAThreadImpl) t).accessLock.writeLock();
-        } else {
-            lock = getDebuggerImpl().accessLock.writeLock();
-        }
-        lock.lock();
+        boolean locked = lock == null;
         try {
-            if (!(t.isSuspended() || ((JPDAThreadImpl) t).isSuspendedNoFire())) {
-                // Can not step when it's not suspended.
-                if (smartLogger.isLoggable(Level.FINER)) {
-                    smartLogger.finer("Can not step into next method! Thread "+t+" not suspended!");
+            if (lock == null) {
+                if (getDebuggerImpl().getSuspend() == JPDADebugger.SUSPEND_EVENT_THREAD) {
+                    lock = ((JPDAThreadImpl) t).accessLock.writeLock();
+                } else {
+                    lock = getDebuggerImpl().accessLock.writeLock();
                 }
-                return ;
+                lock.lock();
+                if (!(t.isSuspended() || ((JPDAThreadImpl) t).isSuspendedNoFire())) {
+                    // Can not step when it's not suspended.
+                    if (smartLogger.isLoggable(Level.FINER)) {
+                        smartLogger.finer("Can not step into next method! Thread "+t+" not suspended!");
+                    }
+                    return ;
+                }
             }
             JPDAThreadImpl[] resumeThreadPtr = new JPDAThreadImpl[] { null };
             int stepDepth;
@@ -190,7 +192,9 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 }
             }
         } finally {
-            lock.unlock();
+            if (locked && lock != null) {
+                lock.unlock();
+            }
         }
     }
 
