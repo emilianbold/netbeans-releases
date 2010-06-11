@@ -716,7 +716,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         if (phpBaseElement instanceof PhpVariable) {
                             PhpVariable variable  = (PhpVariable) phpBaseElement;
                             final PhpClass type = variable.getType();
-                            final Collection<Field> fields = type.getFields();
+                            final Collection<Field> fields = type != null ? type.getFields() : Collections.<Field>emptySet();
                             for (final Field field : fields) {
                                 final PhpClass fldType = field.getType();
                                 final PhpElementImpl fldHandle = PhpElementImpl.create(
