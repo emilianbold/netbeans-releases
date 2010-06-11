@@ -134,9 +134,11 @@ class ConfigActionLocal extends ConfigAction {
     public void debugProject() {
         final URL[] urlToShow = new URL[2];
         try {
-            urlToShow[0] = getUrlToShow(CommandUtils.urlForDebugProject(project), CommandUtils.urlForProject(project));
-            urlToShow[1] = getUrlToShow(CommandUtils.urlForDebugProject(project, XDebugUrlArguments.XDEBUG_SESSION_STOP_NO_EXEC),
-                    CommandUtils.urlForProject(project));
+            final URL urlForProject = getUrlToShow(CommandUtils.urlForProject(project));
+            if (urlForProject != null) {
+                urlToShow[0] = CommandUtils.createDebugUrl(urlForProject, XDebugUrlArguments.XDEBUG_SESSION_START);
+                urlToShow[1] = CommandUtils.createDebugUrl(urlForProject, XDebugUrlArguments.XDEBUG_SESSION_STOP_NO_EXEC);
+            }
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         } catch (StopDebuggingException exc) {
@@ -232,9 +234,11 @@ class ConfigActionLocal extends ConfigAction {
         URL urlForStartDebugging = null;
         URL urlForStopDebugging = null;
         try {
-            urlForStartDebugging = getUrlToShow(CommandUtils.urlForDebugContext(project, context), CommandUtils.urlForContext(project, context));
-            urlForStopDebugging = getUrlToShow(CommandUtils.urlForDebugContext(project, context, XDebugUrlArguments.XDEBUG_SESSION_STOP_NO_EXEC),
-                    CommandUtils.urlForContext(project, context));
+            final URL urlForContext = getUrlToShow(CommandUtils.urlForContext(project, context));
+            if (urlForContext != null) {
+                urlForStartDebugging = CommandUtils.createDebugUrl(urlForContext, XDebugUrlArguments.XDEBUG_SESSION_START);
+                urlForStopDebugging = CommandUtils.createDebugUrl(urlForContext, XDebugUrlArguments.XDEBUG_SESSION_STOP_NO_EXEC);
+            }
         } catch (MalformedURLException ex) {
             //TODO improve error handling
             Exceptions.printStackTrace(ex);
@@ -246,12 +250,12 @@ class ConfigActionLocal extends ConfigAction {
         debugFile(CommandUtils.fileForContextOrSelectedNodes(context, webRoot), urlForStartDebugging, urlForStopDebugging);
     }
 
-    URL getUrlToShow(URL defaultDebugUrl, URL defaultRunUrl) throws MalformedURLException, StopDebuggingException {
+    URL getUrlToShow(final URL defaultRunUrl) throws MalformedURLException, StopDebuggingException {
         URL urlToShow = null;
         DebugUrl debugUrl = ProjectPropertiesSupport.getDebugUrl(project);
         switch (debugUrl) {
             case DEFAULT_URL:
-                urlToShow = defaultDebugUrl;
+                urlToShow = defaultRunUrl;
                 assert urlToShow != null;
                 break;
             case ASK_FOR_URL:
@@ -261,7 +265,6 @@ class ConfigActionLocal extends ConfigAction {
                 }
                 urlToShow = askForUrlPanel.getUrl();
                 assert urlToShow != null;
-                urlToShow = CommandUtils.createDebugUrl(urlToShow);
                 break;
             case DO_NOT_OPEN_BROWSER:
                 // noop

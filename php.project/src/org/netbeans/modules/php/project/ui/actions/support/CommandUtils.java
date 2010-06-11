@@ -354,7 +354,18 @@ public final class CommandUtils {
      * @throws MalformedURLException if any error occurs
      */
     public static URL createDebugUrl(URL url) throws MalformedURLException {
-        return appendQuery(url, getDebugArguments(XDebugUrlArguments.XDEBUG_SESSION_START));
+        return createDebugUrl(url, XDebugUrlArguments.XDEBUG_SESSION_START);
+    }
+
+    /**
+     * Create {@link URL} for debugging from the given {@link URL}.
+     * @param url original URL
+     * @param xDebugArgument
+     * @return {@link URL} for debugging
+     * @throws MalformedURLException if any error occurs
+     */
+    public static URL createDebugUrl(final URL url, final XDebugUrlArguments xDebugArgument) throws MalformedURLException {
+        return appendQuery(url, getDebugArguments(xDebugArgument));
     }
 
     /**
