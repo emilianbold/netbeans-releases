@@ -194,7 +194,7 @@ final class ProcessList {
                         }
 
                         // pargs call if needed (IZ 168499)
-                        if (isSolaris && !DISABLE_PARGS) {
+                        if (isSolaris && !DISABLE_PARGS && !proclist.isEmpty()) {
                             NativeProcessBuilder pargsBuilder = NativeProcessBuilder.newProcessBuilder(exEnv);
                             pargsBuilder.setExecutable("/usr/bin/pargs").redirectError(); // NOI18N
                             String[] pargs_args = new String[proclist.size()+1];
