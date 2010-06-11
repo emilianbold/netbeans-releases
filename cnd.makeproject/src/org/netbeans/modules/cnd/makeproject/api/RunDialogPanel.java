@@ -77,8 +77,8 @@ import org.openide.util.Utilities;
 public final class RunDialogPanel extends javax.swing.JPanel implements PropertyChangeListener {
     private DocumentListener modifiedValidateDocumentListener = null;
     private Project[] projectChoices = null;
-    private boolean executableReadOnly = true;
     private JButton actionButton;
+    private final boolean isRun;
     
     private static String lastSelectedExecutable = null;
     private static Project lastSelectedProject = null;
@@ -89,7 +89,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private boolean isValidating = false;
     
     public RunDialogPanel() {
-        initialize(null, false);
+        isRun = true;
+        initialize(null);
         errorLabel.setText(""); //NOI18N
         initAccessibility();
     }
@@ -106,27 +107,27 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         environmentTextField.getAccessibleContext().setAccessibleDescription(getString("ENVIRONMENT_LABEL_AD"));
     }
     
-    public RunDialogPanel(String exePath, boolean executableReadOnly, JButton actionButton) {
+    public RunDialogPanel(String exePath, JButton actionButton, boolean isRun) {
         this.actionButton = actionButton;
-        initialize(exePath, executableReadOnly);
+        this.isRun = isRun;
+        initialize(exePath);
         errorLabel.setText(""); //NOI18N
         initAccessibility();
     }
     
-    private void initialize(String exePath, boolean executableReadOnly) {
+    private void initialize(String exePath) {
         initComponents();
         errorLabel.setForeground(javax.swing.UIManager.getColor("nb.errorForeground")); // NOI18N
-        this.executableReadOnly = executableReadOnly;
         modifiedValidateDocumentListener = new ModifiedValidateDocumentListener();
         //modifiedRunDirectoryListener = new ModifiedRunDirectoryListener();
-        if (executableReadOnly) {
-//            executableTextField.setEditable(false);
-//            executableBrowseButton.setEnabled(false);
-        }
         if (exePath != null) {
             executableTextField.setText(exePath);
         }
-        guidanceTextarea.setText(getString("DIALOG_GUIDANCETEXT"));
+        if (isRun) {
+            guidanceTextarea.setText(getString("DIALOG_GUIDANCETEXT"));
+        } else {
+            guidanceTextarea.setText(getString("DIALOG_GUIDANCETEXT_CREATE"));
+        }
         String[] savedExePaths = getExecutablePicklist().getElementsDisplayName();
         String feed = null;
         if (exePath != null) {
@@ -432,22 +433,26 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     // End of variables declaration//GEN-END:variables
     
     private void initGui() {
-        projectChoices = OpenProjects.getDefault().getOpenProjects();
         ActionListener projectComboBoxActionListener = projectComboBox.getActionListeners()[0];
         projectComboBox.removeActionListener(projectComboBoxActionListener);
         projectComboBox.removeAllItems();
         projectComboBox.addItem(getString("NO_PROJECT")); // always first
-        for (int i = 0; i < projectChoices.length; i++) {
-            projectComboBox.addItem(ProjectUtils.getInformation(projectChoices[i]).getName());
-        }
-        
         int index = 0;
-        // preselect project ???
-        if (lastSelectedExecutable != null && getExecutablePath().equals(lastSelectedExecutable) && lastSelectedProject != null) {
+        projectComboBox.setVisible(isRun);
+        projectLabel.setVisible(isRun);
+        if (isRun) {
+            projectChoices = OpenProjects.getDefault().getOpenProjects();
             for (int i = 0; i < projectChoices.length; i++) {
-                if (projectChoices[i] == lastSelectedProject) {
-                    index = i+1;
-                    break;
+                projectComboBox.addItem(ProjectUtils.getInformation(projectChoices[i]).getName());
+            }
+
+            // preselect project ???
+            if (lastSelectedExecutable != null && getExecutablePath().equals(lastSelectedExecutable) && lastSelectedProject != null) {
+                for (int i = 0; i < projectChoices.length; i++) {
+                    if (projectChoices[i] == lastSelectedProject) {
+                        index = i+1;
+                        break;
+                    }
                 }
             }
         }
