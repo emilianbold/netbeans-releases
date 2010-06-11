@@ -77,7 +77,9 @@ public class FSInterceptorTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", getWorkDir() + "/userdir");
+        File userdir = new File(getWorkDir() + "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
         FileObject fo = FileUtil.toFileObject(getWorkDir());
     }
 
