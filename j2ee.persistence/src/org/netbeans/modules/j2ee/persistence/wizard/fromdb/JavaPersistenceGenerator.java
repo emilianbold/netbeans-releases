@@ -1053,7 +1053,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         if(expr instanceof LiteralTree){
                             LiteralTree literal = (LiteralTree) expr;
                             String value = literal.getValue().toString();
-                            if(fName.equals(value))return;//???may not need to compare value, type may be enouth????
+                            if(value != null && value.length()>0)return;
                         }
                     }
                     annArguments.add(genUtils.createAnnotationArgument("mappedBy", fName)); // NOI18N
