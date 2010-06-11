@@ -350,7 +350,7 @@ public class AssignResultToVariable extends AbstractHint {
                         Tree varType = isAnonymous ? identifier : make.Type(type);
                         VariableTree var = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name[0], varType, (ExpressionTree) tp.getLeaf());
                         
-                        var = Utilities.copyComments(copy, tp.getLeaf(), var);
+                        var = Utilities.copyComments(copy, tp.getParentPath().getLeaf(), var);
                         copy.tag(varType, VAR_TYPE_TAG);
                         
                         copy.rewrite(tp.getParentPath().getLeaf(), var);

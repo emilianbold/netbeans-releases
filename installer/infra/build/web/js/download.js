@@ -564,11 +564,15 @@ function update() {
     if ( platform == "zip" ) {
         error_message = NOTE_ZIP;    
     } else if(platform.indexOf("macosx")!=-1) {
-	error_message = NOTE_MACOSX;
+	//error_message = NOTE_MACOSX;
     } else if(platform.indexOf("solaris")!=-1) {
 	error_message = NOTE_SOLARIS;
     } 
 
+    if (error_message != "" ) {
+       error_message = NOTE_ALL;
+    }
+    
 
     document.getElementById("error_message").innerHTML = error_message;
     

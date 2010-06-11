@@ -463,7 +463,7 @@ is divided into following sections:
                             <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <compilerarg value="-processorpath" />
-                            <compilerarg path="@{{processorpath}}" />
+                            <compilerarg path="@{{processorpath}}:${{empty.dir}}" />
                             <compilerarg line="${{ap.processors.internal}}" />
                             <compilerarg line="${{annotation.processing.processor.options}}" />
                             <compilerarg value="-s" />

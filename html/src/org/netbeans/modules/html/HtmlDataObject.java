@@ -44,13 +44,20 @@
 
 package org.netbeans.modules.html;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -63,8 +70,11 @@ import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.ViewCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -73,6 +83,7 @@ import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.UserCancelException;
 import org.xml.sax.InputSource;
@@ -85,6 +96,7 @@ import org.xml.sax.InputSource;
 public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory {
     public static final String PROP_ENCODING = "Content-Encoding"; // NOI18N
     public static final String DEFAULT_ENCODING = new InputStreamReader(System.in).getEncoding();
+    private static final Logger LOG = Logger.getLogger(HtmlDataObject.class.getName());
     static final long serialVersionUID =8354927561693097159L;
     
     //constants used when finding html document content type
@@ -114,28 +126,8 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             }
         });
 
-        FileEncodingQueryImplementation feq = new FileEncodingQueryImplementation() {
-            public Charset getEncoding(FileObject file) {
-                assert file != null;
-                assert file.equals(getPrimaryFile());
+        set.assign(FileEncodingQueryImplementation.class, new FileEncodingQueryImpl());
                 
-                String charsetName = getFileEncoding();
-                if(charsetName == null) {
-                    return null; //nothing found in the document
-                }
-                
-                try {
-                    return Charset.forName(charsetName);
-                } catch(IllegalCharsetNameException ichse) {
-                    //no-op
-                } catch (UnsupportedCharsetException uchse) {
-                    //no-op
-                }
-                return null;
-            }
-        };
-        set.assign(FileEncodingQueryImplementation.class, feq);
-
         //add check/validate xml cookies
         InputSource in = DataObjectAdapters.inputSource(this);
         set.add(new ValidateXMLSupport(in));
@@ -182,13 +174,29 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     
     /** Checks the file for UTF-16 marks and calls findEncoding with properly loaded document content then. */
     String getFileEncoding() {
-        String encoding = null;
-        //detect encoding from input stream
         InputStream is = null;
         try {
             is = getPrimaryFile().getInputStream();
+            return getFileEncoding(is);
+        } catch (IOException ex) {
+            LOG.log(Level.WARNING, null, ex);
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, null, ex);
+            }
+        }
+        return null;
+    }
+
+    private String getFileEncoding(final InputStream in) throws IOException {
+        //detect encoding from input stream
+        String encoding = null;
             byte[] arr = new byte[4096];
-            int len = is.read(arr);
+        int len = in.read(arr);
             len = (len >= 0) ? len : 0;
             //check UTF-16 mark
             if (len > 1) {
@@ -199,7 +207,6 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                     encoding = "UTF-16LE";
                 }
             }
-            
             //try to read the file using some encodings
             String[] encodings = new String[]{encoding != null ? encoding : DEFAULT_ENCODING, "UTF-16LE", "UTF-16BE"};
             int i = 0;
@@ -207,18 +214,6 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                 encoding = findEncoding(makeString(arr, 0, len, encodings[i++]));
             } while (encoding == null && i < encodings.length);
             
-            
-        } catch (IOException ex) {
-            Logger.getLogger("global").log(Level.WARNING, null, ex);
-        } finally {
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger("global").log(Level.WARNING, null, ex);
-            }
-        }
         if (encoding != null) {
             encoding = encoding.trim();
         }
@@ -295,4 +290,310 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         }
     }
     
+    private class FileEncodingQueryImpl extends FileEncodingQueryImplementation {
+
+        private volatile Charset cachedEncoding;
+        private final AtomicBoolean listeningOnContentChange = new AtomicBoolean();
+
+        @Override
+        public Charset getEncoding(FileObject file) {
+            assert file != null;
+            Charset encoding = cachedEncoding;
+            if (encoding != null) {
+                LOG.log(Level.FINEST, "HtmlDataObject.getFileEncoding cached {0}", new Object[] {encoding});   //NOI18N
+                return encoding;
+}
+            return new ProxyCharset();
+        }
+
+        private Charset cache (final Charset encoding) {
+
+            if (!listeningOnContentChange.getAndSet(true)) {
+                final FileObject primaryFile = getPrimaryFile();
+                primaryFile.addFileChangeListener(FileUtil.weakFileChangeListener(new FileChangeAdapter(){
+                    @Override
+                    public void fileChanged(FileEvent fe) {
+                        cachedEncoding = null;
+                    }
+                },primaryFile));
+            }
+            cachedEncoding = encoding;
+            LOG.log(Level.FINEST, "HtmlDataObject.getFileEncoding noncached {0}", new Object[] {encoding});   //NOI18N
+            return encoding;
+        }
+
+
+        private class ProxyCharset extends Charset {
+
+            public ProxyCharset () {
+                super ("UTF-8", new String[0]);         //NOI18N
+            }
+
+            public boolean contains(Charset c) {
+                return false;
+            }
+
+            public CharsetDecoder newDecoder() {
+                return new HtmlDecoder (this);
+            }
+
+            public CharsetEncoder newEncoder() {
+                return new HtmlEncoder (this);
+            }
+        }
+
+        private class HtmlEncoder extends CharsetEncoder {
+
+            private CharBuffer buffer = CharBuffer.allocate(4*1024);
+            private CharBuffer remainder;
+            private CharsetEncoder encoder;
+
+            public HtmlEncoder (Charset cs) {
+                super(cs, 1,2);
+            }
+
+
+            protected CoderResult encodeLoop(CharBuffer in, ByteBuffer out) {
+                if (buffer == null) {
+                    assert encoder != null;
+                    if (remainder!=null) {
+                        CoderResult result = encoder.encode(remainder,out,false);
+                        if (!remainder.hasRemaining()) {
+                            remainder = null;
+                        }
+                    }
+                    CoderResult result = encoder.encode(in, out, false);
+                    return result;
+                }
+               if (buffer.remaining() == 0 || (buffer.position() > 0 && in.limit() == 0)) {
+                   return handleHead (in,out);
+               }
+               else if (buffer.remaining() < in.remaining()) {
+                   int limit = in.limit();
+                   in.limit(in.position()+buffer.remaining());
+                   buffer.put(in);
+                   in.limit(limit);
+                   return handleHead (in, out);
+               }
+               else {
+                   buffer.put(in);
+                   return CoderResult.UNDERFLOW;
+               }
+            }
+
+            private CoderResult handleHead (CharBuffer in, ByteBuffer out) {
+                String encoding = null;
+                try {
+                    encoding = getEncoding ();
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+                if (encoding == null) {
+                    buffer = null;
+                    throwUnknownEncoding();
+                    return null;
+                }
+                else {
+                    Charset c;
+                    try {
+                        c = cache(Charset.forName(encoding));
+                    } catch (UnsupportedCharsetException e) {
+                        buffer = null;
+                        throwUnknownEncoding();
+                        return null;
+                    } catch (IllegalCharsetNameException e) {
+                        buffer = null;
+                        throwUnknownEncoding();
+                        return null;
+                    }
+                    encoder = c.newEncoder();
+                    return flushHead(in, out);
+                }
+            }
+
+            private CoderResult flushHead (CharBuffer in , ByteBuffer out) {
+                buffer.flip();
+                CoderResult r = encoder.encode(buffer,out, in==null);
+                if (r.isOverflow()) {
+                    remainder = buffer;
+                    buffer = null;
+                    return r;
+                }
+                else {
+                    buffer = null;
+                    if (in == null) {
+                        return r;
+                    }
+                    return encoder.encode(in, out, false);
+                }
+            }
+
+            private String getEncoding () throws IOException {
+                String text = buffer.asReadOnlyBuffer().flip().toString();
+                InputStream in = new ByteArrayInputStream(text.getBytes());
+                try {
+                    return getFileEncoding(in);
+                } finally {
+                    in.close();
+                }
+            }
+
+            @Override
+            protected CoderResult implFlush(ByteBuffer out) {
+                CoderResult res;
+                if (buffer != null) {
+                    res = handleHead(null, out);
+                    return res;
+                }
+                else if (remainder != null) {
+                    encoder.encode(remainder, out, true);
+                }
+                else {
+                    CharBuffer empty = (CharBuffer) CharBuffer.allocate(0).flip();
+                    encoder.encode(empty, out, true);
+                }
+                res = encoder.flush(out);
+                return res;
+            }
+
+            @Override
+            protected void implReset() {
+                if (encoder != null) {
+                    encoder.reset();
+                }
+            }
+        }
+
+        private class HtmlDecoder extends CharsetDecoder {
+
+            private ByteBuffer buffer = ByteBuffer.allocate(4*1024);
+            private ByteBuffer remainder;
+            private CharsetDecoder decoder;
+
+            public HtmlDecoder (Charset cs) {
+                super (cs,1,2);
+            }
+
+            protected CoderResult decodeLoop(ByteBuffer in, CharBuffer out) {
+                if (buffer == null) {
+                    assert decoder != null;
+                    if (remainder!=null) {
+                        ByteBuffer tmp = ByteBuffer.allocate(remainder.remaining() + in.remaining());
+                        tmp.put(remainder);
+                        tmp.put(in);
+                        tmp.flip();
+                        CoderResult result = decoder.decode(tmp,out,false);
+                        if (tmp.hasRemaining()) {
+                            remainder = tmp;
+                        }
+                        else {
+                            remainder = null;
+                        }
+                        return result;
+                    }
+                    else {
+                        return decoder.decode(in, out, false);
+                    }
+               }
+               if (buffer.remaining() == 0) {
+                   return handleHead (in,out);
+               }
+               else if (buffer.remaining() < in.remaining()) {
+                   int limit = in.limit();
+                   in.limit(in.position()+buffer.remaining());
+                   buffer.put(in);
+                   in.limit(limit);
+                   return handleHead (in, out);
+               }
+               else {
+                   buffer.put(in);
+                   return CoderResult.UNDERFLOW;
+               }
+            }
+
+            private CoderResult handleHead (ByteBuffer in, CharBuffer out) {
+                String encoding = null;
+                try {
+                    encoding = getEncoding ();
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+                if (encoding == null) {
+                    buffer = null;
+                    throwUnknownEncoding();
+                    return null;
+                }
+                else {
+                    Charset c;
+                    try {
+                        c = cache(Charset.forName(encoding));
+                    } catch (UnsupportedCharsetException e) {
+                        buffer = null;
+                        throwUnknownEncoding();
+                        return null;
+                    } catch (IllegalCharsetNameException e) {
+                        buffer = null;
+                        throwUnknownEncoding();
+                        return null;
+                    }
+                    decoder = c.newDecoder();
+                    return flushHead(in, out);
+                }
+            }
+
+            private CoderResult flushHead (ByteBuffer in , CharBuffer out) {
+                buffer.flip();
+                CoderResult r = decoder.decode(buffer,out, in==null);
+                if (r.isOverflow()) {
+                    remainder = buffer;
+                    buffer = null;
+                    return r;
+                }
+                else {
+                    buffer = null;
+                    if (in == null) {
+                        return r;
+                    }
+                    return decoder.decode(in, out, false);
+                }
+            }
+
+            private String getEncoding () throws IOException {
+                byte[] arr = buffer.array();
+                ByteArrayInputStream in = new ByteArrayInputStream (arr);
+                try {
+                    return getFileEncoding(in);
+                }
+                finally {
+                    in.close();
+                }
+            }
+
+            @Override
+            protected CoderResult implFlush(CharBuffer out) {
+                CoderResult res;
+                if (buffer != null) {
+                    res = handleHead(null, out);
+                    return res;
+                }
+                else if (remainder != null) {
+                    decoder.decode(remainder, out, true);
+                }
+                else {
+                    ByteBuffer empty = (ByteBuffer) ByteBuffer.allocate(0).flip();
+                    decoder.decode(empty, out, true);
+                }
+                res = decoder.flush(out);
+                return res;
+            }
+
+            @Override
+            protected void implReset() {
+                if (decoder != null) {
+                    decoder.reset();
+                }
+            }
+        }
+    }
+
 }

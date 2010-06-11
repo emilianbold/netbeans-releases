@@ -6,10 +6,10 @@
 <project name="pojoAnnotationProcessor" default="pojo-annotation-processor" basedir="...">
     <target name="pojo-init-taskdefs" unless="netbeans.home">
         <path id="pojose.ant.task.classpath" >
-            <pathelement location="${soa.module.install.dir}/ext/jbi/jbi.jar"/>
-            <pathelement location="${soa.module.install.dir}/ext/jbi/sun-pojo-engine-api.jar"/>
+            <pathelement location="${soa.module.install.dir}/ext/jbi.jar"/>
+            <pathelement location="${soa.module.install.dir}/ext/sun-pojo-engine-api.jar"/>
             <pathelement location="${soa.module.install.dir}/org-netbeans-modules-soa-pojo.jar"/>
-            <pathelement location="${soa.module.install.dir}/ext/jbi/sun-pojo-validator.jar"/>
+            <pathelement location="${soa.module.install.dir}/ext/sun-pojo-validator.jar"/>
             <pathelement location="${soa.module.install.dir}/../ant/nblib/org-netbeans-modules-soa-pojo.jar"/>
             <pathelement location="${ide.module.install.dir}/../../java/modules/org-netbeans-modules-classfile.jar"/>
             <pathelement location="${esb.netbeans.platform}/core/org-openide-filesystems.jar"/>

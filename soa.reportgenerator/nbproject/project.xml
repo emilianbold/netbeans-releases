@@ -96,7 +96,7 @@
                 <package>org.netbeans.modules.reportgenerator.spi</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/reportgenerator/itext-2.0.5.jar</runtime-relative-path>
+                <runtime-relative-path>ext/itext-2.0.5.jar</runtime-relative-path>
                 <binary-origin>external/itext-2.0.5.jar</binary-origin>
             </class-path-extension>
         </data>

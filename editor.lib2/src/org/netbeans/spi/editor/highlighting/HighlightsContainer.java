@@ -64,7 +64,8 @@ public interface HighlightsContainer {
      * and set its value to <code>Boolean.TRUE</code>. The highlighted area must
      * contain the new-line character at the end of the line.
      */
-    static final String ATTR_EXTENDS_EOL = new String("org.netbeans.spi.editor.highlighting.HighlightsContainer.ATTR_EXTENDS_EOL"); //NOI18N
+    static final String ATTR_EXTENDS_EOL =
+            "org.netbeans.spi.editor.highlighting.HighlightsContainer.ATTR_EXTENDS_EOL"; //NOI18N
     
     /**
      * The attribute key for highlights that need to show up on empty lines.
@@ -74,7 +75,8 @@ public interface HighlightsContainer {
      * <code>Boolean.TRUE</code> then the highlight will be drawn as
      * a half-character-wide stripe at the beginning of the line.
      */
-    static final String ATTR_EXTENDS_EMPTY_LINE = new String("org.netbeans.spi.editor.highlighting.HighlightsContainer.ATTR_EXTENDS_EMPTY_LINE"); //NOI18N
+    static final String ATTR_EXTENDS_EMPTY_LINE =
+            "org.netbeans.spi.editor.highlighting.HighlightsContainer.ATTR_EXTENDS_EMPTY_LINE"; //NOI18N
     
     /**
      * Provides the list of highlighted areas that should be used for rendering

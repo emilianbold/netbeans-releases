@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider;
 import org.netbeans.spi.project.ActionProvider;
@@ -68,7 +69,7 @@ final class J2SEConfigurationProvider implements ProjectConfigurationProvider<J2
     /**
      * Ant property name for active config.
      */
-    public static final String PROP_CONFIG = "config"; // NOI18N
+    public static final String PROP_CONFIG = ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG;
     /**
      * Ant property file which specified active config.
      */

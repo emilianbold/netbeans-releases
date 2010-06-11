@@ -67,6 +67,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>

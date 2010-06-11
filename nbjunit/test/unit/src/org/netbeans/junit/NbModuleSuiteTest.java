@@ -223,9 +223,9 @@ public class NbModuleSuiteTest extends TestCase {
         NbModuleSuite.Configuration config = NbModuleSuite.Configuration.create(
             AskForOrgOpenideUtilEnumClass.class
         )
-        .enableModules("ide.*", "org.netbeans.modules.java.platform.*")
-        .enableModules("platf.*", "org.openide.util.enumerations")
-        .enableModules("ide.*", "org.openide.loaders.*")
+        .enableModules("ide", "org.netbeans.modules.java.platform.*")
+        .enableModules("platform", "org.openide.util.enumerations")
+        .enableModules("ide", "org.openide.loaders.*")
         .gui(false)
         .addTest(NbModuleSuiteIns.class);
         Test instance = NbModuleSuite.create(config);
@@ -264,8 +264,8 @@ public class NbModuleSuiteTest extends TestCase {
         Test instance = NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
             gui(false).
-            clusters("ide[0-9]*").
-            clusters("java.*").
+            clusters("ide").
+            clusters("java").
             addTest(NbModuleSuiteClusters.class)
         );
         junit.textui.TestRunner.run(instance);
@@ -279,8 +279,8 @@ public class NbModuleSuiteTest extends TestCase {
         Test instance = NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
             gui(false).
-            clusters("java.*").
-            clusters("ide[0-9]*").
+            clusters("java").
+            clusters("ide").
             addTest(NbModuleSuiteClusters.class)
         );
         junit.textui.TestRunner.run(instance);

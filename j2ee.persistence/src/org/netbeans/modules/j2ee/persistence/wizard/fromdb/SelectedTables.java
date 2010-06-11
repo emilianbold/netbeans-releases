@@ -54,12 +54,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComboBox;
-import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.table.TableCellEditor;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.persistence.dd.JavaPersistenceQLKeywords;
@@ -252,19 +248,18 @@ public final class SelectedTables {
 
     public UpdateType getUpdateType(Table table) {
         assert table != null;
-        FileObject classFO = targetFolder != null ? targetFolder.getFileObject(getClassName(table), "java") : null;
         UpdateType ut = table2UpdateType.get(table);
 
-        if (classFO == null){
+        if (table.getDisabledReason() instanceof Table.ExistingDisabledReason){
+            if (ut == null || ut == UpdateType.NEW){
+                table2UpdateType.remove(table);
+                ut = UpdateType.UPDATE;
+            }
+        } else {
             if (ut != null){
                 table2UpdateType.remove(table);
             }
             ut = UpdateType.NEW;
-        } else {
-            if (ut == null || ut == UpdateType.NEW){
-                table2UpdateType.remove(table);
-                ut = UpdateType.RECREATE;
-            }
         }
 
         return ut;

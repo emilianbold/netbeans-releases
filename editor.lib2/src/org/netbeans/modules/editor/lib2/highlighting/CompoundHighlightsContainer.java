@@ -161,60 +161,66 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
                 }
             }
 
-            OffsetsBag bag = cache;
-            if (bag == null) {
-                bag = new OffsetsBag(doc, true);
-                cache = bag;
-                lowest = highest = -1;
-                update = new int [] { expandBelow(startOffset, endOffset), expandAbove(startOffset, endOffset) };
-            }
-            
-            if (update != null) {
-                // check the update boundaries in order to prevent errors such as #172884
-                for (int i = 0; i < update.length / 2; i++) {
-                    if (update[2 * i] > doc.getLength()) {
-                        if (assertions && LOG.isLoggable(Level.WARNING)) {
-                            String msg = "Inconsistent cache update boundaries:" //NOI18N
-                                        + " startOffset=" + startOffset + ", endOffset=" + endOffset //NOI18N
-                                        + ", lowest=" + lowest + ", highest=" + highest //NOI18N
-                                        + ", doc.length=" + doc.getLength() //NOI18N
-                                        + ", update[]=" + update; //NOI18N
-                            LOG.log(Level.WARNING, null, new Throwable(msg));
+            retry:
+            for (;;) {
+                OffsetsBag bag = cache;
+                if (bag == null) {
+                    bag = new OffsetsBag(doc, true);
+                    cache = bag;
+                    lowest = highest = -1;
+                    update = new int [] { expandBelow(startOffset, endOffset), expandAbove(startOffset, endOffset) };
+                }
+
+                if (update != null) {
+                    // check the update boundaries in order to prevent errors such as #172884
+                    for (int i = 0; i < update.length / 2; i++) {
+                        if (update[2 * i] > doc.getLength()) {
+                            if (assertions && LOG.isLoggable(Level.WARNING)) {
+                                String msg = "Inconsistent cache update boundaries:" //NOI18N
+                                            + " startOffset=" + startOffset + ", endOffset=" + endOffset //NOI18N
+                                            + ", lowest=" + lowest + ", highest=" + highest //NOI18N
+                                            + ", doc.length=" + doc.getLength() //NOI18N
+                                            + ", update[]=" + update; //NOI18N
+                                LOG.log(Level.WARNING, null, new Throwable(msg));
+                            }
+                            update = new int [] { 0, Integer.MAX_VALUE };
+                            break;
                         }
-                        update = new int [] { 0, Integer.MAX_VALUE };
-                        break;
+                    }
+
+                    for (int i = 0; i < update.length / 2; i++) {
+                        if (update[2 * i + 1] >= doc.getLength()) {
+                            update[2 * i + 1] = Integer.MAX_VALUE;
+                        }
+
+                        if (!updateCache(update[2 * i], update[2 * i + 1], bag)) {
+                            discardCache();
+                            continue retry;
+                        }
+
+                        if (update[2 * i + 1] == Integer.MAX_VALUE) {
+                            break;
+                        }
+                    }
+
+                    if (lowest == -1 || highest == -1) {
+                        cacheBoundaries.setBoundaries(update[0], update[update.length - 1]);
+                    } else {
+                        cacheBoundaries.setBoundaries(Math.min(lowest, update[0]), Math.max(highest, update[update.length - 1]));
+                    }
+
+                    if (LOG.isLoggable(Level.FINE)) {
+                        int lower = cacheBoundaries.getLowerBoundary();
+                        int upper = cacheBoundaries.getUpperBoundary();
+                        LOG.fine("Cache boundaries: " + //NOI18N
+                            "<" + (lower == -1 ? "-" : lower) + //NOI18N
+                            ", " + (upper == -1 ? "-" : upper) + "> " + //NOI18N
+                            "when asked for <" + startOffset + ", " + endOffset + ">"); //NOI18N
                     }
                 }
 
-                for (int i = 0; i < update.length / 2; i++) {
-                    if (update[2 * i + 1] >= doc.getLength()) {
-                        update[2 * i + 1] = Integer.MAX_VALUE;
-                    }
-                    
-                    updateCache(update[2 * i], update[2 * i + 1], bag);
-                    
-                    if (update[2 * i + 1] == Integer.MAX_VALUE) {
-                        break;
-                    }
-                }
-                
-                if (lowest == -1 || highest == -1) {
-                    cacheBoundaries.setBoundaries(update[0], update[update.length - 1]);
-                } else {
-                    cacheBoundaries.setBoundaries(Math.min(lowest, update[0]), Math.max(highest, update[update.length - 1]));
-                }
-                
-                if (LOG.isLoggable(Level.FINE)) {
-                    int lower = cacheBoundaries.getLowerBoundary();
-                    int upper = cacheBoundaries.getUpperBoundary();
-                    LOG.fine("Cache boundaries: " + //NOI18N
-                        "<" + (lower == -1 ? "-" : lower) + //NOI18N
-                        ", " + (upper == -1 ? "-" : upper) + "> " + //NOI18N
-                        "when asked for <" + startOffset + ", " + endOffset + ">"); //NOI18N
-                }
+                return new Seq(version, bag.getHighlights(startOffset, endOffset));
             }
-
-            return new Seq(version, bag.getHighlights(startOffset, endOffset));
         }
     }
 
@@ -313,7 +319,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         }
     }
 
-    private void updateCache(final int startOffset, final int endOffset, OffsetsBag bag) {
+    private boolean updateCache(final int startOffset, final int endOffset, OffsetsBag bag) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Updating cache: <" + startOffset + ", " + endOffset + ">"); //NOI18N
         }
@@ -333,6 +339,11 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
                     checked.setContainerDebugId("CHC.Layer[" + i + "]=" + layers[i]); //NOI18N
                 }
                 bag.addAllHighlights(checked);
+                if (bag != cache) {
+                    // #185171: layers[i] perfomed an operation, which reset the cache.
+                    // Let's start over again.
+                    return false;
+                }
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine(dumpLayerHighlights(layers[i], startOffset, endOffset));
                 }
@@ -343,6 +354,9 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
                 LOG.log(Level.WARNING, "The layer failed to supply highlights: " + layers[i], t); //NOI18N
             }
         }
+
+        // Successfully went through all the layers without resetting the cache.
+        return true;
     }
     
     private void increaseVersion() {

@@ -44,18 +44,8 @@
 -->
 <project name="etl.editor" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-    <target name="netbeans-extra" depends="init">
-        <mkdir dir="${cluster}/modules/ext/etl"/>
-        <!--antcall target="compile-i18"/-->
-        <!--copy todir="${cluster}/modules/ext/etl">
-            <fileset dir="${basedir}/external">
-                <include name="*.jar"/>
-                <include name="*.zip"/>
-            </fileset>
-        </copy-->
-    </target>
-    <taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="${basedir}/external/net.java.hulp.i18ntask.jar">
-    </taskdef>
+
+    <taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="${basedir}/external/net.java.hulp.i18ntask.jar"></taskdef>
     <target name="compile" depends="projectized-common.compile">
         <i18n dir="${basedir}/build/classes" file="${basedir}/build/classes/org/netbeans/modules/etl/logger/msgs.properties" prefix="DM-DI-" strict="false" pattern="(BUND\d\d\d)(: )(.*)">
         </i18n>

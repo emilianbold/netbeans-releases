@@ -381,32 +381,32 @@ public class IntroduceHintTest extends NbTestCase {
     }
     
     public void testConstantFixNoVariable() throws Exception {
-        performFixTest("package test; public class Test {int y = 3 + 4;}",
-                       66 - 25, 71 - 25,
+        performFixTest("package test; public class Test { int y = 3 + 4;}",
+                       67 - 25, 72 - 25,
                        "package test; public class Test { private static final int NAME = 3 + 4; int y = NAME;}",
                        new DialogDisplayerImpl(null, false, false, true),
                        1, 0);
     }
     
     public void testConstantFix2() throws Exception {
-        performFixTest("package test; public class Test {int y = 3 + 4; int z = 3 + 4;}",
-                       66 - 25, 71 - 25,
+        performFixTest("package test; public class Test { int y = 3 + 4; int z = 3 + 4;}",
+                       67 - 25, 72 - 25,
                        "package test; public class Test { private static final int NAME = 3 + 4; int y = NAME; int z = NAME;}",
                        new DialogDisplayerImpl(null, true, false, true),
                        1, 0);
     }
     
     public void testConstantFix106490a() throws Exception {
-        performFixTest("package test; public class Test {int y = 3 + 4; int z = 3 + 4;}",
-                       66 - 25, 71 - 25,
+        performFixTest("package test; public class Test { int y = 3 + 4; int z = 3 + 4;}",
+                       67 - 25, 72 - 25,
                        "package test; public class Test { public static final int NAME = 3 + 4; int y = NAME; int z = NAME;}",
                        new DialogDisplayerImpl(null, true, false, true, EnumSet.of(Modifier.PUBLIC)),
                        1, 0);
     }
     
     public void testConstantFix106490b() throws Exception {
-        performFixTest("package test; public class Test {int y = 3 + 4; int z = 3 + 4;}",
-                       66 - 25, 71 - 25,
+        performFixTest("package test; public class Test { int y = 3 + 4; int z = 3 + 4;}",
+                       67 - 25, 72 - 25,
                        "package test; public class Test { static final int NAME = 3 + 4; int y = NAME; int z = NAME;}",
                        new DialogDisplayerImpl(null, true, false, true, EnumSet.noneOf(Modifier.class)),
                        1, 0);
@@ -569,9 +569,9 @@ public class IntroduceHintTest extends NbTestCase {
     }
     
     public void testIntroduceFieldFix20() throws Exception {
-        performFixTest("package test; public class Test {public void test() {int y = 3 + 4; int z = 3 + 4;}}",
-                       86 - 25, 91 - 25,
-                       "package test; public class Test { private int name; public Test() { name = 3 + 4; } public void test() {int y = name; int z = 3 + 4;}}",
+        performFixTest("package test; public class Test {public void test() { int y = 3 + 4; int z = 3 + 4;}}",
+                       87 - 25, 92 - 25,
+                       "package test; public class Test { private int name; public Test() { name = 3 + 4; } public void test() { int y = name; int z = 3 + 4;}}",
                        new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
                        4, 2);
     }
@@ -825,7 +825,7 @@ public class IntroduceHintTest extends NbTestCase {
 
     /** Return statement inside anonymous class should not be considered */
     public void testIntroduceMethodFix132434() throws Exception {
-        performFixTest("package test;import java.awt.event.MouseAdapter;import java.awt.event.MouseEvent;import javax.swing.JPanel;public class Test {public static void main(String[] args) {JPanel p = new JPanel();|p.addMouseListener(new MouseAdapter() {public void mousePressed(MouseEvent e) {if (e.getX() > 100) {return;} else {System.out.println(e.getX());}}});|}}",
+        performFixTest("package test;import java.awt.event.MouseAdapter;import java.awt.event.MouseEvent;import javax.swing.JPanel;public class Test {public static void main(String[] args) {JPanel p = new JPanel();|p.addMouseListener(new MouseAdapter() { public void mousePressed(MouseEvent e) { if (e.getX() > 100) { return; } else { System.out.println(e.getX()); } } });|}}",
                        "package test;import java.awt.event.MouseAdapter;import java.awt.event.MouseEvent;import javax.swing.JPanel;public class Test {public static void main(String[] args) {JPanel p = new JPanel(); foo(p);} private static void foo(JPanel p) { p.addMouseListener(new MouseAdapter() { public void mousePressed(MouseEvent e) { if (e.getX() > 100) { return; } else { System.out.println(e.getX()); } } }); } }", 
                        new DialogDisplayerImpl3("foo", EnumSet.of(Modifier.PRIVATE), true));
     }
@@ -920,22 +920,22 @@ public class IntroduceHintTest extends NbTestCase {
     }
     
     public void testIntroduceMethod111896a() throws Exception {
-        performFixTest("package test; public class Test {public static void t() {new Runnable() { private  int i; public void run() {}};}}",
-                       82 - 25, 137 - 25,
+        performFixTest("package test; public class Test {public static void t() {new Runnable() { private  int i; public void run() { } };}}",
+                       82 - 25, 139 - 25,
                        "package test; public class Test {public static void t() { name();} private static void name() { new Runnable() { private int i; public void run() { } }; } }",
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
     }
     
     public void testIntroduceMethod111896b() throws Exception {
-        performFixTest("package test; public class Test {public static void t() {final int a = 0; new Runnable() { private  int i; public void run() {i = a;}};}}",
-                       99 - 25, 160 - 25,
+        performFixTest("package test; public class Test {public static void t() {final int a = 0; new Runnable() { private  int i; public void run() { i = a; } };}}",
+                       99 - 25, 163 - 25,
                        "package test; public class Test {public static void t() {final int a = 0; name(a);} private static void name(final int a) { new Runnable() { private int i; public void run() { i = a; } }; } }",
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
     }
     
     public void testIntroduceMethod111896c() throws Exception {
-        performFixTest("package test; public class Test {public static void t() {final int a = 0; new Runnable() { private  int i; public void run() {int a = i;}}; int b = a;}}",
-                       99 - 25, 164 - 25,
+        performFixTest("package test; public class Test {public static void t() {final int a = 0; new Runnable() { private  int i; public void run() { int a = i; } }; int b = a;}}",
+                       99 - 25, 167 - 25,
                        "package test; public class Test {public static void t() {final int a = 0; name(); int b = a;} private static void name() { new Runnable() { private int i; public void run() { int a = i; } }; } }",
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
     }
