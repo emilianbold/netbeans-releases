@@ -77,13 +77,20 @@ public class RunDialogAction extends NodeAction {
     public RunDialogAction(){
     }
 
-    private void init() {
+    private void init(boolean isRun) {
         if (runButton == null) {
             runButton = new JButton(getString("RunButtonText")); // NOI18N
-            runButton.getAccessibleContext().setAccessibleDescription(getString("RunButtonAD"));
+            runButton.getAccessibleContext().setAccessibleDescription(getString("RunButtonAD"));// NOI18N
             options = new Object[]{
                         runButton,
                         DialogDescriptor.CANCEL_OPTION,};
+        }
+        if (isRun) {
+            runButton.setText(getString("RunButtonText")); // NOI18N
+            runButton.getAccessibleContext().setAccessibleDescription(getString("RunButtonAD"));// NOI18N
+        } else {
+            runButton.setText(getString("CreateButtonText")); // NOI18N
+            runButton.getAccessibleContext().setAccessibleDescription(getString("CreateButtonAD"));// NOI18N
         }
     }
 
@@ -101,6 +108,7 @@ public class RunDialogAction extends NodeAction {
     @Override
     protected void performAction(final Node[] activatedNodes) {
         String path = null;
+        boolean isRun = true;
         if (activatedNodes != null && activatedNodes.length == 1) {
             DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
             String mime = getMime(dataObject);
@@ -118,13 +126,14 @@ public class RunDialogAction extends NodeAction {
             if (file != null) {
                 path = file.getPath();
             }
+            isRun = false;
         }
-        perform(path);
+        perform(path, isRun);
     }
 
     private String getMime(DataObject dob) {
         FileObject primaryFile = dob == null ? null : dob.getPrimaryFile();
-        String mime = primaryFile == null ? "" : primaryFile.getMIMEType();
+        String mime = primaryFile == null ? "" : primaryFile.getMIMEType();// NOI18N
         return mime;
     }
 
@@ -142,20 +151,15 @@ public class RunDialogAction extends NodeAction {
         return true;
     }
 
-    public void perform(String executablePath) {
-        if (runButton == null) {
-            init();
-        }
-        perform(new RunDialogPanel(executablePath, true, runButton));
+    private void perform(String executablePath, boolean isRun) {
+        init(isRun);
+        perform(new RunDialogPanel(executablePath, runButton, isRun), isRun);
     }
 
-    protected void perform(RunDialogPanel runDialogPanel) {
-        if (runButton == null) {
-            init();
-        }
+    private void perform(RunDialogPanel runDialogPanel, boolean isRun) {
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 runDialogPanel,
-                getString("RunDialogTitle"),
+                isRun ? getString("RunDialogTitle") : getString("CreateDialogTitle"),// NOI18N
                 true,
                 options,
                 runButton,
@@ -166,7 +170,7 @@ public class RunDialogAction extends NodeAction {
         if (ret == runButton) {
             Project project = runDialogPanel.getSelectedProject();
             MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
-            if (conf != null) {
+            if (conf != null && isRun) {
                 RunProfile profile = conf.getProfile();
                 String path = runDialogPanel.getExecutablePath();
                 path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
