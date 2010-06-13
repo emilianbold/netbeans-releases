@@ -61,61 +61,191 @@ public final class ShortValueWrapper {
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static boolean equals0(com.sun.jdi.ShortValue a, java.lang.Object b) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.ShortValue",
+                    "equals",
+                    "JDI CALL: com.sun.jdi.ShortValue({0}).equals({1})",
+                    new Object[] {a, b});
+        }
+        Object retValue = null;
         try {
-            return a.equals(b);
+            boolean ret;
+            ret = a.equals(b);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return false;
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return false;
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.ShortValue",
+                        "equals",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static boolean equals(com.sun.jdi.ShortValue a, java.lang.Object b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.ShortValue",
+                    "equals",
+                    "JDI CALL: com.sun.jdi.ShortValue({0}).equals({1})",
+                    new Object[] {a, b});
+        }
+        Object retValue = null;
         try {
-            return a.equals(b);
+            boolean ret;
+            ret = a.equals(b);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.ShortValue",
+                        "equals",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static int hashCode0(com.sun.jdi.ShortValue a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.ShortValue",
+                    "hashCode",
+                    "JDI CALL: com.sun.jdi.ShortValue({0}).hashCode()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.hashCode();
+            int ret;
+            ret = a.hashCode();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return 0;
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return 0;
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.ShortValue",
+                        "hashCode",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static int hashCode(com.sun.jdi.ShortValue a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.ShortValue",
+                    "hashCode",
+                    "JDI CALL: com.sun.jdi.ShortValue({0}).hashCode()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.hashCode();
+            int ret;
+            ret = a.hashCode();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.ShortValue",
+                        "hashCode",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static short value(com.sun.jdi.ShortValue a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.ShortValue",
+                    "value",
+                    "JDI CALL: com.sun.jdi.ShortValue({0}).value()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.value();
+            short ret;
+            ret = a.value();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.ShortValue",
+                        "value",
+                        retValue);
+            }
         }
     }
 

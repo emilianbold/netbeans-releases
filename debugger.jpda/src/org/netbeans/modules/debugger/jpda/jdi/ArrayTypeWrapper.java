@@ -61,49 +61,156 @@ public final class ArrayTypeWrapper {
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.lang.String componentSignature(com.sun.jdi.ArrayType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.ArrayType",
+                    "componentSignature",
+                    "JDI CALL: com.sun.jdi.ArrayType({0}).componentSignature()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.componentSignature();
+            java.lang.String ret;
+            ret = a.componentSignature();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.ArrayType",
+                        "componentSignature",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.Type componentType(com.sun.jdi.ArrayType a) throws com.sun.jdi.ClassNotLoadedException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.ArrayType",
+                    "componentType",
+                    "JDI CALL: com.sun.jdi.ArrayType({0}).componentType()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.componentType();
+            com.sun.jdi.Type ret;
+            ret = a.componentType();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.ClassNotLoadedException ex) {
+            retValue = ex;
+            throw ex;
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.ArrayType",
+                        "componentType",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.lang.String componentTypeName(com.sun.jdi.ArrayType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.ArrayType",
+                    "componentTypeName",
+                    "JDI CALL: com.sun.jdi.ArrayType({0}).componentTypeName()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.componentTypeName();
+            java.lang.String ret;
+            ret = a.componentTypeName();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.ArrayType",
+                        "componentTypeName",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.ArrayReference newInstance(com.sun.jdi.ArrayType a, int b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.ArrayType",
+                    "newInstance",
+                    "JDI CALL: com.sun.jdi.ArrayType({0}).newInstance({1})",
+                    new Object[] {a, b});
+        }
+        Object retValue = null;
         try {
-            return a.newInstance(b);
+            com.sun.jdi.ArrayReference ret;
+            ret = a.newInstance(b);
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.ArrayType",
+                        "newInstance",
+                        retValue);
+            }
         }
     }
 
