@@ -42,51 +42,50 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.lib2.view;
+package org.netbeans.modules.editor.fold;
 
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.ComponentView;
-import javax.swing.text.Element;
-import javax.swing.text.IconView;
-import javax.swing.text.LabelView;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.View;
-import javax.swing.text.ViewFactory;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
 
 /**
- * Implementation of Swing {@link ViewFactory}.
+ * Component that displays a collapsed fold preview.
  *
  * @author Miloslav Metelka
  */
+public class FoldToolTip extends JPanel {
 
-public final class ViewFactoryImpl implements ViewFactory {
+    private JEditorPane foldPreviewPane;
 
-    static {
-        EditorViewFactory.registerFactory(new HighlightsViewFactory.HighlightsFactory());
+    private int editorPaneWidth;
+
+    public FoldToolTip(JEditorPane editorPane, JEditorPane foldPreviewPane) {
+        this.foldPreviewPane = foldPreviewPane;
+
+        setLayout(new BorderLayout());
+//        JScrollPane scrollPane = new JScrollPane(previewPane);
+//        add(scrollPane, BorderLayout.CENTER);
+//        scrollPane.setColumnHeaderView(lineGutter);
+        add(foldPreviewPane, BorderLayout.CENTER);
+        putClientProperty("tooltip-type", "fold-preview"); // Checked in NbToolTip
+
+        editorPaneWidth = editorPane.getSize().width;
+
+        Color foreColor = this.foldPreviewPane.getForeground();
+        setBorder(new LineBorder(foreColor));
+        setOpaque(true);
     }
 
-    public static final ViewFactory INSTANCE = new ViewFactoryImpl();
-
-    private ViewFactoryImpl() {
-        // Singleton only
-    }
-
-    public View create(Element elem) {
-        String kind = elem.getName();
-        if (kind != null) {
-            if (kind.equals(AbstractDocument.ContentElementName)) {
-                return new LabelView(elem);
-            } else if (kind.equals(AbstractDocument.ParagraphElementName)) {
-                return null;
-            } else if (kind.equals(AbstractDocument.SectionElementName)) {
-                return new DocumentView(elem);
-            } else if (kind.equals(StyleConstants.ComponentElementName)) {
-                return new ComponentView(elem);
-            } else if (kind.equals(StyleConstants.IconElementName)) {
-                return new IconView(elem);
-            }
-        }
-        return null;
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension prefSize = super.getPreferredSize();
+        // Return width like for editor pane which forces the PopupManager to display
+        // the tooltip to align exacty with the text (below/above).
+        prefSize.width = Math.max(prefSize.width, editorPaneWidth);
+        return prefSize;
     }
 
 }
