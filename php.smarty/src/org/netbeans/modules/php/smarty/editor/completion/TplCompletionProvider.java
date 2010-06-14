@@ -88,7 +88,7 @@ public class TplCompletionProvider implements CompletionProvider {
 
     private static class Query extends AbstractQuery {
 
-        private volatile Collection<? extends CompletionItem> items =  Collections.<CompletionItem>emptyList();
+        private volatile Collection<? extends CompletionItem> items = Collections.<CompletionItem>emptyList();
         private JTextComponent component;
 
         @Override
@@ -100,7 +100,7 @@ public class TplCompletionProvider implements CompletionProvider {
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 TplCompletionQuery.CompletionResult result = new TplCompletionQuery(doc, caretOffset).query();
-                if(result != null) {
+                if (result != null && CodeCompletionUtils.insideSmartyCode(doc, caretOffset)) {
                     items = result.getItems();
                 } else {
                     items = Collections.emptyList();
@@ -117,9 +117,9 @@ public class TplCompletionProvider implements CompletionProvider {
             String prefix = CodeCompletionUtils.getTextPrefix(component.getDocument(), component.getCaretPosition());
 
             //check the items
-            for(CompletionItem item : items) {
-                if(item instanceof TplCompletionItem) {
-                    if(CodeCompletionUtils.startsWithIgnoreCase( ((TplCompletionItem)item).getItemText(), prefix)) {
+            for (CompletionItem item : items) {
+                if (item instanceof TplCompletionItem) {
+                    if (CodeCompletionUtils.startsWithIgnoreCase(((TplCompletionItem) item).getItemText(), prefix)) {
                         return true; //at least one item will remain
                     }
                 }
@@ -133,15 +133,16 @@ public class TplCompletionProvider implements CompletionProvider {
             String prefix = CodeCompletionUtils.getTextPrefix(component.getDocument(), component.getCaretPosition());
 
             //check the items
-            for(CompletionItem item : items) {
-                if(item instanceof TplCompletionItem) {
-                    if(CodeCompletionUtils.startsWithIgnoreCase(((TplCompletionItem)item).getItemText(), prefix)) {
+            for (CompletionItem item : items) {
+                if (item instanceof TplCompletionItem) {
+                    if (CodeCompletionUtils.startsWithIgnoreCase(((TplCompletionItem) item).getItemText(), prefix)) {
                         resultSet.addItem(item);
                     }
                 }
             }
             resultSet.finish();
         }
+
     }
 
     public static class DocQuery extends AbstractQuery {

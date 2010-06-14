@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.smarty.editor.lexer;
 
 import java.util.Collection;
@@ -61,16 +60,15 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum TplTopTokenId implements TokenId {
 
-    T_HTML (null, "smartytop"),
-    T_SMARTY (null, "smarty"),
-    T_SMARTY_CLOSE_DELIMITER (null, "smarty_delimiter"),
-    T_SMARTY_OPEN_DELIMITER (null, "smarty_delimiter"),
+    T_HTML(null, "smartytop"),
+    T_SMARTY(null, "smarty"),
+    T_SMARTY_CLOSE_DELIMITER(null, "smarty_delimiter"),
+    T_SMARTY_OPEN_DELIMITER(null, "smarty_delimiter"),
     T_COMMENT(null, "comment"),
     T_LITERAL_DEL(null, "literal"),
     T_ERROR(null, "error"),
     T_PHP(null, "php_embedding"),
     T_PHP_DEL(null, "php_del");
-
     private final String fixedText;
     private final String primaryCategory;
 
@@ -78,15 +76,14 @@ public enum TplTopTokenId implements TokenId {
         this.fixedText = fixedText;
         this.primaryCategory = primaryCategory;
     }
-    
+
     public String fixedText() {
         return fixedText;
     }
-    
+
     public String primaryCategory() {
         return primaryCategory;
     }
-
     private static final Language<TplTopTokenId> language =
             new LanguageHierarchy<TplTopTokenId>() {
 
@@ -110,15 +107,14 @@ public enum TplTopTokenId implements TokenId {
                 protected String mimeType() {
                     return "text/x-tpl";
                 }
-                
+
                 @Override
                 protected LanguageEmbedding<?> embedding(Token<TplTopTokenId> token,
-                    LanguagePath languagePath, InputAttributes inputAttributes) {
+                        LanguagePath languagePath, InputAttributes inputAttributes) {
                     TplTopTokenId id = token.id();
                     if (id == T_HTML) {
-                        return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
-                    } 
-                    else if (id == T_SMARTY) {
+                        return LanguageEmbedding.create(PHPTokenId.language(), 0, 0, true);
+                    } else if (id == T_SMARTY) {
                         return LanguageEmbedding.create(TplTokenId.language(), 0, 0, false);
                     } else if (id == T_PHP) {
                         return LanguageEmbedding.create(PHPTokenId.languageInPHP(), 0, 0, true);
@@ -126,15 +122,13 @@ public enum TplTopTokenId implements TokenId {
 
                     return null; // No embedding
                 }
-                
             }.language();
 
-            /**
-             * Is returning top level language.
-             * @return top level Language
-             */
-            public static Language<TplTopTokenId> language() {
+    /**
+     * Is returning top level language.
+     * @return top level Language
+     */
+    public static Language<TplTopTokenId> language() {
         return language;
     }
-
 }

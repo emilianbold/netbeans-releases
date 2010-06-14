@@ -60,6 +60,7 @@ import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 public class TplEmbeddingProvider extends EmbeddingProvider {
 
     public static final String GENERATED_CODE = "@@@"; //NOI18N
+    private boolean isPhpEnabled;
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
@@ -86,10 +87,10 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
         while (sequence.moveNext()) {
             Token t = sequence.token();
             if (t.id().getClass() == TplTopTokenId.class && isSmartyToken((TplTopTokenId) t.id())) {
-//                if (isPhpEnabled) {
-//                    isPhpEnabled = false;
-//                    embeddings.add(snapshot.create(";?>", "text/x-php5"));
-//                }
+                if (isPhpEnabled) {
+                    isPhpEnabled = false;
+                    embeddings.add(snapshot.create(";?>", "text/x-php5"));
+                }
                 if (from < 0) {
                     from = sequence.offset();
                 }
@@ -104,21 +105,21 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
                 }
                 len += t.length();
                 if (from >= 0) {
-//                    if (t.id() == TplTopTokenId.T_PHP) {
-//                        if (!isPhpEnabled) {
-//                            isPhpEnabled = true;
-//                            embeddings.add(snapshot.create("<?", "text/x-php5"));
-//                        }
-//                        embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
-//                    } else {
-//                        if (isPhpEnabled) {
-//                            isPhpEnabled = false;
-//                            embeddings.add(snapshot.create(";?>", "text/x-php5"));
-//                        }
-                        embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
+                    if (t.id() == TplTopTokenId.T_PHP) {
+                        if (!isPhpEnabled) {
+                            isPhpEnabled = true;
+                            embeddings.add(snapshot.create("<?", "text/x-php5"));
+                        }
                         embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
-                        embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
-//                    }
+                    } else {
+                        if (isPhpEnabled) {
+                            isPhpEnabled = false;
+                            embeddings.add(snapshot.create(";?>", "text/x-php5"));
+                        }
+//                        embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
+                        embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
+//                        embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
+                    }
                 }
 
                 from = -1;
@@ -126,9 +127,9 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
             }
         }
         if (from >= 0) {
-            embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
+//            embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
             embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
-            embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
+//            embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
         }
         if (embeddings.isEmpty()) {
             return Collections.emptyList();

@@ -36,18 +36,17 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.smarty.editor.completion;
 
 import java.util.Locale;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.smarty.SmartyFramework;
-import org.netbeans.modules.php.smarty.SmartyPhpModuleCustomizerExtender;
+import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 import org.netbeans.modules.php.smarty.editor.utlis.LexerUtils;
-import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 import org.openide.util.Exceptions;
 
 /**
@@ -61,11 +60,7 @@ public class CodeCompletionUtils {
     public static String getTextPrefix(Document doc, int offset) {
         int readLength = (COMPLETION_MAX_FILTER_LENGHT > offset) ? offset : COMPLETION_MAX_FILTER_LENGHT;
         try {
-            int lastWS = getLastWS(doc.getText(offset - readLength, readLength));
-            String preWord = doc.getText(offset - lastWS, lastWS);
-            if (preWord.startsWith(SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc)))) {
-                return preWord.substring(SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc)).length());
-            }
+            int lastWS = getLastWS(doc.getText(offset - readLength, readLength), SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc)));
             return doc.getText(offset - lastWS, lastWS);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
@@ -77,10 +72,12 @@ public class CodeCompletionUtils {
         return getTextPrefix(doc, offset).length();
     }
 
-    public static int getLastWS(String area) {
-        for (int i = area.length()-1; i >= 0; i--) {
+    public static int getLastWS(String area, String openDelimiter) {
+        for (int i = area.length() - 1; i >= 0; i--) {
             if (LexerUtils.isWS(area.charAt(i))) {
-                return area.length()-i-1;
+                return area.length() - i - 1;
+            } else if (area.substring(i).startsWith(openDelimiter)) {
+                return area.length() - i - openDelimiter.length();
             }
         }
         return area.length();
@@ -88,6 +85,20 @@ public class CodeCompletionUtils {
 
     public static boolean startsWithIgnoreCase(String text, String prefix) {
         return text.toLowerCase(Locale.ENGLISH).startsWith(prefix.toLowerCase(Locale.ENGLISH));
+    }
+
+    public static boolean insideSmartyCode(Document doc, int offset) {
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+
+        tokenSequence.move(offset);
+        if (tokenSequence.moveNext() || tokenSequence.movePrevious()) {
+            Object tokenID = tokenSequence.token().id();
+            if (tokenID == TplTopTokenId.T_HTML || tokenID == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

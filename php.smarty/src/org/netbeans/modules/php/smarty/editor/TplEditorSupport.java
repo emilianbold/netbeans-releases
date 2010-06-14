@@ -90,7 +90,7 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
 
     @Override
     protected boolean asynchronousOpen() {
-	return true;
+        return true;
     }
 
     @Override
@@ -104,8 +104,8 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
         StyledDocument doc = super.createStyledDocument(kit);
 
         // see TplKit.createDefaultDocument;
-        Runnable postInitRunnable = (Runnable)doc.getProperty("postInitRunnable"); //NOI18N
-        if(postInitRunnable != null) {
+        Runnable postInitRunnable = (Runnable) doc.getProperty("postInitRunnable"); //NOI18N
+        if (postInitRunnable != null) {
             postInitRunnable.run();
         }
 
