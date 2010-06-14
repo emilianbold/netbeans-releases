@@ -210,6 +210,8 @@ public class HighlightsView extends EditorView implements TextLayoutView {
                 textLayout.getCharacterCount() + " != textLength=" + textLength; // NOI18N
         // If offset is >getEndOffset() use view-end-offset - otherwise it would throw exception from textLayout.getCaretInfo()
 	int charIndex = Math.min(offset - startOffset, textLength);
+        // When e.g. creating fold-preview the offset can be < startOffset
+        charIndex = Math.max(charIndex, 0);
 	TextHitInfo hit = (bias == Position.Bias.Forward)
                 ? TextHitInfo.afterOffset(charIndex)
                 : TextHitInfo.beforeOffset(charIndex);

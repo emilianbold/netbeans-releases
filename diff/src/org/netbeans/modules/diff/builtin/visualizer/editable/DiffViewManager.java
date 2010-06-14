@@ -493,11 +493,14 @@ class DiffViewManager implements ChangeListener {
         } else {
             if (diff.getType() == Difference.ADD) {
                 value = leftStartRect.y;        // kde zacina prva, 180
-                valueSecond = rightStartRect.y + rightStartRect.height; // kde by zacinala druha, napr. 230
+                if (rightStartRect.y == 0) {
+                    value -= rightStartRect.height;
+                }
+                valueSecond = rightEndRect.y + rightStartRect.height; // kde by zacinala druha, napr. 230
             } else {
                 value = leftEndRect.y + leftEndRect.height;        // kde zacina prva, 180
                 if (diff.getType() == Difference.DELETE) {
-                    value += leftEndRect.height;
+                    value += leftStartRect.height;
                     valueSecond = rightStartRect.y + rightStartRect.height; // kde by zacinala druha, napr. 230
                 } else {
                     valueSecond = rightEndRect.y + rightEndRect.height; // kde by zacinala druha, napr. 230
