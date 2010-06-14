@@ -85,7 +85,9 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
     }
 
     protected void setUp () throws IOException {
-        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+        File userdir = new File(getWorkDir() + "/userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
         System.setProperty("versioning.asyncAnnotator", "true");
         File wDir = new File(getWorkDir(), String.valueOf(System.currentTimeMillis()));
         wDir.mkdirs();

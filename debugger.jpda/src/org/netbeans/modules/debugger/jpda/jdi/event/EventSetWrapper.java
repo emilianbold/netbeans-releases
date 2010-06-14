@@ -61,18 +61,51 @@ public final class EventSetWrapper {
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static com.sun.jdi.event.EventIterator eventIterator(com.sun.jdi.event.EventSet a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.event.EventSet",
+                    "eventIterator",
+                    "JDI CALL: com.sun.jdi.event.EventSet({0}).eventIterator()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.eventIterator();
+            com.sun.jdi.event.EventIterator ret;
+            ret = a.eventIterator();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.event.EventSet",
+                        "eventIterator",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static void resume(com.sun.jdi.event.EventSet a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.event.EventSet",
+                    "resume",
+                    "JDI CALL: com.sun.jdi.event.EventSet({0}).resume()",
+                    new Object[] {a});
+        }
         try {
             a.resume();
         } catch (com.sun.jdi.InternalException ex) {
@@ -84,30 +117,89 @@ public final class EventSetWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper(ex);
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.event.EventSet",
+                        "resume",
+                        org.netbeans.modules.debugger.jpda.JDIExceptionReporter.RET_VOID);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static int suspendPolicy0(com.sun.jdi.event.EventSet a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.event.EventSet",
+                    "suspendPolicy",
+                    "JDI CALL: com.sun.jdi.event.EventSet({0}).suspendPolicy()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.suspendPolicy();
+            int ret;
+            ret = a.suspendPolicy();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             return 0;
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             return 0;
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.event.EventSet",
+                        "suspendPolicy",
+                        retValue);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static int suspendPolicy(com.sun.jdi.event.EventSet a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.event.EventSet",
+                    "suspendPolicy",
+                    "JDI CALL: com.sun.jdi.event.EventSet({0}).suspendPolicy()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
         try {
-            return a.suspendPolicy();
+            int ret;
+            ret = a.suspendPolicy();
+            retValue = ret;
+            return ret;
         } catch (com.sun.jdi.InternalException ex) {
+            retValue = ex;
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            retValue = ex;
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (Error err) {
+            retValue = err;
+            throw err;
+        } catch (RuntimeException rex) {
+            retValue = rex;
+            throw rex;
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.event.EventSet",
+                        "suspendPolicy",
+                        retValue);
+            }
         }
     }
 

@@ -44,7 +44,10 @@ package org.netbeans.modules.bugtracking.kenai;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -56,6 +59,7 @@ class Support {
 
     private RequestProcessor rp;
     private static Support instance;
+    private Map<String, KenaiHandler> handlers = new HashMap<String, KenaiHandler>();
 
     final HashMap<String, WeakReference<KenaiProjectImpl>> projectsCache = new HashMap<String, WeakReference<KenaiProjectImpl>>();
 
@@ -78,6 +82,22 @@ class Support {
 
     void post(Runnable r) {
         getRequestProcessor().post(r);
+    }
+    KenaiHandler getKenaiHandler(ProjectHandle ph, QueryAccessorImpl accessor) {
+        return getKenaiHandler(ph.getKenaiProject().getKenai(), accessor);
+    }
+    KenaiHandler getKenaiHandler(Kenai kenai) {
+        return getKenaiHandler(kenai, null);
+    }
+    KenaiHandler getKenaiHandler(Kenai kenai, QueryAccessorImpl accessor) {
+        assert kenai != null;
+        String url = kenai.getUrl().toString();
+        KenaiHandler ret = handlers.get(url);
+        if(ret == null && accessor != null) {
+            ret = new KenaiHandler(accessor, kenai);
+            handlers.put(url, ret);
+        }
+        return ret;
     }
 
 }
