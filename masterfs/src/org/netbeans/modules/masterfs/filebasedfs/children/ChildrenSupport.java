@@ -122,9 +122,10 @@ public class ChildrenSupport {
 
     public synchronized void removeChild(final FileNaming folderName, final FileNaming childName) {
         assert childName != null;
-        assert childName.getParent().equals(folderName);
         getExisting().remove(childName);
-        getNotExisting().add(childName);
+        if (childName.getParent().equals(folderName)) {
+            getNotExisting().add(childName);
+        }
     }
 
     private synchronized void addChild(final FileNaming folderName, final FileNaming childName) {
@@ -282,11 +283,7 @@ public class ChildrenSupport {
             public Integer getId() {
                 return id;
             }
-            public boolean rename(String name) {
-                // not implemented, as it will not be called
-                throw new IllegalStateException();
-            }
-            public boolean rename(String name, ProvidedExtensions.IOHandler h) {
+            public FileNaming rename(String name, ProvidedExtensions.IOHandler h) {
                 // not implemented, as it will not be called
                 throw new IllegalStateException();
             }
@@ -306,11 +303,6 @@ public class ChildrenSupport {
             @Override
             public int hashCode() {
                 return id.intValue();
-            }
-
-            public Integer getId(boolean recompute) {
-                return id;
-
             }
 
             public boolean isFile() {
