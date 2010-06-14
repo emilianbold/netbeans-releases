@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.php.smarty;
 
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -86,6 +88,21 @@ public class SmartyFramework extends PhpProgram {
         return OPTIONS_SUB_PATH;
     }
 
+    public static String getCloseDelimiter(FileObject fileObject) {
+        if (!SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(PhpModule.forFileObject(fileObject)).isEmpty()) {
+            return SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(PhpModule.forFileObject(fileObject));
+        } else {
+            return DELIMITER_DEFAULT_CLOSE;
+        }
+    }
 
+    public static String getOpenDelimiter(FileObject fileObject) {
+        if (!SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(PhpModule.forFileObject(fileObject)).isEmpty()) {
+            return SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(PhpModule.forFileObject(fileObject));
+        } else {
+            return DELIMITER_DEFAULT_OPEN;
+        }
+        
+    }
 
 }

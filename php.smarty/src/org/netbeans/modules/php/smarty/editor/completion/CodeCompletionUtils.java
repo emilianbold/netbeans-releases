@@ -42,7 +42,12 @@ package org.netbeans.modules.php.smarty.editor.completion;
 import java.util.Locale;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.php.smarty.SmartyFramework;
+import org.netbeans.modules.php.smarty.SmartyPhpModuleCustomizerExtender;
 import org.netbeans.modules.php.smarty.editor.utlis.LexerUtils;
+import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 import org.openide.util.Exceptions;
 
 /**
@@ -57,6 +62,10 @@ public class CodeCompletionUtils {
         int readLength = (COMPLETION_MAX_FILTER_LENGHT > offset) ? offset : COMPLETION_MAX_FILTER_LENGHT;
         try {
             int lastWS = getLastWS(doc.getText(offset - readLength, readLength));
+            String preWord = doc.getText(offset - lastWS, lastWS);
+            if (preWord.startsWith(SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc)))) {
+                return preWord.substring(SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc)).length());
+            }
             return doc.getText(offset - lastWS, lastWS);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
