@@ -69,7 +69,9 @@ public class VCSVisibilityQueryTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", System.getProperty("data.root.dir") + "/userdir");
+        File userdir = new File(getWorkDir() + "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
         super.setUp();
     }
 

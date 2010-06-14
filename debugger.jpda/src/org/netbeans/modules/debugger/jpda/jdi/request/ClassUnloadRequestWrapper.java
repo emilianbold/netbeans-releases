@@ -61,6 +61,13 @@ public final class ClassUnloadRequestWrapper {
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static void addClassExclusionFilter(com.sun.jdi.request.ClassUnloadRequest a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.ClassUnloadRequest",
+                    "addClassExclusionFilter",
+                    "JDI CALL: com.sun.jdi.request.ClassUnloadRequest({0}).addClassExclusionFilter({1})",
+                    new Object[] {a, b});
+        }
         try {
             a.addClassExclusionFilter(b);
         } catch (com.sun.jdi.InternalException ex) {
@@ -68,11 +75,25 @@ public final class ClassUnloadRequestWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.ClassUnloadRequest",
+                        "addClassExclusionFilter",
+                        org.netbeans.modules.debugger.jpda.JDIExceptionReporter.RET_VOID);
+            }
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static void addClassFilter(com.sun.jdi.request.ClassUnloadRequest a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.ClassUnloadRequest",
+                    "addClassFilter",
+                    "JDI CALL: com.sun.jdi.request.ClassUnloadRequest({0}).addClassFilter({1})",
+                    new Object[] {a, b});
+        }
         try {
             a.addClassFilter(b);
         } catch (com.sun.jdi.InternalException ex) {
@@ -80,6 +101,13 @@ public final class ClassUnloadRequestWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.ClassUnloadRequest",
+                        "addClassFilter",
+                        org.netbeans.modules.debugger.jpda.JDIExceptionReporter.RET_VOID);
+            }
         }
     }
 
