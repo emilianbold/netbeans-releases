@@ -45,9 +45,9 @@
 package org.netbeans.modules.editor.fold;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
@@ -55,9 +55,14 @@ import java.awt.font.TextHitInfo;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.border.Border;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.Caret;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
+import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
@@ -233,6 +238,42 @@ public class FoldView extends EditorView implements TextLayoutView {
                 throw new IllegalArgumentException("Bad direction: " + direction);
         }
         return offset;
+    }
+
+    @Override
+    public JComponent getToolTip(double x, double y, Shape allocation) {
+        Container container = getContainer();
+        if (container instanceof JEditorPane) {
+            JEditorPane editorPane = (JEditorPane) getContainer();
+            JEditorPane tooltipPane = new JEditorPane();
+            EditorKit kit = editorPane.getEditorKit();
+            Document doc = getDocument();
+            if (kit != null && doc != null) {
+                Element lineRootElement = doc.getDefaultRootElement();
+                tooltipPane.putClientProperty(FoldViewFactory.VIEW_FOLDS_EXPANDED_PROPERTY, true);
+                try {
+                    // Start-offset of the fold => line start => position
+                    int lineIndex = lineRootElement.getElementIndex(fold.getStartOffset());
+                    Position pos = doc.createPosition(
+                            lineRootElement.getElement(lineIndex).getStartOffset());
+                    // DocumentView.START_POSITION_PROPERTY
+                    tooltipPane.putClientProperty("document-view-start-position", pos);
+                    // End-offset of the fold => line end => position
+                    lineIndex = lineRootElement.getElementIndex(fold.getEndOffset());
+                    pos = doc.createPosition(lineRootElement.getElement(lineIndex).getEndOffset());
+                    // DocumentView.END_POSITION_PROPERTY
+                    tooltipPane.putClientProperty("document-view-end-position", pos);
+                    tooltipPane.putClientProperty("document-view-accurate-span", true);
+                    // Set the same kit and document
+                    tooltipPane.setEditorKit(kit);
+                    tooltipPane.setDocument(doc);
+                    return new FoldToolTip(editorPane, tooltipPane);
+                } catch (BadLocationException e) {
+                    // => return null
+                }
+            }
+        }
+        return null;
     }
 
     @Override
