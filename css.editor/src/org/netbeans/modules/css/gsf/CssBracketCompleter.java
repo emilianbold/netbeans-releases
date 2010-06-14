@@ -197,7 +197,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
             return false;
         }
 
-        reindentLater((BaseDocument) doc, caretOffset);
+        reindentLater((BaseDocument) doc, caretOffset, caretOffset);
 
         return false;
     }
@@ -231,7 +231,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
             //move caret
             jtc.getCaret().setDot(dot);
             //and indent the line
-            reindentLater(bdoc, dot);
+            reindentLater(bdoc, dot-1, dot+2);
 
         }
 
@@ -283,14 +283,17 @@ public class CssBracketCompleter implements KeystrokeHandler {
         return -1;
     }
 
+    public static boolean unitTestingSupport = false;
+    
     //since the code runs under document atomic lock, we cannot lock the
     //indentation infrastructure directly. Instead of that create a new
     //AWT task and post it for later execution.
-    private void reindentLater(final BaseDocument doc, int dotPos) throws BadLocationException {
-        final Position from = doc.createPosition(Utilities.getRowStart(doc, dotPos));
-        final Position to = doc.createPosition(Utilities.getRowEnd(doc, dotPos));
-        SwingUtilities.invokeLater(new Runnable() {
+    private void reindentLater(final BaseDocument doc, int start, int end) throws BadLocationException {
+        final Position from = doc.createPosition(Utilities.getRowStart(doc, start));
+        final Position to = doc.createPosition(Utilities.getRowEnd(doc, end));
+        Runnable rn = new Runnable() {
 
+            @Override
             public void run() {
                 final Indent indent = Indent.get(doc);
                 indent.lock();
@@ -300,7 +303,6 @@ public class CssBracketCompleter implements KeystrokeHandler {
                         public void run() {
                             try {
                                 indent.reindent(from.getOffset(), to.getOffset());
-                                System.out.println("formatted");
                             } catch (BadLocationException ex) {
                                 //ignore
                             }
@@ -310,6 +312,11 @@ public class CssBracketCompleter implements KeystrokeHandler {
                     indent.unlock();
                 }
             }
-        });
+        };
+        if (unitTestingSupport) {
+            rn.run();
+        } else {
+            SwingUtilities.invokeLater(rn);
+        }
     }
 }
