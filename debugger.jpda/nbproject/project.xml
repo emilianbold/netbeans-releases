@@ -266,7 +266,18 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.javafx.debugger</friend>
+                <package>org.netbeans.modules.debugger.jpda</package>
+                <package>org.netbeans.modules.debugger.jpda.actions</package>
+                <package>org.netbeans.modules.debugger.jpda.breakpoints</package>
+                <package>org.netbeans.modules.debugger.jpda.expr</package>
+                <package>org.netbeans.modules.debugger.jpda.jdi</package>
+                <package>org.netbeans.modules.debugger.jpda.jdi.event</package>
+                <package>org.netbeans.modules.debugger.jpda.jdi.request</package>
+                <package>org.netbeans.modules.debugger.jpda.models</package>
+                <package>org.netbeans.modules.debugger.jpda.util</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
