@@ -85,16 +85,8 @@ public class CustomizerPane extends JPanel
     private static final int MAX_HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height * 3 / 4;
     private static final int MAX_WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width * 3 / 4;
 
-    /*private static Dimension previousDimension = null;
-    private static final String CUSTOMIZER_DIALOG_WIDTH = "CustomizerPane.dialog.width";
-    private static final String CUSTOMIZER_DIALOG_HEIGHT = "CustomizerPane.dialog.height";*/
-    
-    //private DialogDescriptor dialogDescriptor;
-    
-    /** Creates new form J2SECustomizer */
-    public CustomizerPane( JPanel categoryView, CategoryModel categoryModel, ProjectCustomizer.CategoryComponentProvider componentProvider ) {
+    public CustomizerPane(JPanel categoryView, CategoryModel categoryModel, ProjectCustomizer.CategoryComponentProvider componentProvider) {
         initComponents();
-        // HelpCtx.setHelpIDString( customizerPanel, "org.netbeans.modules.java.j2seproject.ui.customizer.J2SECustomizer" ); // NOI18N
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPane.class,"AD_CustomizerPane")); // NOI18N
         this.componentProvider = componentProvider;
         fillConstraints = new GridBagConstraints();
@@ -111,6 +103,7 @@ public class CustomizerPane extends JPanel
         errorMessageValue.setWrapStyleWord(true);
         errorMessageValue.setBorder(BorderFactory.createEmptyBorder());
         errorMessageValue.setBackground(customizerPanel.getBackground());
+        errorMessageValue.setEditable(false);
         
         // put it into under categoryView
         errMessConstraints = new GridBagConstraints();

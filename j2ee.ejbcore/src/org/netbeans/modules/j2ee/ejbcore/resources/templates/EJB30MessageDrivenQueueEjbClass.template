@@ -23,6 +23,7 @@ public class ${name} implements MessageListener {
     public ${name}() {
     }
 
+    @Override
     public void onMessage(Message message) {
     }
     

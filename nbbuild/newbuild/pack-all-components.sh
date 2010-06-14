@@ -41,12 +41,12 @@ pack_all_components()
 #	cp $JAVAFX_DIR/javafx/build/clusters/mac.jar         $DIST_DIR/zip/moduleclusters/$NAME-javafx-mac.zip         || exit 1
 #	cp $JAVAFX_DIR/javafx/build/clusters/solaris.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-solaris-x86.zip || exit 1
 
-#        cp $JAVAFX_DIR/javafx/dist/zip/moduleclusters/$NAME-javafx.zip             $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip  || exit 1
-	cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx-windows.zip     $DIST_DIR/zip/moduleclusters/$NAME-javafx-windows.zip     || exit 1
-	cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx-linux.zip       $DIST_DIR/zip/moduleclusters/$NAME-javafx-linux.zip       || exit 1
-	cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx-mac.zip         $DIST_DIR/zip/moduleclusters/$NAME-javafx-mac.zip         || exit 1
-	cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx-solaris-x86.zip $DIST_DIR/zip/moduleclusters/$NAME-javafx-solaris-x86.zip || exit 1
-        cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx.zip             $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip || exit 1
+#        cp $JAVAFX_DIR/javafx/dist/zip/moduleclusters/$NAME-javafx.zip             $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip
+	cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx-windows.zip     $DIST_DIR/zip/moduleclusters/$NAME-javafx-windows.zip
+	cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx-linux.zip       $DIST_DIR/zip/moduleclusters/$NAME-javafx-linux.zip
+	cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx-mac.zip         $DIST_DIR/zip/moduleclusters/$NAME-javafx-mac.zip
+	cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx-solaris-x86.zip $DIST_DIR/zip/moduleclusters/$NAME-javafx-solaris-x86.zip
+        cp $JAVAFX_PATH/zip/moduleclusters/$NAME-javafx.zip             $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip
 	rm -rf javafx*
     fi
     cd $NB_ALL/nbbuild

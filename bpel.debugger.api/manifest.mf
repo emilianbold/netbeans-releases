@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Specification-Version: 6.5.1
-OpenIDE-Module: org.netbeans.modules.bpel.debugger.api/1
+OpenIDE-Module-Specification-Version: 6.9
+OpenIDE-Module: org.netbeans.modules.bpel.debugger.api
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/bpel/debugger/api/resources/Bundle.properties

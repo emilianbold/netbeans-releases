@@ -43,7 +43,6 @@
 package org.netbeans.modules.websvc.rest.codegen.model;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 
 /**
  *
@@ -82,7 +81,7 @@ public class RuntimeEntityClassInfo extends EntityClassInfo {
 
     @Override
     protected void extractPKFields(Project project) {
-        super.extractPKFields(getEntity().getTypeElement());
+        super.extractPKFields(project);
     }
 
     @Override

@@ -75,6 +75,9 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
     private static final Logger LOG = Logger.getLogger(GuardedBlocksHighlighting.class.getName());
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.oldlibbridge.GuardedBlocksHighlighting"; //NOI18N
     
+    static final AttributeSet EXTENDS_EOL_ATTR_SET =
+            AttributesUtilities.createImmutable(ATTR_EXTENDS_EOL, Boolean.TRUE);
+
     private final Document document;
     private final MarkBlockChain guardedBlocksChain;
     private final MimePath mimePath;
@@ -181,7 +184,7 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
 
         private boolean init = false;
         private MarkBlock block;
-        
+
         public HSImpl(MarkBlock block, int startOffset, int endOffset) {
             this.startOffset = startOffset;
             this.endOffset = endOffset;
@@ -275,7 +278,7 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
                     } else {
                         attribs = AttributesUtilities.createImmutable(
                             attribs, 
-                            AttributesUtilities.createImmutable(ATTR_EXTENDS_EOL, Boolean.TRUE)
+                            EXTENDS_EOL_ATTR_SET
                         );
                     }
                 }

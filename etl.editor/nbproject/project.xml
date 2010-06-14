@@ -141,8 +141,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -155,12 +154,11 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.soa.libs.jgo</code-name-base>
+                    <code-name-base>org.netbeans.modules.soa.libs.jgo</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -434,30 +432,27 @@
                 <package>org.netbeans.modules.sql.framework.ui.zoom</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/etl/velocity-1.4.jar</runtime-relative-path>
+                <runtime-relative-path>ext/velocity-1.4.jar</runtime-relative-path>
                 <binary-origin>external/velocity-1.4.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/etl/i18n-1.0.jar</runtime-relative-path>
+                <runtime-relative-path>ext/i18n-1.0.jar</runtime-relative-path>
                 <binary-origin>external/i18n-1.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/etl/commons-collections-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>ext/commons-collections-3.0.jar</runtime-relative-path>
                 <binary-origin>external/commons-collections-3.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/etl/avalon-logkit-current.jar</runtime-relative-path>
+                <runtime-relative-path>ext/avalon-logkit-current.jar</runtime-relative-path>
                 <binary-origin>external/avalon-logkit-current.jar</binary-origin>
             </class-path-extension>
-            <!--class-path-extension>
-                <runtime-relative-path>ext/dm/virtual/db/axiondb.jar</runtime-relative-path>
-            </class-path-extension-->
             <class-path-extension>
-                <runtime-relative-path>ext/etl/etlengine.jar</runtime-relative-path>
+                <runtime-relative-path>ext/etlengine.jar</runtime-relative-path>
                 <binary-origin>external/etlengine.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/etl/sbme.jar</runtime-relative-path>
+                <runtime-relative-path>ext/sbme.jar</runtime-relative-path>
                 <binary-origin>external/sbme.jar</binary-origin>
             </class-path-extension>
         </data>

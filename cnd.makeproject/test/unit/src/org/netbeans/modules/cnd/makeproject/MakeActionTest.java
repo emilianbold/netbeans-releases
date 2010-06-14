@@ -90,7 +90,6 @@ public class MakeActionTest {
         // Commands available from Make project
         public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
         public static final String COMMAND_BUILD_PACKAGE = "build_packages"; // NOI18N
-        public static final String COMMAND_DEBUG_LOAD_ONLY = "debug.load.only"; // NOI18N
         public static final String COMMAND_CUSTOM_ACTION = "custom.action"; // NOI18N
         private final String[] supportedActions = {
             COMMAND_BUILD,
@@ -101,7 +100,6 @@ public class MakeActionTest {
             COMMAND_RUN_SINGLE,
             COMMAND_DEBUG,
             COMMAND_DEBUG_STEP_INTO,
-            COMMAND_DEBUG_LOAD_ONLY,
             COMMAND_DEBUG_SINGLE,
             COMMAND_BATCH_BUILD,
             COMMAND_BUILD_PACKAGE,
@@ -120,7 +118,6 @@ public class MakeActionTest {
         private static final String RUN_STEP = "run"; // NOI18N
         private static final String DEBUG_STEP = "debug"; // NOI18N
         private static final String DEBUG_STEPINTO_STEP = "debug-stepinto"; // NOI18N
-        private static final String DEBUG_LOAD_ONLY_STEP = "debug-load-only"; // NOI18N
         private static final String RUN_SINGLE_STEP = "run-single"; // NOI18N
         private static final String DEBUG_SINGLE_STEP = "debug-single"; // NOI18N
         private static final String COMPILE_SINGLE_STEP = "compile-single"; // NOI18N
@@ -138,7 +135,6 @@ public class MakeActionTest {
             commands.put(COMMAND_RUN, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, /*REMOVE_INSTRUMENTATION_STEP,*/ BUILD_STEP, RUN_STEP});
             commands.put(COMMAND_DEBUG, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, /*REMOVE_INSTRUMENTATION_STEP,*/ BUILD_STEP, DEBUG_STEP});
             commands.put(COMMAND_DEBUG_STEP_INTO, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, /*REMOVE_INSTRUMENTATION_STEP,*/ BUILD_STEP, DEBUG_STEPINTO_STEP});
-            commands.put(COMMAND_DEBUG_LOAD_ONLY, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP, DEBUG_LOAD_ONLY_STEP});
             commands.put(COMMAND_RUN_SINGLE, new String[]{RUN_SINGLE_STEP});
             commands.put(COMMAND_DEBUG_SINGLE, new String[]{DEBUG_SINGLE_STEP});
             commands.put(COMMAND_COMPILE_SINGLE, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, COMPILE_SINGLE_STEP});
@@ -151,7 +147,6 @@ public class MakeActionTest {
             commandsNoBuild.put(COMMAND_RUN, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/RUN_STEP});
             commandsNoBuild.put(COMMAND_DEBUG, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/DEBUG_STEP});
             commandsNoBuild.put(COMMAND_DEBUG_STEP_INTO, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/DEBUG_STEPINTO_STEP});
-            commandsNoBuild.put(COMMAND_DEBUG_LOAD_ONLY, new String[]{DEBUG_LOAD_ONLY_STEP});
             commandsNoBuild.put(COMMAND_CUSTOM_ACTION, new String[]{SAVE_STEP, CUSTOM_ACTION_STEP});
             boolean res1 = verifyMaps(commands, loadAcrionSteps("CND/BuildAction"), "CND/BuildAction"); // NOI18N
             boolean res2 = verifyMaps(commandsNoBuild, loadAcrionSteps("CND/NoBuildAction"), "CND/NoBuildAction"); // NOI18N

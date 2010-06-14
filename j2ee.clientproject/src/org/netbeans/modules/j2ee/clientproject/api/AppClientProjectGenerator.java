@@ -651,6 +651,7 @@ public class AppClientProjectGenerator {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, "");
         }        
         J2EEProjectProperties.setServerProperties(ep, epPriv, serverLibraryName, null, null, serverInstanceID, j2eeProfile, J2eeModule.Type.CAR);
+        AppClientProjectProperties.generateExtraServerProperty(epPriv);
 
         String mainClassArgs = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS_ARGS);
         if (mainClassArgs != null && !mainClassArgs.equals("")) {

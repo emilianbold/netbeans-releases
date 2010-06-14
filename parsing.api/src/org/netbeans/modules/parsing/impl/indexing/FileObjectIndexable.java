@@ -130,10 +130,7 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 83 * hash + (this.root != null ? this.root.hashCode() : 0);
-        hash = 83 * hash + (this.relativePath != null ? this.relativePath.hashCode() : 0);
-        return hash;
+        return this.relativePath != null ? this.relativePath.hashCode() : 0;
     }
 
     @Override

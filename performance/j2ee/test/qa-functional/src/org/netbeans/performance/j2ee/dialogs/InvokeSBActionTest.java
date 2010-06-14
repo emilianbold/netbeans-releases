@@ -104,45 +104,88 @@ public class InvokeSBActionTest extends PerformanceTestCase {
         return suite;
     }
 
-    public void testAddPropertyDialogInSB(){
-//        popupMenu = "Add Property...";
-        dialogTitle = "Add Property";
-        listItem=2;
+    public void testAddBusinessMethodDialogInSB(){
+        dialogTitle = "Add Business Method";
+        listItem=0;
         doMeasurement();
     }
 
-    public void testOverrideMethodDialogInSB(){
-//        popupMenu = "Override Methods...";
-        dialogTitle = "Generate Override Methods";
+    public void testConstructorDialogInSB(){
+        dialogTitle = "Generate Constructor";
         listItem=1;
         doMeasurement();
     }
 
-    public void testCallEnterpriseBeanDialogInSB(){
- //       popupMenu = "Call Enterprise Bean...";
-        dialogTitle = "Call Enterprise Bean";
-        listItem=3;
+    public void testAddGetterSetterDialogInSB(){
+        dialogTitle = "Generate Getters and Setters";
+        listItem=4;
         doMeasurement();
     }
 
-    public void testSendEmailDialogInSB(){
- //       popupMenu = "Send E-mail...";
-        dialogTitle = "Specify Mail Resource";
+    public void testEqualsAndHashDialogInSB(){
+        dialogTitle = "Generate Equals";
+        listItem=5;
+        doMeasurement();
+    }
+
+    public void testToStringDialogInSB(){
+        dialogTitle = "Generate toString";
         listItem=6;
         doMeasurement();
     }
 
-    
+    public void testDelegateDialogInSB(){
+        dialogTitle = "Generate Delegate";
+        listItem=7;
+        doMeasurement();
+    }
+
+    public void testOverrideDialogInSB(){
+        dialogTitle = "Generate Override";
+        listItem=8;
+        doMeasurement();
+    }
+
+    public void testAddPropertyDialogInSB(){
+        dialogTitle = "Add Property";
+        listItem=9;
+        doMeasurement();
+    }
+
+    public void testCallEnterpriseBeanDialogInSB(){
+        dialogTitle = "Call Enterprise Bean";
+        listItem=10;
+        doMeasurement();
+    }
+
+    public void testSendEmailDialogInSB(){
+        dialogTitle = "Specify Mail Resource";
+        listItem=13;
+        doMeasurement();
+    }
+
+    public void testCallWebServiceDialogInSB(){
+        dialogTitle = "Select Operation";
+        listItem=14;
+        doMeasurement();
+    }
+
+    public void testGenerateRESTDialogInSB(){
+        dialogTitle = "Available REST";
+        listItem=15;
+        doMeasurement();
+    }
+  
     public void initialize() {
         
-        openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Source Packages|test|TestSessionSB");
+        openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"),"Source Packages|test|TestSessionBean");
         new OpenAction().performAPI(openFile);
-        editor = new EditorWindowOperator().getEditor("TestSessionSB.java");
+        editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
         new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
     }
     
     public void prepare() {
-        editor.setCaretPosition(16, 1);
+        editor.setCaretPosition(105, 1);
         editor.pushKey(java.awt.event.KeyEvent.VK_INSERT,java.awt.event.KeyEvent.ALT_MASK);
         jdo=   new JDialogOperator();
         JListOperator list = new JListOperator(jdo);

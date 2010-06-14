@@ -298,8 +298,9 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     
     private void initIncludeAllEntities(){
         boolean javaSE = Util.isJavaSE(project);
-        includeAllEntities.setEnabled(!javaSE);
-        includeAllEntities.setSelected(!javaSE && !persistenceUnit.isExcludeUnlistedClasses());
+        boolean isNotContainer = !Util.isContainerManaged(project);
+        includeAllEntities.setEnabled(!(javaSE || isNotContainer));
+        includeAllEntities.setSelected(!(javaSE || isNotContainer) && !persistenceUnit.isExcludeUnlistedClasses());
         includeAllEntities.setText(NbBundle.getMessage(PersistenceUnitPanel.class,
                 "LBL_IncludeAllEntities",//NOI18N
                 new Object[]{ProjectUtils.getInformation(project).getDisplayName()}));

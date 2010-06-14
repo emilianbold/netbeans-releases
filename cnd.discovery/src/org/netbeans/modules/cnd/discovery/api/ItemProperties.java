@@ -78,6 +78,11 @@ public interface ItemProperties {
      */
     LanguageKind getLanguageKind();
 
+    /**
+     * Compiler name (producer)
+     */
+    String getCompilerName();
+
     public enum LanguageKind {
         Unknown,
         C,

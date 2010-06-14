@@ -185,7 +185,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
 
     private DescType selectedDescType = null;
 
-    boolean isJnlpImplPreviousVersion = false;
+    boolean jnlpImplOldOrModified = false;
 
     // Models 
     JToggleButton.ToggleButtonModel enabledModel;
@@ -243,7 +243,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             if (jnlpImlpFO != null) {
                 try {
                     String crc = JWSCompositeCategoryProvider.computeCrc32(jnlpImlpFO.getInputStream());
-                    isJnlpImplPreviousVersion = JWSCompositeCategoryProvider.isJnlpImplPreviousVer(crc);
+                    jnlpImplOldOrModified = !JWSCompositeCategoryProvider.isJnlpImplCurrentVer(crc);
                 } catch (IOException ex) {
                     // nothing to do really
                 }

@@ -45,6 +45,8 @@ package org.netbeans.modules.xml.schema.completion;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
@@ -112,8 +114,20 @@ public class EndTagResultItem extends CompletionResultItem {
                     
                     String insertingText = getInsertingText(component, text);
                     doc.insertString(offset, insertingText, null);
+                    // fix for issue #186916
+                    if ((! text.isEmpty()) && (! insertingText.isEmpty())) {
+                        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+                        tokenSequence = tokenHierarchy.tokenSequence();
+                        tokenSequence.move(offset);
+                        tokenSequence.movePrevious();
+                        Token token = tokenSequence.token();
+                        if (CompletionUtil.isTagLastChar(token)) {
+                            int caretPos = component.getCaretPosition() - text.length();
+                            if (caretPos > -1) component.setCaretPosition(caretPos);
+                        }
+                    }
                 } catch (Exception e) {
-                    _logger.log(Level.SEVERE,
+                    _logger.log(Level.WARNING,
                         e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);
                 }
             }

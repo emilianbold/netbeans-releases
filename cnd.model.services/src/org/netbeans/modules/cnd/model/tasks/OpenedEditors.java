@@ -162,8 +162,11 @@ public final class OpenedEditors {
         }
 
         for (JTextComponent c : visibleEditors) {
-            c.addPropertyChangeListener(componentListener);
-            visibleEditors2Files.put(c, getFileObject(c));
+            FileObject fo = getFileObject(c);
+            if (fo != null && fo.isValid()) {
+                c.addPropertyChangeListener(componentListener);
+                visibleEditors2Files.put(c, fo);
+            }
         }
 
         fireChangeEvent();
@@ -195,7 +198,12 @@ public final class OpenedEditors {
 
         if (originalFile != newFile) {
             if (SHOW_TIME) { System.err.println("OpenedEditord: new files found: " + newFile.getNameExt()); }
-            visibleEditors2Files.put(c, newFile);
+            if (newFile != null) {
+                visibleEditors2Files.put(c, newFile);
+            } else {
+                visibleEditors2Files.remove(c);
+                c.removePropertyChangeListener(componentListener);
+            }
             fireChangeEvent();
         }
     }

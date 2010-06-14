@@ -64,6 +64,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
  * @author Nitya Doraisamy
  */
 public interface SunApplicationClient extends org.netbeans.modules.j2ee.sun.dd.api.RootInterface {
+    public static final String VERSION_6_0_1 = "6.01"; //NOI18N
     public static final String VERSION_6_0_0 = "6.00"; //NOI18N
     public static final String VERSION_5_0_0 = "5.00"; //NOI18N
     public static final String VERSION_1_4_1 = "1.41"; //NOI18N
