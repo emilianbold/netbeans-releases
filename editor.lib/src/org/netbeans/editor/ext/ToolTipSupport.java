@@ -738,8 +738,8 @@ public class ToolTipSupport {
                 r.y -= MOUSE_EXTRA_HEIGHT;
                 r.height += 2 * MOUSE_EXTRA_HEIGHT; // above and below
             } else if (placement == PopupManager.BelowPreferred || placement == PopupManager.Below) {
-                r.y = r.y + r.height + MOUSE_EXTRA_HEIGHT + 1;
-                r.height += MOUSE_EXTRA_HEIGHT; // above and below
+                r.y -= MOUSE_EXTRA_HEIGHT;
+                r.height += 2 * MOUSE_EXTRA_HEIGHT; // above and below
             }
         }
 
