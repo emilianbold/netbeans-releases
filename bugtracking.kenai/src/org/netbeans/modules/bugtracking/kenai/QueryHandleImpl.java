@@ -80,10 +80,12 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
         registerIssues();
     }
 
+    @Override
     public Query getQuery() {
         return query;
     }
 
+    @Override
     public boolean isPredefined() {
         return predefined;
     }
@@ -103,10 +105,12 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
         changeSupport.removePropertyChangeListener(l);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         BugtrackingUtil.openQuery(query, null, true);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
             registerIssues();
@@ -155,7 +159,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
     @Override
     public String toString() {
         if(stringValue == null) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("[");                                                     // NOI18N
             sb.append(query.getRepository().getDisplayName());
             sb.append(",");                                                     // NOI18N
@@ -184,6 +188,10 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
             return false;
         }
         return true;
+    }
+
+    void fireQueryActivated() {
+        changeSupport.firePropertyChange(QueryHandle.PROP_QUERY_ACTIVATED, null, null);
     }
 
 }
