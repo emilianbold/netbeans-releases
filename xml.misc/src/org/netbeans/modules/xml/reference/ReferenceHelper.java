@@ -128,7 +128,7 @@ final class ReferenceHelper {
     }
 
     ReferenceChild addURLAction(String value) {
-//out("Add url");
+//out("Add url: " + value);
         String url = (String) JOptionPane.showInputDialog(
             null, // parent
             i18n(ReferenceHelper.class, "LBL_Input_URL"), // NOI18N
@@ -162,8 +162,10 @@ final class ReferenceHelper {
         String target = ReferenceUtil.removeProtocol(url);
         // # 174640
         target = target.replace('?', '/');
-//out();
+        // # 184440
+        target = target.replace(':', '_');
 //out("target: " + target);
+
         try {
             CatalogWriteModel nextCatalog = getNextCatalog(myCatalog);
 //out();
@@ -173,6 +175,8 @@ final class ReferenceHelper {
                 nextCatalog = createNextCatalog(myCatalog);
             }
 //out("next: " + nextCatalog);
+//out("source: " + new URI(source));
+//out("target: " + new URI(target));
             nextCatalog.addURI(new URI(source), new URI(target));
         }
         catch (IOException e) {

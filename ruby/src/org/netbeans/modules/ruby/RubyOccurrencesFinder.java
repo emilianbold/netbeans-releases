@@ -116,6 +116,9 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
     private FileObject file;
     private Node root;
 
+    /** System property for turning off mark occurrences. */
+    private static boolean ENABLED = Boolean.parseBoolean(System.getProperty("ruby.mark.occurrences", "true"));
+
     /** When true, don't match alias nodes as reads. Used during traversal of the AST. */
     private boolean ignoreAlias;
 
@@ -140,6 +143,10 @@ public class RubyOccurrencesFinder extends OccurrencesFinder {
 
     @Override
     public void run(Result info, SchedulerEvent event) {
+        if (!ENABLED) {
+            return;
+        }
+
         resume();
 
         if (isCancelled()) {

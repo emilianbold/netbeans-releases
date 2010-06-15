@@ -102,6 +102,7 @@ public class CloseProjectPropertyTest extends PerformanceTestCase {
 
     @Override
     public void initialize(){
+       repaintManager().addRegionFilter(repaintManager().IGNORE_STATUS_LINE_FILTER);
     }
     
     public void prepare(){
@@ -135,6 +136,10 @@ public class CloseProjectPropertyTest extends PerformanceTestCase {
     
     @Override
     public void close(){
+    }
+
+    public void shutdown() {
+        repaintManager().resetRegionFilters();
     }
 
 }

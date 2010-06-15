@@ -485,11 +485,18 @@ final class ExplorerActionsImpl {
             setEnabled(arr != null);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             PasteType[] arr = this.pasteTypes;
-            throw new IllegalStateException(
-                "Should not be invoked at all. Paste types: " + (arr == null ? null : Arrays.asList(arr)) // NOI18N
-            );
+            if (arr != null && arr.length > 0) {
+                try {
+                    arr[0].paste();
+                    return;
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            Toolkit.getDefaultToolkit().beep();
         }
 
         @Override

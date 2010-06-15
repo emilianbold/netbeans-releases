@@ -180,7 +180,7 @@ public class J2MEDataObject extends MultiDataObject {
         private ProjectConfigurationsHelper pch;
         private static Method setAlreadyModified = null;
 
-        private DocumentPreprocessor documentPreprocessor;
+        private static DocumentPreprocessor documentPreprocessor;
 
         static {
             try {

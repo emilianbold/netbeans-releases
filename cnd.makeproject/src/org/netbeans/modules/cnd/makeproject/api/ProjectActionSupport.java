@@ -47,7 +47,9 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -55,7 +57,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -111,6 +116,32 @@ public class ProjectActionSupport {
             instance = new ProjectActionSupport();
         }
         return instance;
+    }
+
+    private static void refreshProjectFiles(Project project) {
+        try {
+            Set<File> files = new HashSet<File>();
+            FileObject projectFileObject = project.getProjectDirectory();
+            File f = FileUtil.toFile(projectFileObject);
+            if (f != null) {
+                files.add(f);
+            }
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            for (SourceGroup sourceGroup : groups) {
+                FileObject rootFolder = sourceGroup.getRootFolder();
+                File file = FileUtil.toFile(rootFolder);
+                if (file != null) {
+                    files.add(file);
+                }
+            }
+            File[] array = files.toArray(new File[files.size()]);
+            if (array.length > 0) {
+                FileUtil.refreshFor(array);
+            }
+            MakeLogicalViewProvider.refreshBrokenItems(project);
+        } catch (Exception e) {
+        }
     }
 
     /**
@@ -398,7 +429,6 @@ public class ProjectActionSupport {
             // Validate executable
             if (pae.getType() == PredefinedType.RUN
                     || pae.getType() == PredefinedType.DEBUG
-                    || pae.getType() == PredefinedType.DEBUG_LOAD_ONLY
                     || pae.getType() == PredefinedType.DEBUG_STEPINTO
                     || pae.getType() == PredefinedType.CHECK_EXECUTABLE
                     || pae.getType() == PredefinedType.CUSTOM_ACTION) {
@@ -473,14 +503,10 @@ public class ProjectActionSupport {
                     ((ExecutionListener) action).executionFinished(rc);
                 }
             }
-            if (paes[currentAction].getType() == PredefinedType.BUILD || paes[currentAction].getType() == PredefinedType.CLEAN) {
+            Type type = paes[currentAction].getType();
+            if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS) {
                 // Refresh all files
-                try {
-                    FileObject projectFileObject = paes[currentAction].getProject().getProjectDirectory();
-                    projectFileObject.getFileSystem().refresh(false);
-                    MakeLogicalViewProvider.refreshBrokenItems(paes[currentAction].getProject());
-                } catch (Exception e) {
-                }
+                refreshProjectFiles(paes[currentAction].getProject());
             }
             if (currentAction >= paes.length - 1 || rc != 0) {
                 synchronized (lock) {

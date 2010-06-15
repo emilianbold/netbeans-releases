@@ -521,17 +521,28 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
 
-    static class FieldItem extends PHPCompletionItem {
-        public static FieldItem getItem(FieldElement field, CompletionRequest request) {
-            return new FieldItem(field, request);
+    static class BasicFieldItem extends PHPCompletionItem {
+        private String typeName;
+        public static BasicFieldItem getItem(PhpElement field, String type, CompletionRequest request) {
+            return new BasicFieldItem(field, type, request);
         }
 
-        private FieldItem(FieldElement field, CompletionRequest request) {
+        private BasicFieldItem(PhpElement field, String typeName, CompletionRequest request) {
             super(field, request);
+            this.typeName = typeName;
         }
 
-        FieldElement getField() {
-            return (FieldElement) getElement();
+        @Override
+        public String getInsertPrefix() {
+            Completion.get().showToolTip();
+            return getName();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            //TODO: variable just because originally VARIABLE was returned and thus all tests fail
+            //return ElementKind.FIELD;
+            return ElementKind.VARIABLE;
         }
 
         @Override
@@ -543,8 +554,41 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             formatter.name(getKind(), true);
             formatter.appendText(getName());
             formatter.name(getKind(), false);
-
             return formatter.getText();
+        }
+
+        @Override
+        public String getName() {
+            final String name = getElement().getName();
+            return name.startsWith("$") ? name.substring(1) : name;
+        }
+
+        /**
+         * @return the typeName
+         */
+        protected String getTypeName() {
+            return typeName;
+        }
+
+
+    }
+    static class FieldItem extends BasicFieldItem {
+        public static FieldItem getItem(FieldElement field, CompletionRequest request) {
+            return new FieldItem(field, request);
+        }
+
+        private FieldItem(FieldElement field, CompletionRequest request) {
+            super(field, null, request);
+        }
+
+        FieldElement getField() {
+            return (FieldElement) getElement();
+        }
+
+        @Override
+        public String getName() {
+            final FieldElement field = getField();
+            return field.getName(field.isStatic());
         }
 
         protected String getTypeName() {
@@ -560,25 +604,6 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 }
             }
             return typeName;
-        }
-
-        @Override
-        public ElementKind getKind() {
-            //TODO: variable just because originally VARIABLE was returned and thus all tests fail
-            //return ElementKind.FIELD;
-            return ElementKind.VARIABLE;
-        }
-
-        @Override
-        public String getName() {
-            final FieldElement field = getField();
-            return field.getName(field.isStatic());
-        }
-
-        @Override
-        public String getInsertPrefix() {
-            Completion.get().showToolTip();
-            return getName();
         }
     }
 

@@ -1991,14 +1991,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     try {
                         Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                         Position pos = doc.createPosition(offset2);
-                        doc.remove(offset2, length);
-                        if (insertName) {
-                            doc.insertString(pos.getOffset(), simpleName + text2, null);
-                            position [0] = doc.createPosition(pos.getOffset() - text2.length() + text2.indexOf('('));
+                        String textToReplace = doc.getText(offset2, length);
+                        String newText = insertName ? simpleName + text2 : text2;
+                        if (textToReplace.contentEquals(newText)) {
+                            c.setCaretPosition(offset2 + newText.length());
                         } else {
-                            doc.insertString(pos.getOffset(), text2, null);
-                            position [0] = doc.createPosition(pos.getOffset() - text2.length() + text2.indexOf('('));
+                            doc.remove(offset2, length);
+                            doc.insertString(pos.getOffset(), newText, null);
                         }
+                        position [0] = doc.createPosition(pos.getOffset() - text2.length() + text2.indexOf('('));
                         if (semiPosition != null)
                             doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                         else if (!isAbstract && params.isEmpty() && lpar)

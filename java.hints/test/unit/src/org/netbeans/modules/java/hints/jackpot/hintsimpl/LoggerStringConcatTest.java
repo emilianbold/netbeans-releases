@@ -159,7 +159,7 @@ public class LoggerStringConcatTest extends TestBase {
                         "import java.util.logging.Logger;\n" +
                         "public class Test {\n" +
                         "    private void t(Logger l, int a, int b, int c) {\n" +
-                        "        l.log(Level.SEVERE,\"a=\" + \", b=''\" + \"{0}''.\", b);\n" +
+                        "        l.log(Level.SEVERE,\"a=\" + \", b=''{0}''.\", b);\n" +
                         "    }\n" +
                         "}\n").replaceAll("[ \t\n]+", " "));
     }
@@ -175,4 +175,27 @@ public class LoggerStringConcatTest extends TestBase {
                             "    }\n" +
                             "}\n");
     }
-}
+
+    public void test186524() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "    private static final String A = \"a\";\n" +
+                       "    private void t(Logger l, int a, int b, int c) {\n" +
+                       "        l.severe(A + \"=${\" + a + \"}.\");\n" +
+                       "    }\n" +
+                       "}\n",
+                       "6:17-6:37:verifier:Inefficient use of string concatenation in logger",
+                       "FixImpl",
+                      ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                       "    private static final String A = \"a\";\n" +
+                        "    private void t(Logger l, int a, int b, int c) {\n" +
+                        "        l.log(Level.SEVERE,A + \"=$'{'{0}'}'.\", a);\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "));
+    }}

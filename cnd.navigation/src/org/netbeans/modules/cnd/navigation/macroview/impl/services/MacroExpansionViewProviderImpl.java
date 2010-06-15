@@ -116,30 +116,16 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
         MacroExpansionViewUtils.setOffset(expandedContextDoc, startOffset, endOffset);
         MacroExpansionViewUtils.saveDocumentAndMarkAsReadOnly(expandedContextDoc);
 
-        // Init expanded macro field
-        final Document expandedMacroDoc = MacroExpansionViewUtils.createExpandedMacroDocument(mainDoc, csmFile);
-        if (expandedMacroDoc == null) {
-            return;
-        }
-        CsmDeclaration decl = ContextUtils.findInnerFileDeclaration(csmFile, offset);
-        if (decl != null) {
-            try {
-                expandedMacroDoc.insertString(0, decl.getName().toString(), null);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        MacroExpansionViewUtils.saveDocumentAndMarkAsReadOnly(expandedMacroDoc);
-
         // Open view
         Runnable openView = new Runnable() {
 
+            @Override
             public void run() {
                 MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
                 if (!view.isOpened()) {
                     view.open();
                 }
-                view.setDocuments(expandedContextDoc, expandedMacroDoc);
+                view.setDocuments(expandedContextDoc);
                 view.requestActive();
                 view.setDisplayName(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionViewTitle", CsmUtilities.getFile(mainDoc).getName())); // NOI18N
                 view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine", expansionsNumber)); // NOI18N

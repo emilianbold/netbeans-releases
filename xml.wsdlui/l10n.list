@@ -1,3 +1,0 @@
-# xml/wsdlui
-read global
-${l10n-module}/src/org/netbeans/modules/xml/wsdl/ui/wizard/*.html

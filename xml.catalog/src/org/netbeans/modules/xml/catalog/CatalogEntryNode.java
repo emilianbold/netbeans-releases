@@ -48,10 +48,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URI;
-import java.net.URISyntaxException;
 import javax.swing.Action;
 import org.netbeans.modules.xml.catalog.lib.URLEnvironment;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
@@ -64,11 +62,11 @@ import org.openide.actions.EditAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.actions.ViewAction;
 import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.BeanNode;
 import org.openide.nodes.Node;
@@ -76,7 +74,6 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Env;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
@@ -267,7 +264,7 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
         }
     }
 
-    private class ViewCookieImpl extends CloneableEditorSupport implements ViewCookie {
+    private class ViewCookieImpl extends CloneableEditorSupport implements EditorCookie, ViewCookie {
 
         ViewCookieImpl(Env env) {
             super(env);

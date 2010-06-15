@@ -65,7 +65,7 @@ public class ScriptingMeasureActionsTest1 {
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                 .addTest(SavingPHPProjectPropertiesTest.class)
-                //needs to be fixed  .addTest(CreateScriptingPackFilesTest.class)
+//needs to be fixed     .addTest(CreateScriptingPackFilesTest.class)
                 .addTest(ScriptingExpandFolderTest.class)
                 .addTest(PHPNavigatorTest.class)
                 .addTest(GoToSourceTest.class)

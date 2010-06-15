@@ -362,22 +362,14 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         myEntry.getHandler().autoParse();
 
         if (!super.notifyModified()) {
-            return false;
+            return false; // Will cause the log message:
+                          // INFO [org.openide.text.ClonableEditorSupport]: ...
         }
 
-        if (hasOpenedEditorComponent() || hasOpenedTableComponent()) {
-            ((Environment)env).addSaveCookie();
-            return true;
-        }
-        
-        //Issue 89029: Need to save properties file if no editors opened
-        try {
-            ((Environment) env).save();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        // #175275
-        super.notifyModified(); // to set up the modified flag again after save.
+        // See #89029, #175275, #186876 for info about the implementation
+
+        ((Environment)env).addSaveCookie();
+
         return true; 
     }
     

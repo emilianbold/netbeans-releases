@@ -167,17 +167,12 @@ public class GoToSupport {
     }
     
     private static void performGoTo(final Document doc, final int offset, final boolean goToSource, final boolean javadoc) {
-        if (!javadoc) {
-            final AtomicBoolean cancel = new AtomicBoolean();
-            
-            ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                public void run() {
-                    performGoToImpl(doc, offset, goToSource, javadoc, cancel);
-                }
-            }, NbBundle.getMessage(GoToSupport.class, goToSource ? "LBL_GoToSource" : "LBL_GoToDeclaration"), cancel, false);
-        } else {
-            performGoToImpl(doc, offset, goToSource, javadoc, null);
-        }
+        final AtomicBoolean cancel = new AtomicBoolean();
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            public void run() {
+                performGoToImpl(doc, offset, goToSource, javadoc, cancel);
+            }
+        }, NbBundle.getMessage(GoToSupport.class, javadoc ? "LBL_GoToJavadoc" : goToSource ? "LBL_GoToSource" : "LBL_GoToDeclaration"), cancel, false);
     }
 
     private static void performGoToImpl (final Document doc, final int offset, final boolean goToSource, final boolean javadoc, final AtomicBoolean cancel) {

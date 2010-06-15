@@ -47,9 +47,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
@@ -88,6 +91,39 @@ public abstract class CsmVirtualInfoQuery {
         return defaultQuery == null ? EMPTY : defaultQuery;
     }
     
+    private static boolean methodEquals(CsmMethod toSearch, CsmMethod method) {
+        if (!toSearch.getName().equals(method.getName())) {
+            return false;
+        }
+        Collection<CsmParameter> list1 = toSearch.getParameters();
+        Collection<CsmParameter> list2 = method.getParameters();
+        if (list1.size() != list2.size()) {
+            return false;
+        }
+        Iterator<CsmParameter> it2 = list2.iterator();
+        for (CsmParameter p1 : list1) {
+            CsmParameter p2 = it2.next();
+            CsmType type1 = p1.getType();
+            CsmType type2 = p2.getType();
+            if (type1 != null && type2 != null) {
+                CsmClassifier classifier1 = type1.getClassifier();
+                CsmClassifier classifier2 = type1.getClassifier();
+                if (classifier1 != null && classifier2 != null) {
+                    if (!classifier1.equals(classifier2)) {
+                        return false;
+                    }
+                    continue;
+                }
+                if (CharSequences.comparator().compare(type1.getText(), type2.getText()) != 0 ) {
+                    return false;
+                }
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
     //
     // Implementation of the default query
     //
@@ -106,10 +142,10 @@ public abstract class CsmVirtualInfoQuery {
             if (method.isVirtual()) {
                 return true;
             }
-            return processClass(method.getSignature(), method.getContainingClass(), new AntiLoop());
+            return processClass(method, method.getContainingClass(), new AntiLoop());
         }
 
-        private boolean processClass(CharSequence sig, CsmClass cls, AntiLoop antilLoop){
+        private boolean processClass(CsmMethod toSearch, CsmClass cls, AntiLoop antilLoop){
             if (cls == null || antilLoop.contains(cls)) {
                 return false;
             }
@@ -117,7 +153,7 @@ public abstract class CsmVirtualInfoQuery {
             for(CsmMember m : cls.getMembers()){
                 if (CsmKindUtilities.isMethod(m)) {
                     CsmMethod met = (CsmMethod) m;
-                    if (CharSequences.comparator().compare(sig, met.getSignature())==0){
+                    if (methodEquals(toSearch, met)) {
                         if (met.isVirtual()){
                             return true;
                         }
@@ -126,7 +162,7 @@ public abstract class CsmVirtualInfoQuery {
                 }
             }
             for(CsmInheritance inh : cls.getBaseClasses()){
-                if (processClass(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop)){
+                if (processClass(toSearch, CsmInheritanceUtilities.getCsmClass(inh), antilLoop)){
                     return true;
                 }
             }
@@ -150,12 +186,11 @@ public abstract class CsmVirtualInfoQuery {
 
         private Collection<CsmMethod> getBaseDeclaration(CsmMethod method, Overridden overridden) {
             Set<CharSequence> antilLoop = new HashSet<CharSequence>();
-            CharSequence sig = method.getSignature();
             Set<CsmMethod> result = new HashSet<CsmMethod>();
             CsmClass cls = method.getContainingClass();
             if (cls != null) {
                 for(CsmInheritance inh : cls.getBaseClasses()) {
-                    processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop,
+                    processMethod(method, CsmInheritanceUtilities.getCsmClass(inh), antilLoop,
                                 null, null, result, overridden);
                 }
             }
@@ -171,7 +206,7 @@ public abstract class CsmVirtualInfoQuery {
          * @param first if true, returns first found method, otherwise the topmost one
          * @return true if method found and it is virtual, otherwise false
          */
-        private void processMethod(CharSequence sig, CsmClass cls, Set<CharSequence> antilLoop,
+        private void processMethod(CsmMethod toSearch, CsmClass cls, Set<CharSequence> antilLoop,
                 CsmMethod firstFound, CsmMethod lastFound,
                 Set<CsmMethod> result, Overridden overridden) {
 
@@ -184,7 +219,7 @@ public abstract class CsmVirtualInfoQuery {
                 for(CsmMember member : cls.getMembers()) {
                     if (CsmKindUtilities.isMethod(member)) {
                         CsmMethod method = (CsmMethod) member;
-                        if (CharSequences.comparator().compare(sig, method.getSignature()) == 0) {
+                        if (methodEquals(toSearch, method)) {
                             if (firstFound == null) {
                                 firstFound = method;
                             }
@@ -204,7 +239,7 @@ public abstract class CsmVirtualInfoQuery {
                 }
                 theLastInHierarchy = cls.getBaseClasses().isEmpty();
                 for(CsmInheritance inh : cls.getBaseClasses()) {
-                    processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, firstFound, lastFound, result, overridden);
+                    processMethod(toSearch, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, firstFound, lastFound, result, overridden);
                 }
 
             }
@@ -237,14 +272,13 @@ public abstract class CsmVirtualInfoQuery {
             }
             cls = method.getContainingClass();
             if (cls != null){
-                CharSequence sig = method.getSignature();
                 for(CsmReference ref :CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false)){
                     CsmClass c = (CsmClass) ref.getOwner();
                     if (c != null) {
                         for(CsmMember m : c.getMembers()){
                             if (CsmKindUtilities.isMethod(m)) {
                                 CsmMethod met = (CsmMethod) m;
-                                if (CharSequences.comparator().compare(sig, met.getSignature())==0){
+                                if (methodEquals(met, method)){
                                     res.add(met);
                                     break;
                                 }

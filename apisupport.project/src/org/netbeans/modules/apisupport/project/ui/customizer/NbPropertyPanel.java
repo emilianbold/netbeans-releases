@@ -47,6 +47,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.HelpCtx;
 
@@ -59,7 +60,7 @@ import org.openide.util.HelpCtx;
 public abstract class NbPropertyPanel extends JPanel implements
         ModuleProperties.LazyStorage, PropertyChangeListener, HelpCtx.Provider {
 
-    private Class helpCtxClass;
+    private Class<?> helpCtxClass;
 
     /** Property whether <code>this</code> panel is valid. */
     static final String VALID_PROPERTY = "isPanelValid"; // NOI18N
@@ -67,11 +68,11 @@ public abstract class NbPropertyPanel extends JPanel implements
     /** Property for error message of this panel. */
     static final String ERROR_MESSAGE_PROPERTY = "errorMessage"; // NOI18N
     
-    protected ModuleProperties props;
+    protected @NonNull ModuleProperties props;
     protected final ProjectCustomizer.Category category;
     
-    /** Creates new NbPropertyPanel */
-    NbPropertyPanel(final ModuleProperties props, final Class helpCtxClass, ProjectCustomizer.Category cat) {
+    @SuppressWarnings("LeakingThisInConstructor")
+    NbPropertyPanel(@NonNull ModuleProperties props, Class<?> helpCtxClass, ProjectCustomizer.Category cat) {
         this.props = props;
         category = cat;
         props.addLazyStorage(this);
@@ -100,23 +101,10 @@ public abstract class NbPropertyPanel extends JPanel implements
     void setBooleanProperty(String key, boolean property) {
         props.setBooleanProperty(key, property);
     }
-    
-    
-    /**
-     * Gives subclasses a chance to set a warning or an error message after a
-     * customizer is loaded/displayed. Just use this method for checking a
-     * validity of a panel's data and eventually call {@link
-     * #setWarning(String)} or {@link #setErrorMessage(String)}. Default
-     * implementation does nothing.
-     */
-    
-    //TODO remove!!
-    protected final void checkForm() {}
 
+    public @Override void store() { /* empty implementation */ }
     
-    public void store() { /* empty implementation */ }
-    
-    public void propertyChange(PropertyChangeEvent evt) {
+    public @Override void propertyChange(PropertyChangeEvent evt) {
         if (ModuleProperties.PROPERTIES_REFRESHED.equals(evt.getPropertyName())) {
             refresh();
         }
@@ -129,7 +117,7 @@ public abstract class NbPropertyPanel extends JPanel implements
         getRootPane().putClientProperty(BasicCustomizer.LAST_SELECTED_PANEL, category.getName());
     }
     
-    public HelpCtx getHelpCtx() {
+    public @Override HelpCtx getHelpCtx() {
         return new HelpCtx(helpCtxClass);
     }
     
@@ -150,19 +138,19 @@ public abstract class NbPropertyPanel extends JPanel implements
     // End of variables declaration//GEN-END:variables
     
     abstract static class Single extends NbPropertyPanel {
-        Single(final SingleModuleProperties props, final Class helpCtxClass, ProjectCustomizer.Category cat) {
+        Single(SingleModuleProperties props, Class<?> helpCtxClass, ProjectCustomizer.Category cat) {
             super(props, helpCtxClass, cat);
         }
-        SingleModuleProperties getProperties() {
+        @NonNull SingleModuleProperties getProperties() {
             return (SingleModuleProperties) props;
         }
     }
     
     public abstract static class Suite extends NbPropertyPanel {
-        public Suite(final SuiteProperties props, final Class helpCtxClass, ProjectCustomizer.Category cat) {
+        public Suite(SuiteProperties props, Class<?> helpCtxClass, ProjectCustomizer.Category cat) {
             super(props, helpCtxClass, cat);
         }
-        protected SuiteProperties getProperties() {
+        protected @NonNull SuiteProperties getProperties() {
             return (SuiteProperties) props;
         }
     }
