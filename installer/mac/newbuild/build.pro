@@ -9,17 +9,17 @@
     <property name="install.dir" value="/Applications/NetBeans"/>
     
     <!-- Base IDE properties   -->       
-    <property name="baseide.version" value="6.9 RC2"/>
-    <property name="appname" value="NetBeans 6.9 RC2"/> 
-    <property name="mpkg.name_nb" value="NetBeans 6.9 RC2"/> 
+    <property name="baseide.version" value="6.9.1"/>
+    <property name="appname" value="NetBeans 6.9.1"/> 
+    <property name="mpkg.name_nb" value="NetBeans 6.9.1"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb"/>      
     <property name="nb.check.build.number" value="0"/>
     <property name="nb.id" value="${buildnumber}"/>
 
-    <property name="appversion" value="6.9 RC2"/>
-    <property name="nb.display.version.long"  value="6.9 RC2"/>
-    <property name="nb.display.version.short" value="6.9 RC2"/>
+    <property name="appversion" value="6.9.1"/>
+    <property name="nb.display.version.long"  value="6.9.1"/>
+    <property name="nb.display.version.short" value="6.9.1"/>
 
     <property name="servicetag.source" value="NetBeans IDE ${nb.display.version.short} Installer"/>
     
@@ -61,7 +61,7 @@
     -->
     
     <loadresource property="glassfish.v3.sun.build.number">
-          <url url="${glassfish.v3.sun.location.prefix}/fcs/latest/archive/bundles"/>
+          <url url="${glassfish.v3.sun.location.prefix}/latest/archive/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
@@ -89,7 +89,7 @@
     
     
     <loadresource property="glassfish.v3.build.number">
-          <url url="${glassfish.v3.location.prefix}/fcs/latest/archive/bundles"/>
+          <url url="${glassfish.v3.location.prefix}/latest/archive/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
@@ -98,10 +98,10 @@
           </filterchain>
     </loadresource>
     
-    <property name="glassfish.v3.display.version" value="3.0.1 b${glassfish.v3.build.number}"/>
+    <property name="glassfish.v3.display.version" value="3.0.1"/>
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.id"           value="b${glassfish.v3.build.number}"/>
-    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-3.0.1-b${glassfish.v3.build.number}"/>
+    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-3.0.1"/>
     <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.0.1-${glassfish.v3.version}.zip"/>
     <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.0.1-${glassfish.v3.version}-ml.zip"/>
     <!--

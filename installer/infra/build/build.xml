@@ -320,13 +320,13 @@
         
 	<set property="nb.build.number"
              value="${build.number}"/>
-        
+        <!--
 	<set property="nb.build.number"
-             value="2"/>
-        
+             value="0"/>
+        -->
 
 	<set property="nb.full.version"
-             value="6.9.0.0.${nb.build.number}"/>
+             value="6.9.1.0.${nb.build.number}"/>
 
         <set property="nb.zip.files.prefix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
@@ -338,7 +338,7 @@
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
 	
         <set property="jdk.bundle.files.suffix"
-             value="nb-6_9"/>
+             value="nb-6_9_1"/>
 	
 	<set property="nb.bundles.output.dir"
              value="${output.dir}/bundles"/>
@@ -425,7 +425,7 @@
 	</if>
 	
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/3.0.1/promoted/fcs/latest/archive/bundles"
+            src="${glassfish.builds.host}/java/re/glassfish/3.0.1/promoted/latest/archive/bundles"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
