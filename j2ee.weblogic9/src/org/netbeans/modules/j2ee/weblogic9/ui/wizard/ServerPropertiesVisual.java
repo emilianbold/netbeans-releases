@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ChangeEvent;
@@ -247,7 +248,8 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         }
 
         // init the input stream for the file and the w3c document object
-        File file = new File(serverRoot + File.separator + DOMAIN_LIST.replaceAll("/", File.separator));
+        File file = new File(serverRoot + File.separator
+                + DOMAIN_LIST.replaceAll("/", Matcher.quoteReplacement(File.separator)));
         LineNumberReader lnr = null;
 
         // read the list file line by line fetching out the domain paths
