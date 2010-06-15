@@ -541,11 +541,37 @@ public class Generate {
             }
         }
         w.write(" {\n");
+        w.write("        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {\n");
+        w.write("            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(\n"+
+                "                    \""+className+"\",\n"+
+                "                    \""+mName+"\",\n"+
+                "                    \"JDI CALL: "+className+"({0})."+mName+"(");
+        for (int i = 0; i < paramNames.length; i++) {
+            if (i > 0) {
+                w.write(", ");
+            }
+            w.write("{"+Integer.toString(i+1)+"}");
+        }
+        w.write(")\",\n"+
+                "                    new Object[] {a");
+        for (int i = 0; i < paramNames.length; i++) {
+            w.write(", ");
+            w.write(paramNames[i]);
+        }
+        w.write("});\n");
+        w.write("        }\n"); // if
+        
+        boolean isVoidReturn = "void".equals(rType);
+        if (!isVoidReturn) {
+            w.write("        Object retValue = null;\n");
+        }
+
         w.write("        try {\n");
 
         StringBuffer exec = new StringBuffer();
-        if (!"void".equals(rType)) {
-            exec.append("            return ");
+        if (!isVoidReturn) {
+            exec.append("            ").append(rType).append(" ret;\n");
+            exec.append("            ret = ");
         } else {
             exec.append("            ");
         }
@@ -557,6 +583,10 @@ public class Generate {
             exec.append(paramNames[i]);
         }
         exec.append(");\n");
+        if (!isVoidReturn) {
+            exec.append("            retValue = ret;\n");
+            exec.append("            return ret;\n");
+        }
         w.write(methodImpl(className, mName, exec.toString()));
 
         w.write("        }");
@@ -572,6 +602,9 @@ public class Generate {
             w.write(" catch (");
             w.write(cex.getName());
             w.write(" ex) {\n");
+            if (!isVoidReturn) {
+                w.write("            retValue = ex;\n");
+            }
             if (com.sun.jdi.InternalException.class.equals(cex)) {
                 w.write("            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);\n");
             }
@@ -582,7 +615,34 @@ public class Generate {
             }
             w.write("        }");
         }
-        w.write("\n    }\n\n");
+        if (!isVoidReturn) {
+            for (int i = 0; i < exceptionTypes.length; i++) {
+                w.write(" catch (");
+                w.write(exceptionTypes[i].getName());
+                w.write(" ex) {\n");
+                w.write("            retValue = ex;\n");
+                w.write("            throw ex;\n        }");
+            }
+            w.write(" catch (Error err) {\n");
+            w.write("            retValue = err;\n");
+            w.write("            throw err;\n");
+            w.write("        } catch (RuntimeException rex) {\n");
+            w.write("            retValue = rex;\n");
+            w.write("            throw rex;\n        }");
+
+        }
+        w.write(" finally {\n");
+        w.write("            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {\n");
+        w.write("                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(\n"+
+                "                        \""+className+"\",\n"+
+                "                        \""+mName+"\",\n"+
+                (isVoidReturn ?
+                "                        org.netbeans.modules.debugger.jpda.JDIExceptionReporter.RET_VOID);\n" :
+                "                        retValue);\n"));
+        //w.write("                logger.log(java.util.logging.Level.FINER, \"          returned after {0} ns\", (t2 - t1));\n");
+        w.write("            }\n");
+        w.write("        }\n");
+        w.write("    }\n\n");
     }
 
     public static void writeHigherVersionClasses(File dir, Class c,
@@ -811,14 +871,40 @@ public class Generate {
         } else {
             higherVersionClass = null;
         }
+        w.write("        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {\n");
+        w.write("            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(\n"+
+                "                    \""+className+"\",\n"+
+                "                    \""+mName+"\",\n"+
+                "                    \"JDI CALL: "+className+"({0})."+mName+"(");
+        for (int i = 0; i < paramNames.length; i++) {
+            if (i > 0) {
+                w.write(", ");
+            }
+            w.write("{"+Integer.toString(i+1)+"}");
+        }
+        w.write(")\",\n"+
+                "                    new Object[] {a");
+        for (int i = 0; i < paramNames.length; i++) {
+            w.write(", ");
+            w.write(paramNames[i]);
+        }
+        w.write("});\n");
+        w.write("        }\n"); // if
+
+        boolean isVoidReturn = "void".equals(rType);
+        if (!isVoidReturn) {
+            w.write("        Object retValue = null;\n");
+        }
+
         w.write("        try {\n");
 
         StringBuffer exec = new StringBuffer();
-        if (!"void".equals(rType)) {
+        if (!isVoidReturn) {
             if ("boolean".equals(rType)) rType = "Boolean";
             if ("int".equals(rType)) rType = "Integer";
             if ("long".equals(rType)) rType = "Long";
-            exec.append("            return ("+rType+") ");
+            exec.append("            ").append(rType).append(" ret;\n");
+            exec.append("            ret = (").append(rType).append(") ");
         } else {
             exec.append("            ");
         }
@@ -851,19 +937,38 @@ public class Generate {
             exec.append(paramNames[i]);
         }
         exec.append(");\n");
+        if (!isVoidReturn) {
+            exec.append("            retValue = ret;\n");
+            exec.append("            return ret;\n");
+        }
         w.write(methodImpl(className, mName, exec.toString()));
 
 
         w.write("        } catch (NoSuchMethodException ex) {\n");
+        if (!isVoidReturn) {
+            w.write("            retValue = ex;\n");
+        }
         w.write("            throw new IllegalStateException(ex);\n");
         w.write("        } catch (SecurityException ex) {\n");
+        if (!isVoidReturn) {
+            w.write("            retValue = ex;\n");
+        }
         w.write("            throw new IllegalStateException(ex);\n");
         w.write("        } catch (IllegalAccessException ex) {\n");
+        if (!isVoidReturn) {
+            w.write("            retValue = ex;\n");
+        }
         w.write("            throw new IllegalStateException(ex);\n");
         w.write("        } catch (IllegalArgumentException ex) {\n");
+        if (!isVoidReturn) {
+            w.write("            retValue = ex;\n");
+        }
         w.write("            throw new IllegalStateException(ex);\n");
         w.write("        } catch (java.lang.reflect.InvocationTargetException ex) {\n");
         w.write("            Throwable t = ex.getTargetException();\n");
+        if (!isVoidReturn) {
+            w.write("            retValue = t;\n");
+        }
 
         // First re-throw the checked exceptions:
         for (int i = 0; i < exceptionTypes.size(); i++) {
@@ -888,6 +993,16 @@ public class Generate {
             //w.write("        } catch (");
         }
         w.write("            throw new IllegalStateException(t);\n");
+        w.write("        }");
+        w.write(" finally {\n");
+        w.write("            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {\n");
+        w.write("                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(\n"+
+                "                        \""+className+"\",\n"+
+                "                        \""+mName+"\",\n"+
+                (isVoidReturn ?
+                "                        org.netbeans.modules.debugger.jpda.JDIExceptionReporter.RET_VOID);\n" :
+                "                        retValue);\n"));
+        w.write("            }\n");
         w.write("        }\n");
         w.write("    }\n\n");
     }

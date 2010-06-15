@@ -58,6 +58,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.test.TestBase;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
+import org.netbeans.modules.css.gsf.CssBracketCompleter;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
@@ -77,6 +78,7 @@ public class CssIndenterTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         AbstractIndenter.inUnitTestRun = true;
+        CssBracketCompleter.unitTestingSupport = true;
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory, CssTokenId.language());
@@ -223,6 +225,11 @@ public class CssIndenterTest extends TestBase {
         insertNewline(
                 "@media page {\n    @media {^}\n}\n",
                 "@media page {\n    @media {\n        ^\n    }\n}\n", null);
+
+        //#187524
+        insertNewline(
+                "a something { /* comment*/^color:green",
+                "a something { /* comment*/\n    ^color:green", null);
     }
 
     @Override
@@ -232,74 +239,45 @@ public class CssIndenterTest extends TestBase {
      * we try to compare the document content with the golden file.
      */
     public void insertNewline(final String source, final String reformatted, final IndentPrefs preferences) throws Exception {
-        RequestProcessor.getDefault().post(new Runnable() {
+        final int sourcePos = source.indexOf('^');
+        assertNotNull(sourcePos);
+        final String source2 = source.substring(0, sourcePos) + source.substring(sourcePos+1);
 
-            public void run() {
-                try {
-                    final int sourcePos = source.indexOf('^');
-                    assertNotNull(sourcePos);
-                    final String source2 = source.substring(0, sourcePos) + source.substring(sourcePos+1);
 
-                    
-                    final AtomicReference<Document> doc = new AtomicReference<Document>();
-                    final AtomicReference<Caret> caret = new AtomicReference<Caret>();
-                    //first invoke the action in the AWT
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        public void run() {
-                            try {
-                                JEditorPane ta = getPane(source2);
-                                Caret c = ta.getCaret();
-                                caret.set(c);
-                                c.setDot(sourcePos);
-                                BaseDocument bdoc = (BaseDocument) ta.getDocument();
-                                doc.set(bdoc);
-                                Formatter formatter = getFormatter(null);
-                                if (formatter != null) {
-                                    configureIndenters(bdoc, formatter, true);
-                                }
-                                setupDocumentIndentation(bdoc, preferences);
-                                runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
-                            } catch (Exception ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                    });
-
-                    //then in a separate AWT even check the content
-                    //this will ensure, that the reformat task queued before this
-                    //one is done
-                    SwingUtilities.invokeAndWait(new Runnable() {
-
-                        public void run() {
-                            try {
-                                int reformattedPos = reformatted.indexOf('^');
-                                assertNotNull(reformattedPos);
-                                String reformatted2 = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos + 1);
-                                Document _doc = doc.get();
-                                Caret _caret = caret.get();
-                                String formatted = _doc.getText(0, _doc.getLength());
-                                assertEquals(reformatted2, formatted);
-                                if (reformattedPos != -1) {
-                                    assertEquals(reformattedPos, _caret.getDot());
-                                }
-                            } catch (BadLocationException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-
-                    });
-
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (InvocationTargetException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+        final AtomicReference<Document> doc = new AtomicReference<Document>();
+        final AtomicReference<Caret> caret = new AtomicReference<Caret>();
+        //first invoke the action in the AWT
+        try {
+            JEditorPane ta = getPane(source2);
+            Caret c = ta.getCaret();
+            caret.set(c);
+            c.setDot(sourcePos);
+            BaseDocument bdoc = (BaseDocument) ta.getDocument();
+            doc.set(bdoc);
+            Formatter formatter = getFormatter(null);
+            if (formatter != null) {
+                configureIndenters(bdoc, formatter, true);
             }
+            setupDocumentIndentation(bdoc, preferences);
+            runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
 
-        });
-
-        
-
+        try {
+            int reformattedPos = reformatted.indexOf('^');
+            assertNotNull(reformattedPos);
+            String reformatted2 = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos + 1);
+            Document _doc = doc.get();
+            Caret _caret = caret.get();
+            String formatted = _doc.getText(0, _doc.getLength());
+            assertEquals(reformatted2, formatted);
+            if (reformattedPos != -1) {
+                assertEquals(reformattedPos, _caret.getDot());
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         
     }
 

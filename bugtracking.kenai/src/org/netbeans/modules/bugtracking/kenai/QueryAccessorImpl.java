@@ -45,9 +45,7 @@ package org.netbeans.modules.bugtracking.kenai;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryHandle;
@@ -56,7 +54,6 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
@@ -69,8 +66,6 @@ import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.kenai.ui.spi.QueryAccessor.class)
 public class QueryAccessorImpl extends QueryAccessor {
 
-    private KenaiHandlers handlers = new KenaiHandlers();
-    
     public QueryAccessorImpl() {
     }
 
@@ -91,7 +86,7 @@ public class QueryAccessorImpl extends QueryAccessor {
             return null;
         }
 
-        KenaiHandler handler = handlers.get(projectHandle);
+        KenaiHandler handler = Support.getInstance().getKenaiHandler(projectHandle, this);
         handler.registerRepository(repo, projectHandle);
         Query allIssuesQuery = support.getAllIssuesQuery(repo);
         if(allIssuesQuery == null) {
@@ -111,7 +106,7 @@ public class QueryAccessorImpl extends QueryAccessor {
             return getQueriesForNoRepo(projectHandle);
         }
 
-        KenaiHandler handler = handlers.get(projectHandle);
+        KenaiHandler handler = Support.getInstance().getKenaiHandler(projectHandle, this);
         // listen on repository events - e.g. a changed query list
         handler.registerRepository(repo, projectHandle);
         List<QueryHandle> queryHandles = handler.getQueryHandles(repo, projectHandle);
@@ -146,7 +141,7 @@ public class QueryAccessorImpl extends QueryAccessor {
             }
             return null;
         }
-        return handlers.get(projectHandle).getFindIssuesAction(repo);
+        return Support.getInstance().getKenaiHandler(projectHandle, this).getFindIssuesAction(repo);
     }
 
     @Override
@@ -160,7 +155,7 @@ public class QueryAccessorImpl extends QueryAccessor {
             }
             return null;
         }
-        return handlers.get(projectHandle).getCreateIssueAction(repo);
+        return Support.getInstance().getKenaiHandler(projectHandle, this).getCreateIssueAction(repo);
     }
 
     @Override
@@ -209,21 +204,4 @@ public class QueryAccessorImpl extends QueryAccessor {
         }
     }
 
-    private class KenaiHandlers {
-        private Map<String, KenaiHandler> instances = new HashMap<String, KenaiHandler>();
-        KenaiHandler get(ProjectHandle ph) {
-            return get(ph.getKenaiProject().getKenai());
         }
-        KenaiHandler get(Kenai kenai) {
-            assert kenai != null;
-            String url = kenai.getUrl().toString();
-            KenaiHandler ret = instances.get(url);
-            if(ret == null) {
-                ret = new KenaiHandler(QueryAccessorImpl.this, kenai);
-                instances.put(url, ret);
-            }
-            return ret;
-        }
-    }
-
-}
