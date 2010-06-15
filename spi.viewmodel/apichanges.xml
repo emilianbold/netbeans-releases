@@ -384,6 +384,21 @@ made subject to such option by the copyright holder.
         <class package="org.netbeans.spi.viewmodel" name="ReorderableTreeModelFilter" />
         <issue number="178301"/>
     </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>Custom table cell renderers and editors.</summary>
+        <version major="1" minor="28"/>
+        <date day="7" month="6" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <description>
+            This API introduce TableRendererModel and TableRendererModelFilter
+            that can be used to provide custom table cell renderers and cell editors.
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="TableRendererModel" />
+        <class package="org.netbeans.spi.viewmodel" name="TableRendererModelFilter" />
+        <issue number="186672"/>
+    </change>
 
 
 </changes>
