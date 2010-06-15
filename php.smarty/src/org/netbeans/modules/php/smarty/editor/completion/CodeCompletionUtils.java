@@ -74,7 +74,7 @@ public class CodeCompletionUtils {
 
     public static int getLastWS(String area, String openDelimiter) {
         for (int i = area.length() - 1; i >= 0; i--) {
-            if (LexerUtils.isWS(area.charAt(i))) {
+            if (LexerUtils.isWS(area.charAt(i)) || area.charAt(i) == '|' || area.charAt(i) == '/') {
                 return area.length() - i - 1;
             } else if (area.substring(i).startsWith(openDelimiter)) {
                 return area.length() - i - openDelimiter.length();

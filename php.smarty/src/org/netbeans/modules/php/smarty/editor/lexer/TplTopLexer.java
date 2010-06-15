@@ -203,9 +203,9 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                             return TplTopTokenId.T_HTML;
                         }
                     }
-                    if (cc == '\n') {
-                        return TplTopTokenId.T_HTML;
-                    }
+//                    if (cc == '\n') {
+//                        return TplTopTokenId.T_HTML;
+//                    }
                     break;
 
                 case OPEN_DELIMITER:
