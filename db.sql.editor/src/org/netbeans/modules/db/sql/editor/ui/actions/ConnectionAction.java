@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -86,11 +86,13 @@ import org.openide.util.WeakListeners;
  */
 public class ConnectionAction extends SQLExecutionBaseAction {
 
+    @Override
     protected String getDisplayName(SQLExecution sqlExecution) {
         // just needed in order to satisfy issue 101775
         return NbBundle.getMessage(ConnectionAction.class, "LBL_DatabaseConnection");
     }
 
+    @Override
     protected void actionPerformed(SQLExecution sqlExecution) {
     }
 
@@ -127,6 +129,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
         @Override
         protected void setSQLExecution(final SQLExecution sqlExecution) {
             Mutex.EVENT.readAccess(new Runnable() {
+                @Override
                 public void run() {
                     if (toolbarPresenter != null) {
                         // test for null necessary since the sqlExecution property
@@ -192,6 +195,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
 
             combo = new JComboBox();
             combo.addItemListener(new ItemListener() {
+                @Override
                 public void itemStateChanged(ItemEvent e) {
                     DatabaseConnection dbconn = (DatabaseConnection)combo.getSelectedItem();
                     combo.setToolTipText(dbconn != null ? dbconn.getDisplayName() : null);
@@ -228,6 +232,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
         private List<DatabaseConnection> connectionList; // must be ArrayList
         private SQLExecution sqlExecution;
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public DatabaseConnectionModel() {
             listener = WeakListeners.create (ConnectionListener.class, this, ConnectionManager.getDefault ());
             ConnectionManager.getDefault().addConnectionListener(listener);
@@ -236,20 +241,24 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             sortConnections();
         }
 
+        @Override
         public Object getElementAt(int index) {
             return connectionList.get(index);
         }
 
+        @Override
         public int getSize() {
             return connectionList.size();
         }
 
+        @Override
         public void setSelectedItem(Object object) {
             if (sqlExecution != null) {
                 sqlExecution.setDatabaseConnection((DatabaseConnection)object);
             }
         }
 
+        @Override
         public Object getSelectedItem() {
             return sqlExecution != null ? sqlExecution.getDatabaseConnection() : null;
         }
@@ -265,10 +274,12 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             fireContentsChanged(this, 0, 0); // because the selected item might have changed
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
             if (propertyName == null || propertyName.equals(SQLExecution.PROP_DATABASE_CONNECTION)) {
                 Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
                     public void run() {
                         fireContentsChanged(this, 0, 0); // because the selected item might have changed
                     }
@@ -276,8 +287,10 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             }
         }
 
+        @Override
         public void connectionsChanged() {
             Mutex.EVENT.readAccess(new Runnable() {
+                @Override
                 public void run() {
                     connectionList.clear();
                     connectionList.addAll(Arrays.asList(ConnectionManager.getDefault().getConnections()));
