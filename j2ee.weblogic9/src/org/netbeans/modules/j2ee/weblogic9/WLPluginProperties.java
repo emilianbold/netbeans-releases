@@ -229,7 +229,8 @@ public class WLPluginProperties {
      */
     public static boolean isSupportedVersion(Version version) {
         return version != null && (Integer.valueOf(9).equals(version.getMajor())
-                    || Integer.valueOf(10).equals(version.getMajor()));
+                    || Integer.valueOf(10).equals(version.getMajor())
+                    || Integer.valueOf(11).equals(version.getMajor()));
     }
 
     public static Version getVersion(File serverRoot) {
