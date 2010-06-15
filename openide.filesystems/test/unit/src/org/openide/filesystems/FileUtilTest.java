@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.Test;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
@@ -88,6 +89,17 @@ public class FileUtilTest extends NbTestCase {
     public void setUp() throws IOException {
         // folder of declarative resolvers must exist before MIME resolvers tests
         FileUtil.createFolder(FileUtil.getConfigRoot(), "Services/MIMEResolver");
+    }
+
+    public void testWrongNormalization() throws Exception {
+        CharSequence log = Log.enable("org.openide.filesystems", Level.WARNING);
+        final File file = new File("/../../tmp/");
+        final File normalizedFile = FileUtil.normalizeFile(file);
+        FileUtil.addFileChangeListener(
+            new FileChangeAdapter() {},
+            normalizedFile
+        );
+        assertEquals("No warnings:\n" + log, 0, log.length());
     }
 
     public void testToFileObjectSlash() throws Exception { // #98388

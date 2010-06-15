@@ -1718,6 +1718,9 @@ public final class FileUtil extends Object {
         // On Unix, do not want to traverse symlinks.
         // URI.normalize removes ../ and ./ sequences nicely.
         file = new File(file.toURI().normalize()).getAbsoluteFile();
+        while (file.getAbsolutePath().startsWith("/../")) { // NOI18N
+            file = new File(file.getAbsolutePath().substring(3));
+        }
         if (file.getAbsolutePath().equals("/..")) { // NOI18N
             // Special treatment.
             file = new File("/"); // NOI18N
