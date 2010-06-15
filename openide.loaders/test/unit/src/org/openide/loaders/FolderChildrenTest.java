@@ -84,7 +84,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
 
 public class FolderChildrenTest extends NbTestCase {
-    private Logger LOG;
+    private static Logger LOG;
     public FolderChildrenTest() {
         super("");
     }
@@ -433,11 +433,15 @@ public class FolderChildrenTest extends NbTestCase {
             return select;
         }
 
+        @Override
         public void addChangeListener( ChangeListener listener ) {
+            LOG.log(Level.INFO, "addChangeListener: " + listener, new Throwable());
             cs.addChangeListener(listener);
         }
 
+        @Override
         public void removeChangeListener( ChangeListener listener ) {
+            LOG.log(Level.INFO, "removeChangeListener: " + listener, new Throwable());
             cs.removeChangeListener(listener);
         }
 
