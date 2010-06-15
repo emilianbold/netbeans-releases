@@ -143,10 +143,14 @@ public class ChatNotifications {
             };
 
             if (r.getMessageCount()>0) {
-                Notification n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, l, Priority.NORMAL);
+                Notification n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, l, isDelayed(msg)?Priority.SILENT:Priority.NORMAL);
                 r.updateNotification(n);
             }
         ChatTopComponent.refreshContactList();
+    }
+
+    private boolean isDelayed(Message msg) {
+        return msg.getExtension("x", "jabber:x:delay") != null;
     }
 
     synchronized void addPrivateMessage(final Message msg) {
@@ -173,7 +177,7 @@ public class ChatNotifications {
                 tc.open();
                 tc.setActivePrivate(name);
             }
-        }, Priority.NORMAL);
+        }, isDelayed(msg)?Priority.SILENT:Priority.NORMAL);
         privateNotifications.put(name, n);
         ChatTopComponent.refreshContactList();
         DashboardImpl.getInstance().getComponent().repaint();
