@@ -56,6 +56,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.Lookup;
 
@@ -84,7 +85,11 @@ public abstract class J2eePlatformImpl {
      * @return platform's libraries.
      */
     public abstract LibraryImplementation[] getLibraries();
-    
+
+    public File[] getClasspathEntries(Set<ServerLibraryDependency> libraries) {
+        return new File[] {};
+    }
+
     /**
      * Return platform's display name.
      *
