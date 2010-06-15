@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.viewmodel;
 
+import java.awt.Component;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
@@ -70,11 +71,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
@@ -504,6 +507,10 @@ public class TreeModelNode extends AbstractNode {
     
     public Object getObject () {
         return object;
+    }
+
+    Models.CompoundModel getModel() {
+        return model;
     }
 
     private Task refreshTask;
