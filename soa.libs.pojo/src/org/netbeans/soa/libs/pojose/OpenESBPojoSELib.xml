@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+<library version="1.0">
+    <name>PojoSELib</name>
+    <type>j2se</type>
+    <localizing-bundle>org/netbeans/soa/libs/pojose/Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst://org.netbeans.soa.libs.pojo/modules/ext/sun-pojo-engine-api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.soa.libs.pojo/modules/ext/jbi.jar!/</resource>
+    </volume>
+    <volume>
+        <type>javadoc</type>            
+        <resource>jar:nbinst://org.netbeans.soa.libs.pojo/modules/ext/sun-pojo-engine-api-javadoc.jar!/</resource>
+    </volume>
+    <volume>
+        <type>src</type>            
+        <resource>jar:nbinst://org.netbeans.soa.libs.pojo/modules/ext/sun-pojo-engine-api-src.jar!/</resource>
+    </volume>   
+</library>

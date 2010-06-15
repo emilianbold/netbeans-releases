@@ -66,7 +66,6 @@ public final class ZendUtils {
     private static final String FILE_CONTROLLER_RELATIVE = "../../../" + DIR_CONTROLLERS + "/%s.php"; // NOI18N
 
     private static final String FILE_VIEW_RELATIVE = "../" + DIR_VIEWS + "/" + DIR_SCRIPTS + "/%s/%s." + FILE_VIEW_EXT; // NOI18N
-    private static final String FILE_DEFAULT_VIEW = "index"; // NOI18N
 
     private static final String DASH = "-"; // NOI18N
 
@@ -112,14 +111,7 @@ public final class ZendUtils {
         if (phpElement instanceof PhpClass.Method) {
             view = getView(fo, getViewName(phpElement.getName()));
         }
-        if (view == null) {
-            view = getDefaultView(fo);
-        }
         return view;
-    }
-
-    private static FileObject getDefaultView(FileObject fo) {
-        return getView(fo, FILE_DEFAULT_VIEW);
     }
 
     private static FileObject getView(FileObject fo, String viewName) {

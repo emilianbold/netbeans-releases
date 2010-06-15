@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -98,6 +99,10 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     private final RequestProcessor.Task initTask;
 
     volatile boolean projectOpened = false;
+    // #187060
+    private final AtomicInteger opened = new AtomicInteger();
+    private final AtomicInteger closed = new AtomicInteger();
+
     private final ProxyOperationFactory proxyOperationFactory;
     // @GuardedBy(this)
     private FileSystem fileSystem;
@@ -145,7 +150,10 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
     public void projectOpened() {
         LOGGER.log(Level.FINE, "Opening Copy support for project {0}", project.getName());
-        assert !projectOpened : "Copy Support already opened for project " + project.getName();
+
+        opened.incrementAndGet();
+
+        assert !projectOpened : String.format("Copy Support already opened for project %s (opened: %d, closed: %d)", project.getName(), opened.get(), closed.get());
 
         projectOpened = true;
 
@@ -154,7 +162,10 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
     public void projectClosed() {
         LOGGER.log(Level.FINE, "Closing Copy support for project {0}", project.getName());
-        assert projectOpened : "Copy Support already closed for project " + project.getName();
+
+        closed.incrementAndGet();
+
+        assert projectOpened : String.format("Copy Support already closed for project %s (opened: %d, closed: %d)", project.getName(), opened.get(), closed.get());
 
         projectOpened = false;
         unregisterFileChangeListener();

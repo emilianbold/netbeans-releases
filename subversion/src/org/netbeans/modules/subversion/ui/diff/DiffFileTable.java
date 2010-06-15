@@ -61,6 +61,7 @@ import java.awt.event.MouseEvent;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
@@ -168,7 +169,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         sorter.setColumnComparator(Node.Property.class, DiffFileTable.NodeComparator);
         table = new SortedTable(sorter);
         table.getSelectionModel().addListSelectionListener(this);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         component.getViewport().setBackground(table.getBackground());
@@ -177,7 +178,6 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         component.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
         table.addMouseListener(this);
         table.setDefaultRenderer(Node.Property.class, new DiffTableCellRenderer());
-        table.getSelectionModel().addListSelectionListener(this);
         table.addAncestorListener(this);
         table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffFileTable.class, "ACSN_DiffTable")); // NOI18N
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffFileTable.class, "ACSD_DiffTable")); // NOI18N
@@ -504,11 +504,32 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         }
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
-        final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  table);
-        if (tc == null) return; // table is no longer in component hierarchy
-
-        master.tableRowSelected(table.getSelectedRow());
+        if (e.getValueIsAdjusting()) {
+            return;
+        }
+        ListSelectionModel selectionModel = table.getSelectionModel();
+        int min = selectionModel.getMinSelectionIndex();
+        int max = selectionModel.getMaxSelectionIndex();
+        if (min != -1 && min == max) {
+            // single selection
+            master.tableRowSelected(table.getSelectedRow());
+        } else {
+            List<DiffNode> selectedNodes = new ArrayList<DiffNode>();
+            if (min != -1) {
+                for (int i = min; i <= max; i++) {
+                    if (selectionModel.isSelectedIndex(i)) {
+                        int idx = sorter.modelIndex(i);
+                        selectedNodes.add(nodes[idx]);
+                    }
+                }
+            }
+            final TopComponent tc = (TopComponent) master.getClientProperty(TopComponent.class);
+            if (tc == null) return; // table is no longer in component hierarchy
+            Node [] nodesToActivate = selectedNodes.toArray(new Node[selectedNodes.size()]);
+            tc.setActivatedNodes(nodesToActivate);
+        }
     }
 
     private class DiffTableCellRenderer extends DefaultTableCellRenderer {

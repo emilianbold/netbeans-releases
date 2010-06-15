@@ -64,6 +64,10 @@ public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer
 
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.ReadOnlyFilesHighlighting"; //NOI18N
 
+    private static final AttributeSet EXTENDS_EOL_OR_EMPTY_ATTR_SET =
+            AttributesUtilities.createImmutable(ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE, ATTR_EXTENDS_EOL, Boolean.TRUE);
+
+
     public ReadOnlyFilesHighlighting(Document doc) {
         this.document = doc;
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
@@ -72,7 +76,7 @@ public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer
             if (readOnlyFilesColoring != null) {
                 this.attribs = AttributesUtilities.createImmutable(
                         readOnlyFilesColoring,
-                        AttributesUtilities.createImmutable(ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE, ATTR_EXTENDS_EOL, Boolean.TRUE));
+                        EXTENDS_EOL_OR_EMPTY_ATTR_SET);
             } else {
                 this.attribs = null;
             }

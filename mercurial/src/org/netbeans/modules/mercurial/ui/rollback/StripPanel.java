@@ -59,7 +59,7 @@ public class StripPanel extends ChangesetPickerPanel {
 
     /** Creates new form ReverModificationsPanel */
     public StripPanel(File repo) {
-        super(repo, new File[] {repo});
+        super(repo, null);
         initComponents();
         loadRevisions();
     }

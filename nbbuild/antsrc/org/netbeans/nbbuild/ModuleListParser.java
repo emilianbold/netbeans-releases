@@ -190,7 +190,7 @@ final class ModuleListParser {
                             @SuppressWarnings("unchecked") Map<String,Entry> _entries = (Map) oi.readObject();
                             entries = _entries;
                             if (project != null) {
-                                project.log("Loaded modules: " + entries.keySet(), Project.MSG_VERBOSE);
+                                project.log("Loaded modules: " + entries.keySet(), Project.MSG_DEBUG);
                             }
                         }
                     } finally {
@@ -557,6 +557,9 @@ final class ModuleListParser {
     private static void doScanBinaries(File cluster, Map<String,Entry> entries) throws IOException {
         File moduleAutoDepsDir = new File(new File(cluster, "config"), "ModuleAutoDeps");
             for (String moduleDir : MODULE_DIRS) {
+                if (moduleDir.endsWith("lib") && !cluster.getName().contains("platform")) {
+                    continue;
+                }
                 File dir = new File(cluster, moduleDir.replace('/', File.separatorChar));
                 if (!dir.isDirectory()) {
                     continue;

@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef;
 
 public interface SunWebApp extends org.netbeans.modules.j2ee.sun.dd.api.RootInterface {
     
+    public static final String VERSION_3_0_1 = "3.01"; //NOI18N
     public static final String VERSION_3_0_0 = "3.00"; //NOI18N
     public static final String VERSION_2_5_0 = "2.50"; //NOI18N
     public static final String VERSION_2_4_1 = "2.41"; //NOI18N

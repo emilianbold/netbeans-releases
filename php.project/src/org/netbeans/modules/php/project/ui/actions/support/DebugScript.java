@@ -30,10 +30,11 @@
  */
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.filesystems.FileObject;
@@ -53,23 +54,28 @@ public class DebugScript  extends RunScript {
 
     @Override
     public void run() {
-        //temporary; after narrowing deps. will be changed
-        Callable<Cancellable> callable = getCallable();
-        XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
-        assert dbgStarter != null;
-        if (dbgStarter.isAlreadyRunning()) {
-            if (CommandUtils.warnNoMoreDebugSession()) {
-                dbgStarter.stop();
-                run();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                //temporary; after narrowing deps. will be changed
+                Callable<Cancellable> callable = getCallable();
+                XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
+                assert dbgStarter != null;
+                if (dbgStarter.isAlreadyRunning()) {
+                    if (CommandUtils.warnNoMoreDebugSession()) {
+                        dbgStarter.stop();
+                        run();
+                    }
+                } else {
+                    XDebugStarter.Properties props = XDebugStarter.Properties.create(
+                            provider.getStartFile(),
+                            true,
+                            provider.getDebugPathMapping(),
+                            provider.getDebugProxy());
+                    dbgStarter.start(provider.getProject(), callable, props);
+                }
             }
-        } else {
-            XDebugStarter.Properties props = XDebugStarter.Properties.create(
-                    provider.getStartFile(),
-                    true,
-                    ProjectPropertiesSupport.getDebugPathMapping(provider.getProject()),
-                    ProjectPropertiesSupport.getDebugProxy(provider.getProject()));
-            dbgStarter.start(provider.getProject(), callable, props);
-        }
+        });
     }
 
     @Override
@@ -89,7 +95,9 @@ public class DebugScript  extends RunScript {
     }
 
     public interface Provider extends RunScript.Provider {
-        PhpProject getProject();
+        Project getProject();
         FileObject getStartFile();
+        List<Pair<String, String>> getDebugPathMapping();
+        Pair<String, Integer> getDebugProxy();
     }
 }

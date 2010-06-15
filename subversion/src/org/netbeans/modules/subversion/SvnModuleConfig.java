@@ -261,8 +261,8 @@ public class SvnModuleConfig {
                     if(creds.length < 2) continue; //skip garbage
                     rc = new RepositoryConnection(rc.getUrl(), (String)creds[0], (char[])creds[1], rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), rc.getCertPassword());
                 } else if (!EventQueue.isDispatchThread()) {
-                    char[] password = KeyringSupport.read(KEY_PASSWORD, rc.getUrl().toString());
-                    char[] certPassword = KeyringSupport.read(KEY_CERT_PASSWORD, rc.getUrl().toString());
+                    char[] password = rc.getSavePassword() ? KeyringSupport.read(KEY_PASSWORD, rc.getUrl().toString()) : null;
+                    char[] certPassword = rc.getCertFile().isEmpty() ? null : KeyringSupport.read(KEY_CERT_PASSWORD, rc.getUrl().toString());
                     rc = new RepositoryConnection(rc.getUrl(), rc.getUsername(), password, rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), certPassword);
                 }
                 ret.add(rc);

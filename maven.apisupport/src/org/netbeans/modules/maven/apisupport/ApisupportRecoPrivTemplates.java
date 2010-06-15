@@ -79,6 +79,7 @@ public class ApisupportRecoPrivTemplates implements RecommendedTemplates, Privil
             "XML",                  // NOI18N
             "junit",                // NOI18N                    
             "simple-files",         // NOI18N
+            "REST-clients",         // NOI18N
             "nbm-specific"         // NOI18N
         };
         

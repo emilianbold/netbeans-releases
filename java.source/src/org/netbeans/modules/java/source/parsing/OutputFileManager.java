@@ -176,7 +176,7 @@ public class OutputFileManager extends CachingFileManager {
             else {
                 activeRoot.mkdirs();
             }
-            File f = FileUtil.normalizeFile(new File (activeRoot, nameStr));
+            final File f = new File (activeRoot, nameStr);
             return FileObjects.fileFileObject(f, activeRoot, null, null);
         }
     }

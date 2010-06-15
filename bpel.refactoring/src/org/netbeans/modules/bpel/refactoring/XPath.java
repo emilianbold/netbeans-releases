@@ -75,27 +75,27 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
-import org.netbeans.modules.xml.xpath.AbstractXPathModelHelper;
-import org.netbeans.modules.xml.xpath.LocationStep;
-import org.netbeans.modules.xml.xpath.StepNodeNameTest;
-import org.netbeans.modules.xml.xpath.XPathCoreFunction;
-import org.netbeans.modules.xml.xpath.XPathCoreOperation;
-import org.netbeans.modules.xml.xpath.XPathException;
-import org.netbeans.modules.xml.xpath.XPathExpression;
-import org.netbeans.modules.xml.xpath.XPathExpressionPath;
-import org.netbeans.modules.xml.xpath.XPathExtensionFunction;
-import org.netbeans.modules.xml.xpath.XPathLocationPath;
-import org.netbeans.modules.xml.xpath.XPathModel;
-import org.netbeans.modules.xml.xpath.XPathPredicateExpression;
-import org.netbeans.modules.xml.xpath.XPathVariableReference;
-import org.netbeans.modules.xml.xpath.visitor.AbstractXPathVisitor;
+import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
+import org.netbeans.modules.xml.xpath.ext.LocationStep;
+import org.netbeans.modules.xml.xpath.ext.StepNodeNameTest;
+import org.netbeans.modules.xml.xpath.ext.XPathCoreFunction;
+import org.netbeans.modules.xml.xpath.ext.XPathCoreOperation;
+import org.netbeans.modules.xml.xpath.ext.XPathException;
+import org.netbeans.modules.xml.xpath.ext.XPathExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
+import org.netbeans.modules.xml.xpath.ext.XPathExtensionFunction;
+import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathVariableReference;
+import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitorAdapter;
 import static org.netbeans.modules.xml.misc.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.06.30
  */
-final class XPath extends AbstractXPathVisitor {
+final class XPath extends XPathVisitorAdapter {
 
     XPath(List<Component> usage, Named target, String oldName) {
         myOldName = oldName;
@@ -124,7 +124,7 @@ final class XPath extends AbstractXPathVisitor {
 //out();
 //out();
 //out("[XPATH] do action: '" + content + "' " + component);
-        XPathModel model = AbstractXPathModelHelper.getInstance().newXPathModel();
+        XPathModel model = XPathModelHelper.getInstance().newXPathModel();
         myVisitedComplexType = new ArrayList<ComplexType>();
         myExpressions = new ArrayList<XPathExpression>();
         myComponent = component;

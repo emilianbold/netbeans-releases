@@ -48,8 +48,11 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.AbstractListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -69,6 +72,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ConfigurationFactory;
@@ -407,6 +411,7 @@ public final class SelectConfigurationPanel extends JPanel {
         List<ProjectConfiguration> projectConfigurations = new ArrayList<ProjectConfiguration>();
         List<String> includedFiles = new ArrayList<String>();
         wizardDescriptor.setIncludedFiles(includedFiles);
+        Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
         for (Iterator<Configuration> it = configs.iterator(); it.hasNext();) {
             Configuration conf = it.next();
             includedFiles.addAll(conf.getIncludedFiles());
@@ -416,9 +421,29 @@ public final class SelectConfigurationPanel extends JPanel {
                 consolidateModel(project, consolidation);
                 projectConfigurations.add(project);
             }
+            for (SourceFileProperties source : conf.getSourcesConfiguration()) {
+                String compiler = source.getCompilerName();
+                if (compiler != null) {
+                    AtomicInteger count = compilers.get(compiler);
+                    if (count == null) {
+                        count = new AtomicInteger();
+                        compilers.put(compiler, count);
+                    }
+                    count.incrementAndGet();
+                }
+            }
         }
         wizardDescriptor.setInvokeProvider(false);
         wizardDescriptor.setConfigurations(projectConfigurations);
+        int max = 0;
+        String top = "";
+        for(Map.Entry<String, AtomicInteger> entry : compilers.entrySet()){
+            if (entry.getValue().get() > max) {
+                max = entry.getValue().get();
+                top = entry.getKey();
+            }
+        }
+        wizardDescriptor.setCompilerName(top);
     }
     
     private void creteTreeModel(DiscoveryDescriptor wizardDescriptor){

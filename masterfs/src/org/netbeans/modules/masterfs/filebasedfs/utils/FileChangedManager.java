@@ -163,7 +163,7 @@ public class FileChangedManager extends SecurityManager {
         }
     }
 
-    private static boolean isIdleIO() {
+    static boolean isIdleIO() {
         return IDLE_IO.get() != null;
     }
 
@@ -196,7 +196,7 @@ public class FileChangedManager extends SecurityManager {
             if (l < load && priorityIO.get() == 0) {
                 return;
             }
-            if (ChildrenSupport.isLock()) {
+            if (ChildrenSupport.isLock() || Thread.holdsLock(NamingFactory.class)) {
                 return;
             }
             Runnable goingToSleep = IDLE_CALL.get();

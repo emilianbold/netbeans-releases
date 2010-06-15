@@ -359,5 +359,10 @@ public class ModelSource implements SourceFileProperties {
         }
         return LanguageKind.Unknown;
     }
+
+    @Override
+    public String getCompilerName() {
+        return null;
+    }
 }
 

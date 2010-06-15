@@ -263,6 +263,20 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
+     * @return PHP arguments or <code>null</code>.
+     */
+    public static String getPhpArguments(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.PHP_ARGS);
+    }
+
+    /**
+     * @return working directory or <code>null</code>.
+     */
+    public static String getWorkDir(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.WORK_DIR);
+    }
+
+    /**
      * @return remote connection (configuration) name or <code>null</code>.
      */
     public static String getRemoteConnection(PhpProject project) {

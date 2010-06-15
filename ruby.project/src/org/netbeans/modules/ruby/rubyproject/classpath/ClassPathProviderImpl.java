@@ -43,11 +43,7 @@
  */
 package org.netbeans.modules.ruby.rubyproject.classpath;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.ruby.RubyLanguage;
@@ -58,17 +54,12 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.WeakListeners;
 
 /**
  * Defines the various load paths for a Ruby project.
  */
-public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
+public final class ClassPathProviderImpl implements ClassPathProvider {
 
-    private static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
-    private static final String DIST_JAR = "dist.jar"; // NOI18N
-    private static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
-    
     private static final String JAVAC_CLASSPATH = "javac.classpath";    //NOI18N
     private static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath";  //NOI18N
     private static final String RUN_CLASSPATH = "run.classpath";    //NOI18N
@@ -82,8 +73,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private final SourceRoots testSourceRoots;
     private final ClassPath[] cache = new ClassPath[8];
 
-    private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
-
     public ClassPathProviderImpl(RakeProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
                                  SourceRoots testSourceRoots) {
         this.helper = helper;
@@ -92,22 +81,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
-        evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
-    private synchronized FileObject getDir(String propname) {
-        FileObject fo = this.dirCache.get(propname);
-        if (fo == null ||  !fo.isValid()) {
-            String prop = evaluator.getProperty(propname);
-            if (prop != null) {
-                fo = helper.resolveFileObject(prop);
-                this.dirCache.put (propname, fo);
-            }
-        }
-        return fo;
-    }
-
-    
     private FileObject[] getPrimarySrcPath() {
         return this.sourceRoots.getRoots();
     }
@@ -116,27 +91,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return this.testSourceRoots.getRoots();
     }
     
-    private FileObject getBuildClassesDir() {
-        return getDir(BUILD_CLASSES_DIR);
-    }
-    
-    private FileObject getDistJar() {
-        return getDir(DIST_JAR);
-    }
-    
-    private FileObject getBuildTestClassesDir() {
-        return getDir(BUILD_TEST_CLASSES_DIR);
-    }
-    
     /**
      * Find what a given file represents.
      * @param file a file in the project
      * @return one of: <dl>
      *         <dt>0</dt> <dd>normal source</dd>
      *         <dt>1</dt> <dd>test source</dd>
-     *         <dt>2</dt> <dd>built class (unpacked)</dd>
-     *         <dt>3</dt> <dd>built test class</dd>
-     *         <dt>4</dt> <dd>built class (in dist JAR)</dd>
      *         <dt>-1</dt> <dd>something else</dd>
      *         </dl>
      */
@@ -154,19 +114,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             if (root.equals(file) || FileUtil.isParentOf(root, file)) {
                 return 1;
             }
-        }
-        FileObject dir = getBuildClassesDir();
-        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
-            return 2;
-        }
-        dir = getDistJar(); // not really a dir at all, of course
-        if (dir != null && dir.equals(FileUtil.getArchiveFile(file))) {
-            // XXX check whether this is really the root
-            return 4;
-        }
-        dir = getBuildTestClassesDir();
-        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
-            return 3;
         }
         return -1;
     }
@@ -263,10 +210,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return null;
     }
 
-    public synchronized void propertyChange(PropertyChangeEvent evt) {
-        dirCache.remove(evt.getPropertyName());
-    }
-    
     public String getPropertyName (SourceGroup sg, String type) {
         FileObject root = sg.getRootFolder();
         FileObject[] path = getPrimarySrcPath();

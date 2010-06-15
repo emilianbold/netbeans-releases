@@ -104,36 +104,44 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     private ServerWizardIterator() {
     }
     
+    @Override
     public void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
     }
     
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
     }
     
+    @Override
     public void previousPanel() {
         index--;
     }
     
+    @Override
     public void nextPanel() {
         if (!hasNext()) throw new NoSuchElementException();
         index++;
     }
     
+    @Override
     public String name() {
         return gip.getDisplayName() + " AddInstanceIterator";  // NOI18N
     }
     
     public static void showInformation(final String msg,  final String title){
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
                 d.setTitle(title);
@@ -142,6 +150,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         });
     }
     
+    @Override
     public Set instantiate() throws IOException {
         Set<ServerInstance> result = new HashSet<ServerInstance>();
         File ir = new File(installRoot);
@@ -163,10 +172,12 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         return result;
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public boolean hasNext() {
         return index < getPanels().length - 1;
     }
@@ -215,6 +226,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         return index;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         WizardDescriptor.Panel result = getPanels()[index];
         JComponent component = (JComponent)result.getComponent();
@@ -223,6 +235,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         return result;
     }
     
+    @Override
     public void stateChanged(javax.swing.event.ChangeEvent changeEvent) {
         fireChangeEvent();
     }
@@ -308,6 +321,10 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
                 FileUtil.normalizeFile(installDir).getPath());
         if(gip.getDefaultInstallName().equals(GlassfishInstanceProvider.PRELUDE_DEFAULT_NAME)) {
             errMsg = NbBundle.getMessage(AddServerLocationPanel.class, "ERR_PreludeInstallationInvalid",  //NOI18N
+                FileUtil.normalizeFile(installDir).getPath());
+        }
+        if(gip.getDefaultInstallName().equals(GlassfishInstanceProvider.EE6WC_DEFAULT_NAME)) {
+            errMsg = NbBundle.getMessage(AddServerLocationPanel.class, "ERR_EE6WCInstallationInvalid",  //NOI18N
                 FileUtil.normalizeFile(installDir).getPath());
         }
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errMsg); // getSanitizedPath(installDir)));

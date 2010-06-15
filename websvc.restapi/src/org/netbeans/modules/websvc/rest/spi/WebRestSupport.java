@@ -398,6 +398,8 @@ public abstract class WebRestSupport extends RestSupport {
             } else if (WebRestSupport.CONFIG_TYPE_DD.equals(configType)) {
                 return configPanel.getApplicationPath();
             }
+        } else {
+            setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, WebRestSupport.CONFIG_TYPE_USER);
         }
         return null;
     }

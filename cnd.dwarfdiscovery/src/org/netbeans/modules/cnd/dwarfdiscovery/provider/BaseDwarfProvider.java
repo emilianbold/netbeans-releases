@@ -48,12 +48,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
@@ -182,9 +185,11 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return false;
     }
     
-    protected int sizeComilationUnit(String objFileName){
+    protected ApplicableImpl sizeComilationUnit(String objFileName){
         int res = 0;
+        int sunStudio = 0;
         Dwarf dump = null;
+        Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
         try{
             dump = new Dwarf(objFileName);
             Iterator<CompilationUnit> iterator = dump.iteratorCompilationUnits();
@@ -198,12 +203,28 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (lang == null) {
                         continue;
                     }
+                    boolean isCpp = false;
                     if (LANG.DW_LANG_C.toString().equals(lang) ||
                             LANG.DW_LANG_C89.toString().equals(lang) ||
                             LANG.DW_LANG_C99.toString().equals(lang)) {
                         res++;
                     } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
+                        isCpp = true;
                         res++;
+                    } else {
+                        continue;
+                    }
+                    String compilerName = DwarfSource.extractCompilerName(cu, isCpp);
+                    if (compilerName != null) {
+                        AtomicInteger count = compilers.get(compilerName);
+                        if (count == null) {
+                            count = new AtomicInteger();
+                            compilers.put(compilerName, count);
+                        }
+                        count.incrementAndGet();
+                    }
+                    if (DwarfSource.isSunStudioCompiler(cu)) {
+                        sunStudio++;
                     }
                 }
             }
@@ -220,7 +241,15 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 dump.dispose();
             }
         }
-        return res;
+        int max = 0;
+        String top = "";
+        for(Map.Entry<String, AtomicInteger> entry : compilers.entrySet()){
+            if (entry.getValue().get() > max) {
+                max = entry.getValue().get();
+                top = entry.getKey();
+            }
+        }
+        return new ApplicableImpl(res > 0, top, res, sunStudio > res/2);
     }
     
     protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project) {
@@ -285,6 +314,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                 }
             }
+            //System.out.println("Required DLLs:"); // NOI18N
+            //for(String dll : dump.readPubNames()) {
+            //    System.out.println("\t"+dll); // NOI18N
+            //}
         } catch (FileNotFoundException ex) {
             // Skip Exception
             if (TRACE_READ_EXCEPTIONS) {

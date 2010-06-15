@@ -120,8 +120,15 @@ public class MakeSampleProjectGenerator {
     private static void postProcessProject(FileObject prjLoc, String name, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         // update project.xml
         try {
+            File prjFile = FileUtil.toFile(prjLoc);
+            if (prjFile != null) {
+                // we can not refresh full system as was done orriginally for IZ124952
+                // prjLoc.getFileSystem().refresh(false); // IZ124952
+
+                // to fix #186803 we refresh only project dir
+                FileUtil.refreshFor(prjFile);
+            }
             // Change project name in 'project.xml'
-            prjLoc.getFileSystem().refresh(false); // IZ124952
             FileObject fo = prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
             File projXml = FileUtil.toFile(fo);
             Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
