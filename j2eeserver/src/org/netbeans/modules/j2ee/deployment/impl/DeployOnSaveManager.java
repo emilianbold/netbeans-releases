@@ -392,6 +392,7 @@ public final class DeployOnSaveManager {
                         "MSG_DeployOnSave", provider.getDeploymentName()), false);
                 ui.start(Integer.valueOf(PROGRESS_DELAY));
                 try {
+                    DeploymentHelper.deployServerLibraries(provider);
                     DeploymentHelper.deployDatasources(provider);
                     DeploymentHelper.deployMessageDestinations(provider);
 

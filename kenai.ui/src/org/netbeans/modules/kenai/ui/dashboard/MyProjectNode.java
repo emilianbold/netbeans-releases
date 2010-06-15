@@ -42,28 +42,17 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
-import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
-import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
-import org.netbeans.modules.kenai.ui.spi.QueryHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
+import javax.swing.*;
+import org.netbeans.modules.kenai.api.*;
+import org.netbeans.modules.kenai.ui.spi.*;
 import org.netbeans.modules.kenai.ui.treelist.LeafNode;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -75,11 +64,25 @@ import org.openide.util.RequestProcessor;
  */
 public class MyProjectNode extends LeafNode {
 
+    private Notification bugNotification;
     private final ProjectHandle project;
     private final ProjectAccessor accessor;
     private final QueryAccessor qaccessor;
     private final MessagingAccessor maccessor;
     private MessagingHandle mh;
+    private QueryHandle allIssuesQuery;
+    private PropertyChangeListener notificationListener = new PropertyChangeListener() {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (QueryHandle.PROP_QUERY_ACTIVATED.equals(evt.getPropertyName())) {
+                if (bugNotification != null) {
+                    bugNotification.clear();
+                }
+                allIssuesQuery.removePropertyChangeListener(notificationListener);
+            }
+        }
+    };
 
     private Action openAction;
 
@@ -114,6 +117,12 @@ public class MyProjectNode extends LeafNode {
                         setOnline(mh.getMessageCount()>0);
                         btnMessages.setText(mh.getMessageCount()+"");
                     }
+                } else if (KenaiProject.PROP_PROJECT_NOTIFICATION.equals(evt.getPropertyName())) {
+                    KenaiNotification notification = (KenaiNotification) evt.getNewValue();
+                    if (notification.getType() == KenaiService.Type.ISSUES && !notification.getAuthor().equals(project.getKenaiProject().getKenai().getPasswordAuthentication().getUserName())) {
+                        showBugNotification(notification);
+                    }
+
                 } else if (Kenai.PROP_XMPP_LOGIN.equals(evt.getPropertyName())) {
                     if (evt.getOldValue()==null) {
                         setOnline(mh.getMessageCount()>0);
@@ -143,6 +152,7 @@ public class MyProjectNode extends LeafNode {
         this.mh = maccessor.getMessaging(project);
         this.mh.addPropertyChangeListener(projectListener);
         project.getKenaiProject().getKenai().addPropertyChangeListener(projectListener);
+        project.getKenaiProject().addPropertyChangeListener(projectListener);
     }
 
     ProjectHandle getProject() {
@@ -177,10 +187,10 @@ public class MyProjectNode extends LeafNode {
 
                     public void run() {
                         DashboardImpl.getInstance().myProjectsProgressStarted();
-                        QueryHandle handle = qaccessor.getAllIssuesQuery(project);
-                        if (handle != null) {
-                            handle.addPropertyChangeListener(projectListener);
-                            List<QueryResultHandle> queryResults = qaccessor.getQueryResults(handle);
+                        allIssuesQuery = qaccessor.getAllIssuesQuery(project);
+                        if (allIssuesQuery != null) {
+                            allIssuesQuery.addPropertyChangeListener(projectListener);
+                            List<QueryResultHandle> queryResults = qaccessor.getQueryResults(allIssuesQuery);
                             for (QueryResultHandle queryResult:queryResults) {
                                 if (queryResult.getResultType()==QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
                                     setBugsLater(queryResult);
@@ -264,12 +274,22 @@ public class MyProjectNode extends LeafNode {
     @Override
     protected void dispose() {
         super.dispose();
-        if( null != project )
+        if( null != project ) {
             project.removePropertyChangeListener( projectListener );
+            project.getKenaiProject().getKenai().removePropertyChangeListener(projectListener);
+            project.getKenaiProject().removePropertyChangeListener(projectListener);
+        }
         if (null != mh) {
             mh.removePropertyChangeListener(projectListener);
         }
         project.getKenaiProject().getKenai().removePropertyChangeListener(projectListener);
+        if (allIssuesQuery != null) {
+            allIssuesQuery.removePropertyChangeListener(projectListener);
+            allIssuesQuery=null;
+        }
+        if (bugNotification != null) {
+            bugNotification.clear();
+        }
     }
 
     private void setBugsLater(final QueryResultHandle bug) {
@@ -293,5 +313,26 @@ public class MyProjectNode extends LeafNode {
                 instance.dashboardComponent.repaint();
             }
         });
+    }
+
+    private void showBugNotification(final KenaiNotification n) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                if (bugNotification != null) {
+                    bugNotification.clear();
+                }
+                allIssuesQuery.removePropertyChangeListener(notificationListener);
+                allIssuesQuery.addPropertyChangeListener(notificationListener);
+                bugNotification = NotificationDisplayer.getDefault().notify(
+                        NbBundle.getMessage(MyProjectNode.class, "LBL_NewOrChangedBugs", project.getDisplayName()),
+                        ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bug.png", true),
+                        NbBundle.getMessage(MyProjectNode.class, "CTL_Show"),
+                        btnBugs.getActionListeners()[0],
+                        NotificationDisplayer.Priority.SILENT);
+            }
+        });
+
     }
 }
