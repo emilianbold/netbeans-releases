@@ -168,7 +168,8 @@ final class GlobalDescriptorRegistry {
     }
     
     private void reloadLater() {
-        RequestProcessor.getDefault().post(new Runnable () {
+        RequestProcessor requestProcessor = new RequestProcessor();
+        requestProcessor.post(new Runnable () {
             public void run () {
                 reload();
             }
