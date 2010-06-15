@@ -67,6 +67,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -166,24 +167,27 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             setBorder(new EmptyBorder(0, 2, 0, 8));
             setOpaque(false);
             setFocusTraversalPolicyProvider(true);
-           setFocusTraversalPolicy(new DefaultFocusTraversalPolicy() {
-              @Override
-              public Component getDefaultComponent(Container aContainer) {
-                 final EditorCookie ec = actionContext.lookup(
-                       EditorCookie.class);
-                 if (ec != null) {
-                    JEditorPane[] panes = ec.getOpenedPanes();
-                    if (panes != null) {
-                       for (JEditorPane pane : panes) {
-                          if (pane.isShowing()) {
-                             return pane;
-                          }
-                       }
+            setFocusTraversalPolicy(new DefaultFocusTraversalPolicy() {
+                @Override
+                public Component getDefaultComponent(Container aContainer) {
+                    if (!SwingUtilities.isEventDispatchThread()) {
+                        return null;
                     }
-                 }
+                    final EditorCookie ec = actionContext.lookup(
+                            EditorCookie.class);
+                    if (ec != null) {
+                        JEditorPane[] panes = ec.getOpenedPanes();
+                        if (panes != null) {
+                            for (JEditorPane pane : panes) {
+                                if (pane.isShowing()) {
+                                    return pane;
+                                }
+                            }
+                        }
+                    }
 
-                 return null;
-              }
+                    return null;
+                }
            });
 
             combo = new JComboBox();
