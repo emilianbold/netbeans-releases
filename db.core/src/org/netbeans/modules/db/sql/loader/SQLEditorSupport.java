@@ -165,6 +165,11 @@ public class SQLEditorSupport extends DataEditorSupport
     }
 
     @Override
+    protected boolean asynchronousOpen() {
+        return true;
+    }
+
+    @Override
     protected void notifyUnmodified () {
         super.notifyUnmodified();
 
