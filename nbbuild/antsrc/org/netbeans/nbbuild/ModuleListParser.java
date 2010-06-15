@@ -581,6 +581,9 @@ final class ModuleListParser {
                     if (!fileName.endsWith(".xml")) {
                         continue;
                     }
+                    if (entries.containsKey(fileName.substring(0, fileName.length() - 4).replace('-', '.'))) {
+                        continue;
+                    }
                     try {
                         if (expr == null) {
                             expr = XPathFactory.newInstance().newXPath().compile("/module/param[@name='jar']");
