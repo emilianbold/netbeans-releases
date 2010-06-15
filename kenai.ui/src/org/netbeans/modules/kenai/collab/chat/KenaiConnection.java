@@ -376,6 +376,9 @@ public class KenaiConnection implements PropertyChangeListener {
                 if (ne!=null && !Boolean.parseBoolean(System.getProperty("kenai.show.notifications.in.chat", "true"))) {
                     return;
                 }
+                if (ne!=null && KenaiService.Type.ISSUES.equals(ne.getNotification().getType())) {
+                    return;
+                }
                 final LinkedList<Message> thisQ = groupMessageQueue.get(name);
                 thisQ.add(msg);
                 final PacketListener listener = groupListeners.get(name);
