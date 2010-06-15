@@ -75,9 +75,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.impl.projects.J2eeModuleProviderAccessor;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 
 /** This object must be implemented by J2EE module support and an instance 
  * added into project lookup.
@@ -181,7 +184,7 @@ public abstract class J2eeModuleProvider {
         }
         return si.getStartServer().getDebugInfo(target);
     }
-    
+
     /**
      * Gets the data sources deployed on the target server instance.
      *
@@ -300,6 +303,7 @@ public abstract class J2eeModuleProvider {
      * The setters and getters work with server specific data on the server returned by
      * {@link #getServerID} method.
      */
+    // FIXME replace this with final class - this is not deigned to be implemented by anybody
     public static interface ConfigSupport {
         /**
          * Create an initial fresh configuration for the current module.  Do nothing if configuration already exists.
@@ -484,6 +488,37 @@ public abstract class J2eeModuleProvider {
          */
         public Datasource findDatasource(String jndiName) throws ConfigurationException;
 
+        /**
+         * Configure the library (dependency) the enterprise module needs in order
+         * to work properly.
+         * <p>
+         * Once library is configured it should be present in the result
+         * of the {@link #getRequiredLibraries()} call.
+         *
+         * @param library the library the enterprise module needs in order to work
+         *             properly
+         * @throws ConfigurationException if there was a problem writing
+         *             configuration
+         * @since 1.68
+         */
+        public void configureLibrary(@NonNull ServerLibraryDependency library) throws ConfigurationException;
+
+        /**
+         * Returns the server library dependencies the enterprise module needs
+         * to work properly.
+         *
+         * @return the server library dependencies
+         * @throws ConfigurationException if there was a problem reading
+         *             configuration
+         * @since 1.68
+         */
+        @NonNull
+        public Set<ServerLibraryDependency> getLibraries() throws ConfigurationException;
+
+        void addLibraryChangeListener(@NonNull ChangeListener listener);
+
+        void removeLibraryChangeListener(@NonNull ChangeListener listener);
+        
         /**
          * Retrieves message destinations stored in the module.
          * 

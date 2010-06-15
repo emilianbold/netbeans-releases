@@ -715,28 +715,7 @@ public final class WebProject implements Project, AntProjectListener {
         j2eePlatformListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(J2eePlatform.PROP_CLASSPATH)) {
-                    ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-                        public Void run() {
-                            EditableProperties ep = helper.getProperties(
-                                    AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                            EditableProperties projectProps = helper.getProperties(
-                                    AntProjectHelper.PROJECT_PROPERTIES_PATH);
-
-                            if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
-                                    WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
-                                String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
-                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), root);
-                                ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
-                            }
-                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                            try {
-                                ProjectManager.getDefault().saveProject(WebProject.this);
-                            } catch (IOException e) {
-                                Exceptions.printStackTrace(e);
-                            }
-                            return null;
-                        }
-                    });
+                    updateClasspath(platform);
                 }
             }
         };
@@ -748,6 +727,33 @@ public final class WebProject implements Project, AntProjectListener {
             platform.removePropertyChangeListener(j2eePlatformListener);
         }
     }
+
+    private void updateClasspath(final J2eePlatform platform) {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
+                EditableProperties ep = helper.getProperties(
+                        AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                EditableProperties projectProps = helper.getProperties(
+                        AntProjectHelper.PROJECT_PROPERTIES_PATH);
+
+                if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
+                        WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
+                    String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
+                    String classpath = J2EEProjectProperties.toClasspathString(
+                            Util.getJ2eePlatformClasspathEntries(WebProject.this), root);
+                    ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                }
+                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                try {
+                    ProjectManager.getDefault().saveProject(WebProject.this);
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+                return null;
+            }
+        });
+    }
+
     // Private innerclasses ----------------------------------------------------
     
     //when #110886 gets implemented, this class is obsolete
@@ -1006,6 +1012,18 @@ public final class WebProject implements Project, AntProjectListener {
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
+
+            webModule.getConfigSupport().addLibraryChangeListener(new ChangeListener() {
+
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    String servInstID = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+                    J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
+                    if (platform != null) {
+                        updateClasspath(platform);
+                    }
+                }
+            });
             
             // register project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));

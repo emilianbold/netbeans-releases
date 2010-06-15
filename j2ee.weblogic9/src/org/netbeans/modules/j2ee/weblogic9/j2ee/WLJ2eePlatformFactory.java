@@ -60,8 +60,10 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -72,7 +74,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
+import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -108,8 +110,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
 
         private final Set<Profile> PROFILES = new HashSet<Profile>();
-        
-//        private String platformRoot = WLPluginProperties.getInstance().getInstallLocation();
+
         private String platformRoot;
         
         private LibraryImplementation[] libraries = null;
@@ -183,7 +184,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         public java.io.File[] getPlatformRoots() {
-            return new File[]{new File(getPlatformRoot())};
+            File server = new File(getPlatformRoot());
+            File domain = new File(dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.DOMAIN_ROOT_ATTR));
+
+            assert server.isAbsolute();
+            assert domain.isAbsolute();
+            
+            return new File[] {server, domain};
         }
         
         public LibraryImplementation[] getLibraries() {
@@ -191,6 +199,22 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 initLibraries();
             }
             return libraries;
+        }
+
+        @Override
+        public File[] getClasspathEntries(Set<ServerLibraryDependency> libraries) {
+            String domainDir = dm.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+            assert domainDir != null;
+            String serverDir = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+            assert serverDir != null;
+            WLServerLibrarySupport support = new WLServerLibrarySupport(new File(serverDir), new File(domainDir));
+
+            try {
+                return support.getClasspathEntries(libraries);
+            } catch (ConfigurationException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                return new File[] {};
+            }
         }
         
         private void initLibraries() {
@@ -345,9 +369,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         private String getPlatformRoot() {
-            if (platformRoot == null)
+            if (platformRoot == null) {
                 platformRoot = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
-            
+            }
             return platformRoot;
         }
 
