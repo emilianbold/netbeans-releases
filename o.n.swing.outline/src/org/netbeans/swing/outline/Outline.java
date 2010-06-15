@@ -232,7 +232,13 @@ public class Outline extends ETable {
         int c = convertColumnIndexToModel(column);
         TableCellRenderer result;
         if (c == 0) {
-            result = getDefaultRenderer(Object.class);
+            TableColumn tableColumn = getColumnModel().getColumn(column);
+            TableCellRenderer renderer = tableColumn.getCellRenderer();
+            if (renderer == null) {
+                result = getDefaultRenderer(Object.class);
+            } else {
+                result = renderer;
+            }
         } else {
             result = super.getCellRenderer(row, column);
         }

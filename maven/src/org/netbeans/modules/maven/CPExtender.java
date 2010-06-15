@@ -64,6 +64,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -281,11 +282,13 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         return grps.toArray(new SourceGroup[0]);
     }
     
+    @Override
     public String[] getExtensibleClassPathTypes(SourceGroup arg0) {
         return new String[] {
             ClassPath.COMPILE,
             ClassPath.EXECUTE,
-            CLASSPATH_COMPILE_ONLY
+            CLASSPATH_COMPILE_ONLY,
+            JavaClassPathConstants.PROCESSOR_PATH
         };
     }
 
@@ -298,7 +301,8 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
             scope = "test"; //NOI18N
         }
-        if (scope == null && CLASSPATH_COMPILE_ONLY.equals(type)) {
+        if (scope == null && 
+            (CLASSPATH_COMPILE_ONLY.equals(type) || JavaClassPathConstants.PROCESSOR_PATH.equals(type))) {
             scope = Artifact.SCOPE_PROVIDED;
         }
         final String fScope = scope;
@@ -338,6 +342,9 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         String name = grp.getName();
         if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
             scope = "test"; //NOI18N
+        }
+        if (scope == null && JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
+            scope = Artifact.SCOPE_PROVIDED;
         }
         final String fScope = scope;
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
@@ -380,6 +387,9 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         String name = sg.getName();
         if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
             scope = "test"; //NOI18N
+        }
+        if (scope == null && JavaClassPathConstants.PROCESSOR_PATH.equals(classPathType)) {
+            scope = Artifact.SCOPE_PROVIDED;
         }
         final String fScope = scope;
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {

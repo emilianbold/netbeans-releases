@@ -548,10 +548,10 @@ public final class ViewUpdates implements DocumentListener {
                         // so in that case rebuild at paragraph level
                         boolean createLocalViews = (paragraphView.children != null);
                         if (createLocalViews) {
-                            // Only do non-lazy rebuild if rebuild area is not too long
+                            // Only create local views if rebuild area is short
                             int endParagraphIndex = paragraphViewIndex + DocumentView.MAX_NON_LAZY_REBUILD;
                             if (endParagraphIndex < documentView.getViewCount() &&
-                                    documentView.getEditorView(endParagraphIndex).getStartOffset() < rebuildEndOffset)
+                                    documentView.getEditorView(endParagraphIndex).getStartOffset() < rEndOffset)
                             {
                                 createLocalViews = false;
                             }
