@@ -46,7 +46,6 @@ package org.netbeans.modules.web.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -88,9 +87,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor.Task;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -111,7 +108,7 @@ import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -126,7 +123,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
 import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
@@ -192,7 +188,7 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Jesse Glick, et al., Pavel Buzek
  * @author kaktus
  */
-public final class WebProject implements Project, AntProjectListener {
+public final class WebProject implements Project {
     
     private static final Logger LOGGER = Logger.getLogger(WebProject.class.getName());
     
@@ -385,7 +381,6 @@ public final class WebProject implements Project, AntProjectListener {
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
-        helper.addAntProjectListener(this);
         css = new CopyOnSaveSupport();
         artifactSupport = new ArtifactCopySupport();
         deployOnSaveSupport = new DeployOnSaveSupportProxy();
@@ -519,9 +514,9 @@ public final class WebProject implements Project, AntProjectListener {
 
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
-        
+
         Lookup base = Lookups.fixed(new Object[] {
-            new Info(),
+            QuerySupport.createProjectInformation(updateHelper, this, WEB_PROJECT_ICON),
             aux,
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
@@ -598,19 +593,6 @@ public final class WebProject implements Project, AntProjectListener {
         return this.cpProvider;
     }
 
-    public void configurationXmlChanged(AntProjectEvent ev) {
-        if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
-            // Could be various kinds of changes, but name & displayName might have changed.
-            Info info = (Info)getLookup().lookup(ProjectInformation.class);
-            info.firePropertyChange(ProjectInformation.PROP_NAME);
-            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
-        }
-    }
-
-    public void propertiesChanged(AntProjectEvent ev) {
-        // currently ignored (probably better to listen to evaluator() if you need to)
-    }
-    
     String getBuildXmlName () {
         String storedName = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.BUILD_FILE);
         return storedName == null ? GeneratedFilesHelper.BUILD_XML_PATH : storedName;
@@ -674,20 +656,7 @@ public final class WebProject implements Project, AntProjectListener {
     
     /** Return configured project name. */
     public String getName() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-            public String run() {
-                Element data = helper.getPrimaryConfigurationData(true);
-                // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
-                if (nl.getLength() == 1) {
-                    nl = nl.item(0).getChildNodes();
-                    if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                        return ((Text) nl.item(0)).getNodeValue();
-                    }
-                }
-                return "???"; // NOI18N
-            }
-        });
+        return ProjectUtils.getInformation(this).getName();
     }
     
     /** Store configured project name. */
@@ -754,73 +723,6 @@ public final class WebProject implements Project, AntProjectListener {
         }
     }
     // Private innerclasses ----------------------------------------------------
-    
-    //when #110886 gets implemented, this class is obsolete
-    private final class Info implements ProjectInformation {
-        
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        private WeakReference<String> cachedName = null;
-        
-        Info() {}
-        
-        void firePropertyChange(String prop) {
-            pcs.firePropertyChange(prop, null, null);
-            synchronized (pcs) {
-                cachedName = null;
-            }
-        }
-        
-        public String getName() {
-            return WebProject.this.getName();
-        }
-        
-        public String getDisplayName() {
-            synchronized (pcs) {
-                if (cachedName != null) {
-                    String dn = cachedName.get();
-                    if (dn != null) {
-                        return dn;
-                    }
-                }
-            }
-            String dn = ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
-                public String run() {
-                    Element data = updateHelper.getPrimaryConfigurationData(true);
-                    // XXX replace by XMLUtil when that has findElement, findText, etc.
-                    NodeList nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                    if (nl.getLength() == 1) {
-                        nl = nl.item(0).getChildNodes();
-                        if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
-                            return ((Text) nl.item(0)).getNodeValue();
-                        }
-                    }
-                    return "???"; // NOI18N
-                }
-            });
-            synchronized (pcs) {
-                cachedName = new WeakReference<String>(dn);
-            }
-            return dn;
-        }
-
-        
-        public Icon getIcon() {
-            return WEB_PROJECT_ICON;
-        }
-        
-        public Project getProject() {
-            return WebProject.this;
-        }
-        
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            pcs.addPropertyChangeListener(listener);
-        }
-        
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            pcs.removePropertyChangeListener(listener);
-        }
-        
-    }
     
     public static void makeSureProjectHasJspCompilationLibraries(final ReferenceHelper refHelper) {
         if (refHelper.getProjectLibraryManager() == null) {
