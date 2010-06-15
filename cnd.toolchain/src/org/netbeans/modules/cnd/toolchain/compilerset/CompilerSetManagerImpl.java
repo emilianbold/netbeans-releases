@@ -360,7 +360,12 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                     if (initCompilerSet(SunStudioPath, cs, true)){
                         flavors.add(flavor);
                         addUnsafe(cs);
-                        cs.setSunStudioDefault(true);
+                        for(String pattern : KNOWN_STUDIO) {
+                            if (pattern.equals(flavor.toString())) {
+                                cs.setSunStudioDefault(true);
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -804,6 +809,21 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         }
     }
 
+    private static final String ALIAS_SunStudio = "SunStudio";
+    private static final String ALIAS_OracleSolarisStudio = "OracleSolarisStudio";
+    private static final String[] KNOWN_STUDIO = new String[] {
+        "OracleSolarisStudio_12.2", // NOI18N
+        "OracleSolarisStudioExpress", // NOI18N
+        "SunStudio_12.1", // NOI18N
+        "SunStudioExpress", // NOI18N
+        "SunStudioLite", // NOI18N
+        "SunStudio_12", // NOI18N
+        "SunStudio_11", // NOI18N
+        "SunStudio_10", // NOI18N
+        "SunStudio_9", // NOI18N
+        "SunStudio_8" // NOI18N
+    };
+
     private void completeSunStudioCompilerSet(int platform) {
         CompilerSetImpl bestCandidate = null;
         for(CompilerSet cs : sets) {
@@ -813,39 +833,15 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             }
         }
         // "OracleSolarisStudio" and "SunStudio" compiler sets must exist
-        if (getCompilerSet("OracleSolarisStudio") != null && getCompilerSet("SunStudio") != null) { // NOI18N
+        if (getCompilerSet(ALIAS_OracleSolarisStudio) != null && getCompilerSet(ALIAS_SunStudio) != null) { // NOI18N
             return;
         }
         // if one or both are missing, find the 'best' Sun set and copy it
-        if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("OracleSolarisStudio_12.2"); // NOI18N
-        }
-        if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("OracleSolarisStudioExpress"); // NOI18N
-        }
-        if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudio_12.1"); // NOI18N
-        }
-        if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudioExpress"); // NOI18N
-        }
-        if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudioLite"); // NOI18N
-        }
-        if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudio_12"); // NOI18N
-        }
-        if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudio_11"); // NOI18N
-        }
-        if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudio_10"); // NOI18N
-        }
-        if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudio_9"); // NOI18N
-        }
-        if (bestCandidate == null) {
-            bestCandidate = (CompilerSetImpl) getCompilerSet("SunStudio_8"); // NOI18N
+        for(String pattern : KNOWN_STUDIO){
+            if (bestCandidate !=  null) {
+                break;
+            }
+            bestCandidate = (CompilerSetImpl) getCompilerSet(pattern);
         }
         if (bestCandidate == null) {
             return;
@@ -853,16 +849,16 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         if (bestCandidate.isUrlPointer()) {
             return;
         }
-        CompilerFlavor flavor = CompilerFlavorImpl.toFlavor("OracleSolarisStudio", platform); // NOI18N
-        if (flavor != null && getCompilerSet("OracleSolarisStudio") == null) { // #158084 NPE // NOI18N
+        CompilerFlavor flavor = CompilerFlavorImpl.toFlavor(ALIAS_OracleSolarisStudio, platform); // NOI18N
+        if (flavor != null && getCompilerSet(ALIAS_OracleSolarisStudio) == null) { // #158084 NPE // NOI18N
             CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
-                    flavor, bestCandidate.getDirectory(), "OracleSolarisStudio", true, bestCandidate.getEncoding(), true); // NOI18N
+                    flavor, bestCandidate.getDirectory(), ALIAS_OracleSolarisStudio, true, bestCandidate.getEncoding(), true); // NOI18N
             addUnsafe(bestCandidateCopy);
         }
-        flavor = CompilerFlavorImpl.toFlavor("SunStudio", platform); // NOI18N
-        if (flavor != null && getCompilerSet("SunStudio") == null) { // #158084 NPE // NOI18N
+        flavor = CompilerFlavorImpl.toFlavor(ALIAS_SunStudio, platform); // NOI18N
+        if (flavor != null && getCompilerSet(ALIAS_SunStudio) == null) { // #158084 NPE // NOI18N
             CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
-                    flavor, bestCandidate.getDirectory(), "SunStudio", true, bestCandidate.getEncoding(), true); // NOI18N
+                    flavor, bestCandidate.getDirectory(), ALIAS_SunStudio, true, bestCandidate.getEncoding(), true); // NOI18N
             addUnsafe(bestCandidateCopy);
         }
     }

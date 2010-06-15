@@ -379,45 +379,8 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
                 </file>
             </folder>
-            <folder name="SunStudio_12.2_linuxCompatGNU">
-                <attr name="position" intvalue="1124"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
-                <file name="flavor.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_linuxGNU_flavor"/>
-                </file>
-                <file name="c.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_solaris-x86_linux_c"/>
-                </file>
-                <file name="cpp.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_linuxGNU_cpp"/>
-                </file>
-                <file name="fortran.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_solaris-x86_linux_fortran"/>
-                </file>
-                <file name="assembler.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
-                </file>
-                <file name="scanner.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
-                </file>
-                <file name="linker.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_linuxGNU_linker"/>
-                </file>
-                <file name="make.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
-                </file>
-                <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
-                </file>
-                <file name="qmake.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
-                </file>
-                <file name="cmake.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
-                </file>
-            </folder>
             <folder name="SunStudio_12.2_solaris-x86_linux">
-                <attr name="position" intvalue="1125"/>
+                <attr name="position" intvalue="1124"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
                 <file name="flavor.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_solaris-x86_linux_flavor"/>
@@ -439,6 +402,43 @@
                 </file>
                 <file name="linker.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
+                </file>
+            </folder>
+            <folder name="SunStudio_12.2_linuxCompatGNU">
+                <attr name="position" intvalue="1125"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_linuxGNU_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_solaris-x86_linux_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_linuxGNU_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_solaris-x86_linux_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.2_linuxGNU_linker"/>
                 </file>
                 <file name="make.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
@@ -490,43 +490,6 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
                 </file>
             </folder>
-            <folder name="SunStudioExpressAten_linuxGNU">
-                <attr name="position" intvalue="1136"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
-                <file name="flavor.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_linuxGNU_flavor"/>
-                </file>
-                <file name="c.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_solaris-x86_linux_c"/>
-                </file>
-                <file name="cpp.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_linuxGNU_cpp"/>
-                </file>
-                <file name="fortran.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_solaris-x86_linux_fortran"/>
-                </file>
-                <file name="assembler.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
-                </file>
-                <file name="scanner.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
-                </file>
-                <file name="linker.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_linuxGNU_linker"/>
-                </file>
-                <file name="make.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
-                </file>
-                <file name="debugger.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
-                </file>
-                <file name="qmake.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
-                </file>
-                <file name="cmake.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
-                </file>
-            </folder>
             <folder name="SunStudioExpressAten_solaris-x86_linux">
                 <attr name="position" intvalue="1135"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -550,6 +513,43 @@
                 </file>
                 <file name="linker.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
+                </file>
+            </folder>
+            <folder name="SunStudioExpressAten_linuxGNU">
+                <attr name="position" intvalue="1136"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_linuxGNU_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_solaris-x86_linux_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_linuxGNU_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_solaris-x86_linux_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudioExpressAten_linuxGNU_linker"/>
                 </file>
                 <file name="make.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
