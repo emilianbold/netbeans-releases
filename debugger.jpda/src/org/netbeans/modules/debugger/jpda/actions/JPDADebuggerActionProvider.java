@@ -149,7 +149,7 @@ implements PropertyChangeListener {
     /**
      * Mark the provided action provider to be disabled when a lazy action is to be performed.
      */
-    protected final void setProviderToDisableOnLazyAction(JPDADebuggerActionProvider provider) {
+    final void setProviderToDisableOnLazyAction(JPDADebuggerActionProvider provider) {
         synchronized (JPDADebuggerActionProvider.class) {
             providersToDisableOnLazyActions.add(provider);
         }

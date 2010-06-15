@@ -65,6 +65,7 @@ import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
@@ -141,7 +142,7 @@ public class JPDAClassTypeImpl implements JPDAClassType {
         return new AbstractObjectVariable(debugger, cl, "Loader "+getName());
     }
     
-    public SuperVariable getSuperClass() {
+    public Super getSuperClass() {
         if (classType instanceof ClassType) {
             try {
                 return new SuperVariable(debugger, null, ClassTypeWrapper.superclass((ClassType) classType), getName());
