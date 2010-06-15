@@ -127,9 +127,8 @@ public class FileNameTest extends NbTestCase {
             assertEquals(na,NamingFactory.fromFile(fA));
             assertSame(na, NamingFactory.fromFile(fA));
             assertFalse(fA.getName() + " / " + na.getName(),fA.getName().equals(na.getName()));
-            NamingFactory.checkCaseSensitivity(na,fA);
-            assertTrue(fA.getName() + " / " + na.getName(),fA.getName().equals(na.getName()));
-            
+            FileNaming nna = NamingFactory.checkCaseSensitivity(na,fA);
+            assertTrue(fA.getName() + " / " + nna.getName(),fA.getName().equals(nna.getName()));
         }
     }
     

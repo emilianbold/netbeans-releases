@@ -175,7 +175,7 @@ public final class FolderObj extends BaseFileObj {
                 childName = NamingFactory.fromFile(getFileName(), folder2Create, true);
             }            
             if (childName != null) {
-                NamingFactory.checkCaseSensitivity(childName, folder2Create);                        
+                childName = NamingFactory.checkCaseSensitivity(childName, folder2Create);
             }
         } finally {
             mutexPrivileged.exitWriteAccess();
@@ -254,7 +254,7 @@ public final class FolderObj extends BaseFileObj {
                 childName = NamingFactory.fromFile(getFileName(), file2Create, true);
             }
             if (childName != null) {
-                NamingFactory.checkCaseSensitivity(childName, file2Create);                        
+                childName = NamingFactory.checkCaseSensitivity(childName, file2Create);
             }
 
         } finally {
