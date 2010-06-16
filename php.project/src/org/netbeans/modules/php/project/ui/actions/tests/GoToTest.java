@@ -45,16 +45,14 @@ package org.netbeans.modules.php.project.ui.actions.tests;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.gototest.TestLocator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -89,14 +87,18 @@ public class GoToTest implements TestLocator {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                callback.foundLocation(fo, findOpposite(fo, caretOffset));
+                callback.foundLocation(fo, findOpposite0(fo));
             }
         });
     }
 
     @Override
     public LocationResult findOpposite(FileObject fo, int caretOffset) {
-        PhpProject project = findPhpProject(fo);
+        throw new UnsupportedOperationException("Go To Test is asynchronous");
+    }
+
+    private LocationResult findOpposite0(FileObject fo) {
+        PhpProject project = PhpProjectUtils.getPhpProject(fo);
         if (project == null) {
             // XXX what to do now??
             LOGGER.log(Level.INFO, "PHP project was not found for file {0}", fo);
@@ -113,7 +115,7 @@ public class GoToTest implements TestLocator {
 
     @Override
     public FileType getFileType(FileObject fo) {
-        PhpProject project = findPhpProject(fo);
+        PhpProject project = PhpProjectUtils.getPhpProject(fo);
         if (project == null) {
             LOGGER.log(Level.INFO, "PHP project was not found for file {0}", fo);
             return FileType.NEITHER;
@@ -174,15 +176,6 @@ public class GoToTest implements TestLocator {
             }
         }
         return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_TestNotFound", srcFo.getNameExt()));
-    }
-
-    private PhpProject findPhpProject(FileObject fo) {
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project == null
-                || !PhpProjectUtils.isPhpProject(project)) {
-            return null;
-        }
-        return (PhpProject) project;
     }
 
     public static FileObject getSources(PhpProject project) {

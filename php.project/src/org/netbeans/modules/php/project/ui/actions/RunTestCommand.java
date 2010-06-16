@@ -48,7 +48,6 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.modules.php.project.ui.actions.tests.GoToTest;
-import org.netbeans.spi.gototest.TestLocator.LocationResult;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -99,10 +98,7 @@ public class RunTestCommand extends Command implements Displayable {
         if (fo == null) {
             return null;
         }
-        LocationResult tests = GoToTest.findTest(getProject(), fo);
-        if (tests == null) {
-            return null;
-        }
-        return tests.getFileObject();
+        // can return null
+        return GoToTest.findTest(getProject(), fo).getFileObject();
     }
 }
