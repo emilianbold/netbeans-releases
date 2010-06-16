@@ -117,7 +117,7 @@ import org.openide.util.NbBundle;
 /**
  * @author   Jan Jancura
  */
-class AbstractVariable implements JDIVariable, Customizer, Cloneable {
+public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
     // Customized for add/removePropertyChangeListener
     // Cloneable for fixed watches
     
@@ -128,7 +128,7 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
     private Set<PropertyChangeListener> listeners = new HashSet<PropertyChangeListener>();
 
     
-    AbstractVariable (
+    public AbstractVariable (
         JPDADebuggerImpl debugger,
         Value value,
         String id

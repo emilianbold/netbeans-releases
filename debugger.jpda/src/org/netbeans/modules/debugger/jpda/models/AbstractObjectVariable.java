@@ -100,7 +100,7 @@ import org.openide.util.WeakListeners;
 /**
  * @author   Jan Jancura
  */
-class AbstractObjectVariable extends AbstractVariable implements ObjectVariable {
+public class AbstractObjectVariable extends AbstractVariable implements ObjectVariable {
     // Customized for add/removePropertyChangeListener
     // Cloneable for fixed watches
     
@@ -115,7 +115,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
     private DebuggetStateListener stateChangeListener = new DebuggetStateListener();
 
     
-    AbstractObjectVariable (
+    public AbstractObjectVariable (
         JPDADebuggerImpl debugger,
         Value value,
         String id
@@ -133,7 +133,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                 WeakListeners.propertyChange(stateChangeListener, debugger));
     }
 
-    AbstractObjectVariable (JPDADebuggerImpl debugger, Value value, String genericSignature,
+    public AbstractObjectVariable (JPDADebuggerImpl debugger, Value value, String genericSignature,
                       String id) {
         this(debugger, value, id);
         try {
