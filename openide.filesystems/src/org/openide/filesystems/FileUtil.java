@@ -1678,11 +1678,14 @@ public final class FileUtil extends Object {
      */
     public static File normalizeFile(final File file) {
         Map<String, String> normalizedPaths = getNormalizedFilesMap();
-        String normalized = normalizedPaths.get(file.getPath());
+        String unnormalized = file.getPath();
+        String normalized = normalizedPaths.get(unnormalized);
         File ret;
         if (normalized == null) {
             ret = normalizeFileImpl(file);
-            normalizedPaths.put(file.getPath(), ret.getPath());
+            normalizedPaths.put(unnormalized, ret.getPath());
+        } else if (normalized.equals(unnormalized)) {
+            ret = file;
         } else {
             ret = new File(normalized);
         }
