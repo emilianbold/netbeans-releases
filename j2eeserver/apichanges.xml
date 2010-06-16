@@ -134,7 +134,7 @@ is the proper place.
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="ServerInstance"/>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ServerLibrary"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ServerLibraryRange"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ServerLibraryDependency"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="OptionalDeploymentManagerFactory"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="ServerLibraryFactory"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="ServerLibraryImplementation"/>
