@@ -92,8 +92,11 @@ public abstract class PhpUnit extends PhpProgram {
     // options
     public static final String OPTIONS_SUB_PATH = "PhpUnit"; // NOI18N
     // test files suffix
-    public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
-    public static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
+    private static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
+    private static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
+    // suite files suffix
+    private static final String SUITE_CLASS_SUFFIX = "Suite"; // NOI18N
+    private static final String SUITE_FILE_SUFFIX = SUITE_CLASS_SUFFIX + ".php"; // NOI18N
     // create test
     private static final String REQUIRE_ONCE_TPL_START = "require_once '"; // NOI18N
     private static final String REQUIRE_ONCE_TPL_END = "%s';"; // NOI18N
@@ -180,8 +183,56 @@ public abstract class PhpUnit extends PhpProgram {
                 && line.endsWith(String.format(REQUIRE_ONCE_TPL_END, filename));
     }
 
-    public static boolean isTestFile(String filename) {
-        return !filename.equals(PhpUnit.TEST_FILE_SUFFIX) && filename.endsWith(PhpUnit.TEST_FILE_SUFFIX);
+    public static boolean isTestFile(String fileName) {
+        return !fileName.equals(PhpUnit.TEST_FILE_SUFFIX) && fileName.endsWith(PhpUnit.TEST_FILE_SUFFIX);
+    }
+
+    public static boolean isTestClass(String className) {
+        return !className.equals(PhpUnit.TEST_CLASS_SUFFIX) && className.endsWith(PhpUnit.TEST_CLASS_SUFFIX);
+    }
+
+    public static boolean isSuiteFile(String fileName) {
+        return !fileName.equals(PhpUnit.SUITE_FILE_SUFFIX) && fileName.endsWith(PhpUnit.SUITE_FILE_SUFFIX);
+    }
+
+    public static boolean isSuiteClass(String className) {
+        return !className.equals(PhpUnit.SUITE_CLASS_SUFFIX) && className.endsWith(PhpUnit.SUITE_CLASS_SUFFIX);
+    }
+
+    public static boolean isTestOrSuiteFile(String fileName) {
+        return isTestFile(fileName) || isSuiteFile(fileName);
+    }
+
+    public static boolean isTestOrSuiteClass(String className) {
+        return isTestClass(className) || isSuiteClass(className);
+    }
+
+    public static String getTestedClass(String testOrSuiteClass) {
+        assert isTestOrSuiteClass(testOrSuiteClass) : "Not Test or Suite class: " + testOrSuiteClass;
+        int lastIndexOf = -1;
+        if (isTestClass(testOrSuiteClass)) {
+            lastIndexOf = testOrSuiteClass.lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
+        } else if (isSuiteClass(testOrSuiteClass)) {
+            lastIndexOf = testOrSuiteClass.lastIndexOf(PhpUnit.SUITE_CLASS_SUFFIX);
+        }
+        assert lastIndexOf != -1;
+        return testOrSuiteClass.substring(0, lastIndexOf);
+    }
+
+    public static String makeTestFile(String testedFileName) {
+        return testedFileName + PhpUnit.TEST_FILE_SUFFIX;
+    }
+
+    public static String makeTestClass(String testedClass) {
+        return testedClass + PhpUnit.TEST_CLASS_SUFFIX;
+    }
+
+    public static String makeSuiteFile(String testedFileName) {
+        return testedFileName + PhpUnit.SUITE_FILE_SUFFIX;
+    }
+
+    public static String makeSuiteClass(String testedClass) {
+        return testedClass + PhpUnit.SUITE_CLASS_SUFFIX;
     }
 
     @Override
