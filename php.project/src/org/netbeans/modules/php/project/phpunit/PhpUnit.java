@@ -180,6 +180,10 @@ public abstract class PhpUnit extends PhpProgram {
                 && line.endsWith(String.format(REQUIRE_ONCE_TPL_END, filename));
     }
 
+    public static boolean isTestFile(String filename) {
+        return !filename.equals(PhpUnit.TEST_FILE_SUFFIX) && filename.endsWith(PhpUnit.TEST_FILE_SUFFIX);
+    }
+
     @Override
     public ExternalProcessBuilder getProcessBuilder() {
         return super.getProcessBuilder()

@@ -120,8 +120,7 @@ public class GoToTest implements TestLocator {
         }
 
         if (CommandUtils.isUnderTests(project, fo, false)) {
-            String name = fo.getNameExt();
-            if (!name.equals(PhpUnit.TEST_FILE_SUFFIX) && name.endsWith(PhpUnit.TEST_FILE_SUFFIX)) {
+            if (PhpUnit.isTestFile(fo.getNameExt())) {
                 return FileType.TEST;
             }
         } else if (CommandUtils.isUnderSources(project, fo)) {
