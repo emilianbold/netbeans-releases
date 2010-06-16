@@ -85,7 +85,7 @@ public class JaxWs {
         /** Pattern for Web Service URI */
         public String getServiceUri (String applicationRoot, String serviceName, String portName, boolean isEjb);
         /** Pattern for Tester Page URI */
-        public String getTesterPageUri (String applicationRoot, String serviceName, String portName, boolean isEjb);
+        public String getTesterPageUri (String host, String port, String applicationRoot, String serviceName, String portName, boolean isEjb);
     }
     
 }
