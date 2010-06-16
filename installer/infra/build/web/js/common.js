@@ -74,7 +74,7 @@ BUNDLE_IDS [6] = "all";
 var DEFAULT_LANGUAGE = "DEFAULT";
 var PAGELANG_SEP = "pagelang=";
 
-var OMNITURE_CODE_JS = "http://www.netbeans.org/images_www/js/s_code_remote.js";
+var OMNITURE_CODE_JS = "http://netbeans.org/images_www/js/s_code_remote.js";
 var GOOGLE_ANALYTICS_JS = "http://www.google-analytics.com/ga.js";
 
 function getNameById(id,ids,names) {
@@ -275,7 +275,7 @@ function write_page_languages() {
 }
 
 function startList() {
-    // source: http://www.netbeans.org/branding/scripts/lang-pulldown.js
+    // source: http://netbeans.org/branding/scripts/lang-pulldown.js
     if (document.all&&document.getElementById) {
         navRoot = document.getElementById("nav");
         if (navRoot!=null) { //if the language panel is active

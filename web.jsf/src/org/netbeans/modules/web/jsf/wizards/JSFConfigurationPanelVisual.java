@@ -54,7 +54,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -99,7 +98,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     
     private final List<LibraryItem> jsfLibraries = new ArrayList<LibraryItem>();
     private final Set<ServerLibraryItem> serverJsfLibraries = new TreeSet<ServerLibraryItem>();
-    private boolean libsInitialized;
+    private volatile boolean libsInitialized;
     private String serverInstanceID;
     private final List<String> preferredLanguages = new ArrayList<String>();
     private String currentServerInstanceID;
@@ -135,7 +134,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         }
 
         // init server libraries first
-        initServerLibraries();
+        initServerLibraries(false);
 
         final Vector<String> registeredItems = new Vector<String>();
         jsfLibraries.clear();
@@ -196,7 +195,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         LOG.finest("Time spent in "+this.getClass().getName() +" initLibraries = "+(System.currentTimeMillis()-time) +" ms");   //NOI18N
     }
 
-    private void initServerLibraries() {
+    private void initServerLibraries(boolean updateUI) {
         serverJsfLibraries.clear();
 
 //        final Runnable libraryFinder = new Runnable() {
@@ -279,7 +278,9 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 //                        @Override
 //                        public void run() {
                             setServerLibraryModel(serverJsfLibraries);
-                            updatePreferredLanguages();
+                            if (updateUI) {
+                                updatePreferredLanguages();
+                            }
 //                        }
 //                    });
                 }
@@ -839,7 +840,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     private void initLibSettings(Profile profile, String serverInstanceID) {
         boolean serverChanged = isServerInstanceChanged();
         if (serverChanged) {
-            initServerLibraries();
+            initServerLibraries(true);
         }
 
         if (panel==null || panel.getLibraryType() == null || serverChanged) {
