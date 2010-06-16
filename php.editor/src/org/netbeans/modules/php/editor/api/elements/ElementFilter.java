@@ -298,6 +298,38 @@ public abstract class ElementFilter {
             }
         };
     }
+    public static ElementFilter forMembersOfInterface() {
+        return new ElementFilter() {
+            private ElementFilter filterDelegate = null;
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                if (element instanceof TypeMemberElement) {
+                    if (filterDelegate == null) {
+                        filterDelegate = forKind(PhpElementKind.IFACE);
+                    }
+                    //return thisTypeElement.equals(typeElement);
+                    return filterDelegate.isAccepted(((TypeMemberElement) element).getType());
+                }
+                return true;
+            }
+        };
+    }
+    public static ElementFilter forMembersOfClass() {
+        return new ElementFilter() {
+            private ElementFilter filterDelegate = null;
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                if (element instanceof TypeMemberElement) {
+                    if (filterDelegate == null) {
+                        filterDelegate = forKind(PhpElementKind.CLASS);
+                    }
+                    //return thisTypeElement.equals(typeElement);
+                    return filterDelegate.isAccepted(((TypeMemberElement) element).getType());
+                }
+                return true;
+            }
+        };
+    }
     public static ElementFilter forMembersOfTypeName(final TypeElement typeElement) {
         return new ElementFilter() {
             private ElementFilter filterDelegate = null;
