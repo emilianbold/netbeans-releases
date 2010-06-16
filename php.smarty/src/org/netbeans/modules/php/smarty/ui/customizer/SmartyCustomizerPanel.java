@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.smarty.ui.customizer;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -50,6 +51,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.openide.awt.Mnemonics;
@@ -77,16 +79,14 @@ public class SmartyCustomizerPanel extends JPanel {
 
 
         customOpenDelimiterLabel = new JLabel();
-        customCloseDelimiterLabel = new JLabel();
         customOpenDelimiterTextField = new JTextField();
-        customCloseDelimiterTextField = new JTextField();
         customDelimitersLabel = new JLabel();
         jSeparator1 = new JSeparator();
         optionsLabel = new JLabel();
+        customCloseDelimiterLabel = new JLabel();
+        customCloseDelimiterTextField = new JTextField();
         Mnemonics.setLocalizedText(customOpenDelimiterLabel, NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customOpenDelimiterLabel.text"));
-        Mnemonics.setLocalizedText(customCloseDelimiterLabel, NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customCloseDelimiterLabel.text"));
         customOpenDelimiterTextField.setText(NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customOpenDelimiterTextField.text")); // NOI18N
-        customCloseDelimiterTextField.setText(NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customCloseDelimiterTextField.text")); // NOI18N
         customDelimitersLabel.setForeground(new Color(124, 124, 124));
         Mnemonics.setLocalizedText(customDelimitersLabel, NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customDelimitersLabel.text"));
         Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.optionsLabel.text"));
@@ -99,7 +99,8 @@ public class SmartyCustomizerPanel extends JPanel {
                 optionsLabelMousePressed(evt);
             }
         });
-
+        Mnemonics.setLocalizedText(customCloseDelimiterLabel, NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customCloseDelimiterLabel.text"));
+        customCloseDelimiterTextField.setText(NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customCloseDelimiterTextField.text")); // NOI18N
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -112,17 +113,19 @@ public class SmartyCustomizerPanel extends JPanel {
                         .addComponent(customDelimitersLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(ComponentPlacement.RELATED, 94, Short.MAX_VALUE)
                         .addComponent(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createParallelGroup(Alignment.TRAILING, false)
-                        .addGroup(Alignment.LEADING, layout.createSequentialGroup()
-                            .addComponent(customCloseDelimiterLabel)
-                            .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(customCloseDelimiterTextField))
-                        .addGroup(Alignment.LEADING, layout.createSequentialGroup()
-                            .addComponent(customOpenDelimiterLabel)
-                            .addPreferredGap(ComponentPlacement.RELATED)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                            .addComponent(customCloseDelimiterLabel, Alignment.LEADING)
+                            .addComponent(customOpenDelimiterLabel, Alignment.LEADING))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(customCloseDelimiterTextField, GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
                             .addComponent(customOpenDelimiterTextField, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
+
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {customCloseDelimiterTextField, customOpenDelimiterTextField});
+
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -136,12 +139,12 @@ public class SmartyCustomizerPanel extends JPanel {
                         .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                             .addComponent(customCloseDelimiterLabel)
                             .addComponent(customCloseDelimiterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGap(26, 26, 26)
                         .addComponent(customDelimitersLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addComponent(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(187, Short.MAX_VALUE))
+                .addContainerGap(167, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

@@ -43,10 +43,10 @@ package org.netbeans.modules.php.smarty.editor.completion.entries;
  *
  * @author Martin Fousek
  */
-public class CodeCompletionItemBuiltInFunctionsAtributes {
+public class CodeCompletionAtributes {
     private String attType, attRequired, attDefault, addDescription, attName;
 
-    public CodeCompletionItemBuiltInFunctionsAtributes(String attType, String attRequired, String attDefault, String addDescription, String attName) {
+    public CodeCompletionAtributes(String attType, String attRequired, String attDefault, String addDescription, String attName) {
         this.attType = attType;
         this.attRequired = attRequired;
         this.attDefault = attDefault;
