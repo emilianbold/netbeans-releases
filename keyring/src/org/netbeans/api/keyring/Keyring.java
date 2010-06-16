@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.keyring.Utils;
 import org.netbeans.spi.keyring.KeyringProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -130,14 +129,31 @@ public class Keyring {
         private final Map<String,byte[]> passwords = new HashMap<String,byte[]>();
         public @Override char[] read(String key) {
             byte[] pwd = passwords.get(key);
-            return pwd != null ? Utils.bytes2Chars(pwd) : null;
+            return pwd != null ? bytes2Chars(pwd) : null;
         }
         public @Override void save(String key, char[] password, String description) {
-            passwords.put(key, Utils.chars2Bytes(password));
+            passwords.put(key, chars2Bytes(password));
         }
         public @Override void delete(String key) {
             passwords.remove(key);
         }
+    }
+
+    // XXX copied from org.netbeans.modules.keyring.impl.Utils:
+    private static byte[] chars2Bytes(char[] chars) {
+        byte[] bytes = new byte[chars.length * 2];
+        for (int i = 0; i < chars.length; i++) {
+            bytes[i * 2] = (byte) (chars[i] / 256);
+            bytes[i * 2 + 1] = (byte) (chars[i] % 256);
+        }
+        return bytes;
+    }
+    private static char[] bytes2Chars(byte[] bytes) {
+        char[] result = new char[bytes.length / 2];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = (char) (((int) bytes[i * 2]) * 256 + (int) bytes[i * 2 + 1]);
+        }
+        return result;
     }
 
 }

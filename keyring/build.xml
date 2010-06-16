@@ -2,6 +2,7 @@
 <project basedir="." default="netbeans" name="keyring">
     <import file="../nbbuild/templates/projectized.xml"/>
     <target name="debug" depends="netbeans">
+        <ant dir="../keyring.impl" inheritall="false"/>
         <input addproperty="nonative" defaultvalue="false" validargs="true,false" message="Suppress native keyrings?"/>
         <ant dir="../nbbuild" target="tryme-debug">
             <property name="tryme.args" value="

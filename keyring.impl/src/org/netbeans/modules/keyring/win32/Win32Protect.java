@@ -52,7 +52,7 @@ import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.keyring.Utils;
+import org.netbeans.modules.keyring.impl.Utils;
 import org.netbeans.modules.keyring.spi.EncryptionProvider;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;

@@ -47,7 +47,8 @@
  * Base64 encoding or similar, this API permits passwords to be stored securely.</p>
  * <div class="nonnormative">
  * <p>There are several platform-specific implementations of password storage
- * currently available, which offer the best combination of security and convenience:</p>
+ * currently available in a separate module {@code org.netbeans.modules.keyring.impl},
+ * which offer the best combination of security and convenience:</p>
  * <ol>
  * <li>Login-based encryption on Windows. (NetBeans physically stores the encrypted passwords.)</li>
  * <li>Mac OS X Keychain, using the default login keychain.</li>
@@ -67,7 +68,8 @@
  * {@code go-w} on Unix systems, to discourage brute-force cracking attempts on
  * multiuser machines.</p>
  * <p>If even master password encryption is unavailable, due to missing security
- * providers, or a headless AWT which makes dialogs impossible, then a trivial
+ * providers, or a headless AWT which makes dialogs impossible, or simply because
+ * the implementation module is not available, then a trivial
  * implementation is used which just keeps passwords in memory for the duration
  * of the JVM session.</p>
  * </div>
