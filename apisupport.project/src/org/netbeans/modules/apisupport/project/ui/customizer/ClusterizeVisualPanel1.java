@@ -80,6 +80,14 @@ final class ClusterizeVisualPanel1 extends JPanel {
         progressPanel.removeAll();
     }
 
+    private String dirName() {
+        int l = panel.settings.file.getPath().length();
+        if (l > 30) {
+            return "..." + panel.settings.file.getPath().substring(l - 30);
+        }
+        return panel.settings.file.getPath();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -92,7 +100,7 @@ final class ClusterizeVisualPanel1 extends JPanel {
         progressPanel = new javax.swing.JPanel();
         progressName = new javax.swing.JPanel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(warningPanel, org.openide.util.NbBundle.getMessage(ClusterizeVisualPanel1.class, "MSG_NotValidCluster", panel.settings.file));
+        org.openide.awt.Mnemonics.setLocalizedText(warningPanel, org.openide.util.NbBundle.getMessage(ClusterizeVisualPanel1.class, "MSG_NotValidCluster", dirName()));
         warningPanel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
         progressPanel.setLayout(new java.awt.BorderLayout());
