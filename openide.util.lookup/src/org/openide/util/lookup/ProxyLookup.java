@@ -948,18 +948,33 @@ public class ProxyLookup extends Lookup {
             this.lookups = lookups;
         }
 
+        @Override
         protected final boolean isEmpty() {
             return false;
         }
 
+        @Override
         protected Map<Template, Reference<R>> getResults() {
-            boolean strict = false;
-            assert strict = true;
-            return strict ? Collections.unmodifiableMap(results) : results;
+            boolean needsStrict = false;
+            assert needsStrict = true;
+            return needsStrict && !isUnmodifiable(results) ? unmodifiableMap(results) : results;
         }
         
+        @Override
         protected Object getRawLookups() {
             return lookups;
+        }
+
+        private static Class<?> unmodifiableClass;
+        private static boolean isUnmodifiable(Map<?,?> map) {
+            return map.getClass() == unmodifiableClass;
+        }
+        private static <K,V> Map<K,V> unmodifiableMap(Map<K,V> map) {
+            Map<K,V> res = Collections.unmodifiableMap(map);
+            if (unmodifiableClass == null) {
+                unmodifiableClass = res.getClass();
+            }
+            return res;
         }
     }
     
