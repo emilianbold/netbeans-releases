@@ -47,7 +47,7 @@
 
     <target name="ant-extra" depends="init">
         <mkdir dir="build/antclasses"/>
-        <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true">
+        <javac srcdir="antsrc" destdir="build/antclasses" source="1.6" debug="true" deprecation="true">
             <classpath>
                 <path refid="cp"/>
                 <pathelement location="${netbeans.dest.dir}/java/ant/lib/ant.jar"/>

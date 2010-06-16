@@ -64,8 +64,8 @@ build_info.BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 build_info.USE_HTML_ZIP_LISTING = 0;
 
 build_info.add_download_tabs = function() {
-	add_download_tab("6.8", "http://www.netbeans.org/downloads");
-	add_download_tab("6.9 Beta", "http://download.netbeans.org/netbeans/6.9/beta/");
+	add_download_tab("6.8", "http://netbeans.org/downloads");
+	add_download_tab("6.9 RC", "http://download.netbeans.org/netbeans/6.9/rc/");
 	add_download_tab(DEVELOPMENT_TITLE /*,DEVELOPMENT_BUILDS_LINK*/);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }

@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor;
@@ -207,7 +207,8 @@ class DocRenderer {
 
     static final class PHPDocExtractor extends UserTask {
         // http://manual.phpdoc.org/HTMLSmartyConverter/HandS/phpDocumentor/tutorial_phpDocumentor.howto.pkg.html#basics.desc
-        private static final Pattern KEEP_TAGS_PATTERN = Pattern.compile("<(?!(/|b|code|br|i|kbd|li|ol|p|pre|samp|ul|var)(\\b|\\s))", Pattern.CASE_INSENSITIVE); // NOI18N
+        // + table (table, tr, th, td)
+        private static final Pattern KEEP_TAGS_PATTERN = Pattern.compile("<(?!(/|b|code|br|i|kbd|li|ol|p|pre|samp|ul|var|table|tr|th|td)(\\b|\\s))", Pattern.CASE_INSENSITIVE); // NOI18N
         private static final Pattern REPLACE_CODE_PATTERN = Pattern.compile("(?<=(</|<))code>", Pattern.CASE_INSENSITIVE); // NOI18N
         private static final Pattern REPLACE_NEWLINE_PATTERN = Pattern.compile("(\r?\n){2,}"); // NOI18N
 
@@ -237,7 +238,7 @@ class DocRenderer {
             int paramCount = functionDeclaration.getFormalParameters().size();
 
             for (int i = 0; i < paramCount; i++) {
-                FormalParameter param = functionDeclaration.getFormalParameters().get(i);                
+                FormalParameter param = functionDeclaration.getFormalParameters().get(i);
                 if (param.getParameterType() != null) {
                     Identifier paramId = CodeUtils.extractUnqualifiedIdentifier(param.getParameterType());
                     if (paramId != null) {
@@ -269,7 +270,7 @@ class DocRenderer {
             header.appendText(")");
             header.parameters(false);
         }
-       
+
         private void extractPHPDoc(PHPDocBlock pHPDocBlock) {
             StringBuilder params = new StringBuilder();
             StringBuilder links = new StringBuilder();
@@ -376,7 +377,7 @@ class DocRenderer {
                     String value = null;
                     if (indexedElement instanceof ConstantElement) {
                         ConstantElement constant = (ConstantElement) indexedElement;
-                        value = constant.getValue();                       
+                        value = constant.getValue();
                     } else if (indexedElement instanceof TypeConstantElement) {
                         TypeConstantElement constant = (TypeConstantElement) indexedElement;
                         value = constant.getValue();

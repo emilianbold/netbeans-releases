@@ -66,10 +66,10 @@ class NamespaceKey extends ProjectNameBasedKey {
         hashCode = _hashCode();
     }
 
-    private static String getProjectName(CsmNamespace ns) {
+    private static CharSequence getProjectName(CsmNamespace ns) {
         ProjectBase prj = (ProjectBase) ns.getProject();
         assert (prj != null) : "no project in namespace";
-        return prj == null ? "<No Project Name>" : prj.getUniqueName().toString();  // NOI18N
+        return prj == null ? ProjectFileNameBasedKey.NO_PROJECT : prj.getUniqueName();  // NOI18N
     }
 
     @Override
@@ -77,6 +77,7 @@ class NamespaceKey extends ProjectNameBasedKey {
         return "NSKey " + fqn + " of project " + getProjectName(); // NOI18N
     }
 
+    @Override
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
     }
@@ -128,10 +129,12 @@ class NamespaceKey extends ProjectNameBasedKey {
         return this.fqn;
     }
 
+    @Override
     public int getSecondaryDepth() {
         return 1;
     }
 
+    @Override
     public int getSecondaryAt(int level) {
         assert level == 0;
         return KeyObjectFactory.KEY_NAMESPACE_KEY;

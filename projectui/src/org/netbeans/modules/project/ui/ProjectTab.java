@@ -151,7 +151,7 @@ public class ProjectTab extends TopComponent
     private boolean synchronizeViews = false;
 
     private FileObject objectToSelect;
-
+    private boolean prompt;
     private Task selectionTask;
 
     private static final int NODE_SELECTION_DELAY = 200;
@@ -469,11 +469,11 @@ public class ProjectTab extends TopComponent
             if (synchronizeViews) {
                 Collection<? extends FileObject> fos = foSelection.allInstances();
                 if (fos.size() == 1) {
-                    selectNodeAsyncNoSelect(fos.iterator().next());
+                    selectNodeAsyncNoSelect(fos.iterator().next(), false);
                 } else {
                     Collection<? extends DataObject> dos = doSelection.allInstances();
                     if (dos.size() == 1) {
-                        selectNodeAsyncNoSelect((dos.iterator().next()).getPrimaryFile());
+                        selectNodeAsyncNoSelect((dos.iterator().next()).getPrimaryFile(), false);
                     }
                 }
             }
@@ -513,7 +513,7 @@ public class ProjectTab extends TopComponent
         setCursor( Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) );
         open();
         requestActive();
-        selectNodeAsyncNoSelect(object);
+        selectNodeAsyncNoSelect(object, true);
     }
 
     private Task createSelectionTask() {
@@ -547,7 +547,7 @@ public class ProjectTab extends TopComponent
                              break;
                          }
                      }
-                     if (project != null && found == null) {
+                     if (prompt && project != null && found == null) {
                          String message = NbBundle.getMessage(ProjectTab.class, "MSG_openProject_confirm", //NOI18N
                                  ProjectUtils.getInformation(project).getDisplayName());
                          String title = NbBundle.getMessage(ProjectTab.class, "MSG_openProject_confirm_title");//NOI18N
@@ -575,8 +575,7 @@ public class ProjectTab extends TopComponent
                             catch ( PropertyVetoException e ) {
                                 // Bad day node found but can't be selected
                             }
-                        }
-                        else {
+                        } else if (prompt) {
                             StatusDisplayer.getDefault().setStatusText(
                                 NbBundle.getMessage( ProjectTab.class,
                                                      ID_LOGICAL.equals( id ) ? "MSG_NodeNotFound_ProjectsTab" : "MSG_NodeNotFound_FilesTab" ) ); // NOI18N
@@ -589,8 +588,9 @@ public class ProjectTab extends TopComponent
         return task;
     }
 
-    private void selectNodeAsyncNoSelect(final FileObject object) {
+    private void selectNodeAsyncNoSelect(FileObject object, boolean prompt) {
         objectToSelect = object;
+        this.prompt = prompt;
         selectionTask.schedule(NODE_SELECTION_DELAY);
     }
 

@@ -93,17 +93,17 @@ public class ProjectsViewSubMenusTest extends PerformanceTestCase {
  
     
     public void testProjectNodeMercurialSubmenu() {
-        testedSubmenu = Bundle.getStringTrimmed("org.netbeans.modules.mercurial.Bundle","CTL_Mercurial_DisplayName"); //CVS
+        testedSubmenu = "Versioning"; //CVS
         testNode(getProjectNode("PerformanceTestData"));
     }
 
     public void testProjectNodeLocalHistorySubmenu() {
-        testedSubmenu = Bundle.getStringTrimmed("org.netbeans.modules.localhistory.Bundle","CTL_MainMenuItem"); //CVS
+        testedSubmenu = "Local History"; //CVS
         testNode(getProjectNode("PerformanceTestData"));
     }
     
     public void testProjectNodeNewSubmenu(){
-        testedSubmenu = Bundle.getStringTrimmed("org.openide.actions.Bundle","NewFromTemplate"); //New
+        testedSubmenu = "New"; //New
         testNode(getProjectNode("PerformanceTestData"));
     }
     
@@ -136,10 +136,10 @@ public class ProjectsViewSubMenusTest extends PerformanceTestCase {
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
     }
     
-    public void setUp () {
+/*    public void setUp () {
     }
     
     public void tearDown() {
-    }
+    }*/
     
 }

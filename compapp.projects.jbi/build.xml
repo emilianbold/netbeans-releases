@@ -75,8 +75,8 @@ made subject to such option by the copyright holder.
                 <pathelement location="${cluster}/${module.jar}"/>
             </classpath>
         </javac>
-        <mkdir dir="${cluster}/modules/ext/jbi"/>
-        <jar jarfile="${cluster}/modules/ext/jbi/catd.jar" compress="false">
+        <mkdir dir="${cluster}/modules/ext"/>
+        <jar jarfile="${cluster}/modules/ext/catd.jar" compress="false">
             <fileset dir="build/catdclasses"/>
         </jar>
     </target>

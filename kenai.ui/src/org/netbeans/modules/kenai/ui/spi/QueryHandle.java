@@ -21,6 +21,12 @@ public abstract class QueryHandle {
     public static final String PROP_QUERY_RESULT = "queryResult"; // NOI18N
 
     /**
+     * The name of property which is fired when the All Issues
+     * query Top Component for this project was activated.
+     */
+    public static final String PROP_QUERY_ACTIVATED = "queryActivated"; // NOI18N
+
+    /**
      * 
      * @return Display name (the text before parenthesis in ui spec)
      */

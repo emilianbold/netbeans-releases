@@ -121,12 +121,8 @@ public class JavaCustomIndexer extends CustomIndexer {
     private static final String DIRTY_ROOT = "dirty"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
+    private static final int TRESHOLD = 500;
 
-    private static final CompileWorker[] WORKERS = {
-        new OnePassCompileWorker(),
-        new MultiPassCompileWorker()
-    };
-        
     @Override
     protected void index(final Iterable<? extends Indexable> files, final Context context) {
         JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", context.isAllFilesIndexing() ? context.getRootURI() : files); //NOI18N
@@ -204,6 +200,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                             List<CompileTuple> toCompileRound = toCompile;
                             int round = 0;
                             while (round++ < 2) {
+                                CompileWorker[] WORKERS = {
+                                    toCompileRound.size() < TRESHOLD ? new SuperOnePassCompileWorker() : new OnePassCompileWorker(),
+                                    new MultiPassCompileWorker()
+                                };
                                 for (CompileWorker w : WORKERS) {
                                     compileResult = w.compile(compileResult, context, javaContext, toCompileRound);
                                     if (compileResult == null || context.isCancelled()) {

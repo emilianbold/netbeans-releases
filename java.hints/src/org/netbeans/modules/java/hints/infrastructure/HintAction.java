@@ -26,13 +26,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints.infrastructure;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -41,37 +43,45 @@ import org.netbeans.api.java.source.JavaSource;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 
 public abstract class HintAction extends TextAction implements PropertyChangeListener {
     
     protected HintAction() {
-        super(null);
+        this(null);
+    }
+
+    protected HintAction(String key) {
+        super(key);
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
         
         TopComponent.getRegistry().addPropertyChangeListener(WeakListeners.propertyChange(this, TopComponent.getRegistry()));
         
-        if (!SwingUtilities.isEventDispatchThread()) {
-            setEnabled(false);
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateEnabled();
-                }
-            });
-        } else {
-            updateEnabled();
-        }
+        setEnabled(false);
+        updateEnabled();
     }
     
     private void updateEnabled() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    doUpdateEnabled();
+                }
+            });
+        } else {
+            doUpdateEnabled();
+        }
+    }
+
+    private void doUpdateEnabled() {
         setEnabled(getCurrentFile(null) != null);
     }
 
@@ -108,15 +118,34 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
     }
     
     protected abstract void perform(JavaSource js, int[] selection);
-    
+
+    private Reference<EditorCookie.Observable> lastECO;
+    private Reference<PropertyChangeListener> lastECOListener;
     private FileObject getCurrentFile(int[] span) {
         TopComponent tc = TopComponent.getRegistry().getActivated();
         Lookup l = tc != null ? tc.getLookup() : null;
         EditorCookie ec = l != null ? l.lookup(EditorCookie.class) : null;
         JTextComponent pane = ec != null ? NbDocument.findRecentEditorPane(ec) : null;
-        
-        if(pane == null)
+
+        if(pane == null) {
+            if (ec instanceof Observable) {
+                Observable lastECO = this.lastECO != null ? this.lastECO.get() : null;
+                PropertyChangeListener lastECOListener = this.lastECOListener != null ? this.lastECOListener.get() : null;
+
+                if (lastECO != null && lastECOListener != null) {
+                    lastECO.removePropertyChangeListener(lastECOListener);
+                }
+
+                Observable eco = (Observable) ec;
+                PropertyChangeListener ecoListener = WeakListeners.propertyChange(this, eco);
+
+                eco.addPropertyChangeListener(ecoListener);
+
+                this.lastECO = new WeakReference<Observable>(eco);
+                this.lastECOListener = new WeakReference<PropertyChangeListener>(ecoListener);
+            }
             return null;
+        }
         if (span != null) {
             span[0] = pane.getSelectionStart();
             span[1] = pane.getSelectionEnd();

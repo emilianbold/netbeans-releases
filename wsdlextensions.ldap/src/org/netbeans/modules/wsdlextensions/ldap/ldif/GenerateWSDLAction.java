@@ -15,6 +15,9 @@ import org.openide.util.actions.CookieAction;
 public final class GenerateWSDLAction extends CookieAction {
 
     protected void performAction(Node[] activatedNodes) {
+        if (activatedNodes == null || activatedNodes.length == 0) {
+            return;
+        }
         DataObject dataObject = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
         // TODO use dataObject
         Iterator it = dataObject.files().iterator();

@@ -388,7 +388,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             nextAction.setEnabled(false);
         }
         prevAction.setEnabled(currentIndex > 0 || currentDifferenceIndex > 0);
-        dividerSet = false;
     }
     
     @Override
@@ -722,6 +721,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
+                dividerSet = false;
                 setSetups(newSetups, cookies);
                 fileTable.setTableModel(setups, editorCookies);
 

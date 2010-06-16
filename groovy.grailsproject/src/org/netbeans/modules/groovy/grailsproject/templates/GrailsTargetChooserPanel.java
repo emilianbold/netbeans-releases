@@ -148,10 +148,10 @@ public final class GrailsTargetChooserPanel implements WizardDescriptor.Panel<Wi
             returnValue = false;
         }
 
-//        if (returnValue && gui.getPackageName().length() == 0) {
-//            //Only warning, display it only if everything else is OK.
-//            setErrorMessage( "ERR_GrailsTargetChooser_DefaultPackage" );
-//        }
+        if (returnValue && gui.getPackageName().length() == 0) {
+            //Only warning, display it only if everything else is OK.
+            setWarningMessage("ERR_GrailsTargetChooser_DefaultPackage");
+        }
 
         // this enables to display error messages from the bottom panel
         // Nevertheless, the previous error messages have bigger priorities
@@ -234,6 +234,14 @@ public final class GrailsTargetChooserPanel implements WizardDescriptor.Panel<Wi
             wizard.getNotificationLineSupport().clearMessages();
         } else {
             wizard.getNotificationLineSupport().setErrorMessage(NbBundle.getMessage(GrailsTargetChooserPanelGUI.class, key));
+        }
+    }
+
+    private void setWarningMessage(String key) {
+        if (key == null) {
+            wizard.getNotificationLineSupport().clearMessages();
+        } else {
+            wizard.getNotificationLineSupport().setWarningMessage(NbBundle.getMessage(GrailsTargetChooserPanelGUI.class, key));
         }
     }
 

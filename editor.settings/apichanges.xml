@@ -108,6 +108,20 @@ is the proper place.
 
     <changes>
 
+        <change id="added.SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE">
+            <summary>Adding SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE</summary>
+            <version major="1" minor="33"/>
+            <date day="9" month="6" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+            <p>
+                Adding new constant <code>SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE</code>.
+            </p>
+            </description>
+            <issue number="157561"/>
+        </change>
+
         <change id="added.SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE">
             <summary>Adding SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE</summary>
             <version major="1" minor="30"/>

@@ -114,7 +114,10 @@ public class ElfReader extends ByteStreamReader {
             }
             
             long nameOffset = sectionHeadersTable[sectionIdx].sh_name;
-            return stringTableSection.getString(nameOffset);
+            String name = stringTableSection.getString(nameOffset);
+            //sectionHeadersTable[sectionIdx].name = name;
+            //System.err.println("Section "+name+" offset "+sectionHeadersTable[sectionIdx].sh_offset + " address "+sectionHeadersTable[sectionIdx].sh_addr);
+            return name;
         } else {
             return sectionHeadersTable[sectionIdx].getSectionName();
         }
@@ -381,8 +384,47 @@ public class ElfReader extends ByteStreamReader {
         }
         return str.toString();
     }
-    
-    private void readProgramHeaderTable() {
+
+    public List<String> readPubNames() throws IOException{
+        List<String> res = new ArrayList<String>();
+        long save = getFilePointer();
+        seek(elfHeader.e_phoff);
+        for(int i = 0; i < elfHeader.e_phnum; i++) {
+            long p = getFilePointer();
+            int type = readInt();
+            if (type == 2) {
+                long addr = read3264();
+                seek(addr);
+                List<Integer> libs = new ArrayList<Integer>();
+                while(true) {
+                    int tag = readInt();
+                    if (tag == 0) {
+                        break;
+                    }
+                    int ptr = readInt();
+                    //System.err.println("tag "+tag+" "+ptr);
+                    if (tag == 1) { //DT_NEEDED
+                        libs.add(ptr);
+                    }
+                }
+                Integer idx = sectionsMap.get(SECTIONS.DYN_STR);
+                if (idx != null) {
+                    long start = sectionHeadersTable[idx].sh_offset;
+                    for(int l : libs){
+                        seek(start+l);
+                        res.add(readString());
+                    }
+                }
+
+                break;
+            }
+            seek(p+elfHeader.e_phentsize);
+        }
+        seek(save);
+        return res;
+    }
+
+    private void readProgramHeaderTable() throws IOException {
         // TODO: Add code
     }
     

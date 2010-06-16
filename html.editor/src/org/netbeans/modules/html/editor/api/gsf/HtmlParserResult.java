@@ -43,9 +43,13 @@ package org.netbeans.modules.html.editor.api.gsf;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNode.Description;
@@ -61,6 +65,7 @@ import org.netbeans.modules.html.editor.HtmlVersion;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * HTML parser result
@@ -73,7 +78,8 @@ public class HtmlParserResult extends ParserResult {
      * Used as a key of a swing document to find a default fallback dtd.
      */
     public static final String FALLBACK_DTD_PROPERTY_NAME = "fallbackDTD";
-
+    private static final String UNEXPECTED_TOKEN = "unexpected_token"; //NOI18N
+    
     private SyntaxParserResult result;
     private List<Error> errors;
     private boolean isValid = true;
@@ -239,7 +245,9 @@ public class HtmlParserResult extends ParserResult {
     @Override
     public synchronized List<? extends Error> getDiagnostics() {
         if (errors == null) {
-            errors = new ArrayList<Error>(findErrors());
+            errors = new ArrayList<Error>();
+            errors.addAll(findErrors());
+            errors.addAll(findLexicalErrors());
         }
         return errors;
     }
@@ -247,6 +255,36 @@ public class HtmlParserResult extends ParserResult {
     @Override
     protected void invalidate() {
         this.isValid = false;
+    }
+
+    private List<Error> findLexicalErrors() {
+        TokenHierarchy th = getSnapshot().getTokenHierarchy();
+        TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());
+        if (ts == null) {
+            return Collections.emptyList();
+        }
+
+        final List<Error> lexicalErrors = new ArrayList<Error>();
+        ts.moveStart();
+        while (ts.moveNext()) {
+            if (ts.token().id() == HTMLTokenId.ERROR) {
+                //some error in the node, report
+                String msg = NbBundle.getMessage(HtmlParserResult.class, "MSG_UnexpectedToken", ts.token().text()); //NOI18N
+                DefaultError error =
+                        new DefaultError(UNEXPECTED_TOKEN,
+                        msg,
+                        msg,
+                        getSnapshot().getSource().getFileObject(),
+                        ts.offset(),
+                        ts.offset() + ts.token().length(),
+                        false /* not line error */,
+                        Severity.ERROR);
+                
+                lexicalErrors.add(error);
+            }
+        }
+        return lexicalErrors;
+
     }
 
     private List<Error> findErrors() {

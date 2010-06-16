@@ -76,12 +76,14 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 import org.netbeans.modules.glassfish.eecommon.api.UrlData;
+import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 
 /**
@@ -556,6 +558,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         } catch (ParserConfigurationException ex) {
             Exceptions.printStackTrace(ex);
         }
+        docBuilder.setEntityResolver(DDResolver.getInstance());
         Document doc = readResourceFile(docBuilder, sunResourcesXml);
 
 
@@ -661,6 +664,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         } catch (ParserConfigurationException ex) {
             Exceptions.printStackTrace(ex);
         }
+        docBuilder.setEntityResolver(DDResolver.getInstance());
         Document doc = readResourceFile(docBuilder, sunResourcesXml);
 
         NodeList resourcesNodes = doc.getElementsByTagName("resources");//NOI18N
@@ -913,4 +917,29 @@ public class Hk2DatasourceManager implements DatasourceManager {
         
     }
     
+    private static class DDResolver implements EntityResolver {
+        static DDResolver resolver;
+        static synchronized DDResolver getInstance() {
+            if (resolver==null) {
+                resolver=new DDResolver();
+            }
+            return resolver;
+        }
+
+        @Override
+        public InputSource resolveEntity(String publicId, String systemId) {
+
+            String resource=null;
+            // return a proper input source
+            if (systemId!=null && systemId.endsWith("sun-resources_1_3.dtd")) {
+                resource="/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-resources_1_3.dtd"; //NOI18N
+            }
+
+            if (resource==null) {
+                return null;
+            }
+            java.net.URL url = RootInterface.class.getResource(resource);
+            return new InputSource(url.toString());
+        }
+    }
 }

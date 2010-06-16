@@ -122,7 +122,7 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
     */
     @Override
     protected FileObject handleRename (String name) throws IOException {
-        FileLock lock = getPrimaryFile ().lock ();
+        FileLock lock = getPrimaryEntry().takeLock();
         int pos = name.lastIndexOf('.');
         
         try {

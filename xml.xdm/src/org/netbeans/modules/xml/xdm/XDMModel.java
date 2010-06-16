@@ -100,7 +100,7 @@ public class XDMModel {
      */
     public XDMModel(ModelSource ms) {
         source = ms;
-        assert getSwingDocument() != null;
+        // assert getSwingDocument() != null; // It can be null, for example if the file is deleted. 
         ues = new UndoableEditSupport(this);
         pcs = new PropertyChangeSupport(this);
         parser = new XMLSyntaxParser();
@@ -162,12 +162,21 @@ public class XDMModel {
     }
     
     public synchronized void prepareSync() {
+        //
+        BaseDocument baseDoc = getSwingDocument();
+        if (baseDoc == null) {
+            // the document can be null, for example, if the file is deleted. 
+            IOException ioe = new IOException("Base document not accessible"); // NOI18N
+            preparation = new SyncPreparation(ioe);
+            return;
+        }
+        //
         Status oldStat = getStatus();
         try {
             setStatus(Status.PARSING);  // to access in case old broken tree            
             //must set the language for XML lexer to work.
-            getSwingDocument().putProperty(Language.class, XMLTokenId.language());
-            Document newDoc = parser.parse(getSwingDocument());
+            baseDoc.putProperty(Language.class, XMLTokenId.language());
+            Document newDoc = parser.parse(baseDoc);
             Document oldDoc = getCurrentDocument();
             if (oldDoc == null) {
                 preparation = new SyncPreparation(newDoc);
@@ -864,6 +873,9 @@ public class XDMModel {
         checkStableState();
 	UndoableEditListener uel = null;
 	BaseDocument d = getSwingDocument();
+        if (d == null) {
+            return; // Destination document doesn't exist. For example, because the file is deleted. 
+        }
 	final CompoundEdit ce = new CompoundEdit();
         try {
             FlushVisitor flushvisitor = new FlushVisitor();

@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <cpp>
-        <version flags="-V" pattern=".*Sun C\+\+ 5.11\s\S*\s(?!Aten)"/>
+        <version flags="-V" pattern=".*Sun C\+\+ 5.11 [^ ]+_[^ ]+ 20"/>
         <development_mode>
            <performance_release flags="-fast -xipo -xvector=simd -g0"/>
         </development_mode>

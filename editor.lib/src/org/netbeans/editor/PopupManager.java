@@ -44,6 +44,7 @@
 
 package org.netbeans.editor;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -372,12 +373,12 @@ public class PopupManager {
         int belowCursorHeight = viewHeight - belowCursorY;
         
         // Resolve *Preferred placements first
+        Dimension prefSize = popup.getPreferredSize();
         if (placement == AbovePreferred || placement == BelowPreferred) {
-            int prefHeight = popup.getPreferredSize().height;
             if (placement == AbovePreferred) {
-                placement = (prefHeight <= aboveCursorHeight) ? Above : Largest;
+                placement = (prefSize.height <= aboveCursorHeight) ? Above : Largest;
             } else { // BelowPreferred
-                placement = (prefHeight <= belowCursorHeight) ? Below : Largest;
+                placement = (prefSize.height <= belowCursorHeight) ? Below : Largest;
             }
         }
         
@@ -396,8 +397,10 @@ public class PopupManager {
             int height = (placement == Above || placement == AbovePreferred)
                 ? aboveCursorHeight
                 : belowCursorHeight;
+            height = Math.min(height, prefSize.height);
+            int width = Math.min(viewWidth, prefSize.width);
 
-            popup.setSize(viewWidth, height);
+            popup.setSize(width, height);
             popupBounds = popup.getBounds();
 
             Placement updatedPlacement = (Placement)popup.getClientProperty(Placement.class);
