@@ -75,12 +75,12 @@ BUNDLE_LONG_NAMES[4] = "C/C++";
 BUNDLE_LONG_NAMES[5] = "PHP";
 BUNDLE_LONG_NAMES[6] = "All";
 
-var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/69/relnotes.html";
-var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/69/install.html";
+var RELEASE_NOTES_LINK  = "http://netbeans.org/community/releases/69/relnotes.html";
+var INSTALL_NOTES_LINK  = "http://netbeans.org/community/releases/69/install.html";
 
 var LEGAL_INFO_HEADER = "Important Legal Information:";
 
-var CDDL_GPLV2_LINK = "http://www.netbeans.org/cddl-gplv2.html";
+var CDDL_GPLV2_LINK = "http://netbeans.org/cddl-gplv2.html";
 var LICENSE_3RD_PARTY_LINK = "http://www.netbeans.info/downloads/licence/netbeans-3rd-party.txt";
 
 var LEGAL_INFO_MESSAGE = "NetBeans Community Distributions are available under a Dual License consisting of the <a href=\"{0}\">Common Development and Distribution License (CDDL) v1.0 and GNU General Public License (GPL) v2</a>. See the <a href=\"{1}\">third-party readme</a> for external components included in NetBeans and their associated licenses.";
