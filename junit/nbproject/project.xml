@@ -103,7 +103,7 @@ made subject to such option by the copyright holder.
                 <dependency>
                     <code-name-base>org.netbeans.libs.junit4</code-name-base>
                     <run-dependency>
-                        <specification-version>1.2</specification-version>
+                        <specification-version>1.11</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -342,6 +342,18 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.util.lookup</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>
