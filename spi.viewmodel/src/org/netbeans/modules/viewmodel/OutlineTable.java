@@ -648,8 +648,9 @@ ExplorerManager.Provider, PropertyChangeListener {
         int ci = 0;
         int tci = d;
         TableColumn[] tableColumns = new TableColumn[columns.length];
+        if (defaultColumnIndex > 0) tci++;
         for (int i = 0; i < columns.length; i++) {
-            if (ci < columnsToSet.length && columns[i] == columnsToSet[ci]) {
+            if (ci < columnsToSet.length && columns[i] == columnsToSet[ci] && i != defaultColumnIndex) {
                 TableColumn tc = tcm.getColumn(tci);
                 tableColumns[i] = tc;
                 if (columns[i] instanceof Column) {
