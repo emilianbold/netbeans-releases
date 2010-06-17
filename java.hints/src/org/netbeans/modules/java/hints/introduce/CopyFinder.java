@@ -114,7 +114,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
     private boolean allowVariablesRemap = false;
     private boolean nocheckOnAllowVariablesRemap = false;
     private AtomicBoolean cancel;
-
+    private static final String CLASS = "class"; //NOI18N
 
     private Map<String, TypeMirror> designedTypeHack;
 
@@ -1315,6 +1315,12 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
         if (nodeEl == null || pEl == null)
             return VerifyResult.NO_MATCH;
+
+        if (nodeEl.getKind() == pEl.getKind() && nodeEl.getKind() == ElementKind.FIELD
+                && CLASS.contentEquals(((VariableElement)nodeEl).getSimpleName())
+                && CLASS.contentEquals(((VariableElement)pEl).getSimpleName())) {
+            return VerifyResult.MATCH_CHECK_DEEPER;
+        }
 
         if (nodeEl.getKind() == pEl.getKind() && nodeEl.getKind() == ElementKind.METHOD) {
             if (info.getElements().overrides((ExecutableElement) nodeEl, (ExecutableElement) pEl, (TypeElement) nodeEl.getEnclosingElement())) {
