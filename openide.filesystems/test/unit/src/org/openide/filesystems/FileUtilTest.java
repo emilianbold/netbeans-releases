@@ -298,6 +298,23 @@ public class FileUtilTest extends NbTestCase {
         }
     }
 
+    public void testNormalizeFileIsCached() throws Exception {
+        File f = new File(getWorkDir(), "text.txt");
+        CharSequence log = Log.enable(FileUtil.class.getName(), Level.FINE);
+        File one = FileUtil.normalizeFile(f);
+        String msg = "FileUtil.normalizeFile for " + f;
+        if (log.toString().indexOf(msg) == -1) {
+            fail("One querfy for the file shall be in logs:\n" + log);
+        }
+        CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
+        File two = FileUtil.normalizeFile(f);
+        if (log2.toString().contains(msg)) {
+            fail("No second FileUtil.normalizeFile for in:\n" + log);
+        }
+        assertEquals("Files are equal", one, two);
+    }
+
+
     /** Tests that only resolvers are queried which supply at least one of
      * MIME types given in array in FileUtil.getMIMEType(fo, String[]).
      * See issue 137734.

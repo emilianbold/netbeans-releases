@@ -51,6 +51,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -71,6 +73,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
@@ -1674,9 +1677,26 @@ public final class FileUtil extends Object {
      * @since 4.48
      */
     public static File normalizeFile(final File file) {
+        Map<String, String> normalizedPaths = getNormalizedFilesMap();
+        String unnormalized = file.getPath();
+        String normalized = normalizedPaths.get(unnormalized);
+        File ret;
+        if (normalized == null) {
+            ret = normalizeFileImpl(file);
+            normalizedPaths.put(unnormalized, ret.getPath());
+        } else if (normalized.equals(unnormalized)) {
+            ret = file;
+        } else {
+            ret = new File(normalized);
+        }
+        return ret;
+    }
+
+    private static File normalizeFileImpl(File file) {
         // XXX should use NIO in JDK 7; see #6358641
         Parameters.notNull("file", file);  //NOI18N
         File retFile;
+        LOG.log(Level.FINE, "FileUtil.normalizeFile for {0}", file); // NOI18N
 
         long now = System.currentTimeMillis();
         if ((Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) {
@@ -1806,6 +1826,21 @@ public final class FileUtil extends Object {
         }
 
         return (retVal != null) ? retVal : file.getAbsoluteFile();
+    }
+
+    private static Reference<Map<String, String>> normalizedRef = new SoftReference<Map<String, String>>(new ConcurrentHashMap<String, String>());
+    private static Map<String, String> getNormalizedFilesMap() {
+        Map<String, String> map = normalizedRef.get();
+        if (map == null) {
+            synchronized (FileUtil.class) {
+                map = normalizedRef.get();
+                if (map == null) {
+                    map = new ConcurrentHashMap<String, String>();
+                    normalizedRef = new SoftReference<Map<String, String>>(map);
+                }
+            }
+        }
+        return map;
     }
 
     /**
