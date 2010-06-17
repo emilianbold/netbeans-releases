@@ -56,16 +56,10 @@
     <property name="sierra.user" value=".netbeans/sierra"/>
 
     <!-- NetBeans latest nightly -->
-    <!--property name="netbeans.host" value="http://smetiste.czech.sun.com"/-->
-    <!--property name="netbeans.path" value="builds/netbeans/trunk/daily/latest/zip"/-->
-    <!--property name="netbeans.zip"  value="netbeans-6.9.zip"/-->
-    <!--property name="netbeans.user" value=".netbeans/dev"/-->
-
-    <!-- NetBeans 6.9 RC2 -->
     <property name="netbeans.host" value="http://smetiste.czech.sun.com"/>
-    <property name="netbeans.path" value="builds/netbeans/6.9/rc2/latest/zip"/>
-    <property name="netbeans.zip"  value="netbeans-6.9.zip"/>
-    <property name="netbeans.user" value=".netbeans/6.9rc2"/>
+    <property name="netbeans.path" value="builds/netbeans/trunk/daily/latest/zip"/>
+    <property name="netbeans.zip"  value="netbeans.zip"/>
+    <property name="netbeans.user" value=".netbeans/dev"/>
 
     <!-- cvs -->
     <property name="test.cvs.host" value=":pserver:guest@cvs.dev.java.net:/cvs"/>
