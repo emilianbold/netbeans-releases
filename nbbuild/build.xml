@@ -1619,7 +1619,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
     <pathconvert property="modules.fullpath" >
         <path>
-            <dirset dir="${nb_all}" includes="${config.javadoc.stable}" />
+            <dirset dir="${nb_all}" includes="${config.javadoc.stable},${config.javadoc.devel}" />
         </path>
         <mapper type="identity" />
     </pathconvert>
