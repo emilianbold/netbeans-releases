@@ -57,7 +57,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.border.Border;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -82,6 +81,11 @@ public class FoldView extends EditorView implements TextLayoutView {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsView.level=FINE
     private static final Logger LOG = Logger.getLogger(FoldView.class.getName());
+
+    /**
+     * Extra space added to each side of description text of a fold view.
+     */
+    private static final float EXTRA_MARGIN_WIDTH = 3;
 
     /** Offset of start offset of this view. */
     private int rawOffset; // 24-super + 4 = 28 bytes
@@ -111,7 +115,7 @@ public class FoldView extends EditorView implements TextLayoutView {
             return 0f;
         }
         float span = (axis == View.X_AXIS)
-            ? textLayout.getAdvance()
+            ? textLayout.getAdvance() + (2 * EXTRA_MARGIN_WIDTH)
             : textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading();
         return span;
     }
@@ -178,13 +182,13 @@ public class FoldView extends EditorView implements TextLayoutView {
 
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias) {
-        TextLayout textLayout = getTextLayout();
-        if (textLayout == null) {
-            return alloc; // Leave given bounds
-        }
-        TextHitInfo hit = TextHitInfo.afterOffset(0);
-        Rectangle2D.Double bounds = ViewUtils.shape2Bounds(alloc);
-        return bounds;
+//        TextLayout textLayout = getTextLayout();
+//        if (textLayout == null) {
+//            return alloc; // Leave given bounds
+//        }
+//        Rectangle2D.Double bounds = ViewUtils.shape2Bounds(alloc);
+//        return bounds;
+        return alloc;
     }
 
     @Override
@@ -195,6 +199,7 @@ public class FoldView extends EditorView implements TextLayoutView {
 
     static TextHitInfo x2RelOffset(TextLayout textLayout, float x) {
         TextHitInfo hit;
+        x -= EXTRA_MARGIN_WIDTH;
         if (x >= textLayout.getAdvance()) {
             hit = TextHitInfo.trailing(textLayout.getCharacterCount());
         } else {
@@ -292,7 +297,7 @@ public class FoldView extends EditorView implements TextLayoutView {
                 g.drawRect(xInt, yInt, endXInt - xInt, endYInt - yInt);
                 TextLayout textLayout = getTextLayout();
                 if (textLayout != null) {
-                    float x = (float) allocBounds.getX();
+                    float x = (float) (allocBounds.getX() + EXTRA_MARGIN_WIDTH);
                     float y = (float) allocBounds.getY();
                     textLayout.draw(g, x, y + textLayout.getAscent());
                 }
