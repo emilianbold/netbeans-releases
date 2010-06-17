@@ -105,7 +105,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import sun.reflect.generics.tree.TypeTree;
 
 /**
  * Generator of Java Persistence API ORM classes from DB.
@@ -174,6 +173,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
     }
 
 
+    @Override
     public void generateBeans(final ProgressPanel progressPanel,
             final RelatedCMPHelper helper,
             final FileObject dbSchemaFile,
@@ -262,6 +262,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
     }
 
+    @Override
     public void init(WizardDescriptor wiz) {
         // get the table names for all entities in the project
         Project project = Templates.getProject(wiz);
@@ -273,6 +274,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
            
         MetadataModel<EntityMappingsMetadata> entityMappingsModel = entityClassScope.getEntityMappingsModel(true);
         readHelper = MetadataModelReadHelper.create(entityMappingsModel, new MetadataModelAction<EntityMappingsMetadata, Set<Entity>>() {
+            @Override
             public Set<Entity> run(EntityMappingsMetadata metadata) {
                 Set<Entity> result = new HashSet<Entity>();
                 for (Entity entity : metadata.getRoot().getEntity()) {
@@ -305,17 +307,21 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         }
     }
 
+    @Override
     public void uninit() {
     }
 
+    @Override
     public String getFQClassName(String tableName) {
         return entityName2TableName.get(tableName);
     }
 
+    @Override
     public String generateEntityName(String name) {
         return name;
     }
 
+    @Override
     public Set<FileObject> createdObjects() {
         return result;
     }
@@ -480,6 +486,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO, pkClassFO) :
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO);
                     javaSource.runModificationTask(new Task<WorkingCopy>() {
+                        @Override
                         public void run(WorkingCopy copy) throws IOException {
                             if (copy.getFileObject().equals(entityClassFO)) {
                                 EntityClassGenerator clsGen = new EntityClassGenerator(copy, entityClass);
@@ -856,6 +863,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 entityFQClassName = entityClass.getPackage() + "." + entityClassName;
             }
 
+            @Override
             protected void initialize() throws IOException {
                 newClassTree = genUtils.ensureNoArgConstructor(newClassTree);
                 if (genSerializableEntities && !UpdateType.UPDATE.equals(updateType)) {
@@ -1050,6 +1058,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 namedQueryAnnotations.add(0, genUtils.createAnnotation("javax.persistence.NamedQuery", namedQueryAnnArguments)); //NOI18N
             }
 
+            @Override
             protected void afterMembersGenerated() {
                 if (!UpdateType.UPDATE.equals(updateType)){
                     addFindAllNamedQueryAnnotation();
@@ -1059,6 +1068,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
             }
 
+            @Override
             protected void generateRelationship(RelationshipRole role) throws IOException {
                 String memberName = role.getFieldName();
 
@@ -1218,6 +1228,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 return serialVersionUID;
             }
             
+            @Override
             protected void finish() {
                 
                 if(pkProperty != null) {
@@ -1305,6 +1316,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 super(copy, entityClass);
             }
 
+            @Override
             protected void initialize() throws IOException {
                 newClassTree = genUtils.ensureNoArgConstructor(newClassTree);
                 // primary key class must be serializable and @Embeddable
@@ -1312,6 +1324,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Embeddable")); // NOI18N
             }
 
+            @Override
             protected void generateMember(EntityMember m) throws IOException {
                 if (!m.isPrimaryKey()) {
                     return;
