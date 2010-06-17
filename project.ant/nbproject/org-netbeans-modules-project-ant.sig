@@ -1,8 +1,8 @@
 #Signature file v4.1
-#Version 1.35
+#Version 1.37
 
 CLSS public abstract java.awt.Component
-cons protected Component()
+cons protected init()
 fld public final static float BOTTOM_ALIGNMENT = 1.0
 fld public final static float CENTER_ALIGNMENT = 0.5
 fld public final static float LEFT_ALIGNMENT = 0.0
@@ -272,11 +272,11 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,ProxyCapabilities,SingleBufferStrategy
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,boundsOp,bufferStrategy,changeSupport,changeSupportLock,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dropTarget,enabled,eventCache,eventLog,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,opaquePropertyChangeListener,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,SingleBufferStrategy
 
 CLSS public java.awt.Container
-cons public Container()
+cons public init()
 innr protected AccessibleAWTContainer
 meth protected java.lang.String paramString()
 meth protected void addImpl(java.awt.Component,java.lang.Object,int)
@@ -353,12 +353,11 @@ meth public void setFocusTraversalKeys(int,java.util.Set<? extends java.awt.AWTK
 meth public void setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
 meth public void setFont(java.awt.Font)
 meth public void setLayout(java.awt.LayoutManager)
-meth public void transferFocusBackward()
 meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,descendantsCount,dispatcher,eventLog,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,log,mixingLog,modalAppContext,modalComp,ncomponents,numOfHWComponents,numOfLWComponents,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS public abstract interface java.awt.MenuContainer
@@ -383,7 +382,7 @@ CLSS public abstract interface java.io.Serializable
 CLSS public abstract interface java.lang.Cloneable
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -423,7 +422,7 @@ intf java.lang.annotation.Annotation
 meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public abstract java.util.AbstractMap<%0 extends java.lang.Object, %1 extends java.lang.Object>
-cons protected AbstractMap()
+cons protected init()
 innr public static SimpleEntry
 innr public static SimpleImmutableEntry
 intf java.util.Map<{java.util.AbstractMap%0},{java.util.AbstractMap%1}>
@@ -449,7 +448,7 @@ hfds keySet,values
 CLSS public abstract interface java.util.EventListener
 
 CLSS public java.util.EventObject
-cons public EventObject(java.lang.Object)
+cons public init(java.lang.Object)
 fld protected java.lang.Object source
 intf java.io.Serializable
 meth public java.lang.Object getSource()
@@ -478,7 +477,7 @@ CLSS public abstract interface javax.accessibility.Accessible
 meth public abstract javax.accessibility.AccessibleContext getAccessibleContext()
 
 CLSS public abstract javax.swing.JComponent
-cons public JComponent()
+cons public init()
 fld protected javax.accessibility.AccessibleContext accessibleContext
 fld protected javax.swing.event.EventListenerList listenerList
 fld protected javax.swing.plaf.ComponentUI ui
@@ -632,16 +631,16 @@ meth public void unregisterKeyboardAction(javax.swing.KeyStroke)
 meth public void update(java.awt.Graphics)
 meth public void updateUI()
 supr java.awt.Container
-hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_NOTIFIER_KEY,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_KEY,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,TRANSFER_HANDLER_KEY,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
+hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,REVALIDATE_RUNNABLE_SCHEDULED,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
 hcls ActionStandin,IntVector,KeyboardState,ReadObjectCallback
 
 CLSS public javax.swing.JFileChooser
-cons public JFileChooser()
-cons public JFileChooser(java.io.File)
-cons public JFileChooser(java.io.File,javax.swing.filechooser.FileSystemView)
-cons public JFileChooser(java.lang.String)
-cons public JFileChooser(java.lang.String,javax.swing.filechooser.FileSystemView)
-cons public JFileChooser(javax.swing.filechooser.FileSystemView)
+cons public init()
+cons public init(java.io.File)
+cons public init(java.io.File,javax.swing.filechooser.FileSystemView)
+cons public init(java.lang.String)
+cons public init(java.lang.String,javax.swing.filechooser.FileSystemView)
+cons public init(javax.swing.filechooser.FileSystemView)
 fld protected javax.accessibility.AccessibleContext accessibleContext
 fld public final static int APPROVE_OPTION = 0
 fld public final static int CANCEL_OPTION = 1
@@ -744,11 +743,11 @@ meth public void setSelectedFile(java.io.File)
 meth public void setSelectedFiles(java.io.File[])
 meth public void updateUI()
 supr javax.swing.JComponent
-hfds SHOW_HIDDEN_PROP,accessory,actionListener,approveButtonMnemonic,approveButtonText,approveButtonToolTipText,controlsShown,currentDirectory,dialog,dialogTitle,dialogType,dragEnabled,fileFilter,fileSelectionMode,fileSystemView,fileView,filters,multiSelectionEnabled,returnValue,selectedFile,selectedFiles,showFilesListener,uiClassID,uiFileView,useAcceptAllFileFilter,useFileHiding
+hfds SHOW_HIDDEN_PROP,accessory,approveButtonMnemonic,approveButtonText,approveButtonToolTipText,controlsShown,currentDirectory,dialog,dialogTitle,dialogType,dragEnabled,fileFilter,fileSelectionMode,fileSystemView,fileView,filters,multiSelectionEnabled,returnValue,selectedFile,selectedFiles,showFilesListener,uiClassID,uiFileView,useAcceptAllFileFilter,useFileHiding
 hcls WeakPCL
 
 CLSS public abstract org.netbeans.api.project.ant.AntArtifact
-cons protected AntArtifact()
+cons protected init()
 meth public abstract java.io.File getScriptLocation()
 meth public abstract java.lang.String getCleanTargetName()
 meth public abstract java.lang.String getTargetName()
@@ -785,14 +784,15 @@ supr java.lang.Object
 hfds db,extensions,implementation,refHelper
 
 CLSS public final org.netbeans.api.project.ant.AntBuildExtender$Extension
+ outer org.netbeans.api.project.ant.AntBuildExtender
 meth public void addDependency(java.lang.String,java.lang.String)
 meth public void removeDependency(java.lang.String,java.lang.String)
 supr java.lang.Object
 hfds dependencies,file,id,path
 
 CLSS public final org.netbeans.api.project.ant.FileChooser
-cons public FileChooser(java.io.File,java.io.File)
-cons public FileChooser(org.netbeans.spi.project.support.ant.AntProjectHelper,boolean)
+cons public init(java.io.File,java.io.File)
+cons public init(org.netbeans.spi.project.support.ant.AntProjectHelper,boolean)
 meth public java.lang.String[] getSelectedPathVariables()
 meth public java.lang.String[] getSelectedPaths() throws java.io.IOException
 meth public void approveSelection()
@@ -881,10 +881,10 @@ meth public abstract void configurationXmlChanged(org.netbeans.spi.project.suppo
 meth public abstract void propertiesChanged(org.netbeans.spi.project.support.ant.AntProjectEvent)
 
 CLSS public final org.netbeans.spi.project.support.ant.EditableProperties
-cons public EditableProperties()
+cons public init()
  anno 0 java.lang.Deprecated()
-cons public EditableProperties(boolean)
-cons public EditableProperties(java.util.Map<java.lang.String,java.lang.String>)
+cons public init(boolean)
+cons public init(java.util.Map<java.lang.String,java.lang.String>)
 intf java.lang.Cloneable
 meth public java.lang.Object clone()
 meth public java.lang.String get(java.lang.Object)
@@ -902,7 +902,7 @@ supr java.util.AbstractMap<java.lang.String,java.lang.String>
 hfds delegate
 
 CLSS public abstract org.netbeans.spi.project.support.ant.FilterPropertyProvider
-cons protected FilterPropertyProvider(org.netbeans.spi.project.support.ant.PropertyProvider)
+cons protected init(org.netbeans.spi.project.support.ant.PropertyProvider)
 intf org.netbeans.spi.project.support.ant.PropertyProvider
 meth protected final void setDelegate(org.netbeans.spi.project.support.ant.PropertyProvider)
 meth public final java.util.Map<java.lang.String,java.lang.String> getProperties()
@@ -912,9 +912,9 @@ supr java.lang.Object
 hfds cs,delegate,strongListener,weakListener
 
 CLSS public final org.netbeans.spi.project.support.ant.GeneratedFilesHelper
-cons public GeneratedFilesHelper(org.netbeans.spi.project.support.ant.AntProjectHelper)
-cons public GeneratedFilesHelper(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.api.project.ant.AntBuildExtender)
-cons public GeneratedFilesHelper(org.openide.filesystems.FileObject)
+cons public init(org.netbeans.spi.project.support.ant.AntProjectHelper)
+cons public init(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.api.project.ant.AntBuildExtender)
+cons public init(org.openide.filesystems.FileObject)
 fld public final static int FLAG_MISSING = 2
 fld public final static int FLAG_MODIFIED = 4
 fld public final static int FLAG_OLD_PROJECT_XML = 8
@@ -930,7 +930,7 @@ hfds GENFILES_PROPERTIES_PATH,KEY_SUFFIX_DATA_CRC,KEY_SUFFIX_SCRIPT_CRC,KEY_SUFF
 hcls EolFilterOutputStream
 
 CLSS public final org.netbeans.spi.project.support.ant.PathMatcher
-cons public PathMatcher(java.lang.String,java.lang.String,java.io.File)
+cons public init(java.lang.String,java.lang.String,java.io.File)
 meth public boolean matches(java.lang.String,boolean)
 meth public java.lang.String toString()
 meth public java.util.Set<java.io.File> findIncludedRoots()
@@ -943,7 +943,7 @@ meth public static org.netbeans.spi.project.support.ant.AntProjectHelper createP
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.spi.project.support.ant.ProjectXmlSavedHook
-cons protected ProjectXmlSavedHook()
+cons protected init()
 meth protected abstract void projectXmlSaved() throws java.io.IOException
 supr java.lang.Object
 
@@ -965,6 +965,7 @@ meth public static boolean isUsablePropertyName(java.lang.String)
 meth public static java.io.File resolveFile(java.io.File,java.lang.String)
 meth public static java.lang.String getUsablePropertyName(java.lang.String)
 meth public static java.lang.String relativizeFile(java.io.File,java.io.File)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public static java.lang.String[] tokenizePath(java.lang.String)
 meth public static org.netbeans.spi.project.support.ant.EditableProperties getGlobalProperties()
 meth public static org.netbeans.spi.project.support.ant.PropertyProvider fixedPropertyProvider(java.util.Map<java.lang.String,java.lang.String>)
@@ -977,7 +978,7 @@ hfds RELATIVE_SLASH_SEPARATED_PATH,VALID_PROPERTY_NAME,currentGlobalProperties,c
 hcls FilePropertyProvider,FixedPropertyProvider,UserPropertiesProvider
 
 CLSS public final org.netbeans.spi.project.support.ant.ReferenceHelper
-cons public ReferenceHelper(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.AuxiliaryConfiguration,org.netbeans.spi.project.support.ant.PropertyEvaluator)
+cons public init(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.AuxiliaryConfiguration,org.netbeans.spi.project.support.ant.PropertyEvaluator)
 innr public final static RawReference
 meth public boolean addRawReference(org.netbeans.spi.project.support.ant.ReferenceHelper$RawReference)
 meth public boolean addReference(org.netbeans.api.project.ant.AntArtifact)
@@ -1016,8 +1017,9 @@ supr java.lang.Object
 hfds FOREIGN_FILE_REFERENCE,FOREIGN_FILE_REFERENCE_OLD,FOREIGN_PLAIN_FILE_REFERENCE,LIBRARY_REFERENCE,REFS_NAME,REFS_NS,REFS_NS2,REF_NAME,aux,eval,extraBaseDirectories,h
 
 CLSS public final static org.netbeans.spi.project.support.ant.ReferenceHelper$RawReference
-cons public RawReference(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.Properties)
-cons public RawReference(java.lang.String,java.lang.String,java.net.URI,java.lang.String,java.lang.String,java.lang.String)
+ outer org.netbeans.spi.project.support.ant.ReferenceHelper
+cons public init(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.Properties)
+cons public init(java.lang.String,java.lang.String,java.net.URI,java.lang.String,java.lang.String,java.lang.String)
 meth public java.lang.String getArtifactType()
 meth public java.lang.String getCleanTargetName()
 meth public java.lang.String getForeignProjectName()
@@ -1033,8 +1035,8 @@ supr java.lang.Object
 hfds SUB_ELEMENT_NAMES,artifactID,artifactType,cleanTargetName,foreignProjectName,newScriptLocation,props,scriptLocation,targetName
 
 CLSS public final org.netbeans.spi.project.support.ant.SourcesHelper
-cons public SourcesHelper(org.netbeans.api.project.Project,org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
-cons public SourcesHelper(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
+cons public init(org.netbeans.api.project.Project,org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
+cons public init(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
  anno 0 java.lang.Deprecated()
 innr public final SourceRootConfig
 meth public org.netbeans.api.project.Sources createSources()
@@ -1057,6 +1059,7 @@ hfds aph,evaluator,knownSources,lastRegisteredRoots,minimalSubfolders,nonSourceR
 hcls PropChangeL,Root,SourceGroupModifierImpl,SourceRoot,SourcesImpl,TypedSourceRoot
 
 CLSS public final org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig
+ outer org.netbeans.spi.project.support.ant.SourcesHelper
 meth public org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig add()
 meth public org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig displayName(java.lang.String)
 meth public org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig excludes(java.lang.String)
@@ -1069,7 +1072,7 @@ supr java.lang.Object
 hfds displayName,excludes,hint,icon,includes,location,openedIcon,type
 
 CLSS public org.netbeans.spi.project.support.ant.ui.StoreGroup
-cons public StoreGroup()
+cons public init()
 meth public final javax.swing.JToggleButton$ToggleButtonModel createInverseToggleButtonModel(org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String)
 meth public final javax.swing.JToggleButton$ToggleButtonModel createToggleButtonModel(org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String)
 meth public final javax.swing.text.Document createStringDocument(org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String)

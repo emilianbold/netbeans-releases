@@ -1,8 +1,8 @@
 #Signature file v4.1
-#Version 1.35.0
+#Version 1.38.0
 
 CLSS public java.beans.FeatureDescriptor
-cons public FeatureDescriptor()
+cons public init()
 meth public boolean isExpert()
 meth public boolean isHidden()
 meth public boolean isPreferred()
@@ -24,15 +24,15 @@ hfds classRef,displayName,expert,hidden,name,preferred,shortDescription,table
 CLSS public abstract interface java.io.Serializable
 
 CLSS public java.lang.Exception
-cons public Exception()
-cons public Exception(java.lang.String)
-cons public Exception(java.lang.String,java.lang.Throwable)
-cons public Exception(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Throwable
 hfds serialVersionUID
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -46,10 +46,10 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
-cons public Throwable()
-cons public Throwable(java.lang.String)
-cons public Throwable(java.lang.String,java.lang.Throwable)
-cons public Throwable(java.lang.Throwable)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 intf java.io.Serializable
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
@@ -72,7 +72,7 @@ intf java.util.EventListener
 meth public abstract void connectionsChanged()
 
 CLSS public final org.netbeans.api.db.explorer.ConnectionManager
-cons public ConnectionManager()
+cons public init()
 meth public boolean connect(org.netbeans.api.db.explorer.DatabaseConnection) throws org.netbeans.api.db.explorer.DatabaseException
 meth public org.netbeans.api.db.explorer.DatabaseConnection getConnection(java.lang.String)
 meth public org.netbeans.api.db.explorer.DatabaseConnection showAddConnectionDialogFromEventThread(org.netbeans.api.db.explorer.JDBCDriver)
@@ -110,9 +110,9 @@ supr java.lang.Object
 hfds delegate
 
 CLSS public final org.netbeans.api.db.explorer.DatabaseException
-cons public DatabaseException(java.lang.String)
-cons public DatabaseException(java.lang.String,java.lang.Throwable)
-cons public DatabaseException(java.lang.Throwable)
+cons public init(java.lang.String)
+cons public init(java.lang.String,java.lang.Throwable)
+cons public init(java.lang.Throwable)
 supr java.lang.Exception
 hfds serialVersionUID
 
@@ -128,6 +128,7 @@ innr public final static View
 supr java.lang.Object
 
 CLSS public final static org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$Column
+ outer org.netbeans.api.db.explorer.DatabaseMetaDataTransfer
 meth public java.lang.String getColumnName()
 meth public java.lang.String getTableName()
 meth public java.lang.String toString()
@@ -137,6 +138,7 @@ supr java.lang.Object
 hfds columnName,dbconn,jdbcDriver,tableName
 
 CLSS public final static org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$Connection
+ outer org.netbeans.api.db.explorer.DatabaseMetaDataTransfer
 meth public java.lang.String toString()
 meth public org.netbeans.api.db.explorer.DatabaseConnection getDatabaseConnection()
 meth public org.netbeans.api.db.explorer.JDBCDriver getJDBCDriver()
@@ -144,6 +146,7 @@ supr java.lang.Object
 hfds dbconn,jdbcDriver
 
 CLSS public final static org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$Table
+ outer org.netbeans.api.db.explorer.DatabaseMetaDataTransfer
 meth public java.lang.String getTableName()
 meth public java.lang.String toString()
 meth public org.netbeans.api.db.explorer.DatabaseConnection getDatabaseConnection()
@@ -152,6 +155,7 @@ supr java.lang.Object
 hfds dbconn,jdbcDriver,tableName
 
 CLSS public final static org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$View
+ outer org.netbeans.api.db.explorer.DatabaseMetaDataTransfer
 meth public java.lang.String getViewName()
 meth public java.lang.String toString()
 meth public org.netbeans.api.db.explorer.DatabaseConnection getDatabaseConnection()
@@ -187,8 +191,8 @@ supr java.lang.Object
 hfds DEFAULT,listeners,result
 
 CLSS public abstract org.netbeans.api.db.explorer.node.BaseNode
-cons public BaseNode(org.netbeans.api.db.explorer.node.ChildNodeFactory,org.netbeans.modules.db.explorer.node.NodeDataLookup,java.lang.String,org.netbeans.api.db.explorer.node.NodeProvider)
-cons public BaseNode(org.netbeans.modules.db.explorer.node.NodeDataLookup,java.lang.String,org.netbeans.api.db.explorer.node.NodeProvider)
+cons public init(org.netbeans.api.db.explorer.node.ChildNodeFactory,org.netbeans.modules.db.explorer.node.NodeDataLookup,java.lang.String,org.netbeans.api.db.explorer.node.NodeProvider)
+cons public init(org.netbeans.modules.db.explorer.node.NodeDataLookup,java.lang.String,org.netbeans.api.db.explorer.node.NodeProvider)
 fld protected final static java.lang.String CATALOG = "Catalog"
 fld protected final static java.lang.String CATALOGDESC = "CatalogDescription"
 fld protected final static java.lang.String COLUMNSIZE = "ColumnSize"
@@ -265,7 +269,7 @@ supr org.openide.nodes.AbstractNode
 hfds actionRegistry,childNodeFactory,dataLookup,nodeProvider,nodeRegistry,propMap,props
 
 CLSS public org.netbeans.api.db.explorer.node.ChildNodeFactory
-cons public ChildNodeFactory(org.openide.util.Lookup)
+cons public init(org.openide.util.Lookup)
 meth protected boolean createKeys(java.util.List)
 meth public org.openide.nodes.Node[] createNodesForKey(org.openide.util.Lookup)
 meth public void refresh()
@@ -274,8 +278,8 @@ supr org.openide.nodes.ChildFactory<org.openide.util.Lookup>
 hfds dataLookup
 
 CLSS public abstract org.netbeans.api.db.explorer.node.NodeProvider
-cons public NodeProvider(org.openide.util.Lookup)
-cons public NodeProvider(org.openide.util.Lookup,java.util.Comparator<org.openide.nodes.Node>)
+cons public init(org.openide.util.Lookup)
+cons public init(org.openide.util.Lookup,java.util.Comparator<org.openide.nodes.Node>)
 fld protected boolean initialized
 intf org.openide.util.Lookup$Provider
 meth protected abstract void initialize()
@@ -308,6 +312,7 @@ supr java.lang.Object
 hcls DatabaseMetaDataQuoter
 
 CLSS public abstract static org.netbeans.api.db.sql.support.SQLIdentifiers$Quoter
+ outer org.netbeans.api.db.sql.support.SQLIdentifiers
 meth public abstract java.lang.String quoteAlways(java.lang.String)
 meth public abstract java.lang.String quoteIfNeeded(java.lang.String)
 meth public java.lang.String getQuoteString()
@@ -324,8 +329,8 @@ meth public abstract void start()
 meth public abstract void stop()
 
 CLSS public org.openide.nodes.AbstractNode
-cons public AbstractNode(org.openide.nodes.Children)
-cons public AbstractNode(org.openide.nodes.Children,org.openide.util.Lookup)
+cons public init(org.openide.nodes.Children)
+cons public init(org.openide.nodes.Children,org.openide.util.Lookup)
 fld protected java.text.MessageFormat displayFormat
 fld protected org.openide.util.actions.SystemAction[] systemActions
  anno 0 java.lang.Deprecated()
@@ -373,7 +378,7 @@ hfds DEFAULT_ICON,DEFAULT_ICON_BASE,DEFAULT_ICON_EXTENSION,ICON_BASE,NO_NEW_TYPE
 hcls SheetAndCookieListener
 
 CLSS public abstract org.openide.nodes.ChildFactory<%0 extends java.lang.Object>
-cons public ChildFactory()
+cons public init()
 innr public abstract static Detachable
 meth protected abstract boolean createKeys(java.util.List<{org.openide.nodes.ChildFactory%0}>)
 meth protected final void refresh(boolean)
@@ -385,8 +390,8 @@ hfds observer
 hcls Observer,WaitFilterNode
 
 CLSS public abstract org.openide.nodes.Node
-cons protected Node(org.openide.nodes.Children)
-cons protected Node(org.openide.nodes.Children,org.openide.util.Lookup)
+cons protected init(org.openide.nodes.Children)
+cons protected init(org.openide.nodes.Children,org.openide.util.Lookup)
 fld public final static java.lang.String PROP_COOKIE = "cookie"
 fld public final static java.lang.String PROP_DISPLAY_NAME = "displayName"
 fld public final static java.lang.String PROP_ICON = "icon"
@@ -445,6 +450,7 @@ meth public final void addNodeListener(org.openide.nodes.NodeListener)
 meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public final void removeNodeListener(org.openide.nodes.NodeListener)
 meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public int hashCode()
 meth public java.lang.String getHtmlDisplayName()
 meth public java.lang.String toString()
 meth public javax.swing.Action getPreferredAction()
@@ -466,9 +472,9 @@ hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBa
 hcls LookupEventList
 
 CLSS public final org.openide.util.HelpCtx
-cons public HelpCtx(java.lang.Class)
-cons public HelpCtx(java.lang.String)
-cons public HelpCtx(java.net.URL)
+cons public init(java.lang.Class)
+cons public init(java.lang.String)
+cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
 innr public abstract interface static Provider
@@ -484,10 +490,11 @@ supr java.lang.Object
 hfds err,helpCtx,helpID
 
 CLSS public abstract interface static org.openide.util.HelpCtx$Provider
+ outer org.openide.util.HelpCtx
 meth public abstract org.openide.util.HelpCtx getHelpCtx()
 
 CLSS public abstract org.openide.util.Lookup
-cons public Lookup()
+cons public init()
 fld public final static org.openide.util.Lookup EMPTY
 innr public abstract interface static Provider
 innr public abstract static Item
@@ -504,5 +511,6 @@ hfds defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider
+ outer org.openide.util.Lookup
 meth public abstract org.openide.util.Lookup getLookup()
 
