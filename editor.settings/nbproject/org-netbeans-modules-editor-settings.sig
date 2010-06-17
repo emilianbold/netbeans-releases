@@ -1,8 +1,8 @@
 #Signature file v4.1
-#Version 1.27
+#Version 1.31
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -21,12 +21,12 @@ meth public !varargs static javax.swing.text.AttributeSet createImmutable(java.l
 meth public !varargs static javax.swing.text.AttributeSet createImmutable(javax.swing.text.AttributeSet[])
 supr java.lang.Object
 hfds ATTR_DISMANTLED_STRUCTURE
-hcls Composite,Immutable,Proxy
+hcls BigComposite,Composite2,Composite4,CompositeAttributeSet,Immutable,Proxy
 
 CLSS public final org.netbeans.api.editor.settings.CodeTemplateDescription
-cons public CodeTemplateDescription(java.lang.String,java.lang.String,java.lang.String)
-cons public CodeTemplateDescription(java.lang.String,java.lang.String,java.lang.String,java.util.List<java.lang.String>,java.lang.String)
-cons public CodeTemplateDescription(java.lang.String,java.lang.String,java.lang.String,java.util.List<java.lang.String>,java.lang.String,java.lang.String)
+cons public init(java.lang.String,java.lang.String,java.lang.String)
+cons public init(java.lang.String,java.lang.String,java.lang.String,java.util.List<java.lang.String>,java.lang.String)
+cons public init(java.lang.String,java.lang.String,java.lang.String,java.util.List<java.lang.String>,java.lang.String,java.lang.String)
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String getAbbreviation()
@@ -40,7 +40,7 @@ supr java.lang.Object
 hfds abbreviation,contexts,description,mimePath,parametrizedText,uniqueId
 
 CLSS public abstract org.netbeans.api.editor.settings.CodeTemplateSettings
-cons public CodeTemplateSettings()
+cons public init()
 meth public abstract java.util.List<org.netbeans.api.editor.settings.CodeTemplateDescription> getCodeTemplateDescriptions()
 meth public abstract javax.swing.KeyStroke getExpandKey()
 supr java.lang.Object
@@ -79,20 +79,20 @@ fld public final static java.lang.String TEXT_LIMIT_LINE_COLORING = "text-limit-
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.api.editor.settings.FontColorSettings
-cons public FontColorSettings()
+cons public init()
 fld public final static java.lang.String PROP_FONT_COLORS = "fontColors"
 meth public abstract javax.swing.text.AttributeSet getFontColors(java.lang.String)
 meth public abstract javax.swing.text.AttributeSet getTokenFontColors(java.lang.String)
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.api.editor.settings.KeyBindingSettings
-cons public KeyBindingSettings()
+cons public init()
 meth public abstract java.util.List<org.netbeans.api.editor.settings.MultiKeyBinding> getKeyBindings()
 supr java.lang.Object
 
 CLSS public final org.netbeans.api.editor.settings.MultiKeyBinding
-cons public MultiKeyBinding(javax.swing.KeyStroke,java.lang.String)
-cons public MultiKeyBinding(javax.swing.KeyStroke[],java.lang.String)
+cons public init(javax.swing.KeyStroke,java.lang.String)
+cons public init(javax.swing.KeyStroke[],java.lang.String)
 meth public boolean equals(java.lang.Object)
 meth public int getKeyStrokeCount()
 meth public int hashCode()
@@ -144,6 +144,7 @@ fld public final static java.lang.String JAVADOC_PREFERRED_SIZE = "javadoc-prefe
 fld public final static java.lang.String LINE_HEIGHT_CORRECTION = "line-height-correction"
 fld public final static java.lang.String LINE_NUMBER_VISIBLE = "line-number-visible"
 fld public final static java.lang.String MARGIN = "margin"
+fld public final static java.lang.String NON_PRINTABLE_CHARACTERS_VISIBLE = "non-printable-characters-visible"
 fld public final static java.lang.String POPUP_MENU_ENABLED = "popup-menu-enabled"
 fld public final static java.lang.String SCROLL_FIND_INSETS = "scroll-find-insets"
 fld public final static java.lang.String SCROLL_JUMP_INSETS = "scroll-jump-insets"
@@ -157,6 +158,7 @@ fld public final static java.lang.String TEXT_LIMIT_LINE_COLOR = "text-limit-lin
  anno 0 java.lang.Deprecated()
 fld public final static java.lang.String TEXT_LIMIT_LINE_VISIBLE = "text-limit-line-visible"
 fld public final static java.lang.String TEXT_LIMIT_WIDTH = "text-limit-width"
+fld public final static java.lang.String TEXT_LINE_WRAP = "text-line-wrap"
 fld public final static java.lang.String THICK_CARET_WIDTH = "thick-caret-width"
 fld public final static java.lang.String TOOLBAR_VISIBLE_PROP = "toolbarVisible"
 supr java.lang.Object

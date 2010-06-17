@@ -1,8 +1,8 @@
 #Signature file v4.1
-#Version 1.17.0
+#Version 1.20.0
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -87,7 +87,7 @@ intf org.netbeans.spi.editor.completion.CompletionItem
 meth public abstract boolean accept()
 
 CLSS public abstract org.netbeans.spi.editor.completion.support.AsyncCompletionQuery
-cons public AsyncCompletionQuery()
+cons public init()
 meth protected abstract void query(org.netbeans.spi.editor.completion.CompletionResultSet,javax.swing.text.Document,int)
 meth protected boolean canFilter(javax.swing.text.JTextComponent)
 meth protected void filter(org.netbeans.spi.editor.completion.CompletionResultSet)
@@ -98,8 +98,8 @@ supr java.lang.Object
 hfds task
 
 CLSS public final org.netbeans.spi.editor.completion.support.AsyncCompletionTask
-cons public AsyncCompletionTask(org.netbeans.spi.editor.completion.support.AsyncCompletionQuery)
-cons public AsyncCompletionTask(org.netbeans.spi.editor.completion.support.AsyncCompletionQuery,javax.swing.text.JTextComponent)
+cons public init(org.netbeans.spi.editor.completion.support.AsyncCompletionQuery)
+cons public init(org.netbeans.spi.editor.completion.support.AsyncCompletionQuery,javax.swing.text.JTextComponent)
 intf java.lang.Runnable
 intf org.netbeans.spi.editor.completion.CompletionTask
 meth public java.lang.String toString()
@@ -108,7 +108,7 @@ meth public void query(org.netbeans.spi.editor.completion.CompletionResultSet)
 meth public void refresh(org.netbeans.spi.editor.completion.CompletionResultSet)
 meth public void run()
 supr java.lang.Object
-hfds cancelled,component,doc,query,queryCaretOffset,queryInvoked,queryResultSet,refreshResultSet,rpTask
+hfds RP,cancelled,component,doc,query,queryCaretOffset,queryInvoked,queryResultSet,refreshResultSet,rpTask
 
 CLSS public final org.netbeans.spi.editor.completion.support.CompletionUtilities
 meth public static int getPreferredWidth(java.lang.String,java.lang.String,java.awt.Graphics,java.awt.Font)
