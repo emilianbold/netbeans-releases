@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="jdk")
+@Hint(category="rules15")
 public class JoinCatches {
 
     @TriggerTreeKind(Kind.TRY)
