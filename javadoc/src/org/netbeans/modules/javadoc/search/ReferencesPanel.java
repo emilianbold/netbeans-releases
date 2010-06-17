@@ -44,6 +44,7 @@ package org.netbeans.modules.javadoc.search;
 
 import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.net.URL;
 import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
@@ -54,8 +55,6 @@ import javax.swing.event.ListSelectionListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -89,7 +88,7 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
         this.openBtn = openBtn;
     }
 
-    public static FileObject showInWindow() {
+    public static URL showInWindow() {
         JButton openBtn = new JButton();
         Mnemonics.setLocalizedText(openBtn, NbBundle.getMessage(ReferencesPanel.class, "ReferencesPanel.ok.text"));
         openBtn.getAccessibleContext().setAccessibleDescription(openBtn.getText());
@@ -166,15 +165,15 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
     }
 
     public @Override void valueChanged(ListSelectionEvent e) {
-        FileObject item = getSelectedItem();
+        URL item = getSelectedItem();
         String s = item == null
                 ? EMPTY_LOCATION
-                : FileUtil.getFileDisplayName(item);
+                : URLUtils.getDisplayName(item);
         locationField.setText(s);
         openBtn.setEnabled(item != null);
     }
 
-    FileObject getSelectedItem() {
+    URL getSelectedItem() {
         int index = refList.getSelectedIndex();
         synchronized (LOCK) {
             return index < 0 || items == null || items.length == 0
@@ -257,16 +256,16 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
         private static ItemDesc NO_ITEM;
         String name;
         String locationName;
-        FileObject location;
+        URL location;
 
-        public ItemDesc(String name, FileObject location) {
+        public ItemDesc(String name, URL location) {
             this.name = name;
             this.location = location;
         }
 
         String getLocationName() {
             if (locationName == null) {
-                locationName = FileUtil.getFileDisplayName(location);
+                locationName = URLUtils.getDisplayName(location);
             }
             return locationName;
         }

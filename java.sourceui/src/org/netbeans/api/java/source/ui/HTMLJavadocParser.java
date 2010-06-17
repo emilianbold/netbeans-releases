@@ -44,6 +44,7 @@
 
 package org.netbeans.api.java.source.ui;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -56,6 +57,7 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
+import org.netbeans.modules.java.source.JavadocHelper;
 
 /**
  *  HTML Parser. It retrieves sections of the javadoc HTML file.
@@ -66,11 +68,19 @@ class HTMLJavadocParser {
     
 
     /** Gets the javadoc text from the given URL
-     *  @param url nbfs protocol URL
+     *  @param url location of Javadoc
      *  @param pkg true if URL should be retrieved for a package
      */
     public static String getJavadocText(URL url, boolean pkg) {
-        if (url == null) return null;
+        return getJavadocText(new JavadocHelper.TextStream(url), pkg);
+    }
+
+    /** Gets the javadoc text from the given URL
+     *  @param page location of Javadoc
+     *  @param pkg true if URL should be retrieved for a package
+     */
+    public static String getJavadocText(JavadocHelper.TextStream page, boolean pkg) {
+        if (page == null) return null;
 
         HTMLEditorKit.Parser parser;
         InputStream is = null;
@@ -78,9 +88,9 @@ class HTMLJavadocParser {
         String charset = null;
         for (;;) {
             try{
-                is = url.openStream();
+                is = page.openStream();
                 parser = new ParserDelegator();
-                String urlStr = URLDecoder.decode(url.toString(), "UTF-8"); //NOI18N
+                String urlStr = URLDecoder.decode(page.getLocation().toString(), "UTF-8"); //NOI18N
                 int offsets[] = null;
                 Reader reader = charset == null?new InputStreamReader(is): new InputStreamReader(is, charset);
                 
@@ -97,7 +107,7 @@ class HTMLJavadocParser {
                 }
                 
                 if (offsets != null){
-                    return getTextFromURLStream(url, offsets, charset);
+                    return getTextFromURLStream(page, offsets, charset);
                 }
                 break;
             } catch (ChangedCharSetException e) {
@@ -108,6 +118,8 @@ class HTMLJavadocParser {
                     e.printStackTrace();
                     break;
                 }
+            } catch (FileNotFoundException x) {
+                break; // e.g. missing com.sun.** class in network Javadoc; ignore
             } catch(IOException ioe){
                 ioe.printStackTrace();
                 break;
@@ -167,14 +179,14 @@ class HTMLJavadocParser {
         return null;
     }
     
-    private static String getTextFromURLStream(URL url, int[] offsets, String charset) throws IOException {
-        if (url == null)
+    private static String getTextFromURLStream(JavadocHelper.TextStream page, int[] offsets, String charset) throws IOException {
+        if (page == null)
             return null;
 
         InputStream fis = null;
         InputStreamReader fisreader = null;
         try {
-            fis = url.openStream();
+            fis = page.openStream();
             fisreader = charset == null ? new InputStreamReader(fis) : new InputStreamReader(fis, charset);
             
             StringBuilder sb = new StringBuilder();
