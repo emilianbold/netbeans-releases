@@ -626,7 +626,7 @@ public class ChatTopComponent extends TopComponent {
 
     private void chatsMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_chatsMousePressed
         int tab = chats.getUI().tabForCoordinate(chats, evt.getX(), evt.getY());
-        if (tab != 0) {
+        if (tab > 0) {
             if (evt.isPopupTrigger()) {
                 JPopupMenu menu = new JPopupMenu();
                 menu.add(new Close());
