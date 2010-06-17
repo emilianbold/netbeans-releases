@@ -91,8 +91,21 @@ public final class FileUtils {
      * Find all the files (absolute path) with the given "filename" on user's PATH.
      * <p>
      * This method is suitable for *nix as well as windows.
+     * @param filename the name of a file to find.
+     * @return list of absolute paths of found files.
+     * @see #findFileOnUsersPath(String[])
+     */
+    public static List<String> findFileOnUsersPath(String filename) {
+        return findFileOnUsersPath(new String[]{filename});
+    }
+
+    /**
+     * Find all the files (absolute path) with the given "filename" on user's PATH.
+     * <p>
+     * This method is suitable for *nix as well as windows.
      * @param filename the name of a file to find, more names can be provided.
      * @return list of absolute paths of found files (order preserved according to input names).
+     * @see #findFileOnUsersPath(String)
      * @since 1.33
      */
     public static List<String> findFileOnUsersPath(String... filename) {
