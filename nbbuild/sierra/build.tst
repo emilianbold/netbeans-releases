@@ -45,7 +45,7 @@
 <project name="test" default="test" basedir=".">
     <import file="build.pro"/>
 
-    <target name="test" depends="sample-test,project-test"/>
+    <target name="all-test" depends="sample-test,project-test"/>
     
     <!-- sample test -->
     <target name="sample-test" depends="test-s1,test-s2,test-s3"/>

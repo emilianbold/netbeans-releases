@@ -406,6 +406,22 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                            FileObject oldPackage = entityClass.getRootFolder().getFileObject(rel);
                            entity = oldPackage.getFileObject(entityClassName, "java");
                         }
+                        // NO PK classes for views
+                        if (entityClass.isForTable() && !entityClass.isUsePkField()) {
+                            String pkClassName = createPKClassName(entityClassName);
+                            FileObject pkFO = packageFileObject.getFileObject(pkClassName, "java");
+                            if (pkFO == null) { // NOI18N
+                                String fqn = persistenceGen.getFQClassName(entityClass.getTableName());
+                                int ind = fqn.lastIndexOf(".");
+                                String pkg = ind>-1 ? fqn.substring(0, ind) : "";
+                                String rel = pkg.replaceAll("\\.", "/");
+                                FileObject oldPackage = entityClass.getRootFolder().getFileObject(rel);
+                                pkFO = oldPackage.getFileObject(pkClassName, "java");
+                            }
+                            if(pkFO != null){
+                                pkFO.delete();
+                            }
+                        }
                         entity.delete();
                         entity = null;
                     case NEW:{
