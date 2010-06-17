@@ -53,6 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -196,7 +197,7 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         Reference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>> outRef = cache.get(prjUID);
         Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>> out = (outRef == null) ? null : outRef.get();
         if (out == null) {
-            out = new HashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>>();
+            out = new ConcurrentHashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>>();
             cache.put(prjUID, new SoftReference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>>(out));
         }
         return out;
@@ -251,7 +252,7 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         Reference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>> outRef = cache.get(prjUID);
         Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>> out = (outRef == null) ? null : outRef.get();
         if (out == null) {
-            out = new HashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>>();
+            out = new ConcurrentHashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>>();
             buildSubHierarchy(project.getGlobalNamespace(), out);
             cache.put(prjUID, new SoftReference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>>(out));
         }
