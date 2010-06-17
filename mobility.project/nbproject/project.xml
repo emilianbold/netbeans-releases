@@ -469,6 +469,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.vmd.io.javame</friend>
                 <friend>org.netbeans.modules.vmd.midp</friend>
                 <friend>org.netbeans.modules.vmd.midp.converter</friend>
+		    <friend>org.netbeans.modules.javame.jsr211</friend>	
                 <friend>net.sf.jmunit.netbeans.plugin</friend>
                 <package>org.netbeans.api.mobility.project</package>
                 <package>org.netbeans.api.mobility.project.ui.customizer</package>
