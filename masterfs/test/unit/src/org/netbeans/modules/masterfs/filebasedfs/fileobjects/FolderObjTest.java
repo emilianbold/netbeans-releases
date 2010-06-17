@@ -1563,10 +1563,10 @@ public class FolderObjTest extends NbTestCase {
         
         fs.removeFileChangeListener(fcl);
         assertEquals(0,events.size());
-        assertEquals("After first call the fileobject is invalidated", 1,createdIncrement.size());
-        assertEquals("After first call the fileobject is invalidated too", 1, deletedIncrement.size());
+        assertEquals(stepsCount,createdIncrement.size());
+        assertEquals(stepsCount,deletedIncrement.size());
         
-    }
+     }
     
     public void testRefreshDoesNotMultiplyFileObjects_89059 () throws Exception {
         FileObject fo = FileBasedFileSystem.getFileObject(testFile);
