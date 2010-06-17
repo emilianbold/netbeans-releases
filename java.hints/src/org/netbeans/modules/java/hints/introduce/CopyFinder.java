@@ -213,7 +213,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         }
 
         f.allowGoDeeper = false;
-        f.variablesWithAllowedRemap = new HashSet<VariableElement>(variablesWithAllowedRemap);
+        f.variablesWithAllowedRemap = variablesWithAllowedRemap != null ? new HashSet<VariableElement>(variablesWithAllowedRemap) : Collections.<VariableElement>emptySet();
         f.allowVariablesRemap = variablesWithAllowedRemap != null;
         f.nocheckOnAllowVariablesRemap = variablesWithAllowedRemap != null;
 
