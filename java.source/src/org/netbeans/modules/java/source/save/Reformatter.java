@@ -1605,6 +1605,26 @@ public class Reformatter implements ReformatTask {
         }
 
         @Override
+        public Boolean visitDisjointType(DisjointTypeTree node, Void p) {
+            Iterator<? extends Tree> it = node.getTypeComponents().iterator();
+            Tree tcomp = it.hasNext() ? it.next() : null;
+            while (true) {
+                scan(tcomp, p);
+                tcomp = it.hasNext() ? it.next() : null;
+                if (tcomp == null)
+                    break;
+                if (tcomp.getKind() != Tree.Kind.ERRONEOUS || !((ErroneousTree)tcomp).getErrorTrees().isEmpty() || it.hasNext()) {
+                    spaces(cs.spaceAroundBinaryOps() ? 1 : 0);
+                    accept(BAR);
+                    spaces(cs.spaceAroundBinaryOps() ? 1 : 0);
+                } else {
+                    scan(tcomp, p);
+                }
+            }
+            return true;
+        }
+
+        @Override
         public Boolean visitIf(IfTree node, Void p) {
             accept(IF);
             int old = indent;

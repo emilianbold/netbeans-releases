@@ -618,6 +618,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case CATCH:
                     insideCatch(env);
                     break;
+                case DISJOINT_TYPE:
+                    insideDisjointType(env);
+                    break;
                 case IF:
                     insideIf(env);
                     break;
@@ -878,16 +881,30 @@ public class JavaCompletionProvider implements CompletionProvider {
             VariableTree var = (VariableTree)path.getLeaf();
             SourcePositions sourcePositions = env.getSourcePositions();
             CompilationUnitTree root = env.getRoot();
-            boolean isLocal = path.getParentPath().getLeaf().getKind() != Tree.Kind.CLASS;
             Tree type = var.getType();
             int typePos = type.getKind() == Tree.Kind.ERRONEOUS && ((ErroneousTree)type).getErrorTrees().isEmpty() ?
                 (int)sourcePositions.getEndPosition(root, type) : (int)sourcePositions.getStartPosition(root, type);            
             if (offset <= typePos) {
-                addMemberModifiers(env, var.getModifiers().getFlags(), isLocal);
-                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
-                ModifiersTree mods = var.getModifiers();
-                if (mods.getFlags().isEmpty() && mods.getAnnotations().isEmpty())
-                    addElementCreators(env);
+                if (path.getParentPath().getLeaf().getKind() == Tree.Kind.CATCH) {
+                    String prefix = env.getPrefix();
+                    CompilationController controller = env.getController();
+                    if (queryType == COMPLETION_QUERY_TYPE) {
+                        TreePath tryPath = Utilities.getPathElementOfKind(Tree.Kind.TRY, path);
+                        Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(tryPath);
+                        Elements elements = controller.getElements();
+                        for (TypeMirror ex : exs)
+                            if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
+                                results.add(JavaCompletionItem.createTypeItem((TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, true));
+                    }
+                    addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable"))); //NOI18N
+                } else {
+                    boolean isLocal = path.getParentPath().getLeaf().getKind() != Tree.Kind.CLASS;
+                    addMemberModifiers(env, var.getModifiers().getFlags(), isLocal);
+                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+                    ModifiersTree mods = var.getModifiers();
+                    if (mods.getFlags().isEmpty() && mods.getAnnotations().isEmpty())
+                        addElementCreators(env);
+                }
                 return;
             }
             Tree init = unwrapErrTree(var.getInitializer());
@@ -1707,8 +1724,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             CompilationController controller = env.getController();
             TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, ct, env.getOffset());
             if (last != null && last.token().id() == JavaTokenId.LPAREN) {
+                addKeyword(env, FINAL_KEYWORD, SPACE, false);
                 if (queryType == COMPLETION_QUERY_TYPE) {
-                    Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(path.getParentPath());
+                    TreePath tryPath = Utilities.getPathElementOfKind(Tree.Kind.TRY, path);
+                    Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(tryPath);
                     Elements elements = controller.getElements();
                     for (TypeMirror ex : exs)
                         if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
@@ -1716,7 +1735,26 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
                 addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable"))); //NOI18N
             }
-        }        
+        }
+
+        private void insideDisjointType(Env env) throws IOException {
+            TreePath path = env.getPath();
+            String prefix = env.getPrefix();
+            DisjointTypeTree dtt = (DisjointTypeTree)path.getLeaf();
+            CompilationController controller = env.getController();
+            TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, dtt, env.getOffset());
+            if (last != null && last.token().id() == JavaTokenId.BAR) {
+                if (queryType == COMPLETION_QUERY_TYPE) {
+                    TreePath tryPath = Utilities.getPathElementOfKind(Tree.Kind.TRY, path);
+                    Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(tryPath);
+                    Elements elements = controller.getElements();
+                    for (TypeMirror ex : exs)
+                        if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString(), prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
+                            results.add(JavaCompletionItem.createTypeItem((TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, true));
+                }
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable"))); //NOI18N
+            }
+        }
         
         private void insideIf(Env env) throws IOException {
             IfTree iff = (IfTree)env.getPath().getLeaf();
@@ -2210,6 +2248,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                 for (String name : Utilities.varNamesSuggestions(tm, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalVars(scope, acceptor), isConst))
                     results.add(JavaCompletionItem.createVariableItem(name, anchorOffset, true, false));
                 return;
+            }
+            if (et.getKind() == Tree.Kind.DISJOINT_TYPE) {
+                for(Tree t : ((DisjointTypeTree)et).getTypeComponents()) {
+                    et = t;
+                    exPath = new TreePath(exPath, t);
+                }
             }
             if (et.getKind() == Tree.Kind.IDENTIFIER) {
                 Element e = controller.getTrees().getElement(exPath);
