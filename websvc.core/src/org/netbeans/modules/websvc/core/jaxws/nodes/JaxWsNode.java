@@ -453,7 +453,7 @@ public class JaxWsNode extends AbstractNode implements
         return serviceInfo;
     }
 
-    private String getServiceUri() {
+    private String getServiceUri(String contextRoot) {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         // need to compute from annotations
@@ -464,23 +464,46 @@ public class JaxWsNode extends AbstractNode implements
         if (J2eeModule.Type.WAR.equals(moduleType) && ServerType.JBOSS == stackUtils.getServerType()) {
             // JBoss type
             try {                // JBoss type
-                wsURI = getUriFromDD(moduleType);
+                wsURI = (contextRoot == null ? "" : contextRoot+"/")+getUriFromDD(moduleType);
             } catch (UnsupportedEncodingException ex) {
                 // this shouldn't happen'
             }
         } else if (J2eeModule.Type.EJB.equals(moduleType) && ServerType.JBOSS == stackUtils.getServerType()) {
             // JBoss type
-            wsURI = getNameFromPackageName(service.getImplementationClass());
+            wsURI = (contextRoot == null ? "" : contextRoot+"/")+getNameFromPackageName(service.getImplementationClass());
         } else if (isJsr109Supported && Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) {
             try {
-                wsURI = getServiceUri(moduleType);
+
+                ServiceInfo serviceInfo = new ServiceInfo();
+                serviceInfo.setEjb(J2eeModule.Type.EJB.equals(moduleType));
+                resolveServiceInfo(serviceInfo);
+
+                boolean fromStack = false;
+                WSStack<JaxWs> jaxWsStack = stackUtils.getWsStack(JaxWs.class);
+                if (jaxWsStack != null) {
+                    JaxWs.UriDescriptor uriDescriptor = jaxWsStack.get().getWsUriDescriptor();
+                    if (uriDescriptor != null) {
+                        fromStack = true;
+
+                        ServerContextInfo serverContextInfo = getServerContextInfo();
+                        wsURI = uriDescriptor.getServiceUri(contextRoot, serviceInfo.getServiceName(), serviceInfo.getPortName(), serviceInfo.isEjb());
+                    }
+                }
+
+                if (!fromStack) {
+                    // default service URI
+                    String portName = serviceInfo.getPortName();
+                    wsURI = (contextRoot == null ? "" : contextRoot+"/")+serviceInfo.getServiceName()+ (portName == null ? "" : "/"+portName);
+                }
+
+                //wsURI = getServiceUri(moduleType);
             } catch (UnsupportedEncodingException ex) {
                 // this shouldn't happen'
             }
         } else {
             // non jsr109 type (Tomcat)
             try {
-                wsURI = getNonJsr109Uri(moduleType);
+                wsURI = (contextRoot == null ? "" : contextRoot+"/")+getNonJsr109Uri(moduleType);
             } catch (UnsupportedEncodingException ex) {
                 // this shouldn't happen'
             }
@@ -563,65 +586,65 @@ public class JaxWsNode extends AbstractNode implements
         return null;
     }
 
-    private String getServiceUri(final J2eeModule.Type moduleType) throws UnsupportedEncodingException {
-        final String[] serviceName = new String[1];
-        final String[] name = new String[1];
-        final boolean[] isProvider = {false};
-        JavaSource javaSource = getImplBeanJavaSource();
-        if (javaSource != null) {
-            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-
-                @Override
-                public void run(CompilationController controller) throws IOException {
-                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
-                    TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-                    if (typeElement != null && wsElement != null) {
-                        boolean foundWsAnnotation = resolveServiceUrl(controller, typeElement, wsElement, serviceName, name);
-                        if (!foundWsAnnotation) {
-                            TypeElement wsProviderElement = controller.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
-                            List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
-                            for (AnnotationMirror anMirror : annotations) {
-                                if (controller.getTypes().isSameType(wsProviderElement.asType(), anMirror.getAnnotationType())) {
-                                    isProvider[0] = true;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                public void cancel() {
-                }
-            };
-            try {
-                javaSource.runUserActionTask(task, true);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
-
-        String qualifiedImplClassName = service.getImplementationClass();
-        String implClassName = getNameFromPackageName(qualifiedImplClassName);
-        if (serviceName[0] == null) {
-            serviceName[0] = URLEncoder.encode(implClassName + "Service", "UTF-8"); //NOI18N
-        }
-        if (J2eeModule.Type.WAR.equals(moduleType)) {
-            return serviceName[0];
-        } else if (J2eeModule.Type.EJB.equals(moduleType)) {
-            if (name[0] == null) {
-                if (isProvider[0]) {
-                    //per JSR 109, use qualified impl class name for EJB
-                    name[0] = qualifiedImplClassName;
-                } else {
-                    name[0] = implClassName;
-                }
-                name[0] = URLEncoder.encode(name[0], "UTF-8"); //NOI18N
-            }
-            return serviceName[0] + "/" + name[0];
-        } else {
-            return serviceName[0];
-        }
-    }
+//    private String getServiceUri(final J2eeModule.Type moduleType) throws UnsupportedEncodingException {
+//        final String[] serviceName = new String[1];
+//        final String[] name = new String[1];
+//        final boolean[] isProvider = {false};
+//        JavaSource javaSource = getImplBeanJavaSource();
+//        if (javaSource != null) {
+//            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+//
+//                @Override
+//                public void run(CompilationController controller) throws IOException {
+//                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+//                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+//                    TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+//                    if (typeElement != null && wsElement != null) {
+//                        boolean foundWsAnnotation = resolveServiceUrl(controller, typeElement, wsElement, serviceName, name);
+//                        if (!foundWsAnnotation) {
+//                            TypeElement wsProviderElement = controller.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
+//                            List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
+//                            for (AnnotationMirror anMirror : annotations) {
+//                                if (controller.getTypes().isSameType(wsProviderElement.asType(), anMirror.getAnnotationType())) {
+//                                    isProvider[0] = true;
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                public void cancel() {
+//                }
+//            };
+//            try {
+//                javaSource.runUserActionTask(task, true);
+//            } catch (IOException ex) {
+//                ErrorManager.getDefault().notify(ex);
+//            }
+//        }
+//
+//        String qualifiedImplClassName = service.getImplementationClass();
+//        String implClassName = getNameFromPackageName(qualifiedImplClassName);
+//        if (serviceName[0] == null) {
+//            serviceName[0] = URLEncoder.encode(implClassName + "Service", "UTF-8"); //NOI18N
+//        }
+//        if (J2eeModule.Type.WAR.equals(moduleType)) {
+//            return serviceName[0];
+//        } else if (J2eeModule.Type.EJB.equals(moduleType)) {
+//            if (name[0] == null) {
+//                if (isProvider[0]) {
+//                    //per JSR 109, use qualified impl class name for EJB
+//                    name[0] = qualifiedImplClassName;
+//                } else {
+//                    name[0] = implClassName;
+//                }
+//                name[0] = URLEncoder.encode(name[0], "UTF-8"); //NOI18N
+//            }
+//            return serviceName[0] + "/" + name[0];
+//        } else {
+//            return serviceName[0];
+//        }
+//    }
 
     private void resolveServiceInfo(ServiceInfo serviceInfo) throws UnsupportedEncodingException {
         final String[] serviceName = new String[1];
@@ -664,7 +687,6 @@ public class JaxWsNode extends AbstractNode implements
         String implClassName = getNameFromPackageName(qualifiedImplClassName);
         if (serviceName[0] == null) {
             serviceName[0] = URLEncoder.encode(implClassName + "Service", "UTF-8");
-            serviceInfo.setServiceName(URLEncoder.encode(implClassName + "Service", "UTF-8")); //NOI18N
         }
         serviceInfo.setServiceName(serviceName[0]);
         if (name[0] == null) {
@@ -687,15 +709,15 @@ public class JaxWsNode extends AbstractNode implements
                 foundWsAnnotation = true;
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
                 for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
-                    if (entry.getKey().getSimpleName().contentEquals("serviceName")) {
+                    if (entry.getKey().getSimpleName().contentEquals("serviceName")) { //NOI18N
                         serviceName[0] = (String) expressions.get(entry.getKey()).getValue();
                         if (serviceName[0] != null) {
                             serviceName[0] = URLEncoder.encode(serviceName[0], "UTF-8"); //NOI18N
                         }
-                    } else if (entry.getKey().getSimpleName().contentEquals("name")) {
+                    } else if (entry.getKey().getSimpleName().contentEquals("name")) { //NOI18N
                         name[0] = (String) expressions.get(entry.getKey()).getValue();
                         if (name[0] != null) {
-                            name[0] = URLEncoder.encode(name[0], "UTF-8");
+                            name[0] = URLEncoder.encode(name[0], "UTF-8"); //NOI18N
                         }
                     }
                     if (serviceName[0] != null && name[0] != null) {
@@ -723,8 +745,7 @@ public class JaxWsNode extends AbstractNode implements
         ServerContextInfo serverContextInfo = getServerContextInfo();
         String contextRoot = serverContextInfo.getContextRoot();
         return "http://" + serverContextInfo.getHost() + ":" + serverContextInfo.getPort() + "/" + //NOI18N
-                (!contextRoot.equals("") ? contextRoot + "/" : "") + getServiceUri(); //NOI18N
-
+                getServiceUri(contextRoot);
     }
 
     /**
@@ -732,16 +753,34 @@ public class JaxWsNode extends AbstractNode implements
      */
     @Override
     public String getTesterPageURL() {
+
+//        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+//        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+//        // need to compute from annotations
+//        String wsURI = null;
+//
+//        WSStackUtils stackUtils = new WSStackUtils(project);
+//        boolean isJsr109Supported = stackUtils.isJsr109Supported();
+
+        ServerContextInfo serverContextInfo = getServerContextInfo();
+        ServiceInfo serviceInfo = getServiceInfo();
         WSStackUtils stackUtils = new WSStackUtils(project);
-        WSStack<JaxWs> jaxWsStack = stackUtils.getWsStack(JaxWs.class);
-        if (jaxWsStack != null) {
-            JaxWs.UriDescriptor uriDescriptor = jaxWsStack.get().getWsUriDescriptor();
-            if (uriDescriptor != null) {
-                ServerContextInfo serverContextInfo = getServerContextInfo();
-                ServiceInfo serviceInfo = getServiceInfo();
-                return uriDescriptor.getTesterPageUri(serverContextInfo.getHost(), serverContextInfo.getPort(), serverContextInfo.getContextRoot(), serviceInfo.getServiceName(), serviceInfo.getPortName(), serviceInfo.isEjb());
+        boolean isJsr109Supported = stackUtils.isJsr109Supported();
+        if (isJsr109Supported && Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) {
+            WSStack<JaxWs> jaxWsStack = stackUtils.getWsStack(JaxWs.class);
+            if (jaxWsStack != null) {
+                JaxWs.UriDescriptor uriDescriptor = jaxWsStack.get().getWsUriDescriptor();
+                if (uriDescriptor != null) {
+                    return uriDescriptor.getTesterPageUri(serverContextInfo.getHost(), serverContextInfo.getPort(), serverContextInfo.getContextRoot(), serviceInfo.getServiceName(), serviceInfo.getPortName(), serviceInfo.isEjb());
+                }
             }
-            
+        } else if (!serviceInfo.isEjb()) { //Tomcat case
+            try {
+                String serviceUri = getNonJsr109Uri(J2eeModule.Type.WAR);
+                String contextRoot = serverContextInfo.getContextRoot();
+                return "http://"+serverContextInfo.getHost()+":"+serverContextInfo.getPort()+"/"+ //NOI18N
+                        (contextRoot==null ? "" : contextRoot+"/") + serviceUri; //NOI18N
+            } catch (UnsupportedEncodingException ex) {}
         }
         return getWebServiceURL(); //NOI18N
     }
