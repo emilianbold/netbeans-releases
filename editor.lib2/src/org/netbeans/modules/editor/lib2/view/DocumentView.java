@@ -899,8 +899,15 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         return textComponent != null && children != null && (lengthyAtomicEdit <= 0);
     }
 
+    /**
+     * It should be called with +1 once it's detected that there's a lengthy atomic edit
+     * in progress and with -1 when such edit gets finished.
+     * @param delta +1 or -1 when entering/leaving lengthy atomic edit.
+     */
     public void updateLengthyAtomicEdit(int delta) {
         lengthyAtomicEdit += delta;
+        LOG.log(Level.FINE, "updateLengthyAtomicEdit: delta={0} lengthyAtomicEdit={1}\n",
+                new Object[] { delta, lengthyAtomicEdit} );
         if (lengthyAtomicEdit == 0) {
             // Release the existing children
             PriorityMutex mutex = getMutex();

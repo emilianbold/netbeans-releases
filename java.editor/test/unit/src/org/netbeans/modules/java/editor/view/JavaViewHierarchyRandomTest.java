@@ -79,8 +79,9 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
 //        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testInsertRemoveSingleChar", "")});
 //        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testUndo750", "")});
 //        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testUndoRedoSimple", "")});
-        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testInsertTextWithNewlines", "")});
+//        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testInsertTextWithNewlines", "")});
 //        filter.setIncludes(new Filter.IncludeExclude[] { new Filter.IncludeExclude("testInsertSimpleRemoveContent", "")});
+//        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testNewlineLineOne", "")});
 //        setFilter(filter);
     }
 

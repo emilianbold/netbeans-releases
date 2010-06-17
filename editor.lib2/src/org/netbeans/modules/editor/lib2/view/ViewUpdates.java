@@ -342,20 +342,24 @@ public final class ViewUpdates implements DocumentListener {
 
                 int removeOffset = evt.getOffset();
                 int removeLength = evt.getLength();
+                int removeEndOffset = removeOffset + removeLength;
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("\nDOCUMENT-REMOVE-evt: offset=" + removeOffset + ", length=" + removeLength + // NOI18N
                             ", docLen=" + evt.getDocument().getLength() + '\n'); // NOI18N
                 }
                 rStartOffset = Math.min(rStartOffset, removeOffset);
-                rEndOffset = Math.max(rEndOffset, removeOffset + removeLength);
+                rEndOffset = Math.max(rEndOffset, removeEndOffset);
                 int docViewStartOffset = documentView.getStartOffset();
-                int docViewEndOffset = documentView.getEndOffset();
-                if (rEndOffset <= docViewStartOffset ||rStartOffset >= docViewEndOffset) {
+                int docViewOrigEndOffset = documentView.getEndOffset();
+                if (docViewOrigEndOffset >= removeOffset) {
+                    docViewOrigEndOffset += removeLength;
+                }
+                if (rEndOffset <= docViewStartOffset || rStartOffset >= docViewOrigEndOffset) {
                     // Outside of area covered by document view
                     return;
                 }
                 rStartOffset = Math.max(docViewStartOffset, rStartOffset);
-                rEndOffset = Math.min(docViewEndOffset, rEndOffset);
+                rEndOffset = Math.min(docViewOrigEndOffset, rEndOffset);
 
 
                 // If line elements were modified the views will be modified too
@@ -413,8 +417,8 @@ public final class ViewUpdates implements DocumentListener {
                     EditorView childView = paragraphView.getEditorView(childViewIndex);
                     int childStartOffset = childView.getStartOffset();
                     int childEndOffset = childView.getEndOffset();
-                    boolean localEdit = ((removeOffset == childStartOffset && removeOffset + removeLength < childEndOffset) ||
-                            (removeOffset > childStartOffset && removeOffset + removeLength <= childEndOffset));
+                    boolean localEdit = ((removeOffset == childStartOffset && removeEndOffset < childEndOffset) ||
+                            (removeOffset > childStartOffset && removeEndOffset <= childEndOffset));
                     rebuildNecessary = !localEdit;
                     if (!rebuildNecessary) {
                         // Possibly clear text layout for the child view
@@ -440,7 +444,7 @@ public final class ViewUpdates implements DocumentListener {
                     createLocalViews |= documentView.isAccurateSpan();
                     ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
                             viewFactories, rStartOffset, rEndOffset, 
-                            removeOffset + removeLength, -removeLength, createLocalViews);
+                            removeEndOffset, -removeLength, createLocalViews);
                     try {
                         viewBuilder.createViews();
                         viewBuilder.repaintAndReplaceViews();
