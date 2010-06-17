@@ -53,6 +53,7 @@ import java.io.OutputStreamWriter;
 import java.io.PipedReader;
 import java.io.PipedWriter;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 
@@ -273,8 +274,10 @@ public class StreamTerm extends Term {
      * @param perr Error output from process. May be null if the error stream
      *		   is already absorbed into 'pout' as the case might be with
      *             ptys.
+     * @param charSet Character set to use for pout and perr.
+     *                See InputStreamReader(InputStream, String).
      */
-    public void connect(OutputStream pin, InputStream pout, InputStream perr) {
+    public void connect(OutputStream pin, InputStream pout, InputStream perr, String charSet) {
 
 	if (connected)
 	    throw new IllegalStateException("Cannot call connect() twice"); //NOI18N
@@ -289,17 +292,51 @@ public class StreamTerm extends Term {
         }
 
 	if (pout != null) {
-	    InputStreamReader pout_reader = new InputStreamReader(pout);
+	    InputStreamReader pout_reader;
+            if (charSet == null) {
+                pout_reader = new InputStreamReader(pout);
+            } else {
+                try {
+                    pout_reader = new InputStreamReader(pout, charSet);
+                } catch (UnsupportedEncodingException ex) {
+                    pout_reader = new InputStreamReader(pout);
+                }
+            }
 	    stdoutMonitor = new OutputMonitor(pout_reader, this);
 	    stdoutMonitor.start();
 	}
 
         if (perr != null) {
-            InputStreamReader err_reader = new InputStreamReader(perr);
+            InputStreamReader err_reader;
+            if (charSet == null) {
+                err_reader = new InputStreamReader(perr);
+            } else {
+                try {
+                    err_reader = new InputStreamReader(perr, charSet);
+                } catch (UnsupportedEncodingException ex) {
+                    err_reader = new InputStreamReader(perr);
+                }
+            }
             stderrMonitor = new OutputMonitor(err_reader, this);
             stderrMonitor.start();
         }
 	connected = true;
+    }
+
+    /**
+     * Connect an I/O stream pair or triple to this Term.
+     * Call disconnect() before attempting to connect() again.
+     *
+     * @param pin Input (and paste operations) to the sub-process.
+     *             this stream.
+     * @param pout Main output from the sub-process. Stuff received via this
+     *             stream will be rendered on the screen.
+     * @param perr Error output from process. May be null if the error stream
+     *		   is already absorbed into 'pout' as the case might be with
+     *             ptys.
+     */
+    public void connect(OutputStream pin, InputStream pout, InputStream perr) {
+        connect(pin, pout, perr, null);
     }
 
     private void disconnectWork() {
