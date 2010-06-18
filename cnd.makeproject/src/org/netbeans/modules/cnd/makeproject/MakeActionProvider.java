@@ -1117,7 +1117,7 @@ public final class MakeActionProvider implements ActionProvider {
         if (cs != null) {
             cmd = cs.getTool(PredefinedToolKind.MakeTool).getPath();
         } else {
-            assert false;
+            CndUtils.assertFalse(true, "Null compiler collection"); //NOI18N
             cmd = "make"; // NOI18N
         }
         //cmd = cmd + " " + MakeOptions.getInstance().getMakeOptions(); // NOI18N
