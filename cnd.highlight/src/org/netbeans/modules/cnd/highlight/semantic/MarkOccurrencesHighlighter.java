@@ -578,7 +578,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
 
         @Override
         public String toString() {
-            return "tokenRef[" + start + "-" + end + "]";
+            return "tokenRef[" + start + "-" + end + "]";//NOI18N
         }
     }
 }
