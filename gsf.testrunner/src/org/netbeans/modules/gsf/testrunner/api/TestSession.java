@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.testrunner.DefaultTestRunnerNodeFactory;
 import org.openide.util.Parameters;
 import org.openide.windows.OutputWriter;
@@ -332,7 +333,7 @@ public class TestSession {
      * @see #name
      */
     public String getName() {
-        return name;
+        return name.length() != 0 ? name : ProjectUtils.getInformation(project).getDisplayName();
     }
 
     /**
