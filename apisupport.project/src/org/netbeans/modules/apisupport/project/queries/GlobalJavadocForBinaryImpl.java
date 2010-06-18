@@ -58,6 +58,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery.Result;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -70,16 +71,17 @@ import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Able to find Javadoc in the appropriate NbPlatform for the given URL.
  *
  * @author Jesse Glick, Martin Krauskopf
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class)
+@ServiceProvider(service=JavadocForBinaryQueryImplementation.class)
 public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryImplementation {
     
-    public JavadocForBinaryQuery.Result findJavadoc(final URL root) {
+    public @Override JavadocForBinaryQuery.Result findJavadoc(final URL root) {
         try {
             if (root.getProtocol().equals("jar")) { // NOI18N
                 return findForBinaryRoot(root);
@@ -169,6 +171,7 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
      */
     private static final Map<String,Boolean> knownGoodJavadoc = Collections.synchronizedMap(new HashMap<String,Boolean>());
    
+    @SuppressWarnings("DE_MIGHT_IGNORE")
     private Result findByDashedCNB(final String cnbdashes, final URL[] roots, boolean allowRemote) throws MalformedURLException {
         final List<URL> candidates = new ArrayList<URL>();
         for (URL root : roots) {
@@ -206,13 +209,11 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
             return null;
         }
         return new JavadocForBinaryQuery.Result() {
-            public URL[] getRoots() {
+            public @Override URL[] getRoots() {
                 return candidates.toArray(new URL[candidates.size()]);
             }
-            public void addChangeListener(ChangeListener l) {
-            }
-            public void removeChangeListener(ChangeListener l) {
-            }
+            public @Override void addChangeListener(ChangeListener l) {}
+            public @Override void removeChangeListener(ChangeListener l) {}
         };
     }
 
