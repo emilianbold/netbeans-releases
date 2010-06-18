@@ -1037,6 +1037,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         List<PropertyChangeEvent> evts;
         accessLock.writeLock().lock();
         try {
+            debugger.getOperator().notifyMethodInvoking(threadReference);
             logger.fine("Invoking a method in thread "+threadName);
             loggerS.fine("["+threadName+"]: Invoking a method, suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
             if (methodInvokingDisabledUntilResumed) {
@@ -1122,6 +1123,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 //System.err.println("\""+getName()+"\""+":  Suspended after method invocation.");
                 resumedToFinishMethodInvocation = false;
             }
+            debugger.getOperator().notifyMethodInvokeDone(threadReference);
             if (stepsDeletedDuringMethodInvoke != null) {
                 try {
                     for (StepRequest sr : stepsDeletedDuringMethodInvoke) {

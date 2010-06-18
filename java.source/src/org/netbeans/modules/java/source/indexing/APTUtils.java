@@ -51,7 +51,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -67,11 +66,11 @@ import javax.annotation.processing.Processor;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
+import org.netbeans.modules.java.source.parsing.CachingArchiveClassLoader;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.openide.filesystems.FileObject;
@@ -188,14 +187,10 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     }
 
     public Collection<? extends Processor> resolveProcessors(boolean onScan) {
-        List<URL> urls = new LinkedList<URL>();
-        for (Entry e : processorPath.entries()) {
-            urls.add(e.getURL());
-        }
         ClassLoader cl;
         final ClassLoaderRef cache = classLoaderCache;
         if (cache == null || (cl=cache.get(root)) == null) {
-            cl = new URLClassLoader(urls.toArray(new URL[0]), new BypassOpenIDEUtilClassLoader(Context.class.getClassLoader()));
+            cl = CachingArchiveClassLoader.forClassPath(processorPath, new BypassOpenIDEUtilClassLoader(Context.class.getClassLoader()));
             classLoaderCache = new ClassLoaderRef(cl, root);
         }
         Collection<Processor> result = lookupProcessors(cl, onScan);

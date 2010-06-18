@@ -136,7 +136,7 @@ public final class CreateMethodFix implements Fix {
             if (!first)
                 methodDisplayName.append(','); // NOI18N
             first = false;
-            methodDisplayName.append(org.netbeans.modules.editor.java.Utilities.getTypeName(tm, true));
+            methodDisplayName.append(org.netbeans.modules.editor.java.Utilities.getTypeName(info, tm, true));
         }
         
         methodDisplayName.append(')'); // NOI18N
@@ -239,7 +239,7 @@ public final class CreateMethodFix implements Fix {
             TypeMirrorHandle tmh = typeIt.next();
             String           argName = nameIt.next();
             
-            value.append(org.netbeans.modules.editor.java.Utilities.getTypeName(tmh.resolve(info), true));
+            value.append(org.netbeans.modules.editor.java.Utilities.getTypeName(info, tmh.resolve(info), true));
             value.append(' '); // NOI18N
             value.append(argName);
         }
@@ -254,7 +254,7 @@ public final class CreateMethodFix implements Fix {
             value.append("CreateMethodFix:"); // NOI18N
             value.append(name);
             addArguments(info, value);
-            value.append(org.netbeans.modules.editor.java.Utilities.getTypeName(returnType.resolve(info), true));
+            value.append(org.netbeans.modules.editor.java.Utilities.getTypeName(info, returnType.resolve(info), true));
         } else {
             value.append("CreateConstructorFix:"); // NOI18N
             addArguments(info, value);
