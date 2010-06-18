@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.debug;
 
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -233,6 +234,18 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             
             super.visitAnnotation(tree, below);
             
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
+        public Void visitAnnotatedType(AnnotatedTypeTree node, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitAnnotatedType(node, below);
+
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;
         }
