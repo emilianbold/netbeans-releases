@@ -686,7 +686,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 field.requestFocusInWindow();
                 field.selectAll();
             } else {
-                JTextField field = (JTextField) tab.getEditorComponent();
+                JPanel panel = (JPanel) tab.getEditorComponent();
+                JTextField field = (JTextField) panel.getComponent(0);
                 field.setCaretPosition(field.getText().length());
                 field.requestFocusInWindow();
                 field.selectAll();
