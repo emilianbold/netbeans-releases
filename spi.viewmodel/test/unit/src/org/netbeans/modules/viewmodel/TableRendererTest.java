@@ -45,6 +45,7 @@ package org.netbeans.modules.viewmodel;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.EventObject;
@@ -360,6 +361,23 @@ public class TableRendererTest extends NbTestCase {
 
         @Override
         public boolean isCellEditable(EventObject anEvent) {
+            if (anEvent.getSource() instanceof JTable) {
+                JTable table = (JTable) anEvent.getSource();
+                if (anEvent instanceof MouseEvent) {
+                    MouseEvent event = (MouseEvent) anEvent;
+                    Point p = event.getPoint();
+                    int row = table.rowAtPoint(p);
+                    int col = table.columnAtPoint(p);
+                    Rectangle rect = table.getCellRect(row, col, true);
+                    p.translate(-rect.x, -rect.y);
+                    System.out.println("isCellEditable("+anEvent+")");
+                    System.out.println("Point "+p+"in rectangle "+rect);
+                    if (p.x > rect.width - 24) {
+                        // last 24 points not editable
+                        return false;
+                    }
+                }
+            }
             return true;
         }
 
