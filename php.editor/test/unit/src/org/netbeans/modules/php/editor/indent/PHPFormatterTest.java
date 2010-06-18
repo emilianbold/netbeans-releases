@@ -2008,6 +2008,16 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/blankLines/issue187264_02.php", options);
     }
 
+    public void testIssue187665_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/issue187665_01.php", options);
+    }
+
+    public void testIssue187665_02() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/issue187665_02.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
