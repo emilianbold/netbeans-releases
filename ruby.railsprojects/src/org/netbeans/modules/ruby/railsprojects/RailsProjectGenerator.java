@@ -67,6 +67,7 @@ import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 import org.netbeans.modules.ruby.railsprojects.server.ServerRegistry;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
@@ -122,7 +123,15 @@ public class RailsProjectGenerator {
             File pwd = data.getDir().getParentFile();
             List<String> argList = new ArrayList<String>();
             if (railsVersionArg != null) {
+                if (RailsProjectUtil.versionFor(data.getRailsVersion()).isRails3Obeta4rHigher()) {
+                    argList.add("new");
+                }
                 argList.add(railsVersionArg);
+            } else {
+                GemManager gemManager = platform.getGemManager();
+                if (RailsProjectUtil.versionFor(gemManager.getLatestVersion("rails")).isRails3Obeta4rHigher()) {
+                    argList.add("new");
+                }
             }
             if (runThroughRuby) {
                 argList.add(data.getName());
