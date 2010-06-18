@@ -92,7 +92,8 @@ public class WSDLModelImpl extends WSDLModel {
         super(source);
         wcf = new WSDLComponentFactoryImpl(this);
     }
-    	
+    
+    @Override
     public WSDLComponent createRootComponent(Element root) {
         DefinitionsImpl newDefinitions = null;
         QName q = root == null ? null : AbstractDocumentComponent.getQName(root);
@@ -105,19 +106,23 @@ public class WSDLModelImpl extends WSDLModel {
         
         return getDefinitions();
     }
-    
+
+    @Override
     public WSDLComponent getRootComponent() {
         return definitions;
     }
-    
+
+    @Override
     public WSDLComponent createComponent(WSDLComponent parent, Element element) {
         return getFactory().create(element, parent);
     }
-    
+
+    @Override
     protected ComponentUpdater<WSDLComponent> getComponentUpdater() {
         return new ChildComponentUpdateVisitor<WSDLComponent>();
     }
-    
+
+    @Override
     public WSDLComponentFactory getFactory() {
         return wcf;
     }
@@ -126,7 +131,8 @@ public class WSDLModelImpl extends WSDLModel {
         assert (def instanceof DefinitionsImpl) ;
         definitions = DefinitionsImpl.class.cast(def);
     }
-    
+
+    @Override
     public Definitions getDefinitions(){
         return definitions;
     }
@@ -179,7 +185,8 @@ public class WSDLModelImpl extends WSDLModel {
         }
         return ret;
     }
-    
+
+    @Override
     public List<WSDLModel> findWSDLModel(String namespace) {
         if (namespace == null) {
             return Collections.emptyList();
@@ -198,6 +205,7 @@ public class WSDLModelImpl extends WSDLModel {
         return ret;
     }
 
+    @Override
     public List<Schema> findSchemas(String namespace) {
         List<Schema> ret = new ArrayList<Schema>();
         for (SchemaModel sm : getEmbeddedSchemaModels()) {
@@ -229,10 +237,12 @@ public class WSDLModelImpl extends WSDLModel {
         return null;
     }
 
+    @Override
     public <T extends ReferenceableWSDLComponent> T findComponentByName(String name, Class<T> type) {
         return type.cast(new FindReferencedVisitor(getDefinitions()).find(name, type));
     }
-    
+
+    @Override
     public <T extends ReferenceableWSDLComponent> T findComponentByName(QName name, Class<T> type) {
         String namespace = name.getNamespaceURI();
         if (namespace == null) {
@@ -248,16 +258,20 @@ public class WSDLModelImpl extends WSDLModel {
         return null;
     }
     
+    @Override
     public Set<QName> getQNames() {
         return getElementRegistry().getKnownQNames();
     }
 
+    @Override
     public Set<String> getElementNames() {
         return getElementRegistry().getKnownElementNames();
     }
     
-    public ChangeInfo prepareChangeInfo(List<Node> pathToRoot) {
-        ChangeInfo change = super.prepareChangeInfo(pathToRoot);
+    @Override
+    public ChangeInfo prepareChangeInfo(List<? extends Node> pathToRoot,
+            List<? extends Node> nsContextPathToRoot) {
+        ChangeInfo change = super.prepareChangeInfo(pathToRoot, nsContextPathToRoot);
         DocumentComponent parentComponent = findComponent(change.getRootToParentPath());
         if (parentComponent == null) {
             return change;
@@ -265,10 +279,17 @@ public class WSDLModelImpl extends WSDLModel {
         if (! (parentComponent.getModel() instanceof WSDLModel)) 
         {
             getElementRegistry().addEmbeddedModelQNames((AbstractDocumentModel)parentComponent.getModel());
-            change = super.prepareChangeInfo(pathToRoot);
+            // Run preparation again because after registration a new model,
+            // the set of QNames can be changed.
+            //
+            // TODO: Optimization: addEmbeddedModelQNames() has to return a flag which indicates if
+            // a new QNames was added. It's not necessary to do preparation again if the set
+            // isn't changed and parentComponent can be speficied to get rid of repeated call of findComponent()
+            change = super.prepareChangeInfo(pathToRoot, nsContextPathToRoot);
         } else if (isDomainElement(parentComponent.getPeer()) && 
                 ! change.isDomainElement() && change.getChangedElement() != null) 
         {
+            // TODO: Sort out with the use-case of this code. 
             if (change.getOtherNonDomainElementNodes() == null ||
                 change.getOtherNonDomainElementNodes().isEmpty()) 
             {
@@ -291,7 +312,8 @@ public class WSDLModelImpl extends WSDLModel {
         }
         return change;
     }
-    
+
+    @Override
     public SyncUnit prepareSyncUnit(ChangeInfo changes, SyncUnit unit) {
         unit = super.prepareSyncUnit(changes, unit);
         if (unit != null) {
@@ -299,7 +321,8 @@ public class WSDLModelImpl extends WSDLModel {
         }
         return null;
     }
-    
+
+    @Override
     public AbstractDocumentComponent findComponent(
             AbstractDocumentComponent current,
             List<org.w3c.dom.Element> pathFromRoot, 
