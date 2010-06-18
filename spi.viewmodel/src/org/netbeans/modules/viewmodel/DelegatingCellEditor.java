@@ -46,6 +46,7 @@ package org.netbeans.modules.viewmodel;
 
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import javax.swing.JTable;
@@ -127,7 +128,12 @@ class DelegatingCellEditor implements TableCellEditor {
             TreeModelNode tmn = (TreeModelNode) n;
             TableRendererModel trm = tmn.getModel();
             try {
-                return trm.canEditCell(tmn.getObject(), columnID);
+                boolean canEdit = trm.canEditCell(tmn.getObject(), columnID);
+                if (canEdit) {
+                    TableCellEditor tce = trm.getCellEditor(tmn.getObject(), columnID);
+                    canEdit = tce.isCellEditable(event);
+                }
+                return canEdit;
             } catch (UnknownTypeException ex) {
             }
         }
