@@ -105,7 +105,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import sun.reflect.generics.tree.TypeTree;
 
 /**
  * Generator of Java Persistence API ORM classes from DB.
@@ -174,6 +173,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
     }
 
 
+    @Override
     public void generateBeans(final ProgressPanel progressPanel,
             final RelatedCMPHelper helper,
             final FileObject dbSchemaFile,
@@ -262,6 +262,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
     }
 
+    @Override
     public void init(WizardDescriptor wiz) {
         // get the table names for all entities in the project
         Project project = Templates.getProject(wiz);
@@ -273,6 +274,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
            
         MetadataModel<EntityMappingsMetadata> entityMappingsModel = entityClassScope.getEntityMappingsModel(true);
         readHelper = MetadataModelReadHelper.create(entityMappingsModel, new MetadataModelAction<EntityMappingsMetadata, Set<Entity>>() {
+            @Override
             public Set<Entity> run(EntityMappingsMetadata metadata) {
                 Set<Entity> result = new HashSet<Entity>();
                 for (Entity entity : metadata.getRoot().getEntity()) {
@@ -305,17 +307,21 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         }
     }
 
+    @Override
     public void uninit() {
     }
 
+    @Override
     public String getFQClassName(String tableName) {
         return entityName2TableName.get(tableName);
     }
 
+    @Override
     public String generateEntityName(String name) {
         return name;
     }
 
+    @Override
     public Set<FileObject> createdObjects() {
         return result;
     }
@@ -480,12 +486,16 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO, pkClassFO) :
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO);
                     javaSource.runModificationTask(new Task<WorkingCopy>() {
+                        @Override
                         public void run(WorkingCopy copy) throws IOException {
                             if (copy.getFileObject().equals(entityClassFO)) {
                                 EntityClassGenerator clsGen = new EntityClassGenerator(copy, entityClass);
                                 clsGen.run();
                             } else {
-                                new PKClassGenerator(copy, entityClass).run();
+                                if(entityClass.getUpdateType() != UpdateType.UPDATE)
+                                    new PKClassGenerator(copy, entityClass).run();
+                                else
+                                    Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.INFO, "PK Class update isn't supported"); //NOI18N //TODO: implement update
                             }
                         }
                     }).commit();
@@ -846,6 +856,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private String namedQueryPrefix;
 
             private Set<String> existingColumns = new HashSet<String>();
+            private String existingEmbeddedId = null;
             private HashMap<String, Tree> existingJoinColumns = new HashMap<String, Tree>();
             private HashMap<String, Tree> existingMappings = new HashMap<String, Tree>();
 
@@ -856,12 +867,13 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 entityFQClassName = entityClass.getPackage() + "." + entityClassName;
             }
 
+            @Override
             protected void initialize() throws IOException {
                 newClassTree = genUtils.ensureNoArgConstructor(newClassTree);
                 if (genSerializableEntities && !UpdateType.UPDATE.equals(updateType)) {
                     newClassTree = genUtils.addImplementsClause(newClassTree, "java.io.Serializable"); // NOI18N
                 }
-                if (needsPKClass) {
+                if (needsPKClass && existingEmbeddedId==null) {
                     String pkFieldName = createFieldName(pkClassName);
                     pkProperty = new Property(
                             Modifier.PROTECTED,
@@ -941,7 +953,12 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                                     }
                                 }
                             } else if( nm.contentEquals("EmbeddedId") ){//NOI18N
-
+                                TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                existingEmbeddedId = tm.toString();
+                                if(pkProperty != null){
+                                    //currently unsupported update
+                                    properties.remove(pkProperty);
+                                }
                             } else if( nm.contentEquals("JoinTable") ){//NOI18N
                                 for(ExpressionTree exTree: annTree.getArguments()){
                                     AssignmentTree aTree = (AssignmentTree)exTree;
@@ -1000,7 +1017,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 Property property = null;
                 if (isPKMember) {
                     if (needsPKClass) {
-                        pkClassVariables.add(createVariable(m));
+                        if(!updateType.UPDATE.equals(updateType)){
+                            pkClassVariables.add(createVariable(m));
+                        } else {
+                            //TODO: support update for pk
+                        }
                     } else {
                         pkProperty = property = createProperty(m);
                     }
@@ -1050,6 +1071,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 namedQueryAnnotations.add(0, genUtils.createAnnotation("javax.persistence.NamedQuery", namedQueryAnnArguments)); //NOI18N
             }
 
+            @Override
             protected void afterMembersGenerated() {
                 if (!UpdateType.UPDATE.equals(updateType)){
                     addFindAllNamedQueryAnnotation();
@@ -1059,6 +1081,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
             }
 
+            @Override
             protected void generateRelationship(RelationshipRole role) throws IOException {
                 String memberName = role.getFieldName();
 
@@ -1218,8 +1241,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 return serialVersionUID;
             }
             
+            @Override
             protected void finish() {
                 
+                if(needsPKClass && UpdateType.UPDATE.equals(updateType))return;//do not support yet updates with pk class
+
                 if(pkProperty != null) {
                     // create a constructor which takes the primary key field as argument    
                     VariableTree pkFieldParam = genUtils.removeModifiers(pkProperty.getField());
@@ -1305,6 +1331,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 super(copy, entityClass);
             }
 
+            @Override
             protected void initialize() throws IOException {
                 newClassTree = genUtils.ensureNoArgConstructor(newClassTree);
                 // primary key class must be serializable and @Embeddable
@@ -1312,6 +1339,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Embeddable")); // NOI18N
             }
 
+            @Override
             protected void generateMember(EntityMember m) throws IOException {
                 if (!m.isPrimaryKey()) {
                     return;
