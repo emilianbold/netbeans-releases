@@ -321,28 +321,34 @@ public class SelectImpl implements CsmSelectProvider {
     
     @SuppressWarnings("unchecked")
     static class FilterBuilder implements CsmFilterBuilder {
+        @Override
         public CsmFilter createKindFilter(final CsmDeclaration.Kind ... kinds) {
             return new KindFilterImpl(kinds);
         }
 
         @SuppressWarnings("unchecked")
+        @Override
         public CsmFilter createNameFilter(final CharSequence strPrefix, final boolean match, final boolean caseSensitive, final boolean allowEmptyName) {
             return new NameFilterImpl(allowEmptyName, strPrefix, match, caseSensitive);
         }
 
+        @Override
         public CsmFilter createOffsetFilter(final int startOffset, final int endOffset) {
             return new OffsetFilterImpl(startOffset, endOffset);
         }
 
+        @Override
         public CsmFilter createOffsetFilter(int innerOffset) {
             return new InnerOffsetFilterImpl(innerOffset);
         }
 
+        @Override
         public CsmFilter createCompoundFilter(final CsmFilter first, final CsmFilter second) {
             return new CompoundFilterImpl(first, second);
         }
 
         @SuppressWarnings("unchecked")
+        @Override
         public CsmFilter createNameFilter(final NameAcceptor nameAcceptor) {
             return new NameAcceptorFilterImpl(nameAcceptor);
         }
@@ -354,6 +360,7 @@ public class SelectImpl implements CsmSelectProvider {
                 this.kinds = kinds;
             }
 
+            @Override
             public boolean accept(CsmUID<?> uid) {
                 CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
                 if (kind != null) {
@@ -385,6 +392,7 @@ public class SelectImpl implements CsmSelectProvider {
                 this.caseSensitive = caseSensitive;
             }
 
+            @Override
             public boolean accept(CsmUID<?> uid) {
                 CharSequence name = UIDUtilities.getName(uid);
                 if (name != null) {
@@ -411,6 +419,7 @@ public class SelectImpl implements CsmSelectProvider {
                 this.endOffset = endOffset;
             }
 
+            @Override
             public boolean accept(CsmUID<?> uid) {
                 int start = UIDUtilities.getStartOffset(uid);
                 int end = UIDUtilities.getEndOffset(uid);
@@ -436,6 +445,7 @@ public class SelectImpl implements CsmSelectProvider {
                 this.innerOffset = innerOffset;
             }
 
+            @Override
             public boolean accept(CsmUID<?> uid) {
                 int start = UIDUtilities.getStartOffset(uid);
                 int end = UIDUtilities.getEndOffset(uid);
@@ -463,6 +473,7 @@ public class SelectImpl implements CsmSelectProvider {
                 this.second = second;
             }
 
+            @Override
             public boolean accept(CsmUID<?> uid) {
                 return ((UIDFilter) first).accept(uid) && ((UIDFilter) second).accept(uid);
             }
@@ -480,6 +491,7 @@ public class SelectImpl implements CsmSelectProvider {
                 this.nameAcceptor = nameAcceptor;
             }
 
+            @Override
             public boolean accept(CsmUID<?> uid) {
                 CharSequence name = UIDUtilities.getName(uid);
                 return nameAcceptor.accept(name);
