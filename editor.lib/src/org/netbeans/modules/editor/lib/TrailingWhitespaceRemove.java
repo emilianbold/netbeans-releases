@@ -46,6 +46,7 @@ package org.netbeans.modules.editor.lib;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -57,6 +58,8 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.GapList;
@@ -98,6 +101,7 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
     
     private boolean inWhitespaceRemove;
 
+    @SuppressWarnings("LeakingThisInConstructor")
     private TrailingWhitespaceRemove(BaseDocument doc) {
         this.doc = doc;
         this.docText = DocumentUtilities.getText(doc); // Persists for doc's lifetime
@@ -105,15 +109,20 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         doc.addUpdateDocumentListener(this);
     }
 
+    @Override
     public synchronized void run(CompoundEdit compoundEdit) {
-        inWhitespaceRemove = true;
-        try {
-            new ModsProcessor().removeWhitespace();
-            NewModRegionsEdit edit = new NewModRegionsEdit();
-            compoundEdit.addEdit(edit);
-            edit.run();
-        } finally {
-            inWhitespaceRemove = false;
+        Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
+        String policy = prefs.get(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, "never"); //NOI18N
+        if (!"never".equals(policy)) { //NOI18N
+            inWhitespaceRemove = true;
+            try {
+                new ModsProcessor("modified-lines".equals(policy)).removeWhitespace(); //NOI18N
+                NewModRegionsEdit edit = new NewModRegionsEdit();
+                compoundEdit.addEdit(edit);
+                edit.run();
+            } finally {
+                inWhitespaceRemove = false;
+            }
         }
     }
 
@@ -125,6 +134,7 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         return new GapList<MutablePositionRegion>(3);
     }
 
+    @Override
     public void insertUpdate(DocumentEvent evt) {
         CompoundEdit compoundEdit = (CompoundEdit) evt;
         int offset = evt.getOffset();
@@ -146,6 +156,7 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         }
     }
 
+    @Override
     public void removeUpdate(DocumentEvent evt) {
         // Currently do not handle in any special way but
         // Since there's a mod on the line there will be a diff
@@ -155,6 +166,7 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         }
     }
 
+    @Override
     public void changedUpdate(DocumentEvent evt) {
     }
 
@@ -244,8 +256,48 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         return sb.toString();
     }
 
+    private static void removeWhitespaceOnLine(int lineStartOffset, int lineLastOffset, int caretRelativeOffset, int lineIndex, int caretLineIndex, Document doc, CharSequence docText) {
+        int startOffset = lineStartOffset; // lowest offset where WS can be removed
+        if (lineIndex == caretLineIndex) {
+            startOffset += caretRelativeOffset;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Line index " + lineIndex + " contains caret at relative offset " + // NOI18N
+                        caretRelativeOffset + ".\n"); // NOI18N
+            }
+        }
+        int offset;
+        for (offset = lineLastOffset - 1; offset >= startOffset; offset--) {
+            char c = docText.charAt(offset);
+            // Currently only remove ' ' and '\t' - may be revised
+            if (c != ' ' && c != '\t') {
+                break;
+            }
+        }
+        // Increase offset (either below lineStartOffset or on non-white char)
+        offset++;
+        if (offset < lineLastOffset) {
+            BadLocationException ble = null;
+            try {
+                doc.remove(offset, lineLastOffset - offset);
+            } catch (BadLocationException e) {
+                ble = e;
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Remove between " + DocumentUtilities.debugOffset(doc, offset) + // NOI18N
+                        " and " + DocumentUtilities.debugOffset(doc, lineLastOffset) + // NOI18N
+                        (ble == null ? " succeeded." : " failed.") + // NOI18N
+                        '\n'
+                );
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.log(Level.INFO, "Exception thrown during removal:", ble); // NOI18N
+                }
+            }
+        }
+    }
+
     private final class ModsProcessor {
 
+        private final boolean removeFromModifiedLinesOnly;
         private final Element lineElementRoot;
 
         /** Index of current region. */
@@ -273,11 +325,12 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         private final int caretLineIndex;
 
         /**
-         * Shift offset of the caret relative to caretLineIndex's line begining.
+         * Shift offset of the caret relative to caretLineIndex's line beginning.
          */
         private final int caretRelativeOffset;
 
-        ModsProcessor() {
+        ModsProcessor(boolean removeFromModifiedLinesOnly) {
+            this.removeFromModifiedLinesOnly = removeFromModifiedLinesOnly;
             lineElementRoot = DocumentUtilities.getParagraphRootElement(doc);
             JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
             if (lastFocusedComponent != null && lastFocusedComponent.getDocument() == doc) {
@@ -293,30 +346,38 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         }
 
         void removeWhitespace() {
-            regionIndex = modRegions.size();
-            lineStartOffset = Integer.MAX_VALUE; // Will cause line's bin-search
-            while (fetchPreviousNonEmptyRegion()) {
-                // Use last offset since someone may paste "blah \n" so the last offset point to '\n' here
-                int regionLastOffset = regionEndOffset - 1;
-                int lastLineIndex = lineIndex;
-                if (regionLastOffset + GET_ELEMENT_INDEX_THRESHOLD < lineStartOffset) {
-                    // Too below - use binary search
-                    lineIndex = lineElementRoot.getElementIndex(regionEndOffset - 1);
-                    fetchLineElement();
-                } else { // Within threshold - try to search sequentially
-                    while (lineStartOffset > regionLastOffset) {
-                        lineIndex--;
+            if (removeFromModifiedLinesOnly) {
+                regionIndex = modRegions.size();
+                lineStartOffset = Integer.MAX_VALUE; // Will cause line's bin-search
+                while (fetchPreviousNonEmptyRegion()) {
+                    // Use last offset since someone may paste "blah \n" so the last offset point to '\n' here
+                    int regionLastOffset = regionEndOffset - 1;
+                    int lastLineIndex = lineIndex;
+                    if (regionLastOffset + GET_ELEMENT_INDEX_THRESHOLD < lineStartOffset) {
+                        // Too below - use binary search
+                        lineIndex = lineElementRoot.getElementIndex(regionEndOffset - 1);
                         fetchLineElement();
+                    } else { // Within threshold - try to search sequentially
+                        while (lineStartOffset > regionLastOffset) {
+                            lineIndex--;
+                            fetchLineElement();
+                        }
+                    }
+
+                    if (lastLineIndex != lineIndex) {
+                        removeWhitespaceOnLine(lineStartOffset, lineLastOffset, caretRelativeOffset, lineIndex, caretLineIndex, doc, docText);
+                        while (regionStartOffset < lineStartOffset) {
+                            lineIndex--;
+                            fetchLineElement();
+                            removeWhitespaceOnLine(lineStartOffset, lineLastOffset, caretRelativeOffset, lineIndex, caretLineIndex, doc, docText);
+                        }
                     }
                 }
-
-                if (lastLineIndex != lineIndex) {
-                    removeWhitespaceOnLine();
-                    while (regionStartOffset < lineStartOffset) {
-                        lineIndex--;
-                        fetchLineElement();
-                        removeWhitespaceOnLine();
-                    }
+            } else {
+                // remove from all lines
+                for(lineIndex = lineElementRoot.getElementCount() - 1; lineIndex >= 0 ; lineIndex--) {
+                    fetchLineElement();
+                    removeWhitespaceOnLine(lineStartOffset, lineLastOffset, caretRelativeOffset, lineIndex, caretLineIndex, doc, docText);
                 }
             }
         }
@@ -337,45 +398,6 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
             Element lineElement = lineElementRoot.getElement(lineIndex);
             lineStartOffset = lineElement.getStartOffset();
             lineLastOffset = lineElement.getEndOffset() - 1;
-        }
-
-        private void removeWhitespaceOnLine() {
-            int startOffset = lineStartOffset; // lowest offset where WS can be removed
-            if (lineIndex == caretLineIndex) {
-                startOffset += caretRelativeOffset;
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Line index " + lineIndex + " contains caret at relative offset " + // NOI18N
-                            caretRelativeOffset + ".\n"); // NOI18N
-                }
-            }
-            int offset;
-            for (offset = lineLastOffset - 1; offset >= startOffset; offset--) {
-                char c = docText.charAt(offset);
-                // Currently only remove ' ' and '\t' - may be revised
-                if (c != ' ' && c != '\t') {
-                    break;
-                }
-            }
-            // Increase offset (either below lineStartOffset or on non-white char)
-            offset++;
-            if (offset < lineLastOffset) {
-                BadLocationException ble = null;
-                try {
-                    doc.remove(offset, lineLastOffset - offset);
-                } catch (BadLocationException e) {
-                    ble = e;
-                }
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Remove between " + DocumentUtilities.debugOffset(doc, offset) + // NOI18N
-                            " and " + DocumentUtilities.debugOffset(doc, lineLastOffset) + // NOI18N
-                            (ble == null ? " succeeded." : " failed.") + // NOI18N
-                            '\n'
-                    );
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.log(Level.INFO, "Exception thrown during removal:", ble); // NOI18N
-                    }
-                }
-            }
         }
     }
 

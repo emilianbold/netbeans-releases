@@ -46,7 +46,6 @@ package org.netbeans.modules.j2ee.sun.share.configbean.templates;
 import java.io.File;
 import javax.swing.JPanel;
 
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -82,7 +81,7 @@ public final class SunDDVisualPanel extends JPanel {
         Lookup lookup = project.getLookup();
         J2eeModuleProvider provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
         J2eeModule j2eeModule = provider.getJ2eeModule();
-        sunDDFileName = getConfigFileName(j2eeModule);
+        sunDDFileName = getConfigFileName(j2eeModule,provider.getServerID());
 
         // Calculate location:
         sunDDFile = (sunDDFileName != null) ? j2eeModule.getDeploymentConfigurationFile(sunDDFileName) : null;
@@ -110,6 +109,7 @@ public final class SunDDVisualPanel extends JPanel {
         return sunDDLocation;
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(SunDDVisualPanel.class, "LBL_CreateSunDeploymentDescriptor"); // NOI18N
     }
@@ -223,17 +223,20 @@ public final class SunDDVisualPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
     
 
-    private String getConfigFileName(J2eeModule j2eeModule) {
+    // TODO avoid the hard coding that is done in here
+
+    private static String EE6WC = "gfv3ee6wc"; // NOI18N
+    private String getConfigFileName(J2eeModule j2eeModule,String serverTypeID) {
         String result = null;
         Object moduleType = j2eeModule.getType();
         if(J2eeModule.Type.WAR.equals(moduleType)) {
-            result = "sun-web.xml"; // NOI18N
+            result = EE6WC.equals(serverTypeID) ? "glassfish-web.xml" : "sun-web.xml"; // NOI18N;
         } else if(J2eeModule.Type.EJB.equals(moduleType)) {
-            result = "sun-ejb-jar.xml"; // NOI18N
+            result = EE6WC.equals(serverTypeID) ? "glassfish-ejb-jar.xml" : "sun-ejb-jar.xml"; // NOI18N
         } else if(J2eeModule.Type.EAR.equals(moduleType)) {
-            result = "sun-application.xml"; // NOI18N
+            result = EE6WC.equals(serverTypeID) ? "glassfish-application.xml" : "sun-application.xml"; // NOI18N
         } else if(J2eeModule.Type.CAR.equals(moduleType)) {
-            result = "sun-application-client.xml"; // NOI18N
+            result = EE6WC.equals(serverTypeID) ? "glassfish-application-client.xml" : "sun-application-client.xml"; // NOI18N
         }
         return result;
     }

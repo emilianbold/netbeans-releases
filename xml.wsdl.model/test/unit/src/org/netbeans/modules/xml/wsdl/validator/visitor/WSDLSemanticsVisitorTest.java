@@ -107,7 +107,4 @@ public class WSDLSemanticsVisitorTest extends TestCase {
         assertEquals(expResult, result);
         
     }
-
-    
-    
 }

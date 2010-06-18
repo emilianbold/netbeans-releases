@@ -74,6 +74,43 @@ public class GraphLayoutFactory {
     }
 
     /**
+     * Creates a tree graph layout.
+     * Use GraphLayoutSupport.setTreeGraphLayoutRootNode method to set the root node of the graph.
+     * If not set/found, then layout is not executed.
+     * Note: Use GraphLayoutSupport.setTreeGraphLayoutProperties method to set the parameters of the layout later.
+     * @param originX the x-axis origin
+     * @param originY the y-axis origin
+     * @param verticalGap the vertical gap between cells
+     * @param horizontalGap the horizontal gap between cells
+     * @param vertical if true, then layout organizes the graph vertically; if false, then horizontally
+     * @param minimizeGap if true, then minimize the gap between cells; if false do the normal tree layout
+     * @return the tree graph layout
+     * @since 2.25
+     */
+    public static <N, E> GraphLayout<N, E> createTreeGraphLayout(int originX, int originY, int verticalGap, int horizontalGap, boolean vertical, boolean minimizeGap) {
+        return createTreeGraphLayout(originX, originY, verticalGap, horizontalGap, vertical, minimizeGap, TreeGraphLayoutAlignment.TOP);
+    }
+
+    /**
+     * Creates a tree graph layout.
+     * Use GraphLayoutSupport.setTreeGraphLayoutRootNode method to set the root node of the graph.
+     * If not set/found, then layout is not executed.
+     * Note: Use GraphLayoutSupport.setTreeGraphLayoutProperties method to set the parameters of the layout later.
+     * @param originX the x-axis origin
+     * @param originY the y-axis origin
+     * @param verticalGap the vertical gap between cells
+     * @param horizontalGap the horizontal gap between cells
+     * @param vertical if true, then layout organizes the graph vertically; if false, then horizontally
+     * @param minimizeGap if true, then minimize the gap between cells; if false do the normal tree layout
+     * @param alignment the alignment of the nodes in their level. Choose wheter {@code TreeGraphLayout.Alignment.TOP}, {@code TreeGraphLayout.Alignment.CENTER} or {@code TreeGraphLayout.Alignment.BOTTOM}
+     * @return the tree graph layout
+     * @since 2.25
+     */
+    public static <N, E> GraphLayout<N, E> createTreeGraphLayout(int originX, int originY, int verticalGap, int horizontalGap, boolean vertical, boolean minimizeGap, TreeGraphLayoutAlignment alignment) {
+        return new TreeGraphLayout<N, E>(originX, originY, verticalGap, horizontalGap, vertical, minimizeGap, alignment);
+    }
+
+    /**
      * 
      * @param <N> the node class for the nodes in the graph.
      * @param <E> the edge class for the edges in the graph.

@@ -181,9 +181,9 @@ public class TreeLoader extends LazyTreeLoader {
     public boolean loadParamNames(ClassSymbol clazz) {
         assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
         if (clazz != null) {
-            URL url = SourceUtils.getJavadoc(clazz, cpInfo);
-            if (url != null) {
-                if (getParamNamesFromJavadocText(url, clazz)) {
+            JavadocHelper.TextStream page = JavadocHelper.getJavadoc(clazz);
+            if (page != null) {
+                if (getParamNamesFromJavadocText(page, clazz)) {
                     return true;
                 }
             }
@@ -369,13 +369,13 @@ public class TreeLoader extends LazyTreeLoader {
         return info;
     }
 
-    private boolean getParamNamesFromJavadocText(final URL url, final ClassSymbol clazz) {
+    private boolean getParamNamesFromJavadocText(final JavadocHelper.TextStream page, final ClassSymbol clazz) {
         HTMLEditorKit.Parser parser;
         InputStream is = null;        
         String charset = null;
         for (;;) {
             try{
-                is = url.openStream();
+                is = page.openStream();
                 Reader reader = charset == null ? new InputStreamReader(is): new InputStreamReader(is, charset);
                 parser = new ParserDelegator();
                 parser.parse(reader, new ParserCallback() {

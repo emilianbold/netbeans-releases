@@ -784,7 +784,10 @@ public class TargetServer {
             }
 
             try {
+                // FIXME libraries stored in server specific descriptor
+                // do not match server resources
                 if (serverResources) {
+                    DeploymentHelper.deployServerLibraries(provider);
                     DeploymentHelper.deployDatasources(provider);
                     DeploymentHelper.deployMessageDestinations(provider);
                 }

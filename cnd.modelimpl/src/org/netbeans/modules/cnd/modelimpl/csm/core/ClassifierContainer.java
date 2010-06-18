@@ -104,7 +104,7 @@ import org.openide.util.CharSequences;
     
     /** Creates a new instance of ClassifierContainer */
     public ClassifierContainer(ProjectBase project) {
-        super(new ClassifierContainerKey(project.getUniqueName().toString()), false);
+        super(new ClassifierContainerKey(project.getUniqueName()), false);
         classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
         inheritances = new HashMap<CharSequence, Set<CsmUID<CsmInheritance>>>();

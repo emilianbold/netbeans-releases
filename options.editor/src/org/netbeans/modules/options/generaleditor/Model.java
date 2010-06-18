@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.util.Lookup;
@@ -122,7 +123,17 @@ public class Model {
     void setCamelCaseNavigation(boolean value) {
         NbPreferences.root ().putBoolean("useCamelCaseStyleNavigation", value); // NOI18N
     }
-        
+
+    String getRemoveTrailingWhitespace() {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        return prefs.get(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, "never");
+    }
+
+    void setRemoveTrailingWhitespace(String value) {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        prefs.put(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, value);
+    }
+
     // private helper methods ..................................................
     
     private static final List<String> PRIVILEDGED_MIME_TYPES = Arrays.asList(new String [] {

@@ -48,6 +48,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -75,8 +76,10 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
@@ -96,6 +99,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private final FileObject root;
     private final ClassPath processorPath;
     private final AnnotationProcessingQuery.Result aptOptions;
+    private volatile ClassLoaderRef classLoaderCache;
 
     private APTUtils(FileObject root, ClassPath preprocessorPath, AnnotationProcessingQuery.Result aptOptions) {
         this.root = root;
@@ -183,13 +187,18 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         return aptOptions.annotationProcessingEnabled().contains(Trigger.IN_EDITOR);
     }
 
-    public Collection<? extends Processor> resolveProcessors() {
+    public Collection<? extends Processor> resolveProcessors(boolean onScan) {
         List<URL> urls = new LinkedList<URL>();
         for (Entry e : processorPath.entries()) {
             urls.add(e.getURL());
         }
-        ClassLoader cl = new URLClassLoader(urls.toArray(new URL[0]), new BypassOpenIDEUtilClassLoader(Context.class.getClassLoader()));
-        Collection<Processor> result = lookupProcessors(cl);
+        ClassLoader cl;
+        final ClassLoaderRef cache = classLoaderCache;
+        if (cache == null || (cl=cache.get(root)) == null) {
+            cl = new URLClassLoader(urls.toArray(new URL[0]), new BypassOpenIDEUtilClassLoader(Context.class.getClassLoader()));
+            classLoaderCache = new ClassLoaderRef(cl, root);
+        }
+        Collection<Processor> result = lookupProcessors(cl, onScan);
         return result;
     }
 
@@ -204,10 +213,13 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
+            classLoaderCache = null;
+        }
         verifyAttributes(root, false);
     }
 
-    private Collection<Processor> lookupProcessors(ClassLoader cl) {
+    private Collection<Processor> lookupProcessors(ClassLoader cl, boolean onScan) {
         Iterable<? extends String> processorNames = aptOptions.annotationProcessorsToRun();
         if (processorNames == null) {
             processorNames = getProcessorNames(cl);
@@ -226,7 +238,8 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 LOG.log(Level.FINE, null, t);
             }
         }
-        result.addAll(HARDCODED_PROCESSORS.lookupAll(Processor.class));
+        if (!onScan)
+            result.addAll(HARDCODED_PROCESSORS.lookupAll(Processor.class));
         return result;
     }
 
@@ -327,5 +340,33 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         }
 
         //getResource and getResources of module classloaders do not return resources from parent's META-INF, so no need to override them
+    }
+
+    private static final class ClassLoaderRef extends SoftReference<ClassLoader> implements Runnable {
+
+        private final long timeStamp;
+        private final String rootPath;
+
+        public ClassLoaderRef(final ClassLoader cl, final FileObject root) {
+            super(cl, Utilities.activeReferenceQueue());
+            this.timeStamp = getTimeStamp(root);
+            this.rootPath = FileUtil.getFileDisplayName(root);
+            LOG.log(Level.FINER, "ClassLoader for root {0} created.", new Object[]{rootPath});  //NOI18N
+        }
+
+        public ClassLoader get(final FileObject root) {
+            final long curTimeStamp = getTimeStamp(root);
+            return curTimeStamp == timeStamp ? get() : null;
+        }
+
+        @Override
+        public void run() {
+            LOG.log(Level.FINER, "ClassLoader for root {0} freed.", new Object[] {rootPath});   //NOI18N
+        }
+
+        private static long getTimeStamp(final FileObject root) {
+            final FileObject archiveFile = FileUtil.getArchiveFile(root);
+            return archiveFile != null ? root.lastModified().getTime() : -1L;
+        }
     }
 }

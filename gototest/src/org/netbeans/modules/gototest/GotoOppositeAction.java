@@ -49,6 +49,7 @@ import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.spi.gototest.TestLocator.FileType;
 import org.netbeans.spi.gototest.TestLocator.LocationListener;
@@ -56,14 +57,11 @@ import org.netbeans.spi.gototest.TestLocator.LocationResult;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -163,8 +161,9 @@ public class GotoOppositeAction extends CallableSystemAction {
     }
 
     private void handleResult(LocationResult opposite) {
-        if (opposite.getFileObject() != null) {
-            openFile(opposite.getFileObject());
+        FileObject fileObject = opposite.getFileObject();
+        if (fileObject != null) {
+            UiUtils.open(fileObject, opposite.getOffset());
         } else if (opposite.getErrorMessage() != null) {
             String msg = opposite.getErrorMessage();
             NotifyDescriptor descr = new NotifyDescriptor.Message(msg, 
@@ -212,35 +211,6 @@ public class GotoOppositeAction extends CallableSystemAction {
         FileObject fo = getApplicableFileObject(new int[1]);
         
         return (fo != null) ? getFileType(fo) : FileType.NEITHER;
-    }
-    
-    /**
-     * Open given file in editor.
-     * @return true if file was opened or false
-     */
-    public static boolean openFile(FileObject fo) {
-        DataObject dobj;
-        try {
-            dobj = DataObject.find(fo);
-        } catch (DataObjectNotFoundException e) {
-            Exceptions.printStackTrace(e);
-            return false;
-        }
-        assert dobj != null;
-        
-        EditorCookie editorCookie = dobj.getCookie(EditorCookie.class);
-        if (editorCookie != null) {
-            editorCookie.open();
-            return true;
-        }
-        
-        OpenCookie openCookie = dobj.getCookie(OpenCookie.class);
-        if (openCookie != null) {
-            openCookie.open();                
-            return true;
-        }
-        
-        return false;
     }
 
     private FileObject getApplicableFileObject(int[] caretPosHolder) {

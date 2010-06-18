@@ -183,6 +183,8 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
                 return true;
             }
         }
+        if( version.startsWith("1.6.0_20") && isAquaLaF() )
+            return true;
         return false;
     }
     private final Pattern removeHtmlTags = HTML_TABS_BROKEN ? Pattern.compile("\\<.*?\\>") : null;
@@ -285,7 +287,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
         return lfID.endsWith("Windows"); //NOI18N
     }
     
-    private boolean isAquaLaF() {
+    private static boolean isAquaLaF() {
         return "Aqua".equals( UIManager.getLookAndFeel().getID() );
     }
     

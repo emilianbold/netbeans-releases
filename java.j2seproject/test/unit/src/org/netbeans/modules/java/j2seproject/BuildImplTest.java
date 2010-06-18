@@ -61,7 +61,6 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -112,7 +111,7 @@ public final class BuildImplTest extends NbTestCase {
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, subFolder != null ? subFolder : getName(), (String)null, (String)null, null);
         EditableProperties ep = aph.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.put(J2SEProjectProperties.DO_DEPEND, "true"); // to avoid too many changes in tests from issue #118079
+        ep.put(ProjectProperties.DO_DEPEND, "true"); // to avoid too many changes in tests from issue #118079
         aph.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(aph.getProjectDirectory()));
         J2SEProjectGenerator.setDefaultSourceLevel(null);

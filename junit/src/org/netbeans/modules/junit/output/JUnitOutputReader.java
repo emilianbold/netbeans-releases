@@ -159,7 +159,12 @@ final class JUnitOutputReader {
             FileObject fileObj = FileUtil.toFileObject(antScript);
             this.project = FileOwnerQuery.getOwner(fileObj);
         }
-        this.testSession = new JUnitTestSession("", this.project, sessionType, new JUnitTestRunnerNodeFactory()); //NOI18N
+
+        String className = props.getProperty("classname", "");      //NOI18N
+        String methodName = props.getProperty("methodname");        //NOI18N
+        String sName = methodName != null ? className + "." + methodName : className;
+
+        this.testSession = new JUnitTestSession(sName, this.project, sessionType, new JUnitTestRunnerNodeFactory()); //NOI18N
         testSession.setRerunHandler(new JUnitExecutionManager(session, testSession, props));
     }
 

@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupportTest;
+import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManagerTest;
 import org.openide.filesystems.FileChangeAdapter;
@@ -170,6 +171,7 @@ public class SlowRefreshAndPriorityIOTest extends NbTestCase {
             public void run() {
                 FileChangedManagerTest.assertNoLock();
                 ChildrenSupportTest.assertNoLock();
+                assertFalse("No naming factory lock", Thread.holdsLock(NamingFactory.class));
                 goingIdle++;
             }
 

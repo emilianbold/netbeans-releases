@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.MissingResourceException;
+import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -236,13 +237,10 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     }
 
     @Override
-    protected JiraConfiguration createConfiguration(JiraClient client) {
+    protected JiraConfiguration createConfiguration(JiraClient client) throws CoreException {
         KenaiConfiguration c = new KenaiConfiguration(client, this);
-        if(c != null) {
-            c.addProject(projectName);
-            return c;
-        }
-        return null;        
+        c.addProject(projectName);
+        return c;
     }
 
     protected void setCredentials(String user, String password) {

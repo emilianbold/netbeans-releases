@@ -95,7 +95,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.1</specification-version>
+                        <specification-version>6.30</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

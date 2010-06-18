@@ -2227,12 +2227,18 @@ public class ChildrenKeysTest extends NbTestCase {
             }
 
             @Override
-            protected Node[] createNodes(Object key) {
+            protected Node[] createNodes(final Object key) {
                 if (doThrow) {
                     doThrow = false;
                     throw new IllegalStateException("something went wrong");
                 }
-                return super.createNodes(key);
+                AbstractNode an = new AbstractNode(Children.LEAF) {
+                    @Override
+                    public String getName() {
+                        return key.toString();
+                    }
+                };
+                return new Node[] { an };
             }
         }
 
@@ -2248,8 +2254,9 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("a2", nodes[0].getName());
 
         ch.keys("c1");
-        nodes = root.getChildren().getNodes();
-        assertEquals("c1", nodes[0].getName());
+        Node[] arr = root.getChildren().getNodes();
+        assertEquals("One node now: " + Arrays.toString(arr) + "\nwas: " + Arrays.toString(nodes), 1, arr.length);
+        assertEquals("c1", arr[0].getName());
     }
 
     @RandomlyFails // assumed to suffer from same random problem as testGetNodesFromTwoThreads57769; see Thread.sleep

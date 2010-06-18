@@ -66,6 +66,7 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -140,6 +141,29 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
      */
     private static final String MUTEX_CLIENT_PROPERTY = "foldHierarchyMutex"; //NOI18N
 
+    /**
+     * Component's client property that contains swing position - start of document's area
+     * to be displayed by the view.
+     * Value of the property is only examined at time of view.setParent().
+     */
+    private static final String START_POSITION_PROPERTY = "document-view-start-position";
+
+    /**
+     * Component's client property that contains swing position - end of document's area
+     * to be displayed by the view.
+     * Value of the property is only examined at time of view.setParent().
+     */
+    private static final String END_POSITION_PROPERTY = "document-view-end-position";
+
+    /**
+     * Component's client property that defines whether accurate width and height should be computed
+     * by the view or whether the view can estimate its width and improve the estimated
+     * upon rendering of the concrete region.
+     * Value of the property is only examined at time of view.setParent().
+     */
+    private static final String ACCURATE_SPAN_PROPERTY = "document-view-accurate-span";
+
+
     static enum LineWrapType {
         NONE("none"), //NOI18N
         CHARACTER_BOUND("chars"), //NOI18N
@@ -191,9 +215,15 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     private boolean incomingModification;
 
+    private Position startPos;
+
+    private Position endPos;
+
     private float width;
 
     private float height;
+
+    private boolean accurateSpan;
 
     /**
      * Visible width of the viewport or a text component if there is no viewport.
@@ -258,8 +288,6 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     private JViewport listeningOnViewport;
 
-    private boolean previewOnly;
-
     private Preferences prefs;
 
     private PreferenceChangeListener prefsListener;
@@ -270,10 +298,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     private int lengthyAtomicEdit; // Long atomic edit being performed
 
-    public DocumentView(Element elem, boolean previewOnly) {
+    public DocumentView(Element elem) {
         super(elem);
         assert (elem != null) : "Expecting non-null element"; // NOI18N
-        this.previewOnly = previewOnly;
         this.tabExpander = new EditorTabExpander(this);
     }
 
@@ -302,6 +329,16 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     @Override
     public Document getDocument() {
         return getElement().getDocument();
+    }
+
+    @Override
+    public int getStartOffset() {
+        return (startPos != null) ? startPos.getOffset() : super.getStartOffset();
+    }
+
+    @Override
+    public int getEndOffset() {
+        return (endPos != null) ? endPos.getOffset() : super.getEndOffset();
     }
 
     @Override
@@ -358,6 +395,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 pMutex = new PriorityMutex();
                 textComponent.putClientProperty(MUTEX_CLIENT_PROPERTY, pMutex);
             }
+            startPos = (Position) textComponent.getClientProperty(START_POSITION_PROPERTY);
+            endPos = (Position) textComponent.getClientProperty(END_POSITION_PROPERTY);
+            accurateSpan = Boolean.TRUE.equals(textComponent.getClientProperty(ACCURATE_SPAN_PROPERTY));
 
             viewUpdates = new ViewUpdates(this);
             textLayoutCache = new TextLayoutCache();
@@ -469,6 +509,14 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         if (widthChange || heightChange) {
             preferenceChanged(null, widthChange, heightChange);
         }
+    }
+
+    /**
+     * Whether the view should compute
+     * @return
+     */
+    boolean isAccurateSpan() {
+        return accurateSpan;
     }
 
     private void updateVisibleDimension() { // Called only with textComponent != null
@@ -692,6 +740,42 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
 
     @Override
+    public String getToolTipTextChecked(double x, double y, Shape allocation) {
+        PriorityMutex mutex = getMutex();
+        if (mutex != null) {
+            mutex.lock();
+            try {
+                checkDocumentLocked();
+                checkViewsInited();
+                if (isActive()) {
+                    return children.getToolTipTextChecked(this, x, y, allocation);
+                }
+            } finally {
+                mutex.unlock();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public JComponent getToolTip(double x, double y, Shape allocation) {
+        PriorityMutex mutex = getMutex();
+        if (mutex != null) {
+            mutex.lock();
+            try {
+                checkDocumentLocked();
+                checkViewsInited();
+                if (isActive()) {
+                    return children.getToolTip(this, x, y, allocation);
+                }
+            } finally {
+                mutex.unlock();
+            }
+        }
+        return null;
+    }
+
+    @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
         PriorityMutex mutex = getMutex();
         if (mutex != null) {
@@ -815,8 +899,15 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         return textComponent != null && children != null && (lengthyAtomicEdit <= 0);
     }
 
+    /**
+     * It should be called with +1 once it's detected that there's a lengthy atomic edit
+     * in progress and with -1 when such edit gets finished.
+     * @param delta +1 or -1 when entering/leaving lengthy atomic edit.
+     */
     public void updateLengthyAtomicEdit(int delta) {
         lengthyAtomicEdit += delta;
+        LOG.log(Level.FINE, "updateLengthyAtomicEdit: delta={0} lengthyAtomicEdit={1}\n",
+                new Object[] { delta, lengthyAtomicEdit} );
         if (lengthyAtomicEdit == 0) {
             // Release the existing children
             PriorityMutex mutex = getMutex();
@@ -1049,18 +1140,14 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     @Override
     public String findIntegrityError() {
         int startOffset = getStartOffset();
-        if (startOffset != 0) {
-            return "Invalid startOffset=" + startOffset; // NOI18N
-        }
         int endOffset = getEndOffset();
-        Document doc = getDocument();
-        int docTextLength = doc.getLength() + 1;
-        if (endOffset != docTextLength) {
-            return "Invalid endOffset=" + endOffset + ", docLen=" + doc.getLength(); // NOI18N
-        }
-        // Check last paragraph's end offset (due to endOffset=startOffset+EditorView.getLength())
         int viewCount = getViewCount();
         if (viewCount > 0) {
+            EditorView firstView = getEditorView(0);
+            if (firstView.getStartOffset() != startOffset) {
+                return "firstView.getStartOffset()=" + firstView.getStartOffset() + // NOI18N
+                        " != startOffset=" + startOffset; // NOI18N
+            }
             EditorView lastView = getEditorView(viewCount - 1);
             if (lastView.getEndOffset() != endOffset) {
                 return "lastView.endOffset=" + lastView.getEndOffset() + " != endOffset=" + endOffset; // NOI18N

@@ -45,16 +45,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Actions">
-        <folder name="Edit">
-            <file name="org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.persistence.action.PersistenceActionGroup"/>
-            </file>
-            <file name="org-netbeans-modules-j2ee-persistence-action-UseEntityManagerAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.persistence.action.UseEntityManagerAction"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Templates">
         <folder name="Persistence">
             <!-- defined in dbschema module:
@@ -122,12 +112,11 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-j2ee-persistence-editor-completion-NNCompletionProvider.instance"/>
                 </folder>
                 -->
-                <folder name="Popup">
-                    <file name="org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.instance"/>
-                        <attr name="position" intvalue="9550"/>
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-j2ee-persistence-action-UseEntityManagerCodeGenerator$Factory.instance">
+                        <attr name="position" intvalue="700"/>
                     </file>
-                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>

@@ -62,6 +62,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.modules.java.source.JavadocHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
@@ -236,8 +237,13 @@ public class ElementJavadoc {
         Doc doc = eu.javaDocFor(element);
         boolean localized = false;
         StringBuilder content = new StringBuilder();
+        JavadocHelper.TextStream page = null;
         if (element != null) {
-            docURL = SourceUtils.getJavadoc(element, cpInfo);
+            // XXX would be better to avoid testing network connections in case we get a source fo anyway
+            page = JavadocHelper.getJavadoc(element);
+            if (page != null) {
+                docURL = page.getLocation();
+            }
             localized = isLocalized(docURL, element);
             if (!localized) {
                 final FileObject fo = SourceUtils.getFile(element, compilationInfo.getClasspathInfo());
@@ -261,7 +267,7 @@ public class ElementJavadoc {
                 }
             }
         }
-        this.content = content.append(prepareContent(doc, localized)).toString();
+        this.content = content.append(prepareContent(doc, localized, page)).toString();
     }
     
     private ElementJavadoc(URL url) {
@@ -273,7 +279,7 @@ public class ElementJavadoc {
     // Private section ---------------------------------------------------------
     
     
-    private boolean isLocalized (final URL docURL, final Element element) {
+    private static boolean isLocalized(final URL docURL, final Element element) {
         if (docURL == null) {
             return false;
         }
@@ -313,7 +319,7 @@ public class ElementJavadoc {
      * @param useJavadoc preffer javadoc to sources
      * @return Javadoc content
      */
-    private StringBuilder prepareContent(Doc doc, final boolean useJavadoc) {
+    private StringBuilder prepareContent(Doc doc, final boolean useJavadoc, JavadocHelper.TextStream page) {
         StringBuilder sb = new StringBuilder();
         if (doc != null) {
             if (doc instanceof ProgramElementDoc) {
@@ -534,7 +540,7 @@ public class ElementJavadoc {
                     }
                 }
             }
-            String jdText = docURL != null ? HTMLJavadocParser.getJavadocText(docURL, false) : null;
+            String jdText = page != null ? HTMLJavadocParser.getJavadocText(page, false) : docURL != null ? HTMLJavadocParser.getJavadocText(docURL, false) : null;
             if (jdText != null)
                 sb.append(jdText);
             else

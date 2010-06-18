@@ -69,7 +69,7 @@ public class MeasureMobilityActionsTest  {
                 .addTest(MIDletViewsSwitchTest.class) // Flow To Design Switch
                 .addTest(CreateVisualMIDletTest.class) // Create Visual MIDlet
                 .addTest(CreateMIDletTest.class) // Create MIDlet
-                // needs to be fixed .addTest(SwitchConfigurationTest.class) // Switch Configuration
+// strange test   .addTest(SwitchConfigurationTest.class) // Switch Configuration
                 .addTest(OpenMobileProjectTest.class) // Open Mobile CLDC project
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 

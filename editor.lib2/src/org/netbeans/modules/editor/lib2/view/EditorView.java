@@ -53,6 +53,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -362,6 +363,10 @@ public abstract class EditorView extends View {
     @Override
     public String getToolTipText(float x, float y, Shape allocation) {
         return getToolTipTextChecked(x, y, allocation); // Use coords in doubles
+    }
+
+    public JComponent getToolTip(double x, double y, Shape allocation) {
+        return null;
     }
 
     /**

@@ -1,11 +1,11 @@
 #Signature file v4.1
-#Version 2.9.0
+#Version 2.11.0
 
 CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -31,7 +31,7 @@ supr java.lang.Object
 hfds UP_TO_DATE_DIRTY_VALUE,UP_TO_DATE_OK_VALUE,UP_TO_DATE_PROCESSING_VALUE,status,statusNames
 
 CLSS public abstract org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider
-cons public UpToDateStatusProvider()
+cons public init()
 fld public final static java.lang.String PROP_UP_TO_DATE = "upToDate"
 meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
 meth public abstract org.netbeans.spi.editor.errorstripe.UpToDateStatus getUpToDate()

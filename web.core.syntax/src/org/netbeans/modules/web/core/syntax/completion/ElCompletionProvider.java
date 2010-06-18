@@ -95,6 +95,11 @@ public class ElCompletionProvider implements CompletionProvider {
 
     private boolean isAfterElDelimiter(TokenHierarchy<Document> th, int offset) {
         TokenSequence<?> ts = th.tokenSequence();
+
+        if (ts == null){
+            return false;
+        }
+        
         int diff = ts.move(offset);
         if (ts.moveNext()) {
             CharSequence image = ts.token().text();

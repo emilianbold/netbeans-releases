@@ -1,8 +1,8 @@
 #Signature file v4.1
-#Version 1.14.0
+#Version 1.17.0
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -41,6 +41,7 @@ innr public abstract interface static Factory
 meth public abstract boolean accept(org.netbeans.lib.editor.codetemplates.api.CodeTemplate)
 
 CLSS public abstract interface static org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter$Factory
+ outer org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter
 meth public abstract org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter createFilter(javax.swing.text.JTextComponent,int)
 
 CLSS public final org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest

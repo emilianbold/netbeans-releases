@@ -26,7 +26,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints.introduce;
 
@@ -35,5 +35,12 @@ package org.netbeans.modules.java.hints.introduce;
  * @author Jan Lahoda
  */
 public enum IntroduceKind {
-    CREATE_VARIABLE, CREATE_CONSTANT, CREATE_FIELD, CREATE_METHOD;
+    CREATE_VARIABLE("introduce-variable"), CREATE_CONSTANT("introduce-constant"), CREATE_FIELD("introduce-field"), CREATE_METHOD("introduce-method");
+    private final String key;
+    private IntroduceKind(String key) {
+        this.key = key;
+    }
+    public String getKey() {
+        return key;
+    }
 }

@@ -147,6 +147,7 @@ public class FileUtilTestHidden extends TestBaseHid {
         if (Utilities.isUnix()) {
             assertEquals(new File("/"), FileUtil.normalizeFile(new File("/..")));
             assertEquals(new File("/"), FileUtil.normalizeFile(new File("/../.")));
+            assertEquals(new File("/tmp"), FileUtil.normalizeFile(new File("/../../tmp")));
         }
     }
 
