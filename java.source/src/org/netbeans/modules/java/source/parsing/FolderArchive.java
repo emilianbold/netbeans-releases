@@ -130,6 +130,11 @@ public class FolderArchive implements Archive {
     }
 
     public void clear () {
+    }
 
+    @Override
+    public JavaFileObject getFile(String name) {
+        final File file = new File (this.root, name.replace('/', File.separatorChar));      //NOI18N
+        return file.exists() ? FileObjects.fileFileObject(file,this.root,null,encoding) : null ;
     }
 }
