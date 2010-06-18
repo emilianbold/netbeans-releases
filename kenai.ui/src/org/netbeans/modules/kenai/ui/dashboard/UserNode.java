@@ -58,6 +58,7 @@ import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * The very first node in dashboard window showing logged-in user name.
@@ -153,7 +154,12 @@ public class UserNode extends LeafNode {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                dashboard.getKenai().logout();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        dashboard.getKenai().logout();
+                    }
+                });
             }
 
         };
