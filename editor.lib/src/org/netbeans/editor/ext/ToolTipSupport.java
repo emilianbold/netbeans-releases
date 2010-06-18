@@ -72,6 +72,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.AncestorEvent;
@@ -690,20 +691,11 @@ public class ToolTipSupport {
             // Try to display the tooltip above (or below) the line it corresponds to
             int pos = component.viewToModel(toolTipPosition);
             Rectangle cursorBounds = null;
-            Rectangle mouseMoveIgnoredArea = null;
             
             if (pos >= 0) {
                 try {
                     cursorBounds = component.modelToView(pos);
                     extendBounds(cursorBounds);
-
-                    int [] offsets = Utilities.getSelectionOrIdentifierBlock(component, pos);
-                    if (offsets != null) {
-                        Rectangle r1 = component.modelToView(offsets[0]);
-                        Rectangle r2 = component.modelToView(offsets[1]);
-                        mouseMoveIgnoredArea = new Rectangle(r1.x, r1.y, r2.x - r1.x, r1.height);
-                        extendBounds(mouseMoveIgnoredArea);
-                    }
                 } catch (BadLocationException e) {
                     // ignore
                 }
@@ -722,7 +714,10 @@ public class ToolTipSupport {
             pm.install(toolTip, cursorBounds, placement, horizontalBounds, horizontalAdjustment, verticalAdjustment);
             if (toolTip != null) {
                 toolTip.putClientProperty(LAST_TOOLTIP_POSITION, toolTipPosition);
-                toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, mouseMoveIgnoredArea);
+                toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, computeMouseMoveIgnoredArea(
+                        toolTip.getBounds(),
+                        SwingUtilities.convertRectangle(component, cursorBounds, toolTip.getParent())
+                ));
                 toolTip.setVisible(true);
             }
         }
@@ -746,6 +741,22 @@ public class ToolTipSupport {
         return r;
     }
 
+    private Rectangle computeMouseMoveIgnoredArea(Rectangle toolTipBounds, Rectangle cursorBounds) {
+        Rectangle _toolTipBounds = new Rectangle(toolTipBounds);
+        extendBounds(_toolTipBounds);
+        
+        Rectangle area = new Rectangle();
+        Rectangle.union(_toolTipBounds, cursorBounds, area);
+        area.x -= cursorBounds.width;
+        area.width += 2 * cursorBounds.width;
+        
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "toolTip.bounds={0}, cursorBounds={1}, mouseMoveIgnoredArea={2}", new Object [] { _toolTipBounds, cursorBounds, area });
+        }
+        
+        return area;
+    }
+    
     /** Helper method to get the identifier
      * under the mouse cursor.
      * @return string containing identifier under
@@ -916,7 +927,7 @@ public class ToolTipSupport {
         for(Object key : actionMap.allKeys()) {
             String actionName = key.toString().toLowerCase(Locale.ENGLISH);
 
-            LOG.log(Level.FINE, "Action-name: {0}", actionName); //NOI18N
+            LOG.log(Level.FINER, "Action-name: {0}", actionName); //NOI18N
             if (actionName.contains("delete") || actionName.contains("insert") || //NOI18N
                 actionName.contains("paste") || actionName.contains("default") //NOI18N
             ) {
@@ -1078,12 +1089,13 @@ public class ToolTipSupport {
             }
 
             if (toolTip != null) {
-                Rectangle r = (Rectangle) toolTip.getClientProperty(MOUSE_MOVE_IGNORED_AREA);
+                Rectangle ignoredArea = (Rectangle) toolTip.getClientProperty(MOUSE_MOVE_IGNORED_AREA);
+                Point mousePosition = SwingUtilities.convertPoint(evt.getComponent(), evt.getPoint(), toolTip.getParent());
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "Mouse-Move-Ignored-Area=" + r + "; mouse-x=" + evt.getX() + "; mouse-y=" + evt.getY() //NOI18N
-                        + "; is-inside=" + (r != null ? r.contains(evt.getX(), evt.getY()) : null)); //NOI18N
+                    LOG.log(Level.FINE, "Mouse-Move-Ignored-Area=" + ignoredArea + "; mouse=" + mousePosition //NOI18N
+                        + "; is-inside=" + (ignoredArea != null ? ignoredArea.contains(mousePosition) : null)); //NOI18N
                 }
-                if (r != null && r.contains(evt.getX(), evt.getY())) {
+                if (ignoredArea != null && ignoredArea.contains(mousePosition)) {
                     return;
                 }
             }
