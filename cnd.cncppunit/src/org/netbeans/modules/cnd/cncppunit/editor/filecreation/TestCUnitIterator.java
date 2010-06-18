@@ -201,7 +201,7 @@ public class TestCUnitIterator extends AbstractUnitTestIterator {
     }
 
     private FileObject getRootFolder() {
-        return ((NewTestCppUnitPanelGUI)targetChooserDescriptorPanel.getComponent()).getTargetGroup().getRootFolder();
+        return ((NewTestCUnitPanelGUI)targetChooserDescriptorPanel.getComponent()).getTargetGroup().getRootFolder();
     }
 
     private void setCUnitLinkerOptions(Project project, Folder testFolder) {

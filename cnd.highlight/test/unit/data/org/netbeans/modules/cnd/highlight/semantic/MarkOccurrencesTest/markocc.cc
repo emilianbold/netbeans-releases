@@ -79,3 +79,19 @@ int main() {
     A a(1);
     a.a++;
 }
+
+void stringsTest() {
+    char* ss = "string literal";    
+
+    return 'char literal';
+}
+
+#define STR "string literal"
+
+#define CMD 'char literal'
+
+void charTest() {
+    char* ss = 'char literal';    
+
+    return "string literal";
+}
