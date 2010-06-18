@@ -92,8 +92,9 @@ public class IEPModelImpl extends IEPModel {
     }
 
     @Override
-    public ChangeInfo prepareChangeInfo(List<Node> pathToRoot) {
-        ChangeInfo change = super.prepareChangeInfo(pathToRoot);
+    public ChangeInfo prepareChangeInfo(List<? extends Node> pathToRoot,
+            List<? extends Node> nsContextPathToRoot) {
+        ChangeInfo change = super.prepareChangeInfo(pathToRoot, nsContextPathToRoot);
         DocumentComponent parentComponent = findComponent(change.getRootToParentPath());
         if (parentComponent == null) {
             return change;

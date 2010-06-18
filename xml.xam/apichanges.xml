@@ -107,6 +107,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
         
+        <change id="fix_issue_166177">
+            <api name="org.netbeans.modules.xml.xam"/>
+            <summary>Method AbstractDocumentModel.prepareChangeInfo() is replaced with a new one.</summary>
+            <version major="1.10.2" minor="0"/>
+            <date day="18" month="6" year="2010"/>
+            <author login="supernikita"/>
+            <compatibility binary="compatible" source="compatible" addition="yes"/>
+            <description>
+                The modufication is necessary for fixing issue #166177.
+                The old method {@link org.netbeans.modules.xml.xam.dom.AbstractDocumentModel#prepareChangeInfo(java.util.List)}
+                is marked as deprecated and a new one {@link org.netbeans.modules.xml.xam.dom.AbstractDocumentModel#prepareChangeInfo(java.util.List, java.util.List)} is created.
+                The new one contains additional parameter <code>nsContextPathToRoot</code>, which
+                is necessary for correct calculation of namespace context after
+                deletion of namespace prefix. See the issue for details. 
+            </description>
+            <class package="org.netbeans.modules.xml.xam.dom" name="AbstractDocumentModel"/>
+            <issue number="166177"/>
+        </change>
+
         <change id="model-changes-notification">
             <api name="org.netbeans.modules.xml.xam"/>
             <summary>Two new methods to enhance model's performance</summary>

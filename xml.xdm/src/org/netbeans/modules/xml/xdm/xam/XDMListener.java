@@ -51,8 +51,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -185,9 +183,7 @@ public class XDMListener implements PropertyChangeListener {
                 assert namespacePathToRoot.size() == pathToRoot.size();
             }
             //
-            ChangeInfo change = model.prepareChangeInfo(pathToRoot);
-            // Rollback fix for issue #166177 because it causes issue #186068
-            // ChangeInfo change = prepareChangeInfo(pathToRoot, namespacePathToRoot);
+            ChangeInfo change = model.prepareChangeInfo(pathToRoot, namespacePathToRoot);
             change.setAdded(isAdded);
             processChange(change);
         }
@@ -269,67 +265,15 @@ public class XDMListener implements PropertyChangeListener {
         return domNodes;
     }
 
-    // This method isn't used after fix for issue #166177 rolled back
+    /**
+     * @deprecated this methos was added to 6.9 release by mistake and
+     * it is temporary kept here for the sake of binary compatibility.
+     * This implementaion do nothing. The correct location of the method is
+     * {@link org.netbeans.modules.xml.xam.dom.AbstractDocumentModel#prepareChangeInfo(java.util.List, java.util.List)}
+     */
     protected ChangeInfo prepareChangeInfo(List<? extends Node> pathToRoot,
             List<? extends Node> nsContextPathToRoot) {
-        // we already handle change on root before enter here
-        if (pathToRoot.size() < 1) {
-            throw new IllegalArgumentException("pathToRoot here should be at least 1");
-        }
-        if (pathToRoot.get(pathToRoot.size()-1) instanceof Document) {
-            pathToRoot.remove(pathToRoot.size()-1);
-        }
-
-        if (pathToRoot.size() < 2) {
-            throw new IllegalArgumentException("pathToRoot here should be at least 2");
-        }
-        //
-        org.w3c.dom.Node current = null;
-        org.w3c.dom.Element parent = null;
-        boolean changedIsDomainElement = true;
-        Set<QName> qnames = model.getQNames();
-        if (qnames != null && qnames.size() > 0) {
-            for (int i=pathToRoot.size()-1; i>=0; i--) {
-                //
-                Node n = pathToRoot.get(i);
-                parent = (Element)current;
-                current = n;
-                //
-                if (! (n instanceof Element)) {
-                    changedIsDomainElement = false;
-                    break;
-                }
-
-                QName currentQName = new QName(model.getAccess().lookupNamespaceURI(
-                        current, nsContextPathToRoot), current.getLocalName());
-                if (!(qnames.contains(currentQName))) {
-                    changedIsDomainElement =  false;
-                    break;
-                }
-            }
-        } else {
-            current = pathToRoot.get(0);
-            parent = (org.w3c.dom.Element) pathToRoot.get(1);
-            changedIsDomainElement = current instanceof org.w3c.dom.Element;
-        }
-
-        List<org.w3c.dom.Element> rootToParent = new ArrayList<org.w3c.dom.Element>();
-        if (parent != null) {
-            for (int i = pathToRoot.indexOf(parent); i<pathToRoot.size(); i++) {
-                rootToParent.add(0, (Element)pathToRoot.get(i));
-            }
-        }
-
-        List<org.w3c.dom.Node> otherNodes = new ArrayList<org.w3c.dom.Node>();
-        if (parent != null) {
-            int iCurrent = pathToRoot.indexOf(current);
-            for (int i=0; i < iCurrent; i++) {
-                otherNodes.add(0, pathToRoot.get(i));
-            }
-        }
-
-        return new ChangeInfo(parent, current, changedIsDomainElement,
-                rootToParent, otherNodes);
+        return null;
     }
-
-}
+    
+ }

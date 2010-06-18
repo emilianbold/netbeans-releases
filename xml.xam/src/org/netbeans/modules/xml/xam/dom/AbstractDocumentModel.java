@@ -230,13 +230,38 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     }
 
     /**
-     * Performs preparation stage of synchronization XDM --> XAM.
      *
-     * Be aware that the method isn't only called from XDM (XDMListener),
-     * but it also can be redifined. An example can be found in WSDL Model. 
+     * @param pathToRoot
+     * @return
+     * @deprecated Use {@link org.netbeans.modules.xml.xam.dom.AbstractDocumentModel#prepareChangeInfo(java.util.List, java.util.List)} instead. It is necessary for fixing bug #166177.
      *
      */
     public ChangeInfo prepareChangeInfo(List<Node> pathToRoot) {
+        return prepareChangeInfo(pathToRoot, pathToRoot);
+    }
+
+
+    /**
+     * Performs intermediate stage of synchronization XDM --> XAM.
+     * A new {@link org.netbeans.modules.xml.xam.dom.ChangeInfo} object 
+     * is generated here.
+     *
+     * @param pathToRoot a path of DOM objects from root to changed one.
+     * @param nsContextPathToRoot Usually the same path as previous param,
+     * but in case of deletion it contains the same path from old model's tree.
+     * It is required in case of prefix declaration deletion, because the deleted
+     * declaration is present only in old model's tree.
+     *
+     * Be aware that the method is designed to be called only from XDM
+     * {@link org.netbeans.modules.xml.xdm.xam.XDMListener},
+     * but it also can be redifined. An example can be found in
+     * {@link org.netbeans.modules.xml.wsdl.model.WSDLModel}.
+     *
+     * @since 1.10.2
+     *
+     */
+    public ChangeInfo prepareChangeInfo(List<? extends Node> pathToRoot,
+            List<? extends Node> nsContextPathToRoot) {
         // we already handle change on root before enter here
         if (pathToRoot.size() < 1) {
             throw new IllegalArgumentException("pathToRoot here should be at least 1");
@@ -266,7 +291,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
                 }
 
                 QName currentQName = new QName(getAccess().lookupNamespaceURI(
-                        current, pathToRoot), current.getLocalName());
+                        current, nsContextPathToRoot), current.getLocalName());
                 if (!(qnames.contains(currentQName))) {
                     changedIsDomainElement =  false;
                     break;
@@ -293,7 +318,8 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
             }
         }
 
-        return new ChangeInfo(parent, current, changedIsDomainElement, rootToParent, otherNodes);
+        return new ChangeInfo(parent, current, changedIsDomainElement,
+                rootToParent, otherNodes);
     }
     
     public SyncUnit prepareSyncUnit(ChangeInfo change, SyncUnit order) {
