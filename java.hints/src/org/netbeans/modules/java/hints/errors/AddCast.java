@@ -196,7 +196,7 @@ public final class AddCast implements ErrorRule<Void> {
             int position = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), expression[0]);
             Class interf = expression[0].getKind().asInterface();
             boolean wrapWithBrackets = interf == BinaryTree.class || interf == ConditionalExpressionTree.class;
-            result.add(new AddCastFix(info.getJavaSource(), org.netbeans.modules.java.hints.errors.Utilities.shortDisplayName(info, expression[0]), Utilities.getTypeName(tm[0], false).toString(), position, wrapWithBrackets));
+            result.add(new AddCastFix(info.getJavaSource(), org.netbeans.modules.java.hints.errors.Utilities.shortDisplayName(info, expression[0]), Utilities.getTypeName(info, tm[0], false).toString(), position, wrapWithBrackets));
         }
         
         return result;
