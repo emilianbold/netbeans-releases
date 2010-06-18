@@ -492,7 +492,10 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                                 EntityClassGenerator clsGen = new EntityClassGenerator(copy, entityClass);
                                 clsGen.run();
                             } else {
-                                new PKClassGenerator(copy, entityClass).run();
+                                if(entityClass.getUpdateType() != UpdateType.UPDATE)
+                                    new PKClassGenerator(copy, entityClass).run();
+                                else
+                                    Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.INFO, "PK Class update isn't supported"); //NOI18N //TODO: implement update
                             }
                         }
                     }).commit();
@@ -853,6 +856,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private String namedQueryPrefix;
 
             private Set<String> existingColumns = new HashSet<String>();
+            private String existingEmbeddedId = null;
             private HashMap<String, Tree> existingJoinColumns = new HashMap<String, Tree>();
             private HashMap<String, Tree> existingMappings = new HashMap<String, Tree>();
 
@@ -869,7 +873,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 if (genSerializableEntities && !UpdateType.UPDATE.equals(updateType)) {
                     newClassTree = genUtils.addImplementsClause(newClassTree, "java.io.Serializable"); // NOI18N
                 }
-                if (needsPKClass) {
+                if (needsPKClass && existingEmbeddedId==null) {
                     String pkFieldName = createFieldName(pkClassName);
                     pkProperty = new Property(
                             Modifier.PROTECTED,
@@ -949,7 +953,12 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                                     }
                                 }
                             } else if( nm.contentEquals("EmbeddedId") ){//NOI18N
-
+                                TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                existingEmbeddedId = tm.toString();
+                                if(pkProperty != null){
+                                    //currently unsupported update
+                                    properties.remove(pkProperty);
+                                }
                             } else if( nm.contentEquals("JoinTable") ){//NOI18N
                                 for(ExpressionTree exTree: annTree.getArguments()){
                                     AssignmentTree aTree = (AssignmentTree)exTree;
@@ -1008,7 +1017,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 Property property = null;
                 if (isPKMember) {
                     if (needsPKClass) {
-                        pkClassVariables.add(createVariable(m));
+                        if(!updateType.UPDATE.equals(updateType)){
+                            pkClassVariables.add(createVariable(m));
+                        } else {
+                            //TODO: support update for pk
+                        }
                     } else {
                         pkProperty = property = createProperty(m);
                     }
@@ -1231,6 +1244,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             @Override
             protected void finish() {
                 
+                if(needsPKClass && UpdateType.UPDATE.equals(updateType))return;//do not support yet updates with pk class
+
                 if(pkProperty != null) {
                     // create a constructor which takes the primary key field as argument    
                     VariableTree pkFieldParam = genUtils.removeModifiers(pkProperty.getField());
