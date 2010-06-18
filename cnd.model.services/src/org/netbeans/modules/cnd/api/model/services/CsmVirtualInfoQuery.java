@@ -103,20 +103,29 @@ public abstract class CsmVirtualInfoQuery {
         Iterator<CsmParameter> it2 = list2.iterator();
         for (CsmParameter p1 : list1) {
             CsmParameter p2 = it2.next();
-            CsmType type1 = p1.getType();
-            CsmType type2 = p2.getType();
-            if (type1 != null && type2 != null) {
-                CsmClassifier classifier1 = type1.getClassifier();
-                CsmClassifier classifier2 = type1.getClassifier();
-                if (classifier1 != null && classifier2 != null) {
-                    if (!classifier1.equals(classifier2)) {
+            if (p1 != null && p2 != null) {
+                if (p1.isVarArgs() && p2.isVarArgs()) {
+                    continue;
+                }
+                CsmType type1 = p1.getType();
+                CsmType type2 = p2.getType();
+                if (type1 != null && type2 != null) {
+                    CsmClassifier classifier1 = type1.getClassifier();
+                    CsmClassifier classifier2 = type1.getClassifier();
+                    if (classifier1 != null && classifier2 != null) {
+                        if (!classifier1.equals(classifier2)) {
+                            return false;
+                        }
+                        continue;
+                    }
+                    if (CharSequences.comparator().compare(type1.getText(), type2.getText()) != 0 ) {
                         return false;
                     }
                     continue;
+                } else if (type1 == null && type2 == null) {
+                    continue;
                 }
-                if (CharSequences.comparator().compare(type1.getText(), type2.getText()) != 0 ) {
-                    return false;
-                }
+            } else if (p1 == null && p2 == null) {
                 continue;
             }
             return false;
