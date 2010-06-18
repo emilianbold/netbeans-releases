@@ -57,6 +57,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
@@ -256,7 +257,7 @@ public final class GsfUtilities {
     public static boolean open(final FileObject fo, final int offset, final String search) {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         doOpen(fo, offset, search);
                     }
                 });
@@ -348,7 +349,7 @@ public final class GsfUtilities {
 
         fs.runAtomicAction(
             new FileSystem.AtomicAction() {
-                public void run() throws IOException {
+                public @Override void run() throws IOException {
                     extractZipImpl(fo, is);
                 }
             }
@@ -594,12 +595,15 @@ public final class GsfUtilities {
             return ((CursorMovedSchedulerEvent) event).getCaretOffset();
         }
 
-        // Then look through all existing editor pane
+        // Then look through all existing editor panes
         Document snapshotDoc = snapshot.getSource().getDocument(false);
         if (snapshotDoc != null) {
             for(JTextComponent jtc : EditorRegistry.componentList()) {
                 if (snapshotDoc == jtc.getDocument()) {
-                    return jtc.getCaretPosition();
+                    Caret c = jtc.getCaret();
+                    if (c != null) {
+                        return c.getDot();
+                    }
                 }
             }
         } else {
@@ -607,7 +611,10 @@ public final class GsfUtilities {
             if (snapshotFile != null) {
                 for(JTextComponent jtc : EditorRegistry.componentList()) {
                     if (snapshotFile == NbEditorUtilities.getFileObject(jtc.getDocument())) {
-                        return jtc.getCaretPosition();
+                        Caret c = jtc.getCaret();
+                        if (c != null) {
+                            return c.getDot();
+                        }
                     }
                 }
             }

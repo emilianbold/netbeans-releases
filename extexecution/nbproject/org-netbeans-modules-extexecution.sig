@@ -1,11 +1,11 @@
 #Signature file v4.1
-#Version 1.18
+#Version 1.21
 
 CLSS public abstract interface java.io.Closeable
 meth public abstract void close() throws java.io.IOException
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -25,7 +25,7 @@ CLSS public abstract interface java.util.concurrent.Callable<%0 extends java.lan
 meth public abstract {java.util.concurrent.Callable%0} call() throws java.lang.Exception
 
 CLSS public final org.netbeans.api.extexecution.ExecutionDescriptor
-cons public ExecutionDescriptor()
+cons public init()
 innr public abstract interface static InputProcessorFactory
 innr public abstract interface static LineConvertorFactory
 innr public abstract interface static RerunCondition
@@ -55,6 +55,9 @@ meth public org.netbeans.api.extexecution.ExecutionDescriptor inputOutput(org.op
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NullAllowed()
 meth public org.netbeans.api.extexecution.ExecutionDescriptor inputVisible(boolean)
+ anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public org.netbeans.api.extexecution.ExecutionDescriptor noReset(boolean)
  anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.extexecution.ExecutionDescriptor optionsPath(java.lang.String)
@@ -91,19 +94,22 @@ meth public org.netbeans.api.extexecution.ExecutionDescriptor showSuspended(bool
  anno 0 org.netbeans.api.annotations.common.CheckReturnValue()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds charset,controllable,errConvertorFactory,errLineBased,errProcessorFactory,front,input,inputOutput,optionsPath,outConvertorFactory,outLineBased,outProcessorFactory,postExecution,preExecution,progress,rerunCondition,suspend
+hfds charset,controllable,errConvertorFactory,errLineBased,errProcessorFactory,front,input,inputOutput,noReset,optionsPath,outConvertorFactory,outLineBased,outProcessorFactory,postExecution,preExecution,progress,rerunCondition,suspend
 hcls DescriptorData
 
 CLSS public abstract interface static org.netbeans.api.extexecution.ExecutionDescriptor$InputProcessorFactory
+ outer org.netbeans.api.extexecution.ExecutionDescriptor
 meth public abstract org.netbeans.api.extexecution.input.InputProcessor newInputProcessor(org.netbeans.api.extexecution.input.InputProcessor)
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public abstract interface static org.netbeans.api.extexecution.ExecutionDescriptor$LineConvertorFactory
+ outer org.netbeans.api.extexecution.ExecutionDescriptor
 meth public abstract org.netbeans.api.extexecution.print.LineConvertor newLineConvertor()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public abstract interface static org.netbeans.api.extexecution.ExecutionDescriptor$RerunCondition
+ outer org.netbeans.api.extexecution.ExecutionDescriptor
 meth public abstract boolean isRerunPossible()
 meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
  anno 1 org.netbeans.api.annotations.common.NonNull()
@@ -123,7 +129,7 @@ hfds EXECUTOR_SERVICE,EXECUTOR_SHUTDOWN_SLICE,LOGGER,RUNNING_PROCESSES,descripto
 hcls ProgressAction,ProgressCancellable,WrappedException
 
 CLSS public final org.netbeans.api.extexecution.ExternalProcessBuilder
-cons public ExternalProcessBuilder(java.lang.String)
+cons public init(java.lang.String)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 intf java.util.concurrent.Callable<java.lang.Process>
 meth public java.lang.Process call() throws java.io.IOException
@@ -230,7 +236,8 @@ meth public static org.netbeans.api.extexecution.input.InputReader forStream(jav
 supr java.lang.Object
 
 CLSS public final static org.netbeans.api.extexecution.input.InputReaders$FileInput
-cons public FileInput(java.io.File,java.nio.charset.Charset)
+ outer org.netbeans.api.extexecution.input.InputReaders
+cons public init(java.io.File,java.nio.charset.Charset)
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
 innr public abstract interface static Provider
@@ -242,6 +249,7 @@ supr java.lang.Object
 hfds charset,file
 
 CLSS public abstract interface static org.netbeans.api.extexecution.input.InputReaders$FileInput$Provider
+ outer org.netbeans.api.extexecution.input.InputReaders$FileInput
 meth public abstract org.netbeans.api.extexecution.input.InputReaders$FileInput getFileInput()
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
 
@@ -270,6 +278,10 @@ meth public static org.netbeans.api.extexecution.input.LineProcessor printing(or
 supr java.lang.Object
 hfds LOGGER
 hcls PrintingLineProcessor,ProxyLineProcessor,WaitingLineProcessor
+
+CLSS abstract interface org.netbeans.api.extexecution.input.package-info
+
+CLSS abstract interface org.netbeans.api.extexecution.package-info
 
 CLSS public final org.netbeans.api.extexecution.print.ConvertedLine
 meth public java.lang.String getText()
@@ -305,12 +317,17 @@ hfds LOGGER
 hcls FilePatternConvertor,HttpUrlConvertor,ProxyLineConvertor,UrlOutputListener
 
 CLSS public abstract interface static org.netbeans.api.extexecution.print.LineConvertors$FileLocator
+ outer org.netbeans.api.extexecution.print.LineConvertors
 meth public abstract org.openide.filesystems.FileObject find(java.lang.String)
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
 
+CLSS abstract interface org.netbeans.api.extexecution.print.package-info
+
 CLSS public abstract interface org.netbeans.spi.extexecution.destroy.ProcessDestroyPerformer
 meth public abstract void destroy(java.lang.Process,java.util.Map<java.lang.String,java.lang.String>)
+
+CLSS abstract interface org.netbeans.spi.extexecution.destroy.package-info
 
 CLSS public abstract interface org.openide.util.Cancellable
 meth public abstract boolean cancel()

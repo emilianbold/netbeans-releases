@@ -56,6 +56,7 @@ import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.TransferInfo;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
+import org.netbeans.modules.php.project.ui.actions.RemoteCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.openide.filesystems.FileEvent;
@@ -63,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 
 /**
@@ -245,10 +247,14 @@ final class RemoteOperationFactory extends FileOperationFactory {
 
     protected synchronized RemoteClient getRemoteClient() {
         if (remoteClient == null) {
+            InputOutput remoteLog = RemoteCommand.getRemoteLog(
+                    NbBundle.getMessage(RemoteOperationFactory.class, "LBL_RemoteSynchronizationLog", project.getName(),
+                    false));
             remoteClient = new RemoteClient(getRemoteConfiguration(), new RemoteClient.AdvancedProperties()
                     .setAdditionalInitialSubdirectory(ProjectPropertiesSupport.getRemoteDirectory(project))
                     .setPreservePermissions(ProjectPropertiesSupport.areRemotePermissionsPreserved(project))
                     .setUploadDirectly(ProjectPropertiesSupport.isRemoteUploadDirectly(project))
+                    .setInputOutput(remoteLog)
                     .setPhpVisibilityQuery(PhpVisibilityQuery.forProject(project)));
         }
         return remoteClient;

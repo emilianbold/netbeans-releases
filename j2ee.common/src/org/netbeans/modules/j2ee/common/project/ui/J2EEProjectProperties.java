@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -129,10 +130,16 @@ public final class J2EEProjectProperties {
                 (items !=null && !getServerLibraries(items).isEmpty());
     }
 
+    public static void setServerProperties(EditableProperties ep, EditableProperties epPriv,
+            String serverLibraryName, ClassPathSupport cs, Iterable<ClassPathSupport.Item> items,
+            String serverInstanceID, Profile j2eeProfile, J2eeModule.Type moduleType) {
+        setServerProperties(null, ep, epPriv, serverLibraryName, cs, items, serverInstanceID, j2eeProfile, moduleType);
+    }
+
     /**
      * Sets all server related properties.
      */
-    public static void setServerProperties(EditableProperties ep, EditableProperties epPriv, 
+    public static void setServerProperties(Project project, EditableProperties ep, EditableProperties epPriv,
             String serverLibraryName, ClassPathSupport cs, Iterable<ClassPathSupport.Item> items,
             String serverInstanceID, Profile j2eeProfile, J2eeModule.Type moduleType) {
         Deployment deployment = Deployment.getDefault();
@@ -163,10 +170,10 @@ public final class J2EEProjectProperties {
             String root = extractPlatformLibrariesRoot(j2eePlatform);
             if (root != null) {
                 // path will be relative and therefore stored in project.properties:
-                setLocalServerProperties(epPriv, ep, j2eePlatform, root);
+                setLocalServerProperties(project, epPriv, ep, j2eePlatform, root);
             } else {
                 // store absolute paths in private.properties:
-                setLocalServerProperties(ep, epPriv, j2eePlatform, null);
+                setLocalServerProperties(project, ep, epPriv, j2eePlatform, null);
             }
         }
 
@@ -238,7 +245,7 @@ public final class J2EEProjectProperties {
         }
         callback.registerJ2eePlatformListener(j2eePlatform);
 
-        setServerProperties(projectProps, privateProps, null, cs, items, newServInstID, profile, moduleType);
+        setServerProperties(proj, projectProps, privateProps, null, cs, items, newServInstID, profile, moduleType);
 
         // ant deployment support
         createDeploymentScript(proj.getProjectDirectory(), projectProps, privateProps, newServInstID, moduleType);
@@ -323,13 +330,15 @@ public final class J2EEProjectProperties {
         ep.remove(J2EE_PLATFORM_WSIT_CLASSPATH);
         ep.remove(J2EE_PLATFORM_JWSDP_CLASSPATH);
         ep.remove(J2EE_SERVER_HOME);
-    }
+    }    
 
-    private static void setLocalServerProperties(EditableProperties epToClean, EditableProperties epTarget, J2eePlatform j2eePlatform, String root) {
+    private static void setLocalServerProperties(Project project, EditableProperties epToClean, EditableProperties epTarget, J2eePlatform j2eePlatform, String root) {
         // remove all props first:
         removeServerClasspathProperties(epTarget);
 
-        String classpath = toClasspathString(j2eePlatform.getClasspathEntries(), root);
+        String classpath = project == null
+                ? toClasspathString(j2eePlatform.getClasspathEntries(), root)
+                : toClasspathString(Util.getJ2eePlatformClasspathEntries(project), root);
         epTarget.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
 
         // set j2ee.platform.embeddableejb.classpath

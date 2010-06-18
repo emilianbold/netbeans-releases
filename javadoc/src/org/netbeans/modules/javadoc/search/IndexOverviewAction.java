@@ -56,11 +56,9 @@ import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
 
@@ -186,28 +184,17 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
      */
     private final class IndexMenuItem extends JMenuItem implements ActionListener, HelpCtx.Provider {
         
-        /** cached url */
-        private URL u;
-        /** a reference to org.openide.filesystems.FileSystem */
-        private final FileObject fsRef;
+        private final URL loc;
         
         @SuppressWarnings("LeakingThisInConstructor")
-        public IndexMenuItem(String display, FileObject index) {
+        public IndexMenuItem(String display, URL index) {
             super(display);
-            fsRef = index;
+            loc = index;
             addActionListener(this);
         }
         
         public @Override void actionPerformed(ActionEvent ev) {
-            URL loc = getURL();
             HtmlBrowser.URLDisplayer.getDefault().showURL(loc);
-        }
-        
-        private URL getURL() {
-            if (u == null) {
-                u = URLMapper.findURL(fsRef, URLMapper.EXTERNAL);
-            }
-            return u;
         }
         
         public @Override HelpCtx getHelpCtx() {
@@ -225,11 +212,7 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
         }
 
         public @Override void actionPerformed(ActionEvent e) {
-            FileObject fsRef = ReferencesPanel.showInWindow();
-            URL u = null;
-            if (fsRef != null) {
-                u = URLMapper.findURL(fsRef, URLMapper.EXTERNAL);
-            }
+            URL u = ReferencesPanel.showInWindow();
             if (u != null) {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(u);
             }

@@ -55,12 +55,14 @@ import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
@@ -186,8 +188,21 @@ final class MainImpl extends Object {
         if (result.getExitCode () == CLIHandler.Status.CANNOT_CONNECT) {
             int value = javax.swing.JOptionPane.showConfirmDialog (
                 null,
-                java.util.ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunning"),
-                java.util.ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunningTitle"),
+                ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunning"),
+                ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunningTitle"),
+                javax.swing.JOptionPane.OK_CANCEL_OPTION,
+                javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            if (value == javax.swing.JOptionPane.OK_OPTION) {
+                result = CLIHandler.initialize(args, reader, writer, error, loader, true, true, loader);
+            }
+
+        }
+        if (result.getExitCode () == CLIHandler.Status.CANNOT_WRITE) {
+            int value = javax.swing.JOptionPane.showConfirmDialog (
+                null,
+                MessageFormat.format(ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_CannotWrite"), user),
+                ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_CannotWriteTitle"),
                 javax.swing.JOptionPane.OK_CANCEL_OPTION,
                 javax.swing.JOptionPane.WARNING_MESSAGE
             );

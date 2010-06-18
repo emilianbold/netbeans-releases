@@ -89,19 +89,19 @@ public final class NamingFactory {
         return NamingFactory.registerInstanceOfFileNaming(parentFn, file, null, ignoreCache, FileType.unknown);
     }
     
-    public static synchronized void checkCaseSensitivity(final FileNaming childName, final File f) throws IOException {
+    public static synchronized FileNaming checkCaseSensitivity(final FileNaming childName, final File f) throws IOException {
         if (!childName.getFile().getName().equals(f.getName())) {
             boolean isCaseSensitive = !new File(f,"a").equals(new File(f,"A"));//NOI18N
             if (!isCaseSensitive) {
-                    NamingFactory.rename(childName,f.getName());
+                    FileNaming[] ret = NamingFactory.rename(childName,f.getName(), null);
+                    if (ret != null) {
+                        return ret[0];
+                    }
             }
-        }                        
+        }
+        return childName;
     }
 
-    private static synchronized FileNaming[] rename (FileNaming fNaming, String newName) throws IOException {
-        return rename(fNaming, newName, null);
-    }
-    
     public static FileNaming[] rename (FileNaming fNaming, String newName, ProvidedExtensions.IOHandler handler) throws IOException {
         final List<FileNaming> all = new ArrayList<FileNaming>();
         
@@ -162,7 +162,9 @@ public final class NamingFactory {
         ref = (ref == null && value instanceof List ? NamingFactory.getReference((List) value, file) : ref);
 
         FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
-        if (ignoreCache && cachedElement != null && cachedElement.isDirectory() != file.isDirectory()) {
+        if (ignoreCache && cachedElement != null && (
+            cachedElement.isDirectory() != file.isDirectory() || !cachedElement.getName().equals(file.getName())
+        )) {
             cachedElement = null;
         }
 

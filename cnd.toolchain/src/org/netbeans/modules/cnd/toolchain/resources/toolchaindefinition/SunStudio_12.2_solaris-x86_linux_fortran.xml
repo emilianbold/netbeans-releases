@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <fortran>
-        <version flags="-V" pattern=".*Sun Fortran 95 8.5\s\S*\s(?!Aten)"/>
+        <version flags="-V" pattern=".*Sun Fortran 95 8.5 [^ ]+_[^ ]+ 20"/>
         <development_mode>
            <performance_release flags="-fast -xvector=simd -g"/>
         </development_mode>

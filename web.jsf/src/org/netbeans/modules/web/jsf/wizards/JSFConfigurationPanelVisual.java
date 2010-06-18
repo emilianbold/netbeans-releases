@@ -50,21 +50,29 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
 import org.netbeans.modules.web.jsf.JSFUtils;
@@ -89,7 +97,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private boolean customizer;
     
     private final List<LibraryItem> jsfLibraries = new ArrayList<LibraryItem>();
-    private boolean libsInitialized;
+    private final Set<ServerLibraryItem> serverJsfLibraries = new TreeSet<ServerLibraryItem>();
+    private volatile boolean libsInitialized;
     private String serverInstanceID;
     private final List<String> preferredLanguages = new ArrayList<String>();
     private String currentServerInstanceID;
@@ -124,8 +133,12 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             return;
         }
 
-        final Vector <String> items = new Vector <String>();
+        // init server libraries first
+        initServerLibraries(false);
+
+        final Vector<String> registeredItems = new Vector<String>();
         jsfLibraries.clear();
+
         final Runnable libraryFinder = new Runnable() {
 
             @Override
@@ -140,7 +153,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         if (library.getName().startsWith("facelets-") && !library.getName().endsWith("el-api")    //NOI18N
                         && !library.getName().endsWith("jsf-ri") && !library.getName().endsWith("myfaces")){                                            //NOI18N
                             String displayName = library.getDisplayName();
-                            items.add(displayName);
+                            registeredItems.add(displayName);
                             //TODO XX Add correct version
                             jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_2));
                         }
@@ -148,7 +161,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         content = library.getContent("classpath"); //NOI18N
                         try {
                             if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION) && !excludeLibs.contains(library.getName())) {
-                                items.add(library.getDisplayName());
+                                registeredItems.add(library.getDisplayName());
                                 boolean isJSF12 = Util.containsClass(content, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
                                 boolean isJSF20 = Util.containsClass(content, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
                                 if (isJSF12 && !isJSF20) {
@@ -163,8 +176,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                             Exceptions.printStackTrace(exception);
                         }
                     }
-                    setLibraryModel(items);
-                    updatePreferredLanguages();
+                    
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            setRegisteredLibraryModel(registeredItems);
+                            updatePreferredLanguages();
+                        }
+                    });
                     LOG.finest("Time spent in initLibraries in Runnable = "+(System.currentTimeMillis()-time) +" ms");  //NOI18N
                 }
             }
@@ -176,14 +195,108 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         LOG.finest("Time spent in "+this.getClass().getName() +" initLibraries = "+(System.currentTimeMillis()-time) +" ms");   //NOI18N
     }
 
-    private void setLibraryModel(Vector<String> items) {
+    private void initServerLibraries(boolean updateUI) {
+        serverJsfLibraries.clear();
+
+//        final Runnable libraryFinder = new Runnable() {
+//
+//            @Override
+//            public void run() {
+                synchronized (this) {
+                    boolean serverLib = false;
+                    if (serverInstanceID != null && !"".equals(serverInstanceID)) {
+                        try {
+                            ServerInstance.LibraryManager libManager = Deployment.getDefault().getServerInstance(serverInstanceID).getLibraryManager();
+                            if (libManager != null) {
+                                serverLib = true;
+                                Set<ServerLibrary> libs = new HashSet<ServerLibrary>();
+                                libs.addAll(libManager.getDeployedLibraries());
+                                libs.addAll(libManager.getDeployableLibraries());
+
+                                for (ServerLibrary lib : libs) {
+                                    // FIXME optimize
+                                    if ("JavaServer Faces".equals(lib.getSpecificationTitle())) { // NOI18N
+                                        if (Version.fromJsr277NotationWithFallback("2.0").equals(lib.getSpecificationVersion())) { // NOI18N
+                                            serverJsfLibraries.add(new ServerLibraryItem(lib, JSFVersion.JSF_2_0));
+                                        } else if (Version.fromJsr277NotationWithFallback("1.2").equals(lib.getSpecificationVersion())) { // NOI18N
+                                            serverJsfLibraries.add(new ServerLibraryItem(lib, JSFVersion.JSF_1_2));
+                                        } else if (Version.fromJsr277NotationWithFallback("1.1").equals(lib.getSpecificationVersion())) { // NOI18N
+                                            serverJsfLibraries.add(new ServerLibraryItem(lib, JSFVersion.JSF_1_1));
+                                        } else {
+                                            LOG.log(Level.INFO, "Unknown JSF version {0}", lib.getSpecificationVersion());
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (InstanceRemovedException ex) {
+                            LOG.log(Level.INFO, null, ex);
+                            // use the old way
+                        }
+                    }
+
+                    if (!serverLib) {
+                        File[] cp;
+                        J2eePlatform platform = null;
+                        try {
+                            if (serverInstanceID != null) {
+                                platform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+                            }
+                        } catch (InstanceRemovedException ex) {
+                            platform = null;
+                            LOG.log(Level.INFO, org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "SERVER_INSTANCE_REMOVED"), ex);
+                        }
+                        // j2eeplatform can be null, when the target server is not accessible.
+                        if (platform != null) {
+                            cp = platform.getClasspathEntries();
+                        } else {
+                            cp = new File[0];
+                        }
+
+                        try {
+                            // XXX: there should be a utility class for this:
+                            boolean isJSF = Util.containsClass(Arrays.asList(cp), JSFUtils.FACES_EXCEPTION);
+                            boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
+                            boolean isJSF20 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
+
+                            JSFVersion jsfVersion = null;
+                            if (isJSF20) {
+                                jsfVersion = JSFVersion.JSF_2_0;
+                            } else if (isJSF12) {
+                                jsfVersion = JSFVersion.JSF_1_2;
+                            } else if (isJSF) {
+                                jsfVersion = JSFVersion.JSF_1_1;
+                            }
+                            if (jsfVersion != null) {
+                                serverJsfLibraries.add(new ServerLibraryItem(null, jsfVersion));
+                            }
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+
+//                    SwingUtilities.invokeLater(new Runnable() {
+//                        @Override
+//                        public void run() {
+                            setServerLibraryModel(serverJsfLibraries);
+                            if (updateUI) {
+                                updatePreferredLanguages();
+                            }
+//                        }
+//                    });
+                }
+//            }
+//        };
+//        RequestProcessor.getDefault().post(libraryFinder);
+    }
+
+    private void setRegisteredLibraryModel(Vector<String> items) {
         long time = System.currentTimeMillis();
         cbLibraries.setModel(new DefaultComboBoxModel(items));
         if (items.size() == 0) {
             rbRegisteredLibrary.setEnabled(false);
             cbLibraries.setEnabled(false);
             rbNewLibrary.setSelected(true);
-            panel.setLibrary(null);
+            panel.setLibrary((Library) null);
         } else if (items.size() != 0 &&  panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED){
             if (!customizer) {
                 rbRegisteredLibrary.setEnabled(true);
@@ -199,7 +312,31 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         repaint();
         LOG.finest("Time spent in "+this.getClass().getName() +" setLibraryModel = "+(System.currentTimeMillis()-time) +" ms");   //NOI18N
     }
-    
+
+    private void setServerLibraryModel(Collection<ServerLibraryItem> items) {
+        serverLibraries.setModel(new DefaultComboBoxModel(items.toArray()));
+        if (items.isEmpty()) {
+            rbServerLibrary.setEnabled(false);
+            serverLibraries.setEnabled(false);
+            rbRegisteredLibrary.setSelected(true);
+            panel.setServerLibrary((ServerLibrary) null);
+        } else if (!items.isEmpty() && panel.getLibraryType() == JSFConfigurationPanel.LibraryType.SERVER){
+            if (!customizer) {
+                rbServerLibrary.setEnabled(true);
+                serverLibraries.setEnabled(true);
+            }
+            rbServerLibrary.setSelected(true);
+            if (!serverJsfLibraries.isEmpty()) {
+                ServerLibraryItem item = (ServerLibraryItem) serverLibraries.getSelectedItem();
+                if (item != null) {
+                    panel.setServerLibrary(item.getLibrary());
+                }
+            }
+        }
+
+        repaint();
+    }
+
     /**
      * Init Preferred Languages check box with "JSP" and/or "Facelets"
      * according to choosen library
@@ -217,9 +354,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             if (panel.getNewLibraryName()!=null) {
                 jsfLibrary = LibraryManager.getDefault().getLibrary(panel.getNewLibraryName());
             }
-        } else if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.NONE) {
+        } else if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.SERVER) {
             //XXX: need to find lib version
-            if (rbNoneLibrary.getText().indexOf("2.0")!=-1) {
+            ServerLibraryItem item = (ServerLibraryItem) serverLibraries.getSelectedItem();
+            if (item != null && item.getVersion() == JSFVersion.JSF_2_0) {
                 faceletsPresent = true;
             }
         }
@@ -262,7 +400,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         buttonGroup1 = new javax.swing.ButtonGroup();
         jsfTabbedPane = new javax.swing.JTabbedPane();
         libPanel = new javax.swing.JPanel();
-        rbNoneLibrary = new javax.swing.JRadioButton();
+        rbServerLibrary = new javax.swing.JRadioButton();
         rbRegisteredLibrary = new javax.swing.JRadioButton();
         cbLibraries = new javax.swing.JComboBox();
         rbNewLibrary = new javax.swing.JRadioButton();
@@ -271,6 +409,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         jbBrowse = new javax.swing.JButton();
         lVersion = new javax.swing.JLabel();
         jtNewLibraryName = new javax.swing.JTextField();
+        serverLibraries = new javax.swing.JComboBox();
         confPanel = new javax.swing.JPanel();
         lURLPattern = new javax.swing.JLabel();
         tURLPattern = new javax.swing.JTextField();
@@ -286,13 +425,13 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         libPanel.setAlignmentX(0.2F);
         libPanel.setAlignmentY(0.2F);
 
-        buttonGroup1.add(rbNoneLibrary);
-        rbNoneLibrary.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_rbNoAppend").charAt(0));
+        buttonGroup1.add(rbServerLibrary);
+        rbServerLibrary.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_rbNoAppend").charAt(0));
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle"); // NOI18N
-        rbNoneLibrary.setText(bundle.getString("LBL_Any_Library")); // NOI18N
-        rbNoneLibrary.addItemListener(new java.awt.event.ItemListener() {
+        rbServerLibrary.setText(bundle.getString("LBL_Any_Library")); // NOI18N
+        rbServerLibrary.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                rbNoneLibraryItemStateChanged(evt);
+                rbServerLibraryItemStateChanged(evt);
             }
         });
 
@@ -355,6 +494,12 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             }
         });
 
+        serverLibraries.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                serverLibrariesActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout libPanelLayout = new org.jdesktop.layout.GroupLayout(libPanel);
         libPanel.setLayout(libPanelLayout);
         libPanelLayout.setHorizontalGroup(
@@ -362,31 +507,35 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             .add(libPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(rbNoneLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
-                    .add(libPanelLayout.createSequentialGroup()
-                        .add(rbRegisteredLibrary)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cbLibraries, 0, 293, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, libPanelLayout.createSequentialGroup()
-                                .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
-                                    .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jbBrowse))))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, rbNewLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, rbNewLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
                     .add(libPanelLayout.createSequentialGroup()
                         .add(22, 22, 22)
                         .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, lVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
-                            .add(lDirectory, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE))))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, lVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
+                            .add(lDirectory, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)))
+                    .add(libPanelLayout.createSequentialGroup()
+                        .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, rbServerLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, rbRegisteredLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(cbLibraries, 0, 283, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, libPanelLayout.createSequentialGroup()
+                                .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
+                                    .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jbBrowse))
+                            .add(serverLibraries, 0, 283, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         libPanelLayout.setVerticalGroup(
             libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, libPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(rbNoneLibrary)
+                .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(rbServerLibrary)
+                    .add(serverLibraries, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rbRegisteredLibrary)
@@ -400,7 +549,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(lVersion))
-                .addContainerGap(27, Short.MAX_VALUE))
+                .addContainerGap(59, Short.MAX_VALUE))
         );
 
         jsfTabbedPane.addTab(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_TAB_Libraries"), libPanel); // NOI18N
@@ -434,7 +583,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                     .add(confPanelLayout.createSequentialGroup()
                         .add(lURLPattern)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(tURLPattern, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE))
+                        .add(tURLPattern, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
                     .add(confPanelLayout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -467,12 +616,12 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         jsfTabbedPane.getAccessibleContext().setAccessibleName("");
     }// </editor-fold>//GEN-END:initComponents
 
-private void rbNoneLibraryItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rbNoneLibraryItemStateChanged
+private void rbServerLibraryItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rbServerLibraryItemStateChanged
     updateLibrary();
-    if (rbNoneLibrary.isSelected()) {
+    if (rbServerLibrary.isSelected()) {
         panel.fireChangeEvent();
     }
-}//GEN-LAST:event_rbNoneLibraryItemStateChanged
+}//GEN-LAST:event_rbServerLibraryItemStateChanged
 
 private void jtNewLibraryNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtNewLibraryNameKeyReleased
     panel.setNewLibraryName(jtNewLibraryName.getText().trim());
@@ -520,6 +669,15 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
     } else
         panel.setEnableFacelets(false);
 }//GEN-LAST:event_cbPreferredLangActionPerformed
+
+private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverLibrariesActionPerformed
+    // TODO add your handling code here:
+    ServerLibraryItem item = (ServerLibraryItem) serverLibraries.getSelectedItem();
+    if (item != null) {
+        panel.setServerLibrary(item.getLibrary());
+    }
+    updatePreferredLanguages();
+}//GEN-LAST:event_serverLibrariesActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -538,8 +696,9 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
     private javax.swing.JLabel lVersion;
     private javax.swing.JPanel libPanel;
     private javax.swing.JRadioButton rbNewLibrary;
-    private javax.swing.JRadioButton rbNoneLibrary;
     private javax.swing.JRadioButton rbRegisteredLibrary;
+    private javax.swing.JRadioButton rbServerLibrary;
+    private javax.swing.JComboBox serverLibraries;
     private javax.swing.JTextField tURLPattern;
     // End of variables declaration//GEN-END:variables
  
@@ -577,11 +736,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
             return true;
         }
 
-        if (rbNoneLibrary.isSelected() && isWebLogicServer){
-            controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Weblogic_Warning"));
-        } else {
-            controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
-        }
+        controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
 
         if (rbRegisteredLibrary.isSelected()) {
             if (jsfLibraries == null || jsfLibraries.size() == 0) {
@@ -653,6 +808,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
             return true;
         return false;
     }
+
     private boolean isWebLogic(String serverInstanceID) {
         if (serverInstanceID == null || "".equals(serverInstanceID)) {
             return false;
@@ -682,73 +838,45 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
      *   according web module version.
      */
     private void initLibSettings(Profile profile, String serverInstanceID) {
-        if (panel==null || panel.getLibraryType() == null || isServerInstanceChanged()) {
-            try {
-                File[] cp;
-                J2eePlatform platform = null;
-                try {
-                    if (serverInstanceID != null)
-                        platform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
-                } catch (InstanceRemovedException ex) {
-                    platform = null;
-                    LOG.log(Level.INFO, org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "SERVER_INSTANCE_REMOVED"), ex);
-                }
-                // j2eeplatform can be null, when the target server is not accessible.
-                if (platform != null) {
-                    cp = platform.getClasspathEntries();
+        boolean serverChanged = isServerInstanceChanged();
+        if (serverChanged) {
+            initServerLibraries(true);
+        }
+
+        if (panel==null || panel.getLibraryType() == null || serverChanged) {
+            if (serverJsfLibraries.isEmpty()) {
+                rbServerLibrary.setVisible(false);
+                serverLibraries.setVisible(false);
+                Library preferredLibrary = null;
+                if (profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB) || profile.equals(Profile.JAVA_EE_5)) {
+                    preferredLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_2_0_NAME);
                 } else {
-                    cp = new File[0];
+                    preferredLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_2_NAME);
                 }
 
-                // XXX: there should be a utility class for this:
-                boolean isJSF = Util.containsClass(Arrays.asList(cp), JSFUtils.FACES_EXCEPTION);
-                boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
-                boolean isJSF20 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
-
-                String libName = null; //NOI18N
-                if (isJSF20) {
-                    libName = "JSF 2.0"; //NOI18N
-                } else if (isJSF12) {
-                    libName = "JSF 1.2"; //NOI18N
-                } else if (isJSF) {
-                    libName = "JSF 1.1"; //NOI18N
+                if (preferredLibrary != null) {
+                    // if there is a proffered library, select
+                    rbRegisteredLibrary.setSelected(true);
+                    cbLibraries.setSelectedItem(preferredLibrary.getDisplayName());
+                    updateLibrary();
                 } else {
-                    rbNoneLibrary.setVisible(false);
-                    Library preferredLibrary = null;
-                    if (profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB) || profile.equals(Profile.JAVA_EE_5)) {
-                        preferredLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_2_0_NAME);
-                    } else {
-                        preferredLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_2_NAME);
-                    }
-
-                    if (preferredLibrary != null) {
-                        // if there is a proffered library, select
-                        rbRegisteredLibrary.setSelected(true);
-                        cbLibraries.setSelectedItem(preferredLibrary.getDisplayName());
-                        updateLibrary();
-                    } else {
-                        // there is not a proffered library -> select one or select creating new one
-                        if (jsfLibraries.size() == 0) {
-                            rbNewLibrary.setSelected(true);
-                        }
+                    // there is not a proffered library -> select one or select creating new one
+                    if (jsfLibraries.isEmpty()) {
+                        rbNewLibrary.setSelected(true);
                     }
                 }
-                if (libName != null) {
-                    if (!rbNoneLibrary.isVisible()) {
-                        rbNoneLibrary.setVisible(true);
-                        repaint();
-                    }
-                    rbNoneLibrary.setText(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Any_Library", libName)); //NOI18N
-                    rbNoneLibrary.setSelected(true);
-                    if (panel !=null)
-                        panel.setLibraryType(JSFConfigurationPanel.LibraryType.NONE);
-                    enableNewLibraryComponent(false);
-                    enableDefinedLibraryComponent(false);
-                    isWebLogicServer = isWebLogic(serverInstanceID);
+            } else {
+                if (!rbServerLibrary.isVisible()) {
+                    rbServerLibrary.setVisible(true);
+                    serverLibraries.setVisible(true);
+                    repaint();
                 }
-
-            } catch (IOException exception) {
-                Exceptions.printStackTrace(exception);
+                rbServerLibrary.setSelected(true);
+                if (panel !=null)
+                    panel.setLibraryType(JSFConfigurationPanel.LibraryType.SERVER);
+                enableNewLibraryComponent(false);
+                enableDefinedLibraryComponent(false);
+                isWebLogicServer = isWebLogic(serverInstanceID);
             }
         } else {
             switch( panel.getLibraryType()) {
@@ -760,8 +888,8 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
                     rbRegisteredLibrary.setSelected(true);
                     break;
                 }
-                case NONE: {
-                    rbNoneLibrary.setSelected(true);
+                case SERVER: {
+                    rbServerLibrary.setSelected(true);
                     enableDefinedLibraryComponent(false);
                     enableNewLibraryComponent(false);
                     break;
@@ -831,15 +959,23 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
     private void updateLibrary(){
         if (cbLibraries.getItemCount() == 0)
             rbRegisteredLibrary.setEnabled(false);
-        
-        if (rbNoneLibrary.isSelected()){
+
+        if (rbServerLibrary.isSelected()){
             enableNewLibraryComponent(false);
             enableDefinedLibraryComponent(false);
-            panel.setLibraryType(JSFConfigurationPanel.LibraryType.NONE);
+            enableServerLibraryComponent(true);
+            panel.setLibraryType(JSFConfigurationPanel.LibraryType.SERVER);
+            if (!serverJsfLibraries.isEmpty()) {
+                ServerLibraryItem item = (ServerLibraryItem) serverLibraries.getSelectedItem();
+                if (item != null) {
+                    panel.setServerLibrary(item.getLibrary());
+                }
+            }
             panel.getController().setErrorMessage(null);
         } else if (rbRegisteredLibrary.isSelected()){
             enableNewLibraryComponent(false);
             enableDefinedLibraryComponent(true);
+            enableServerLibraryComponent(false);
             panel.setLibraryType(JSFConfigurationPanel.LibraryType.USED);
             if (jsfLibraries.size() > 0){
                 panel.setLibrary(jsfLibraries.get(cbLibraries.getSelectedIndex()).getLibrary());
@@ -848,6 +984,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
         } else if (rbNewLibrary.isSelected()){
             enableNewLibraryComponent(true);
             enableDefinedLibraryComponent(false);
+            enableServerLibraryComponent(false);
             panel.setLibraryType(JSFConfigurationPanel.LibraryType.NEW);
             setNewLibraryFolder();
         }
@@ -856,6 +993,10 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
     
     private void enableDefinedLibraryComponent(boolean enabled){
         cbLibraries.setEnabled(enabled);
+    }
+
+    private void enableServerLibraryComponent(boolean enabled){
+        serverLibraries.setEnabled(enabled);
     }
     
     private void enableNewLibraryComponent(boolean enabled){
@@ -913,5 +1054,99 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
         public String toString() {
             return library.getDisplayName();
         }
+    }
+
+    private static class ServerLibraryItem implements Comparable<ServerLibraryItem> {
+
+        private final ServerLibrary library;
+
+        private final JSFVersion version;
+
+        private String name;
+
+        public ServerLibraryItem(ServerLibrary library, JSFVersion version) {
+            this.library = library;
+            this.version = version;
+        }
+
+        public ServerLibrary getLibrary() {
+            return library;
+        }
+
+        public JSFVersion getVersion() {
+            return version;
+        }
+
+        @Override
+        public String toString() {
+            synchronized (this) {
+                if (name != null) {
+                    return name;
+                }
+            }
+            
+            StringBuilder sb = new StringBuilder();
+            switch (version) {
+                case JSF_1_0:
+                    sb.append("JSF 1.0"); // NOI18N
+                    break;
+                case JSF_1_1:
+                    sb.append("JSF 1.1"); // NOI18N
+                    break;
+                case JSF_1_2:
+                    sb.append("JSF 1.2"); // NOI18N
+                    break;
+                case JSF_2_0:
+                    sb.append("JSF 2.0"); // NOI18N
+                    break;
+            }
+            if (library != null && (library.getImplementationTitle() != null || library.getImplementationVersion() != null)) {
+                sb.append(" "); // NOI18N
+                sb.append("["); // NOI18N
+                if (library.getImplementationTitle() != null) {
+                    sb.append(library.getImplementationTitle());
+                }
+                if (library.getImplementationVersion() != null) {
+                    if (library.getImplementationTitle() != null) {
+                        sb.append(" - "); // NOI18N
+                    }
+                    sb.append(library.getImplementationVersion().toString());
+                }
+                sb.append("]"); // NOI18N
+            }
+            // result is the same as all fields are final
+            synchronized (this) {
+                name = sb.toString();
+                return name;
+            }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ServerLibraryItem other = (ServerLibraryItem) obj;
+            if ((this.toString() == null) ? (other.toString() != null) : !this.toString().equals(other.toString())) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 67 * hash + (this.toString() != null ? this.toString().hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public int compareTo(ServerLibraryItem o) {
+            return -this.toString().compareTo(o.toString());
+        }
+
     }
 }

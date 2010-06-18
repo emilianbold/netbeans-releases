@@ -406,6 +406,22 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                            FileObject oldPackage = entityClass.getRootFolder().getFileObject(rel);
                            entity = oldPackage.getFileObject(entityClassName, "java");
                         }
+                        // NO PK classes for views
+                        if (entityClass.isForTable() && !entityClass.isUsePkField()) {
+                            String pkClassName = createPKClassName(entityClassName);
+                            FileObject pkFO = packageFileObject.getFileObject(pkClassName, "java");
+                            if (pkFO == null) { // NOI18N
+                                String fqn = persistenceGen.getFQClassName(entityClass.getTableName());
+                                int ind = fqn.lastIndexOf(".");
+                                String pkg = ind>-1 ? fqn.substring(0, ind) : "";
+                                String rel = pkg.replaceAll("\\.", "/");
+                                FileObject oldPackage = entityClass.getRootFolder().getFileObject(rel);
+                                pkFO = oldPackage.getFileObject(pkClassName, "java");
+                            }
+                            if(pkFO != null){
+                                pkFO.delete();
+                            }
+                        }
                         entity.delete();
                         entity = null;
                     case NEW:{
@@ -845,6 +861,16 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 if (genSerializableEntities && !UpdateType.UPDATE.equals(updateType)) {
                     newClassTree = genUtils.addImplementsClause(newClassTree, "java.io.Serializable"); // NOI18N
                 }
+                if (needsPKClass) {
+                    String pkFieldName = createFieldName(pkClassName);
+                    pkProperty = new Property(
+                            Modifier.PROTECTED,
+                            Collections.singletonList(genUtils.createAnnotation("javax.persistence.EmbeddedId")),
+                            pkFQClassName,
+                            pkFieldName);
+                    properties.add(pkProperty);
+                }
+
                 if (UpdateType.UPDATE.equals(updateType)){
                     collectExistingColumns();
                 } else {
@@ -882,16 +908,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 
                     newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
 
-                    if (needsPKClass) {
-                        String pkFieldName = createFieldName(pkClassName);
-                        pkProperty = new Property(
-                                Modifier.PROTECTED,
-                                Collections.singletonList(genUtils.createAnnotation("javax.persistence.EmbeddedId")),
-                                pkFQClassName,
-                                pkFieldName);
-                        properties.add(pkProperty);
-                    }
+
                 }
+
                 //TODO: javadoc - generate or fake in test mode
                 //        b.setCommentDataAuthor(authorOverride);
                 //        b.setCommentDataDate(dateOverride);

@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 
 /**
@@ -112,6 +113,17 @@ public final class DeploymentHelper {
         } else {
             LOGGER.log(Level.WARNING,
                     "The data sources cannot be deployed because the server instance cannot be found.");
+        }
+    }
+
+    public static void deployServerLibraries(J2eeModuleProvider jmp) throws ConfigurationException {
+        ServerInstance si = ServerRegistry.getInstance ().getServerInstance (jmp.getServerInstanceID ());
+        if (si != null) {
+            Set<ServerLibraryDependency> libraries = jmp.getConfigSupport().getLibraries();
+            si.deployLibraries(libraries);
+        } else {
+            LOGGER.log(Level.WARNING,
+                    "The libraries cannot be deployed because the server instance cannot be found.");
         }
     }
 }

@@ -1496,7 +1496,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
             }
             return super.visitWildcard(node, p);
         }
-        
+
         private void typeUsed(Element decl, TreePath expr, Collection<UseTypes> type) {
             if (decl != null && (expr == null || expr.getLeaf().getKind() == Kind.IDENTIFIER || expr.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE)) {
                 if (decl.asType() != null && decl.asType().getKind() != TypeKind.ERROR) {
