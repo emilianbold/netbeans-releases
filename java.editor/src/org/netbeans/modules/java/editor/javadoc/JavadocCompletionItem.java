@@ -65,6 +65,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.editor.java.JavaCompletionItem;
 import org.netbeans.modules.java.editor.javadoc.TagRegistery.TagEntry;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -214,20 +215,20 @@ final class JavadocCompletionItem implements CompletionItem {
                 null, JAVADOC_PARAM_ICON, 100);
     }
     
-    public static CompletionItem createExecutableItem(ExecutableElement e,
+    public static CompletionItem createExecutableItem(CompilationInfo info, ExecutableElement e,
             ExecutableType et, int startOffset, boolean isInherited,
             boolean isDeprecated) {
         
         CompletionItem delegate = JavaCompletionItem.createExecutableItem(
-                e, et, startOffset, isInherited, isDeprecated, false, false);
+                info, e, et, startOffset, isInherited, isDeprecated, false, false);
         return new JavadocExecutableItem(delegate, e, startOffset);
     }
     
-    public static CompletionItem createTypeItem(TypeElement elem,
+    public static CompletionItem createTypeItem(CompilationInfo info, TypeElement elem,
             int startOffset, boolean displayPkgName, boolean isDeprecated) {
         
         CompletionItem delegate = JavaCompletionItem.createTypeItem(
-                elem, (DeclaredType) elem.asType(), startOffset,
+                info, elem, (DeclaredType) elem.asType(), startOffset,
                 displayPkgName, isDeprecated, false, false, false);
         return new JavadocTypeItem(delegate, startOffset);
     }
