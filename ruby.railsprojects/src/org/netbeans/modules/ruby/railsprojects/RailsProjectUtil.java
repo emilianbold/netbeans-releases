@@ -381,6 +381,10 @@ public class RailsProjectUtil {
             return compareTo(new RailsVersion(3)) >= 0;
         }
 
+        public boolean isRails3Obeta4rHigher() {
+            return compareTo(new RailsVersion(3,0,0,"beta4")) >= 0;
+        }
+
         public int compareTo(RailsVersion o) {
             if (major > o.major) {
                 return 1;
