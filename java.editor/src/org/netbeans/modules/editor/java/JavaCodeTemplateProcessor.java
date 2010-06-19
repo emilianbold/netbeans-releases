@@ -470,7 +470,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 }
             }
         }
-        return null;
+        return name;
     }
     
     private VariableElement instanceOf(String typeName, String name) {
@@ -610,7 +610,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     }
 
     private TypeMirror type(String typeName) {
-        return cInfo != null ? cInfo.getTreeUtilities().parseType(typeName, enclClass) : null;
+        typeName = typeName.trim();
+        return cInfo != null && typeName.length() > 0 ? cInfo.getTreeUtilities().parseType(typeName, enclClass) : null;
     }
     
     private TypeMirror iterableElementType(int caretOffset) {
