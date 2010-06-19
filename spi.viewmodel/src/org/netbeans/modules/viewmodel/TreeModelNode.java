@@ -1794,6 +1794,15 @@ public class TreeModelNode extends AbstractNode {
                     return properties.get (id + "#html");
                 }
             }
+            if (attributeName.equals("suppressCustomEditor")) {
+                // Do not invoke custom property editor when we render the cell.
+                try {
+                    if (model.canRenderCell(object, id)) {
+                        return Boolean.TRUE;
+                    }
+                } catch (UnknownTypeException ex) {
+                }
+            }
             return super.getValue (attributeName);
         }
 
