@@ -1137,7 +1137,6 @@ public final class MakeActionProvider implements ActionProvider {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getHostKey());
         ArrayList<String> errs = new ArrayList<String>();
-        ArrayList<String> errsNoBTA = new ArrayList<String>();
         CompilerSet cs;
         String csname;
         File file;
@@ -1190,7 +1189,6 @@ public final class MakeActionProvider implements ActionProvider {
             }
             String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname);
             errs.add(errMsg);
-            errsNoBTA.add(errMsg);
             runBTA = true;
         } else if (csconf.isValid()) {
             csname = csconf.getOption();
@@ -1207,7 +1205,6 @@ public final class MakeActionProvider implements ActionProvider {
             cs = CompilerSetFactory.getCompilerSet(env, flavor, csname);
             String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_LOCAL_COMPILER_SET", csname);
             errs.add(errMsg);
-            errsNoBTA.add(errMsg);
             runBTA = true;
         }
 
@@ -1227,12 +1224,10 @@ public final class MakeActionProvider implements ActionProvider {
         if (conf.getDevelopmentHost().isLocalhost()) {
             file = new File(makeTool.getPath());
             if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || ToolsPanelSupport.isUnsupportedMake(file.getPath())) {
-                errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingMake", csname, makeTool.getDisplayName())); // NOI18N
                 runBTA = true;
             }
         } else {
             if (!isValidExecutable(makeTool.getPath(), pi)) {
-                errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingMake", csname, makeTool.getDisplayName())); // NOI18N
                 runBTA = true;
             }
         }
@@ -1242,35 +1237,30 @@ public final class MakeActionProvider implements ActionProvider {
             return false;
         }
         if (cRequired && !exists(cTool.getPath(), pi)) {
-            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
         if (cancelled.get()) {
             return false;
         }
         if (cppRequired && !exists(cppTool.getPath(), pi)) {
-            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCppCompiler", csname, cppTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
         if (cancelled.get()) {
             return false;
         }
         if (fRequired && !exists(fTool.getPath(), pi)) {
-            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
         if (cancelled.get()) {
             return false;
         }
         if (asRequired && !exists(asTool.getPath(), pi)) {
-            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
         if (cancelled.get()) {
             return false;
         }
         if (conf.isQmakeConfiguration() && !exists(qmakeTool.getPath(), pi)) {
-            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingQMake", csname, qmakeTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
 
@@ -1318,20 +1308,6 @@ public final class MakeActionProvider implements ActionProvider {
                 } else {
                     lastValidation = false;
                 }
-            } else {
-                if (cancelled.get()) {
-                    return false;
-                }
-                // User can't change anything in BTA for remote host yet,
-                // so showing above dialog will only confuse him
-                String message = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", // NOI18N
-                        csname, conf.getDevelopmentHost().getDisplayName(false));
-                for (String error : errsNoBTA) {
-                    message += "\n" + error; // NOI18N
-                }
-                NotifyDescriptor nd = new NotifyDescriptor.Message(message);
-                DialogDisplayer.getDefault().notify(nd);
-                lastValidation = false;
             }
         } else {
             lastValidation = true;
