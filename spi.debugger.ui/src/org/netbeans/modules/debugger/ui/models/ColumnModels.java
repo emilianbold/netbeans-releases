@@ -635,10 +635,7 @@ public class ColumnModels {
 
         @Override
         public Object getCellEditorValue() {
-            if (node != null) {
-                node.setDisplayName(editorPane.getText());
-            }
-            return value;
+            return editorPane.getText();
         }
 
         @Override
