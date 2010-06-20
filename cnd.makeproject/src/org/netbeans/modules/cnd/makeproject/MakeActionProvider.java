@@ -1208,60 +1208,57 @@ public final class MakeActionProvider implements ActionProvider {
             runBTA = true;
         }
 
-        Tool cTool = cs.getTool(PredefinedToolKind.CCompiler);
-        Tool cppTool = cs.getTool(PredefinedToolKind.CCCompiler);
-        Tool fTool = cs.getTool(PredefinedToolKind.FortranCompiler);
-        Tool asTool = cs.getTool(PredefinedToolKind.Assembler);
-        Tool makeTool = cs.getTool(PredefinedToolKind.MakeTool);
-        Tool qmakeTool = cs.getTool(PredefinedToolKind.QMakeTool);
-
         if (cancelled.get()) {
             return false;
         }
 
-        PlatformInfo pi = conf.getPlatformInfo();
-        // Check for a valid make program
-        if (conf.getDevelopmentHost().isLocalhost()) {
-            file = new File(makeTool.getPath());
-            if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || ToolsPanelSupport.isUnsupportedMake(file.getPath())) {
-                runBTA = true;
+        if (!runBTA) {
+            Tool cTool = cs.getTool(PredefinedToolKind.CCompiler);
+            Tool cppTool = cs.getTool(PredefinedToolKind.CCCompiler);
+            Tool fTool = cs.getTool(PredefinedToolKind.FortranCompiler);
+            Tool asTool = cs.getTool(PredefinedToolKind.Assembler);
+            Tool makeTool = cs.getTool(PredefinedToolKind.MakeTool);
+            Tool qmakeTool = cs.getTool(PredefinedToolKind.QMakeTool);
+
+            PlatformInfo pi = conf.getPlatformInfo();
+
+            // Check for a valid make program
+            if (conf.getDevelopmentHost().isLocalhost()) {
+                file = new File(makeTool.getPath());
+                if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || ToolsPanelSupport.isUnsupportedMake(file.getPath())) {
+                    runBTA = true;
+                }
+            } else {
+                if (!isValidExecutable(makeTool.getPath(), pi)) {
+                    runBTA = true;
+                }
             }
-        } else {
-            if (!isValidExecutable(makeTool.getPath(), pi)) {
-                runBTA = true;
-            }
-        }
 
-        // Check compilers
-        if (cancelled.get()) {
-            return false;
-        }
-        if (cRequired && !exists(cTool.getPath(), pi)) {
-            runBTA = true;
-        }
-        if (cancelled.get()) {
-            return false;
-        }
-        if (cppRequired && !exists(cppTool.getPath(), pi)) {
-            runBTA = true;
-        }
-        if (cancelled.get()) {
-            return false;
-        }
-        if (fRequired && !exists(fTool.getPath(), pi)) {
-            runBTA = true;
-        }
-        if (cancelled.get()) {
-            return false;
-        }
-        if (asRequired && !exists(asTool.getPath(), pi)) {
-            runBTA = true;
-        }
-        if (cancelled.get()) {
-            return false;
-        }
-        if (conf.isQmakeConfiguration() && !exists(qmakeTool.getPath(), pi)) {
-            runBTA = true;
+            // Check compilers
+            List<Tool> tools2check = new ArrayList<Tool>();
+            if (cRequired) {
+                tools2check.add(cTool);
+            }
+            if (cppRequired) {
+                tools2check.add(cppTool);
+            }
+            if (fRequired) {
+                tools2check.add(fTool);
+            }
+            if (asRequired) {
+                tools2check.add(asTool);
+            }
+            if (conf.isQmakeConfiguration()) {
+                tools2check.add(qmakeTool);
+            }
+            for (Tool tool : tools2check) {
+                if (cancelled.get()) {
+                    return false;
+                }
+                if (!exists(tool.getPath(), pi)) {
+                    runBTA = true;
+                }
+            }
         }
 
         if (cancelled.get()) {
