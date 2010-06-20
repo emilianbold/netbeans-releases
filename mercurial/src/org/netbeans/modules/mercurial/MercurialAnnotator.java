@@ -333,7 +333,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             actions.add(null);
             actions.add(SystemAction.get(RevertModificationsAction.class));
             actions.add(new RecoverMenu(ctx));
-            if (!onlyProjects && !onlyFolders) {
+            if (!onlyProjects) {
                 actions.add(SystemAction.get(IgnoreAction.class));
             }
             actions.add(null);
@@ -362,8 +362,10 @@ public class MercurialAnnotator extends VCSAnnotator {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(LogAction.class), loc.getString("CTL_PopupMenuItem_Log"), context)); //NOI18N
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_Revert"), context)); //NOI18N
-                if (!onlyProjects  && !onlyFolders) {
+                if (!onlyProjects) {
                     actions.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), loc.getString("CTL_PopupMenuItem_Ignore"), context)); //NOI18N
+                }
+                if (!onlyProjects && !onlyFolders) {
                     ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
                     actions.add(SystemActionBridge.createAction(exclude, exclude.getActionStatus(null) == ExcludeFromCommitAction.INCLUDING
                             ? loc.getString("CTL_PopupMenuItem_IncludeInCommit") //NOI18N

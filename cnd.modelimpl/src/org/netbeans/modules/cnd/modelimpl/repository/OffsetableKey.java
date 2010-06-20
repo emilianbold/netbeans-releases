@@ -56,7 +56,7 @@ import org.openide.util.CharSequences;
  */
 
 /*package*/
-abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparable {
+abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparable<OffsetableKey> {
 
     private final int startOffset;
     private final int endOffset;
@@ -166,11 +166,10 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
     }
 
     @Override
-    public int compareTo(Object o) {
-        if (this == o) {
+    public int compareTo(OffsetableKey other) {
+        if (this == other) {
             return 0;
         }
-        OffsetableKey other = (OffsetableKey) o;
         assert (getKind() == other.getKind());
         //FUXUP assertion: unit and file tables should be deserialized before files deserialization.
         //instead compare indexes.

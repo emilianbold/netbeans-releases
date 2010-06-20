@@ -121,6 +121,18 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         return name;
     }
 
+    /**
+     * Used for constructs like
+     * class A {
+     *     struct B;
+     *     // ...
+     * };
+     * struct A::B {
+     *     // ...
+     * }
+     * See BZ #131625
+     * @return  For "struct A::B" above, the method returns its forward declaration "struct B;"
+     */
     protected ClassImpl.ClassMemberForwardDeclaration isClassDefinition() {
         CsmScope scope = getScope();
         if (name != null && name.toString().indexOf("::") > 0) { // NOI18N
@@ -135,8 +147,9 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
                 } else {
                     qn = ns.getQualifiedName().toString() + "::" + prefix; // NOI18N
                 }
-                CsmClassifier cls = ns.getProject().findClassifier(qn);
-                if (cls != null) {
+                Collection<CsmClassifier> defs = ns.getProject().findClassifiers(qn);
+                ClassImpl.ClassMemberForwardDeclaration out = null;
+                for(CsmClassifier cls : defs) {
                     if (CsmKindUtilities.isClass(cls)) {
                         CsmClass container = (CsmClass) cls;
                         Iterator<CsmMember> it = CsmSelect.getClassMembers(container,
@@ -144,11 +157,17 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
                         if (it.hasNext()) {
                             CsmMember m = it.next();
                             if (m instanceof ClassImpl.ClassMemberForwardDeclaration) {
-                                return (ClassImpl.ClassMemberForwardDeclaration) m;
+                                if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), m)){
+                                    out = (ClassImpl.ClassMemberForwardDeclaration) m;
+                                }
+                                if (out == null) {
+                                    out = (ClassImpl.ClassMemberForwardDeclaration) m;
+                                }
                             }
                         }
                     }
                 }
+                return out;
             }
         }
         return null;

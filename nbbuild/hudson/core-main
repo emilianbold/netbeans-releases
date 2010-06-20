@@ -39,7 +39,7 @@ java.j2seproject,\
 java.platform,\
 java.project,\
 javahelp,\
-keyring,\
+keyring.impl,\
 masterfs,\
 maven,\
 maven.embedder,\

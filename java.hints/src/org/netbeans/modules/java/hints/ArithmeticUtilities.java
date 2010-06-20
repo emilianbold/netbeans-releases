@@ -86,6 +86,12 @@ public class ArithmeticUtilities {
         }
 
 	@Override
+	public Number scan(TreePath tree, Void p) {
+	    if (!ACCEPTED_KINDS.contains(tree.getLeaf().getKind())) return null;
+	    return super.scan(tree, p);
+	}
+
+	@Override
 	public Number scan(Tree tree, Void p) {
 	    if (tree == null) return null;
 	    if (!ACCEPTED_KINDS.contains(tree.getKind())) return null;
@@ -146,7 +152,7 @@ public class ArithmeticUtilities {
                                 result = left.floatValue() * right.floatValue();
                             } else if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() * right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() * right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -160,7 +166,7 @@ public class ArithmeticUtilities {
                                 result = left.floatValue() / right.floatValue();
                             } else if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() / right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() / right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -174,7 +180,7 @@ public class ArithmeticUtilities {
                                 result = left.floatValue() % right.floatValue();
                             } else if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() % right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() % right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -188,7 +194,7 @@ public class ArithmeticUtilities {
                                 result = left.floatValue() + right.floatValue();
                             } else if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() + right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() + right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -202,7 +208,7 @@ public class ArithmeticUtilities {
                                 result = left.floatValue() - right.floatValue();
                             } else if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() - right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() - right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -212,7 +218,7 @@ public class ArithmeticUtilities {
                     case LEFT_SHIFT:
                             if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() << right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() << right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -222,7 +228,7 @@ public class ArithmeticUtilities {
                     case RIGHT_SHIFT:
                             if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() >> right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() >> right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -232,7 +238,7 @@ public class ArithmeticUtilities {
                     case UNSIGNED_RIGHT_SHIFT:
                             if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() >>> right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() >>> right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -242,7 +248,7 @@ public class ArithmeticUtilities {
                     case AND:
                             if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() & right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() & right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -252,7 +258,7 @@ public class ArithmeticUtilities {
                     case XOR:
                             if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() ^ right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() ^ right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -262,7 +268,7 @@ public class ArithmeticUtilities {
                     case OR:
                             if (left instanceof Long || right instanceof Long) {
                                 result = left.longValue() | right.longValue();
-                            } else if (left instanceof Integer || right instanceof Integer) {
+                            } else if (integerLike(left) || integerLike(right)) {
                                 result = left.intValue() | right.intValue();
                             } else {
                                 throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
@@ -305,6 +311,10 @@ public class ArithmeticUtilities {
             }
 
             return super.visitUnary(node, p);
+        }
+
+        private static boolean integerLike(Number n) {
+            return n instanceof Integer || n instanceof Short || n instanceof Byte;
         }
     }
 }

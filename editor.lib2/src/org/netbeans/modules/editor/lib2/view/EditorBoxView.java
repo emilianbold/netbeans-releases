@@ -50,6 +50,7 @@ import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.Element;
@@ -500,6 +501,18 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
         // The background is already cleared by BasicTextUI.paintBackground() which uses component.getBackground()
         checkChildrenNotNull();
         children.paint(this, g, alloc, clipBounds);
+    }
+
+    @Override
+    public JComponent getToolTip(double x, double y, Shape allocation) {
+        checkChildrenNotNull();
+        return children.getToolTip(this, x, y, allocation);
+    }
+
+    @Override
+    public String getToolTipTextChecked(double x, double y, Shape allocation) {
+        checkChildrenNotNull();
+        return children.getToolTipTextChecked(this, x, y, allocation);
     }
 
     @Override

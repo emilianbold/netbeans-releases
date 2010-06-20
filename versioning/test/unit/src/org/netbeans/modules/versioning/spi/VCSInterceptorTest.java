@@ -74,7 +74,9 @@ public class VCSInterceptorTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         dataRootDir = new File(System.getProperty("data.root.dir"));
-        System.setProperty("netbeans.user", dataRootDir + "/userdir");
+        File userdir = new File(dataRootDir + "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
         if(!dataRootDir.exists()) dataRootDir.mkdirs();
         Lookup.getDefault().lookupAll(VersioningSystem.class);
         inteceptor = (TestVCSInterceptor) TestVCS.getInstance().getVCSInterceptor();

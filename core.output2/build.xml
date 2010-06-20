@@ -46,40 +46,4 @@ made subject to such option by the copyright holder.
 
 <project name="core.output2" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-    <target name="reload" depends="demo"/>
-
-    <target name="demo-compile" depends="compile">
-       <javac srcdir="${basedir}/demosrc" destdir="${build.classes.dir}" source="1.4">
-           <classpath>
-                <pathelement location="${basedir}/demosrc"/>
-                <pathelement location="${build.classes.dir}"/>
-                <pathelement path="${module.classpath}"/>
-           </classpath>
-       </javac>
-    </target>
-
-    <target name="demo" depends="compile,demo-compile">
-        <echo>And I am &#x05D9;&#x05E9;&#x05D9; &#x05D1;&#x05E0; &#x05DC;&#x05D6;&#x05E8; or similar.</echo>
-        <java fork="true" classname="org.netbeans.core.output2.TestFrame">
-            <!-- jvmargs="-Xbootclasspath/p:/Users/tim/TextViewPatch/dist/TextViewPatch.jar"> -->
-            <classpath>
-                <pathelement location="${basedir}/demosrc"/>
-                <pathelement location="${build.classes.dir}"/>
-                <pathelement path="${module.classpath}"/>
-            </classpath>
-        </java>
-    </target>
-    <target name="debug" depends="compile">
-        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="testframe"/>
-        <java fork="true" classname="org.netbeans.core.output2.TestFrame">
-            <!-- jvmargs="-Xbootclasspath/p:/Users/tim/TextViewPatch/dist/TextViewPatch.jar"> -->
-            <classpath>
-                <pathelement location="${basedir}/demosrc"/>
-                <pathelement location="${build.classes.dir}"/>
-                <pathelement path="${module.classpath}"/>
-            </classpath>
-            <jvmarg value="-Xdebug"/>
-            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address},suspend=n"/>
-        </java>
-    </target>
 </project>

@@ -333,12 +333,12 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
 
                     @Override
                     public Image getIcon (int icon) {
-                        return null;
+                        return super.getIcon(icon);//null;
                     }
 
                     @Override
                     public Image getOpenedIcon(int type) {
-                        return null;
+                        return super.getOpenedIcon(type);//null;
                     }
                 };
                 nd.setDisplayName (NbBundle.getMessage(CardDataNode.class,

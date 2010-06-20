@@ -190,7 +190,7 @@ public final class RandomTestContainer extends PropertyProvider {
         }
         this.seed = seed;
         random.setSeed(this.seed);
-        LOG.log(Level.INFO, "{0} with SEED={1}L - useful for RandomTestContainer.run(seed)\n", // NOI18N
+        LOG.log(Level.INFO, "{0} with SEED={1,number,#}L - useful for RandomTestContainer.run(seed)\n", // NOI18N
                 new Object[]{name(), this.seed});
 
         if (name2Op.isEmpty()) {
@@ -359,7 +359,7 @@ public final class RandomTestContainer extends PropertyProvider {
                 double opRatioSum = computeOpRatioSum();
                 while (context.continueRun(totalOpCount)) {
                     Op op = findOp(context, opRatioSum);
-                    op.run(context);
+                    op.run(context); // Run the fetched random operation
                     for (Check check : context.container().checks) {
                         check.check(context);
                     }
@@ -471,8 +471,14 @@ public final class RandomTestContainer extends PropertyProvider {
         }
 
         public StringBuilder logOpBuilder() {
-            StringBuilder sb = new StringBuilder(100);
-            sb.append("TESTOP[").append(opCount()).append("]: ");
+            StringBuilder sb;
+            if (isLogOp()) {
+                sb = new StringBuilder(100);
+                sb.append("TESTOP[").append(opCount()).append("]: ");
+                return sb;
+            } else {
+                sb = null;
+            }
             return sb;
         }
 
@@ -505,9 +511,10 @@ public final class RandomTestContainer extends PropertyProvider {
             } else {
                 stopOpCount += opCount;
             }
-            while (opCount < stopOpCount) {
+
+            while (continueRun()) {
                 currentRound.run(this);
-                if (roundIterator.hasNext()) {
+                if (continueRun() && roundIterator.hasNext()) {
                     setCurrentRound(roundIterator.next());
                 } else {
                     break; // stopOpCount too high so break now
@@ -516,7 +523,11 @@ public final class RandomTestContainer extends PropertyProvider {
         }
 
         boolean continueRun(int roundTotalOpCount) {
-            return (opCount < stopOpCount && roundOpCount < roundTotalOpCount);
+            return (continueRun() && roundOpCount < roundTotalOpCount);
+        }
+
+        boolean continueRun() {
+            return (opCount < stopOpCount);
         }
 
         void incrementOpCount() {

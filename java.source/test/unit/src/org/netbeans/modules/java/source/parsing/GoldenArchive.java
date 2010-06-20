@@ -94,6 +94,11 @@ class GoldenArchive implements Archive {
         throw new UnsupportedOperationException("Not needed in tests"); //NOI18N
     }
 
+    @Override
+    public JavaFileObject getFile(String name) throws IOException {
+        return null;
+    }
+
     // Implementation of Archive -----------------------------------------------
     
     public GoldenArchive( File rootFolder ) {

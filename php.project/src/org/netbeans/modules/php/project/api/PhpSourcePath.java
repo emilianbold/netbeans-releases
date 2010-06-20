@@ -226,9 +226,11 @@ public final class PhpSourcePath {
         // XXX cache?
         private List<FileObject> getPlatformPath() {
             String[] paths = PhpOptions.getInstance().getPhpGlobalIncludePathAsArray();
-            List<FileObject> dirs = new ArrayList<FileObject>(paths.length);
+            List<FileObject> internalPath = CommonPhpSourcePath.getInternalPath();
+            List<FileObject> dirs = new ArrayList<FileObject>(paths.length + internalPath.size());
+            dirs.addAll(internalPath);
             for (String path : paths) {
-                FileObject resolvedFile = FileUtil.toFileObject(new File(path));
+                FileObject resolvedFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
                 if (resolvedFile != null) { // XXX check isValid() as well?
                     dirs.add(resolvedFile);
                 }

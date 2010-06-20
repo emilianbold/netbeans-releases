@@ -120,6 +120,8 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.util.ComponentComparator;
+import org.netbeans.modules.jira.util.VersionComparator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -1204,6 +1206,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         Runnable r = new Runnable() {
             @Override
             public void run() {
+                Arrays.sort(versionsArray, new VersionComparator());
+                Arrays.sort(componentsArray, new ComponentComparator());
                 populateList(panel.fixForList, versionsArray);
                 populateList(panel.affectsVersionList, versionsArray);
                 populateList(panel.componentsList, componentsArray);

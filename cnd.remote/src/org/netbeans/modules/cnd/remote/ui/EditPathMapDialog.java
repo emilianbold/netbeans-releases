@@ -450,12 +450,12 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 .addGap(5, 5, 5)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(27, 27, 27)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
+                .addGap(7, 7, 7)
                 .addComponent(restore)
                 .addContainerGap())
         );
@@ -686,7 +686,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 field.requestFocusInWindow();
                 field.selectAll();
             } else {
-                JTextField field = (JTextField) tab.getEditorComponent();
+                JPanel panel = (JPanel) tab.getEditorComponent();
+                JTextField field = (JTextField) panel.getComponent(0);
                 field.setCaretPosition(field.getText().length());
                 field.requestFocusInWindow();
                 field.selectAll();

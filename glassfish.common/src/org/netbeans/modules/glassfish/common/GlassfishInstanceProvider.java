@@ -80,29 +80,39 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
     private volatile static GlassfishInstanceProvider preludeProvider;
     private volatile static GlassfishInstanceProvider ee6Provider;
+    private volatile static GlassfishInstanceProvider ee6WCProvider;
 
     static private String EE6_PROP_ROOT = "org.glassfish.v3ee6."; // NOI18N
+    static private String EE6WC_PROP_ROOT = "org.glassfish.v3ee6wc."; // NOI18N
     static private String INSTALL_ROOT_SUFFIX = "installRoot"; // NOI18N
     static private String EE6_INSTALL_ROOT_PROP = EE6_PROP_ROOT + INSTALL_ROOT_SUFFIX;
+    static private String EE6WC_INSTALL_ROOT_PROP = EE6WC_PROP_ROOT + INSTALL_ROOT_SUFFIX;
     static private String PRELUDE_PROP_ROOT = "org.glassfish.v3."; // NOI18N
     static private String EE6_DEPLOYER_FRAGMENT = "deployer:gfv3ee6"; // NOI18N
+    static private String EE6WC_DEPLOYER_FRAGMENT = "deployer:gfv3ee6wc"; // NOI18N
     static private String PRELUDE_DEPLOYER_FRAGMENT = "deployer:gfv3"; // NOI18N
     static private String EE6_INSTANCES_PATH = "/GlassFishEE6/Instances"; // NOI18N
+    static private String EE6WC_INSTANCES_PATH = "/GlassFishEE6WC/Instances"; // NOI18N
     static private String PRELUDE_INSTANCES_PATH = "/GlassFish/Instances"; // NOI18N
 
     static public String PRELUDE_DEFAULT_NAME = "GlassFish_v3_Prelude"; //NOI18N
+    static public String EE6WC_DEFAULT_NAME = "GlassFish_Server_3.1"; // NOI18N
     
     public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
         List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
         if(initialize) {
             getPrelude();
             getEe6();
+            getEe6WC();
         }
         if(preludeProvider != null) {
             providerList.add(preludeProvider);
         }
         if(ee6Provider != null) {
             providerList.add(ee6Provider);
+        }
+        if(ee6WCProvider != null) {
+            providerList.add(ee6WCProvider);
         }
         return providerList;
     }
@@ -116,11 +126,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
                     "GlassFish_Server_3", // NOI18N
-                    "http://java.net/download/glassfish/v3/release/glassfish-v3.zip", // NOI18N
-                    "http://serverplugins.netbeans.org/glassfishv3/post68v3.txt", // NOI18N
+                    "http://java.net/download/glassfish/3.0.1/release/glassfish-3_0_1.zip", // NOI18N
+                    "http://serverplugins.netbeans.org/glassfishv3/post69v3.txt", // NOI18N
                     "last-v3ee6-install-root", // NOI18N
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
-                    new String[0],
+                    new String[]{"lib" + File.separator + "dtds" + File.separator + "glassfish-web-app_3_0-1.dtd"}, // NOI18N
                     true, new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
                     new String[]{"--nopassword"}, // NOI18N
                     new CommandFactory() {
@@ -133,6 +143,34 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             ee6Provider.init();
         }
         return ee6Provider;
+    }
+
+    public static synchronized GlassfishInstanceProvider getEe6WC() {
+        if (ee6WCProvider == null) {
+            ee6WCProvider = new GlassfishInstanceProvider(new String[]{EE6WC_DEPLOYER_FRAGMENT},
+                    new String[]{EE6WC_INSTANCES_PATH},
+                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V31_SERVER_NAME", new Object[]{}), // NOI18N
+                    EE6WC_INSTALL_ROOT_PROP,
+                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V31_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
+                    org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V31_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
+                    EE6WC_DEFAULT_NAME, // NOI18N
+                    "http://java.net/download/glassfish/3.1/promoted/latest-glassfish.zip", // NOI18N
+                    "http://serverplugins.netbeans.org/glassfishv3/post69v3-1.txt", // NOI18N
+                    "last-v3ee6wc-install-root", // NOI18N
+                    new String[]{"lib" + File.separator + "dtds" + File.separator + "glassfish-web-app_3_0-1.dtd"}, // NOI18N
+                    new String[0],
+                    true, new String[]{"docs/javaee6-doc-api.zip"}, // NOI18N
+                    new String[]{"--nopassword"}, // NOI18N
+                    new CommandFactory() {
+
+                @Override
+                public SetPropertyCommand getSetPropertyCommand(String name, String value) {
+                    return new ServerCommand.SetPropertyCommand(name, value, "DEFAULT={0}={1}"); // NOI18N
+                }
+            });
+            ee6WCProvider.init();
+        }
+        return ee6WCProvider;
     }
 
     public static synchronized GlassfishInstanceProvider getPrelude() {
@@ -148,7 +186,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
                     PRELUDE_DEFAULT_NAME, 
                     "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", // NOI18N
-                    "http://serverplugins.netbeans.org/glassfishv3/post68prelude.txt", // NOI18N
+                    "http://serverplugins.netbeans.org/glassfishv3/post69prelude.txt", // NOI18N
                     "last-install-root", // NOI18N
                     new String[0],
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N

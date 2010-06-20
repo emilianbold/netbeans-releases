@@ -86,9 +86,12 @@ abstract class WebTargetPanelProvider<T> implements TargetPanelProvider<T> {
             FileObject sourceBase )
     {
         String sourceDir ="";
-        if (getWebModule()!=null) {
-            FileObject docBase = getWebModule().getDocumentBase();
-            sourceDir = FileUtil.getRelativePath( docBase, sourceBase );
+        WebModule wm = getWebModule();
+        if (wm != null) {
+            FileObject docBase = wm.getDocumentBase();
+            if (docBase != null) {
+                sourceDir = FileUtil.getRelativePath( docBase, sourceBase );
+            }
             
             //just for source roots
             if (sourceDir == null) {
@@ -104,18 +107,24 @@ abstract class WebTargetPanelProvider<T> implements TargetPanelProvider<T> {
     public File getTargetFile( TargetChooserPanel<T> panel,
             FileObject locationRoot, String relativeTargetFolder )
     {
+        WebModule wm = getWebModule();
+        FileObject docBase = null;
+        if (wm != null) {
+            docBase = wm.getDocumentBase();
+        }
         if ( relativeTargetFolder.length() == 0 ) {
-            if (getWebModule()==null)
+
+            if (wm == null || docBase == null)
                 return FileUtil.toFile(locationRoot);
             else
-                return FileUtil.toFile( getWebModule().getDocumentBase());
+                return FileUtil.toFile( docBase);
         }
         else {
             // XXX have to account for FU.tF returning null
-            if (getWebModule()==null) {
+            if (wm==null || docBase == null) {
                 return new File( FileUtil.toFile(locationRoot), relativeTargetFolder );
             } else {
-                return new File( FileUtil.toFile( getWebModule().getDocumentBase() ), 
+                return new File( FileUtil.toFile( docBase ),
                         relativeTargetFolder );
             }
         }

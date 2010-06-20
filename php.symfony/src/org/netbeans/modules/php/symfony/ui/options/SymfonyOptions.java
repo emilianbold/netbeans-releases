@@ -100,7 +100,7 @@ public final class SymfonyOptions {
         String symfony = getPreferences().get(SYMFONY, null);
         if (symfony == null && !symfonySearched) {
             symfonySearched = true;
-            List<String> scripts = FileUtils.findFileOnUsersPath(SymfonyScript.SCRIPT_NAME);
+            List<String> scripts = FileUtils.findFileOnUsersPath(SymfonyScript.SCRIPT_NAME, SymfonyScript.SCRIPT_NAME_LONG);
             if (!scripts.isEmpty()) {
                 symfony = scripts.get(0);
                 setSymfony(symfony);

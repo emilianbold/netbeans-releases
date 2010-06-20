@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.simpleunit.editor.filecreation;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,6 +66,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -105,9 +107,11 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
                 }
             }
         }
+        FileObject rootFolder = getRootFolder();
+        File rootFolderFile = FileUtil.toFile(rootFolder);
         params.putAll(CodeGenerator.generateTemplateParamsForFunctions(
                 getTestFileName().replaceFirst("[.].*", ""), // NOI18N
-                getRootFolder().getPath(),
+                rootFolderFile.getAbsolutePath(),
                 fs,
                 ("cpp".equals(wiz.getTemplate().getPrimaryFile().getExt())?CodeGenerator.Language.CPP:CodeGenerator.Language.C))); // NOI18N
 

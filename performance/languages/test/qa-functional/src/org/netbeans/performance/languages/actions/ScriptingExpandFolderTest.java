@@ -176,7 +176,7 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
     public void testExpandFolderWith100RailsFiles() {
         WAIT_AFTER_OPEN = 1000;
         project = Projects.RAILS_PROJECT;
-        pathToFolderNode = "Unit Tests" + "|" + "100RhtmlFiles";
+        pathToFolderNode = "Test Files|unit" + "|" + "100RhtmlFiles";
         expectedTime = 1000;
         doMeasurement();        
     }

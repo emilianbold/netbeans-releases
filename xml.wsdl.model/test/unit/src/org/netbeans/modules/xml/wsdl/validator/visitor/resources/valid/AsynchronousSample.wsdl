@@ -12,35 +12,34 @@
 
 
 
-	<types>
-		<xsd:schema xmlns="http://www.mycomp.org/AsynchronousSampleSchemaNamespace" 
-		 targetNamespace="http://www.mycomp.org/AsynchronousSample"  >
-			<xsd:import namespace="http://www.mycomp.org/AsynchronousSampleSchemaNamespace" schemaLocation="AsynchronousSample.xsd"/>
-		</xsd:schema>
-	</types>
+    <types>
+        <xsd:schema xmlns="http://www.mycomp.org/AsynchronousSampleSchemaNamespace" 
+         targetNamespace="http://www.mycomp.org/AsynchronousSample"  >
+            <xsd:import namespace="http://www.mycomp.org/AsynchronousSampleSchemaNamespace" schemaLocation="AsynchronousSample.xsd"/>
+        </xsd:schema>
+    </types>
         
         
-	<wsdl:message name="requestMessage" >
-		<wsdl:part name="inputType" element="xs:typeA"/>
-	</wsdl:message>
-	<wsdl:message name="responseMessage">
-		<wsdl:part name="resultType" element="xs:typeA"/>
-	</wsdl:message>
+    <wsdl:message name="requestMessage" >
+        <wsdl:part name="inputType" element="xs:typeA"/>
+    </wsdl:message>
+    <wsdl:message name="responseMessage">
+        <wsdl:part name="resultType" element="xs:typeA"/>
+    </wsdl:message>
 
 
+    <wsdl:portType name="MyPortType">
+        <wsdl:operation name="asyncOperation">
+            <wsdl:input  message="tns:requestMessage" />
+        </wsdl:operation>             
+    </wsdl:portType>
 
-	<wsdl:portType name="MyPortType">
-		<wsdl:operation name="asyncOperation">
-			<wsdl:input  message="tns:requestMessage" />
-		</wsdl:operation>             
-	</wsdl:portType>
 
-
-	<wsdl:portType name="MyCallbackPortType">
-		<wsdl:operation name="onResult">
-			<wsdl:input message="tns:responseMessage"/>
-		</wsdl:operation>
-	</wsdl:portType>
+    <wsdl:portType name="MyCallbackPortType">
+        <wsdl:operation name="onResult">
+            <wsdl:input message="tns:responseMessage"/>
+        </wsdl:operation>
+    </wsdl:portType>
 
 
 
@@ -49,15 +48,15 @@
             <operation name="asyncOperation">
                 <soap:operation/>
                 <input>
-                    <soap:body use="literal"/>
+                    <soap:body use="literal" namespace="http://ebank.netjets.com"/>
                 </input>
             </operation>           
         </binding>
 
          <wsdl:service name="AsynchronousSample_asyncService">
-		<wsdl:port name="AsynchronousSample_asyncPortName" binding="tns:SoapBinding">                    
+        <wsdl:port name="AsynchronousSample_asyncPortName" binding="tns:SoapBinding">                    
                      <soap:address location="http://localhost:18181/AsynchronousSample"/>
-		</wsdl:port>
+        </wsdl:port>
         </wsdl:service>
 
 
