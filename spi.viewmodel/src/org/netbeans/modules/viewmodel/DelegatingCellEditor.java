@@ -47,6 +47,8 @@ package org.netbeans.modules.viewmodel;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.EventObject;
 import javax.swing.JTable;
 import javax.swing.event.CellEditorListener;
@@ -67,6 +69,7 @@ class DelegatingCellEditor implements TableCellEditor {
     private String columnID;
     private TableCellEditor defaultEditor;
     private TableCellEditor currentEditor;
+    private Reference<TableCellEditor> canceledEditorRef;
 
     public DelegatingCellEditor(String columnID, TableCellEditor defaultEditor) {
         this.columnID = columnID;
@@ -171,6 +174,7 @@ class DelegatingCellEditor implements TableCellEditor {
     public boolean stopCellEditing() {
         if (currentEditor != null) {
             boolean status = currentEditor.stopCellEditing();
+            canceledEditorRef = new WeakReference<TableCellEditor>(currentEditor);
             currentEditor = null;
             return status;
         }
@@ -182,7 +186,9 @@ class DelegatingCellEditor implements TableCellEditor {
     public void cancelCellEditing() {
         if (currentEditor != null) {
             currentEditor.cancelCellEditing();
+            canceledEditorRef = new WeakReference<TableCellEditor>(currentEditor);
             currentEditor = null;
+            return ;
         }
         Exceptions.printStackTrace(new IllegalStateException("No current editor."));
     }
@@ -194,7 +200,13 @@ class DelegatingCellEditor implements TableCellEditor {
 
     @Override
     public void removeCellEditorListener(CellEditorListener l) {
-        currentEditor.removeCellEditorListener(l);
+        TableCellEditor editor = currentEditor;
+        if (editor == null && canceledEditorRef != null) {
+            editor = canceledEditorRef.get();
+        }
+        if (editor != null) {
+            editor.removeCellEditorListener(l);
+        }
     }
 
 }
