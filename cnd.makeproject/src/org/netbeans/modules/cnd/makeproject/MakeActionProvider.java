@@ -1188,8 +1188,9 @@ public final class MakeActionProvider implements ActionProvider {
             if (cs == null) {
                 cs = CompilerSetManager.get(env).getDefaultCompilerSet();
             }
-            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname)); // NOI18N
-            errsNoBTA.add(errs.get(errs.size() - 1));
+            String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname);
+            errs.add(errMsg);
+            errsNoBTA.add(errMsg);
             runBTA = true;
         } else if (csconf.isValid()) {
             csname = csconf.getOption();
