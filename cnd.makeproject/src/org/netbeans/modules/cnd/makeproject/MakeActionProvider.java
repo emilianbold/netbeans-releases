@@ -1205,7 +1205,10 @@ public final class MakeActionProvider implements ActionProvider {
                 flavor = CompilerFlavor.getUnknown(conf.getPlatformInfo().getPlatform());
             }
             cs = CompilerSetFactory.getCompilerSet(env, flavor, csname);
-            csconf.setValid();
+            String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_LOCAL_COMPILER_SET", csname);
+            errs.add(errMsg);
+            errsNoBTA.add(errMsg);
+            runBTA = true;
         }
 
         Tool cTool = cs.getTool(PredefinedToolKind.CCompiler);
