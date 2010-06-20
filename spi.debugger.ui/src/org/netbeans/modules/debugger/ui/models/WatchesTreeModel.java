@@ -262,14 +262,14 @@ public class WatchesTreeModel implements ReorderableTreeModel {
             if (expr == null || expr.trim().length() == 0 || infoStr.equals(expr)) {
                 return; // cancel action
             }
-            DebuggerManager.getDebuggerManager().createWatch(expr);
-
             Vector v = (Vector) listeners.clone ();
             int i, k = v.size ();
             for (i = 0; i < k; i++)
                 ((ModelListener) v.get (i)).modelChanged (
                     new ModelEvent.NodeChanged (WatchesTreeModel.this, EmptyWatch.this)
                 );
+            
+            DebuggerManager.getDebuggerManager().createWatch(expr);
         }
 
     }
