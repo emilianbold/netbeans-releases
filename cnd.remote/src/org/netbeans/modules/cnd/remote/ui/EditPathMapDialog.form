@@ -107,6 +107,9 @@
               <ResourceString bundle="org/netbeans/modules/cnd/remote/ui/Bundle.properties" key="EPMD_MappingsTable_AD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new PathTable()"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>
