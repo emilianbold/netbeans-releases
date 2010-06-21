@@ -82,6 +82,10 @@ public class MasterPasswordEncryption implements EncryptionProvider {
     private boolean fresh;
 
     public @Override boolean enabled() {
+        if (Boolean.getBoolean("netbeans.keyring.no.master")) {
+            LOG.fine("master password encryption disabled");
+            return false;
+        }
         if (GraphicsEnvironment.isHeadless()) {
             LOG.fine("disabling master password encryption in headless mode");
             return false;
