@@ -59,6 +59,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -66,6 +67,8 @@ import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
@@ -545,17 +548,35 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     }
 
     /**
-     * Get javadoc which should by default be associated with the default platform.
+     * Gets Javadoc which should by default be associated with a platform.
      */
-    public URL[] getDefaultJavadocRoots() {
-        if (! isDefault())
-            return null;
-        // javadoc can be built in the meantime, don't cache
-        File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
-        if (apidocsZip != null) {
-            return new URL[] {FileUtil.urlForArchiveOrDir(apidocsZip)};
+    public @Override URL[] getDefaultJavadocRoots() {
+        if (isDefault()) {
+            File apidocsZip = InstalledFileLocator.getDefault().locate("docs/NetBeansAPIs.zip", "org.netbeans.modules.apisupport.apidocs", true); // NOI18N
+            if (apidocsZip != null) {
+                return new URL[] {FileUtil.urlForArchiveOrDir(apidocsZip)};
+            }
         }
-        return new URL[0];
+        // Use a representative module present in all 6.x versions.
+        ModuleEntry platform = getModule("org.netbeans.modules.core.kit"); // NOI18N
+        if (platform != null) {
+            String spec = platform.getSpecificationVersion();
+            if (spec != null) {
+                Matcher m = Pattern.compile("(\\d+[.]\\d+)([.]\\d+)*").matcher(spec);
+                if (m.matches()) {
+                    String trunkSpec = m.group(1);
+                    try {
+                        String loc = NbBundle.getBundle(NbPlatform.class).getString("NbPlatform.web.javadoc." + trunkSpec);
+                        return new URL[] {new URL(loc)};
+                    } catch (MissingResourceException x) {
+                        // fine, some other trunk version, ignore
+                    } catch (MalformedURLException x) {
+                        assert false : x;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public void addJavadocRoot(URL root) throws IOException {
