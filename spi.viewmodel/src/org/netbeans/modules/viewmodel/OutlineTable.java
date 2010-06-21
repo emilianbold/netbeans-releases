@@ -497,6 +497,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         boolean addDefaultColumn = true;
         List<Node.Property> columnList = new ArrayList<Node.Property>(k);
         int d = 0;
+        boolean[] originalOrder = new boolean[k];
         for (i = 0; i < k; i++) {
             Column c = new Column(cs [i]);
             columns[i] = c;
@@ -505,6 +506,8 @@ ExplorerManager.Provider, PropertyChangeListener {
             int order = cs[i].getCurrentOrderNumber();
             if (order == -1) {
                 order = i;
+            } else {
+                originalOrder[i] = true;
             }
             order += d;
             columnVisibleMap[i] = order;
@@ -545,7 +548,7 @@ ExplorerManager.Provider, PropertyChangeListener {
             treeTable.setTreeSortable(treeColumn.isSortable());
         }
         // Check visible map (order) for duplicities and gaps
-        checkOrder(columnVisibleMap);
+        checkOrder(columnVisibleMap, originalOrder);
 
         int[] columnOrder = new int[columnVisibleMap.length];
         System.arraycopy(columnVisibleMap, 0, columnOrder, 0, columnOrder.length);
@@ -573,7 +576,7 @@ ExplorerManager.Provider, PropertyChangeListener {
     }
 
     /** Squeeze gaps and split duplicities to make it a permutation. */
-    private void checkOrder(int[] orders) {
+    private void checkOrder(int[] orders, boolean[] originalOrder) {
         if (logger.isLoggable(Level.FINE)) {
             StringBuilder msg = new StringBuilder("checkOrder(");
             for (int i = 0; i < orders.length; i++) {
@@ -621,8 +624,23 @@ ExplorerManager.Provider, PropertyChangeListener {
             int d = ++duplicates[orders[i]];
             if (d > 1) {
                 int o = orders[i];
+                boolean isOriginalOrder = originalOrder[i];
+                boolean shiftedOther = false;
                 for (int j = 0; j < n; j++) {
-                    if (orders[j] > o || orders[j] == o && j >= i) {
+                    if (orders[j] > o || orders[j] == o) {
+                        if (orders[j] == o) {
+                            if (shiftedOther) {
+                                continue;
+                            }
+                            // If the current duplicity has the original order
+                            // and the other has not, shift the other.
+                            if (j < i && isOriginalOrder && !originalOrder[j]) {
+                                shiftedOther = true;
+                            } else if (j < i) {
+                                // Otherwise we will do the shift when j == i.
+                                continue;
+                            }
+                        }
                         if (j <= i) duplicates[orders[j]]--;
                         orders[j]++;
                         if (j <= i) duplicates[orders[j]]++;
