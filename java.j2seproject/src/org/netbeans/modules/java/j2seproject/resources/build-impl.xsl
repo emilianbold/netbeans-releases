@@ -206,7 +206,14 @@ is divided into following sections:
   </fail>
                 </xsl:if>
                 <available file="${{manifest.file}}" property="manifest.available"/>
-                <available file="${{application.splash}}" property="splashscreen.available"/>
+                <condition property="splashscreen.available">
+                    <and>
+                        <not>
+                            <equals arg1="${{application.splash}}" arg2="" trim="true"/>
+                        </not>
+                        <available file="${{application.splash}}"/>
+                    </and>
+                </condition>                
                 <condition property="main.class.available">
                     <and>
                         <isset property="main.class"/>
