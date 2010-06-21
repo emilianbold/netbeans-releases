@@ -197,6 +197,34 @@ public class FileNameTest extends NbTestCase {
         }        
     }
 
+    public void testNamingIsCaseInsensitive() throws Exception {
+        File f1 = new File(getWorkDir(), "Ahoj");
+        File f2 = new File(getWorkDir(), "ahoJ");
+
+        FileNaming root = NamingFactory.fromFile(getWorkDir());
+        FileNaming fn1 = NamingFactory.fromFile(root, f1, false);
+        FileNaming fn2 = NamingFactory.fromFile(root, f2, false);
+
+        boolean equalF = f1.equals(f2);
+
+        f2.createNewFile();
+        NamingFactory.checkCaseSensitivity(fn2, f2);
+        assertEquals("Name equals file name f2", f2.getName(), fn2.getName());
+
+        if (equalF) {
+            assertEquals("File has code", f1.hashCode(), f2.hashCode());
+            assertEquals("FileNaming hash code", fn1.hashCode(), fn2.hashCode());
+            assertSame("namings are equal", fn1, fn2);
+        } else {
+            assertFalse("FileNaming shall be different", fn1.equals(fn2));
+        }
+
+        f2.delete();
+        f1.createNewFile();
+        NamingFactory.checkCaseSensitivity(fn1, f1);
+        assertEquals("Name equals file name f1", f1.getName(), fn1.getName());
+    }
+
 
     /**
      * Test of rename method, of class org.netbeans.modules.masterfs.naming.PathItem.
