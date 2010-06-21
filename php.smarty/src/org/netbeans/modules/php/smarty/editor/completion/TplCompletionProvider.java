@@ -40,10 +40,13 @@
  */
 package org.netbeans.modules.php.smarty.editor.completion;
 
+import java.lang.String;
 import java.util.Collection;
 import java.util.Collections;
 import java.net.URL;
+import java.util.ArrayList;
 import javax.swing.Action;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -80,15 +83,13 @@ public class TplCompletionProvider implements CompletionProvider {
         AsyncCompletionTask task = null;
         if ((queryType & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
             task = new AsyncCompletionTask(new Query(), component);
-        } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
-            task = new AsyncCompletionTask(new DocQuery(null), component);
         }
         return task;
     }
 
     private static class Query extends AbstractQuery {
 
-        private volatile Collection<? extends CompletionItem> items = Collections.<CompletionItem>emptyList();
+        private volatile Collection<? extends CompletionItem> items = Collections.emptyList();
         private JTextComponent component;
 
         @Override
@@ -100,10 +101,23 @@ public class TplCompletionProvider implements CompletionProvider {
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 TplCompletionQuery.CompletionResult result = new TplCompletionQuery(doc, caretOffset).query();
-                if (result != null && CodeCompletionUtils.insideSmartyCode(doc, caretOffset)) {
-                    items = result.getItems();
-                } else {
-                    items = Collections.emptyList();
+                String command = ""; boolean inSmarty = false;
+                if (CodeCompletionUtils.insideSmartyCode(doc, caretOffset)) {
+                    if (CodeCompletionUtils.inVariableModifiers(doc, caretOffset)) {
+                        items = result.getVariableModifiers();
+                        inSmarty = true;
+                    }
+                    if (!(command = CodeCompletionUtils.afterSmartyCommand(doc, caretOffset)).equals("")) {
+                        items = new ArrayList<CompletionItem>(result.getParamsForCommand(command));
+                        inSmarty = true;
+                    }
+                    if (!inSmarty) {
+                        if (result == null){
+                            items = Collections.emptyList();
+                        } else {
+                            items = result.getFunctions();
+                        }
+                    }
                 }
                 resultSet.addAllItems(items);
 
@@ -114,6 +128,14 @@ public class TplCompletionProvider implements CompletionProvider {
 
         @Override
         protected boolean canFilter(JTextComponent component) {
+            try {
+                if (component.getText(component.getCaretPosition() - 1, 1).toString().equals("|")) {
+                    return false;
+                }
+            } catch (BadLocationException ex) {
+                return false;
+            }
+
             String prefix = CodeCompletionUtils.getTextPrefix(component.getDocument(), component.getCaretPosition());
 
             //check the items
@@ -142,7 +164,6 @@ public class TplCompletionProvider implements CompletionProvider {
             }
             resultSet.finish();
         }
-
     }
 
     public static class DocQuery extends AbstractQuery {
@@ -161,8 +182,8 @@ public class TplCompletionProvider implements CompletionProvider {
                     //based on the explicit documentation opening request
                     //(not ivoked by selecting a completion item in the list)
                     TplCompletionQuery.CompletionResult result = new TplCompletionQuery(doc, caretOffset).query();
-                    if (result != null && result.getItems().size() > 0) {
-                        item = result.getItems().iterator().next();
+                    if (result != null && result.getFunctions().size() > 0) {
+                        item = result.getFunctions().iterator().next();
                     }
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
@@ -174,7 +195,6 @@ public class TplCompletionProvider implements CompletionProvider {
             }
         }
     }
-
     private static abstract class AbstractQuery extends AsyncCompletionQuery {
 
         @Override

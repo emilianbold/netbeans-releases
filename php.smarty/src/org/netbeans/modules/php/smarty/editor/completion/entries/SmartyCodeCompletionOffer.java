@@ -41,10 +41,13 @@ package org.netbeans.modules.php.smarty.editor.completion.entries;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem;
 import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.BuiltInFunctionsCompletionItem;
 import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.CustomFunctionsCompletionItem;
+import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.FunctionParametersCompletionItem;
 import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.VariableModifiersCompletionItem;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.util.Exceptions;
 
 /**
@@ -53,35 +56,50 @@ import org.openide.util.Exceptions;
  */
 public class SmartyCodeCompletionOffer {
 
-    private final static Collection<TplCompletionItem> completionItems = new ArrayList<TplCompletionItem>();
-    private final static String[] completionTypes = {"built-in-functions", "variable-modifiers", "custom-functions"};
+    private final static Collection<TplCompletionItem> completionItemsFunctions = new ArrayList<TplCompletionItem>();
+    private final static Collection<TplCompletionItem> completionItemsModifiers = new ArrayList<TplCompletionItem>();
+    private final static HashMap<String, Collection<? extends CompletionItem>> completionItemsFunctionParams = new HashMap<String, Collection<? extends CompletionItem>>();
 
     static {
-        loadCCData();
+        loadFunctions(new String[]{"built-in-functions", "custom-functions"});
+        loadModifiers("variable-modifiers");
     }
 
-    public static Collection<TplCompletionItem> getCCData() {
-        return completionItems;
+    public static Collection<TplCompletionItem> getFunctions() {
+        return completionItemsFunctions;
     }
 
-    private static void loadCCData() {
-        for (String completionType : completionTypes) {
+    public static Collection<TplCompletionItem> getVariableModifiers() {
+        return completionItemsModifiers;
+    }
+
+    public static HashMap<String, Collection<? extends CompletionItem>> getFunctionParameters() {
+        return completionItemsFunctionParams;
+    }
+
+    private static void loadFunctions(String[] types) {
+        for (String completionType : types) {
             Collection<CodeCompletionEntryMetadata> ccList = parseCCData(completionType);
-            if (completionType.equals("built-in-functions") ) {
+            if (completionType.equals("built-in-functions")) {
                 for (CodeCompletionEntryMetadata entryMetadata : ccList) {
-                    completionItems.add(new BuiltInFunctionsCompletionItem(entryMetadata.getKeyword(), entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
+                    completionItemsFunctions.add(new BuiltInFunctionsCompletionItem(entryMetadata.getKeyword(), entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
+                    completionItemsFunctionParams.put(entryMetadata.getKeyword(), entryMetadata.getParameters());
                 }
-            }
-            else if (completionType.equals("custom-functions")) {
+            } else if (completionType.equals("custom-functions")) {
                 for (CodeCompletionEntryMetadata entryMetadata : ccList) {
-                    completionItems.add(new CustomFunctionsCompletionItem(entryMetadata.getKeyword(), entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
+                    completionItemsFunctions.add(new CustomFunctionsCompletionItem(entryMetadata.getKeyword(), entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
+                    completionItemsFunctionParams.put(entryMetadata.getKeyword(), entryMetadata.getParameters());
                 }
+
             }
-            else if (completionType.equals("variable-modifiers")) {
-                for (CodeCompletionEntryMetadata entryMetadata : ccList) {
-                    completionItems.add(new VariableModifiersCompletionItem(entryMetadata.getKeyword(), entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
-                }
-            }
+        }
+    }
+
+    private static void loadModifiers(String functionsFile) {
+        Collection<CodeCompletionEntryMetadata> ccList = parseCCData(functionsFile);
+
+        for (CodeCompletionEntryMetadata entryMetadata : ccList) {
+            completionItemsModifiers.add(new VariableModifiersCompletionItem(entryMetadata.getKeyword(), entryMetadata.getHelp(), entryMetadata.getHelpUrl()));
         }
     }
 
@@ -91,8 +109,10 @@ public class SmartyCodeCompletionOffer {
 
         try {
             Collection<CodeCompletionEntryMetadata> ccData = CodeCompletionEntries.readAllCodeCompletionEntriesFromXML(inputStream, filePath);
-            ccList.addAll(ccData);
-
+            for (CodeCompletionEntryMetadata codeCompletionEntryMetadata : ccData) {
+                ccList.add(codeCompletionEntryMetadata);
+            }
+//            ccList.addAll(ccData);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

@@ -42,9 +42,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.modules.php.smarty.editor.completion.entries.CodeCompletionParamMetadata;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -56,6 +58,7 @@ import org.xml.sax.SAXException;
  * @author Martin Fousek
  */
 public class CodeCompletionEntries {
+
 
     public CodeCompletionEntries() {
     }
@@ -76,20 +79,23 @@ public class CodeCompletionEntries {
                 String desc = elem.getElementsByTagName("description").item(0).getTextContent();
                 String url = elem.getElementsByTagName("url").item(0).getTextContent();
                 String help = "";
+                Collection<CodeCompletionParamMetadata> params = Collections.<CodeCompletionParamMetadata>emptyList();
                 NodeList attributes = elem.getElementsByTagName("attributes");
                 if (completionType.equals("built-in-functions") || completionType.equals("custom-functions")) {
-                    help = generateHelpForBuiltInFunctions(desc, attributes);
+                    help = generateHelpForFunctions(desc, attributes);
+                    params = getParametersForFunction(attributes);
                 } else {
                     help = generateHelpForVariableModifiers(desc, attributes);
+                    params = null;
                 }
-                ccEntries.add(new CodeCompletionEntryMetadata(elem.getAttribute("name"), help, url));
+                ccEntries.add(new CodeCompletionEntryMetadata(elem.getAttribute("name"), help, url, params));
             }
         }
 
         return ccEntries;
     }
 
-    private static String generateHelpForBuiltInFunctions(String desc, NodeList attributesRoot) {
+    private static String generateHelpForFunctions(String desc, NodeList attributesRoot) {
         Element parent = (Element) (attributesRoot.item(0));
         if (parent != null) {
             String help = desc + "<br><br><table border=1>"
@@ -139,4 +145,36 @@ public class CodeCompletionEntries {
         help += "<td>" + attributeParams.getElementsByTagName("description").item(0).getTextContent() + "</td>";
         return help;
     }
+
+    private static Collection<CodeCompletionParamMetadata> getParametersForFunction(NodeList attributesRoot) {
+        Element parent = (Element) (attributesRoot.item(0));
+        if (parent != null) {
+            Collection<CodeCompletionParamMetadata> params = new ArrayList<CodeCompletionParamMetadata>();
+            NodeList attributes = parent.getChildNodes();
+            for (int i = 0; i < attributes.getLength(); i++) {
+                if (attributes.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                    Element attribute = (Element) attributes.item(i);
+                    String name = attribute.getAttribute("name");
+                    String help = generateHelpFunctionParameters(attribute);
+                    CodeCompletionParamMetadata ccpm = new CodeCompletionParamMetadata(name, help);
+                    assert (ccpm != null);
+                    params.add(ccpm);
+
+                }
+            }
+            return params;
+        } else {
+            return null;
+        }
+    }
+
+    private static String generateHelpFunctionParameters(Element attribute) {
+        String help = attribute.getElementsByTagName("description").item(0).getTextContent() + "<br><br><table border=1>";
+        help += "<tr><td style=\"font-weight:bold\">Type</td><td>" + attribute.getElementsByTagName("type").item(0).getTextContent() + "</td></tr>";
+        help += "<tr><td style=\"font-weight:bold\">Required</td><td>" + attribute.getElementsByTagName("required").item(0).getTextContent() + "</td></tr>";
+        help += "<tr><td style=\"font-weight:bold\">Default</td><td>" + attribute.getElementsByTagName("default").item(0).getTextContent() + "</td></tr>";
+        help += "</table>";
+        return help;
+    }
 }
+

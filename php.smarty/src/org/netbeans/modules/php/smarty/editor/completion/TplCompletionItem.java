@@ -74,6 +74,11 @@ public class TplCompletionItem implements CompletionItem {
         this.text = text;
     }
 
+    protected TplCompletionItem(String text, String help) {
+        this.text = text;
+        this.help = help;
+    }
+
     protected TplCompletionItem(String text, String help, String helpUrl) {
         this(text);
         this.help = help;
@@ -302,6 +307,26 @@ public class TplCompletionItem implements CompletionItem {
         @Override
         protected String getLeftHtmlText() {
             return "<font color=#" + CUSTOM_FUNC_COLOR + ">" + getItemText() + "</font>"; //NOI18N
+        }
+
+    }
+
+    public static class FunctionParametersCompletionItem extends TplCompletionItem {
+
+        protected static final String CUSTOM_FUNC_COLOR = "D6822D";
+
+        public FunctionParametersCompletionItem(String value, String help) {
+            super(value, help);
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return "<font color=#" + CUSTOM_FUNC_COLOR + ">" + getItemText() + "</font>"; //NOI18N
+        }
+
+        @Override
+        public int getSortPriority() {
+            return 18;
         }
 
     }

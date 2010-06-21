@@ -86,19 +86,37 @@ public class TplCompletionQuery extends UserTask {
     }
 
     private CompletionResult query(ResultIterator resultIterator) {
-        return new CompletionResult(SmartyCodeCompletionOffer.getCCData());
+        return new CompletionResult(SmartyCodeCompletionOffer.getFunctions(), 
+                SmartyCodeCompletionOffer.getVariableModifiers(),
+                SmartyCodeCompletionOffer.getFunctionParameters());
     }
 
     public static class CompletionResult {
 
-        private Collection<? extends CompletionItem> items;
+        private Collection<? extends CompletionItem> functions;
+        private Collection<? extends CompletionItem> variableModifiers;
+        private HashMap<String, Collection<? extends CompletionItem>> functionParams;
 
-        CompletionResult(Collection<? extends CompletionItem> items) {
-            this.items = items;
+        CompletionResult(Collection<? extends CompletionItem> functions, Collection<? extends CompletionItem>
+                variableModifiers, HashMap<String, Collection<? extends CompletionItem>> functionParams) {
+            this.functions = functions;
+            this.variableModifiers = variableModifiers;
+            this.functionParams = functionParams;
         }
 
-        public Collection<? extends CompletionItem> getItems() {
-            return items;
+        public Collection<? extends CompletionItem> getFunctions() {
+            return functions;
         }
+
+        public Collection<? extends CompletionItem> getVariableModifiers() {
+            return variableModifiers;
+        }
+
+        public Collection<? extends CompletionItem> getParamsForCommand(String command) {
+            return functionParams.get(command);
+        }
+
+
+
     }
 }

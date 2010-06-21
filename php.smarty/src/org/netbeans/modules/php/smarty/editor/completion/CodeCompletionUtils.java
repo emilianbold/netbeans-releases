@@ -45,6 +45,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.smarty.SmartyFramework;
+import org.netbeans.modules.php.smarty.editor.completion.entries.SmartyCodeCompletionOffer;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 import org.netbeans.modules.php.smarty.editor.utlis.LexerUtils;
 import org.openide.util.Exceptions;
@@ -56,6 +57,7 @@ import org.openide.util.Exceptions;
 public class CodeCompletionUtils {
 
     private static final int COMPLETION_MAX_FILTER_LENGHT = 20;
+    private static final int SCANNING_MAX_FILTER_LENGHT = 100;
 
     public static String getTextPrefix(Document doc, int offset) {
         int readLength = (COMPLETION_MAX_FILTER_LENGHT > offset) ? offset : COMPLETION_MAX_FILTER_LENGHT;
@@ -101,4 +103,44 @@ public class CodeCompletionUtils {
         return true;
     }
 
+    static boolean inVariableModifiers(Document doc, int caretOffset) {
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+
+        tokenSequence.move(caretOffset);
+        tokenSequence.movePrevious(); tokenSequence.moveNext();
+        while (!tokenSequence.isEmpty()) {
+            if (tokenSequence.token().id() == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
+                return false;
+            } else if (tokenSequence.token().id() == TplTopTokenId.T_SMARTY) {
+                if (tokenSequence.token().text().toString().contains("|"))
+                    return true;
+            }
+            tokenSequence.movePrevious();
+        }
+        return false;
+    }
+
+    static String afterSmartyCommand(Document doc, int offset) {
+        int readLength = (SCANNING_MAX_FILTER_LENGHT > offset) ? offset : SCANNING_MAX_FILTER_LENGHT;
+        try {
+            return getLastKeyword(doc.getText(offset - readLength, readLength), SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc)));
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return "";
+    }
+
+    public static String getLastKeyword(String area, String openDelimiter) {
+        int delimiterPosition = area.lastIndexOf(openDelimiter);
+        String searchingContent = (delimiterPosition > -1) ? area.substring(delimiterPosition + openDelimiter.length()) : area;
+        String[] keywords = searchingContent.split(" ");
+        String lastKeyword = "";
+        for (String string : keywords) {
+            if (SmartyCodeCompletionOffer.getFunctionParameters().get(string) != null) {
+                lastKeyword = string;
+            }
+        }
+        return lastKeyword;
+    }
 }
