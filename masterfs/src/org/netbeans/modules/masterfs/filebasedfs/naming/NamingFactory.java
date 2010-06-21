@@ -93,10 +93,8 @@ public final class NamingFactory {
         if (!childName.getFile().getName().equals(f.getName())) {
             boolean isCaseSensitive = !new File(f,"a").equals(new File(f,"A"));//NOI18N
             if (!isCaseSensitive) {
-                    FileNaming[] ret = NamingFactory.rename(childName,f.getName(), null);
-                    if (ret != null) {
-                        return ret[0];
-                    }
+                FileName fn = (FileName)childName;
+                fn.updateCase(f.getName());
             }
         }
         return childName;
