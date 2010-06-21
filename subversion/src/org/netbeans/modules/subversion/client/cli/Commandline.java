@@ -105,7 +105,7 @@ class Commandline {
         command.prepareCommand();        
         
         String cmd = executable + " " + command.getStringCommand();
-        Subversion.LOG.fine("cli: Executing \"" + cmd + "\"");
+        Subversion.LOG.log(Level.FINE, "cli: Executing \"{0}\"", cmd);
         
         Subversion.LOG.fine("cli: Creating process...");        
         command.commandStarted();
@@ -125,20 +125,20 @@ class Commandline {
                 while(!canceled && (i = cli.getInputStream().read()) != -1) {
                     b.write(i);
                 }
-                if(Subversion.LOG.isLoggable(Level.FINER)) Subversion.LOG.finer("cli: BIN OUTPUT \"" + (new String(b.toByteArray())) + "\"");
+                if(Subversion.LOG.isLoggable(Level.FINER)) Subversion.LOG.log(Level.FINER, "cli: BIN OUTPUT \"{0}\"", (new String(b.toByteArray())));
                 command.output(b.toByteArray());
             } else {             
                 if(canceled) return;
                 Subversion.LOG.fine("cli: ready for OUTPUT \"");                     
                 ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
                 while (!canceled && (line = ctOutput.readLine()) != null) {                                        
-                    Subversion.LOG.fine("cli: OUTPUT \"" + line + "\"");
+                    Subversion.LOG.log(Level.FINE, "cli: OUTPUT \"{0}\"", line);
                     command.outputText(line);
                 }    
             }
             
             while (!canceled && (line = ctError.readLine()) != null) {                                    
-                Subversion.LOG.info("cli: ERROR \"" + line + "\"");
+                Subversion.LOG.log(Level.INFO, "cli: ERROR \"{0}\"", line);
                 command.errorText(line);
             }     
             if(canceled) return;
@@ -157,9 +157,7 @@ class Commandline {
                 if(t instanceof IOException) {
                     throw (IOException) t;
                 } else {
-                    IOException ioe = new IOException();
-                    ioe.initCause(t);
-                    throw ioe;
+                    throw new IOException(t);
                 }
             }
         } finally {
