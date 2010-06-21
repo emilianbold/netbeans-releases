@@ -67,6 +67,11 @@ public class FileObjTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
+    protected int timeOut() {
+        return 60000;
+    }
+
     /** Tests it is not possible to create duplicate FileObject for the same path.
      * - create FO1
      * - create FO2

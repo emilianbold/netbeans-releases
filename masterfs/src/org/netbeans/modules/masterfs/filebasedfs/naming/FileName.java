@@ -58,11 +58,13 @@ public class FileName implements FileNaming {
     private final CharSequence name;
     private final FileNaming parent;
     private final Integer id;
+    private CharSequence currentName;
 
     protected FileName(final FileNaming parent, final File file) {
         this.parent = parent;
         this.name = CharSequences.create(parseName(parent, file));
         id = NamingFactory.createID(file);
+        this.currentName = name;
     }
 
     private static String parseName(final FileNaming parent, final File file) {
@@ -102,7 +104,7 @@ public class FileName implements FileNaming {
 
 
     public final String getName() {
-        return name.toString();
+        return currentName.toString();
     }
 
     public FileNaming getParent() {
@@ -145,5 +147,10 @@ public class FileName implements FileNaming {
 
     public boolean isDirectory() {
         return !isFile();
+    }
+
+    void updateCase(String name) {
+        assert String.CASE_INSENSITIVE_ORDER.compare(name, this.name.toString()) == 0: "Only case can be changed. Was: " + this.name + " name: " + name;
+        this.currentName = CharSequences.create(name);
     }
 }
