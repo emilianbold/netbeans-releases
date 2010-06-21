@@ -44,50 +44,53 @@
 
 package org.netbeans.editor.ext;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Font;
-import java.awt.Color;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
-import java.beans.PropertyChangeListener;
+import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
-import javax.swing.Timer;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.UIManager;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Keymap;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.BaseTextUI;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.WeakTimerListener;
-import org.netbeans.editor.PopupManager;
 import javax.swing.JTextArea;
-import org.netbeans.editor.GlyphGutter;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.UIManager;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Keymap;
 import javax.swing.text.TextAction;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.GlyphGutter;
+import org.netbeans.editor.PopupManager;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.WeakTimerListener;
 import org.netbeans.modules.editor.lib.EditorExtPackageAccessor;
 import org.openide.modules.PatchedPublic;
 
@@ -688,20 +691,11 @@ public class ToolTipSupport {
             // Try to display the tooltip above (or below) the line it corresponds to
             int pos = component.viewToModel(toolTipPosition);
             Rectangle cursorBounds = null;
-            Rectangle mouseMoveIgnoredArea = null;
             
             if (pos >= 0) {
                 try {
                     cursorBounds = component.modelToView(pos);
                     extendBounds(cursorBounds);
-
-                    int [] offsets = Utilities.getSelectionOrIdentifierBlock(component, pos);
-                    if (offsets != null) {
-                        Rectangle r1 = component.modelToView(offsets[0]);
-                        Rectangle r2 = component.modelToView(offsets[1]);
-                        mouseMoveIgnoredArea = new Rectangle(r1.x, r1.y, r2.x - r1.x, r1.height);
-                        extendBounds(mouseMoveIgnoredArea);
-                    }
                 } catch (BadLocationException e) {
                     // ignore
                 }
@@ -720,7 +714,10 @@ public class ToolTipSupport {
             pm.install(toolTip, cursorBounds, placement, horizontalBounds, horizontalAdjustment, verticalAdjustment);
             if (toolTip != null) {
                 toolTip.putClientProperty(LAST_TOOLTIP_POSITION, toolTipPosition);
-                toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, mouseMoveIgnoredArea);
+                toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, computeMouseMoveIgnoredArea(
+                        toolTip.getBounds(),
+                        SwingUtilities.convertRectangle(component, cursorBounds, toolTip.getParent())
+                ));
                 toolTip.setVisible(true);
             }
         }
@@ -736,14 +733,30 @@ public class ToolTipSupport {
                 r.y -= MOUSE_EXTRA_HEIGHT;
                 r.height += 2 * MOUSE_EXTRA_HEIGHT; // above and below
             } else if (placement == PopupManager.BelowPreferred || placement == PopupManager.Below) {
-                r.y = r.y + r.height + MOUSE_EXTRA_HEIGHT + 1;
-                r.height += MOUSE_EXTRA_HEIGHT; // above and below
+                r.y -= MOUSE_EXTRA_HEIGHT;
+                r.height += 2 * MOUSE_EXTRA_HEIGHT; // above and below
             }
         }
 
         return r;
     }
 
+    private Rectangle computeMouseMoveIgnoredArea(Rectangle toolTipBounds, Rectangle cursorBounds) {
+        Rectangle _toolTipBounds = new Rectangle(toolTipBounds);
+        extendBounds(_toolTipBounds);
+        
+        Rectangle area = new Rectangle();
+        Rectangle.union(_toolTipBounds, cursorBounds, area);
+        area.x -= cursorBounds.width;
+        area.width += 2 * cursorBounds.width;
+        
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "toolTip.bounds={0}, cursorBounds={1}, mouseMoveIgnoredArea={2}", new Object [] { _toolTipBounds, cursorBounds, area });
+        }
+        
+        return area;
+    }
+    
     /** Helper method to get the identifier
      * under the mouse cursor.
      * @return string containing identifier under
@@ -914,7 +927,7 @@ public class ToolTipSupport {
         for(Object key : actionMap.allKeys()) {
             String actionName = key.toString().toLowerCase(Locale.ENGLISH);
 
-            LOG.log(Level.FINE, "Action-name: {0}", actionName); //NOI18N
+            LOG.log(Level.FINER, "Action-name: {0}", actionName); //NOI18N
             if (actionName.contains("delete") || actionName.contains("insert") || //NOI18N
                 actionName.contains("paste") || actionName.contains("default") //NOI18N
             ) {
@@ -923,23 +936,31 @@ public class ToolTipSupport {
         }
     }
 
-    private final class Listener extends MouseAdapter implements MouseMotionListener, ActionListener, PropertyChangeListener, FocusListener {
+    private static String s2s(Object o) {
+        return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
+    }
+
+    private final class Listener extends MouseAdapter implements MouseMotionListener, ActionListener, PropertyChangeListener, FocusListener, AncestorListener {
 
         // -------------------------------------------------------------------
         // PropertyChangeListener implementation
         // -------------------------------------------------------------------
 
         public @Override void propertyChange(PropertyChangeEvent evt) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "propertyChange: source={0}, property={1}, old={2}, new={3}", new Object[] { s2s(evt.getSource()), evt.getPropertyName(), s2s(evt.getOldValue()), s2s(evt.getNewValue()) });
+            }
+
             String propName = evt.getPropertyName();
 
             if (EditorUI.COMPONENT_PROPERTY.equals(propName)) {
                 JTextComponent component = (JTextComponent)evt.getNewValue();
                 if (component != null) { // just installed
-
                     component.addPropertyChangeListener(this);
 
                     disableSwingToolTip(component);
 
+                    component.addAncestorListener(this);
                     component.addFocusListener(this);
                     if (component.hasFocus()) {
                         focusGained(new FocusEvent(component, FocusEvent.FOCUS_GAINED));
@@ -954,8 +975,8 @@ public class ToolTipSupport {
                         gg.addMouseMotionListener(this);
                     }
 
-
                 } else if (null != (component = (JTextComponent)evt.getOldValue())) { // just deinstalled
+                    component.removeAncestorListener(this);
                     component.removeFocusListener(this);
                     component.removePropertyChangeListener(this);
 
@@ -968,7 +989,6 @@ public class ToolTipSupport {
                         gg.removeMouseMotionListener(this);
                     }
                     setToolTipVisible(false);
-
                 }
             }
 
@@ -1069,12 +1089,13 @@ public class ToolTipSupport {
             }
 
             if (toolTip != null) {
-                Rectangle r = (Rectangle) toolTip.getClientProperty(MOUSE_MOVE_IGNORED_AREA);
+                Rectangle ignoredArea = (Rectangle) toolTip.getClientProperty(MOUSE_MOVE_IGNORED_AREA);
+                Point mousePosition = SwingUtilities.convertPoint(evt.getComponent(), evt.getPoint(), toolTip.getParent());
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "Mouse-Move-Ignored-Area=" + r + "; mouse-x=" + evt.getX() + "; mouse-y=" + evt.getY() //NOI18N
-                        + "; is-inside=" + (r != null ? r.contains(evt.getX(), evt.getY()) : null)); //NOI18N
+                    LOG.log(Level.FINE, "Mouse-Move-Ignored-Area=" + ignoredArea + "; mouse=" + mousePosition //NOI18N
+                        + "; is-inside=" + (ignoredArea != null ? ignoredArea.contains(mousePosition) : null)); //NOI18N
                 }
-                if (r != null && r.contains(evt.getX(), evt.getY())) {
+                if (ignoredArea != null && ignoredArea.contains(mousePosition)) {
                     return;
                 }
             }
@@ -1094,9 +1115,9 @@ public class ToolTipSupport {
         // -------------------------------------------------------------------
 
         public @Override void focusGained(FocusEvent e) {
-//            JComponent component = (JComponent)e.getSource();
-//            component.addMouseListener(this);
-//            component.addMouseMotionListener(this);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "focusGained: {0}", s2s(e.getComponent())); //NOI18N
+            }
             GlyphGutter gg = extEditorUI.getGlyphGutter();
             if (gg != null && !glyphListenerAdded) {
                 glyphListenerAdded = true;
@@ -1106,17 +1127,24 @@ public class ToolTipSupport {
         }
 
         public @Override void focusLost(FocusEvent e) {
-            /*
-            JComponent component = (JComponent)e.getSource();
-            component.removeMouseListener(this);
-            component.removeMouseMotionListener(this);
-            GlyphGutter gg = extEditorUI.getGlyphGutter();
-            if (gg != null) {
-                gg.removeMouseListener(this);
-                gg.removeMouseMotionListener(this);
-            }
+            // no-op
+        }
+
+        // -------------------------------------------------------------------
+        // AncestorListener implementation
+        // -------------------------------------------------------------------
+
+        public @Override void ancestorAdded(AncestorEvent event) {
+            // no-op
+        }
+
+        public @Override void ancestorRemoved(AncestorEvent event) {
+            LOG.log(Level.FINE, "ancestorRemoved: source={0}", s2s(event.getSource()));
             setToolTipVisible(false);
-             */
+        }
+
+        public @Override void ancestorMoved(AncestorEvent event) {
+            // no-op
         }
     } // End of Listener class
 

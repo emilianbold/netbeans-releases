@@ -63,6 +63,7 @@ import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.PositionEstimator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -71,7 +72,7 @@ import org.openide.filesystems.FileUtil;
  * @author Pavel Flaska
  */
 public class CommentsTest extends GeneratorTest {
-    
+
     /** Creates a new instance of CommentsTest */
     public CommentsTest(String name) {
         super(name);
@@ -80,7 +81,7 @@ public class CommentsTest extends GeneratorTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(CommentsTest.class);
-//        suite.addTest(new CommentsTest("testMoveMethod171345b"));
+//        suite.addTest(new CommentsTest("testMoveMethod171345"));
         return suite;
     }
 
@@ -883,6 +884,7 @@ public class CommentsTest extends GeneratorTest {
             "        //byt\n" +
             "        System.err.println();\n" +
             "        //bydlet\n" +
+            (CasualDiff.OLD_TREES_VERBATIM ? "\n" : "") +//XXX
             "        if (true) {\n" +
             "            //obyvatel\n" +
             "        }\n" +

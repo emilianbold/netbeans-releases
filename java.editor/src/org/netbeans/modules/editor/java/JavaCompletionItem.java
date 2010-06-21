@@ -104,22 +104,22 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new PackageItem(pkgFQN, substitutionOffset, inPackageStatement);
     }
 
-    public static final JavaCompletionItem createTypeItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean smartType) {
+    public static final JavaCompletionItem createTypeItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean smartType) {
         switch (elem.getKind()) {
             case CLASS:
-                return new ClassItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, smartType);
+                return new ClassItem(info, elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, smartType);
             case INTERFACE:
-                return new InterfaceItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, smartType);
+                return new InterfaceItem(info, elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, smartType);
             case ENUM:
-                return new EnumItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, smartType);
+                return new EnumItem(info, elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, smartType);
             case ANNOTATION_TYPE:
-                return new AnnotationTypeItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, smartType);
+                return new AnnotationTypeItem(info, elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, smartType);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
     }
     
-    public static final JavaCompletionItem createArrayItem(ArrayType type, int substitutionOffset, Elements elements) {
+    public static final JavaCompletionItem createArrayItem(CompilationInfo info, ArrayType type, int substitutionOffset, Elements elements) {
         int dim = 0;
         TypeMirror tm = type;
         while(tm.getKind() == TypeKind.ARRAY) {
@@ -133,13 +133,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
             TypeElement elem = (TypeElement)dt.asElement();
             switch (elem.getKind()) {
                 case CLASS:
-                    return new ClassItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, false, true);
+                    return new ClassItem(info, elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, false, true);
                 case INTERFACE:
-                    return new InterfaceItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, false, true);
+                    return new InterfaceItem(info, elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, false, true);
                 case ENUM:
-                    return new EnumItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, true);
+                    return new EnumItem(info, elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, true);
                 case ANNOTATION_TYPE:
-                    return new AnnotationTypeItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, true);
+                    return new AnnotationTypeItem(info, elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, true);
             }
         }
         throw new IllegalArgumentException("array element kind=" + tm.getKind());
@@ -149,55 +149,55 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new TypeParameterItem(elem, substitutionOffset);
     }
 
-    public static final JavaCompletionItem createVariableItem(VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType) {
+    public static final JavaCompletionItem createVariableItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType) {
         switch (elem.getKind()) {
             case LOCAL_VARIABLE:
             case PARAMETER:
             case EXCEPTION_PARAMETER:
-                return new VariableItem(type, elem.getSimpleName().toString(), substitutionOffset, false, smartType);
+                return new VariableItem(info, type, elem.getSimpleName().toString(), substitutionOffset, false, smartType);
             case ENUM_CONSTANT:
             case FIELD:
-                return new FieldItem(elem, type, substitutionOffset, isInherited, isDeprecated, smartType);
+                return new FieldItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, smartType);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
     }
     
-    public static final JavaCompletionItem createVariableItem(String varName, int substitutionOffset, boolean newVarName, boolean smartType) {
-        return new VariableItem(null, varName, substitutionOffset, newVarName, smartType);
+    public static final JavaCompletionItem createVariableItem(CompilationInfo info, String varName, int substitutionOffset, boolean newVarName, boolean smartType) {
+        return new VariableItem(info, null, varName, substitutionOffset, newVarName, smartType);
     }
 
-    public static final JavaCompletionItem createExecutableItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean smartType) {
+    public static final JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean smartType) {
         switch (elem.getKind()) {
             case METHOD:
-                return new MethodItem(elem, type, substitutionOffset, isInherited, isDeprecated, inImport, smartType);
+                return new MethodItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, inImport, smartType);
             case CONSTRUCTOR:
-                return new ConstructorItem(elem, type, substitutionOffset, isDeprecated, smartType, null);
+                return new ConstructorItem(info, elem, type, substitutionOffset, isDeprecated, smartType, null);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
     }
     
-    public static final JavaCompletionItem createThisOrSuperConstructorItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, String name) {
+    public static final JavaCompletionItem createThisOrSuperConstructorItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, String name) {
         if (elem.getKind() == ElementKind.CONSTRUCTOR)
-            return new ConstructorItem(elem, type, substitutionOffset, isDeprecated, false, name);
+            return new ConstructorItem(info, elem, type, substitutionOffset, isDeprecated, false, name);
         throw new IllegalArgumentException("kind=" + elem.getKind());
     }
 
-    public static final JavaCompletionItem createOverrideMethodItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement) {
+    public static final JavaCompletionItem createOverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement) {
         switch (elem.getKind()) {
             case METHOD:
-                return new OverrideMethodItem(elem, type, substitutionOffset, implement);
+                return new OverrideMethodItem(info, elem, type, substitutionOffset, implement);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
     }
 
-    public static final JavaCompletionItem createGetterSetterMethodItem(VariableElement elem, TypeMirror type, int substitutionOffset, boolean setter) {
+    public static final JavaCompletionItem createGetterSetterMethodItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean setter) {
         switch (elem.getKind()) {
             case ENUM_CONSTANT:
             case FIELD:
-                return new GetterSetterMethodItem(elem, type, substitutionOffset, setter);
+                return new GetterSetterMethodItem(info, elem, type, substitutionOffset, setter);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
@@ -207,35 +207,35 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new DefaultConstructorItem(elem, substitutionOffset, smartType);
     }
     
-    public static final JavaCompletionItem createParametersItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, int activeParamIndex, String name) {
-        return new ParametersItem(elem, type, substitutionOffset, isDeprecated, activeParamIndex, name);
+    public static final JavaCompletionItem createParametersItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, int activeParamIndex, String name) {
+        return new ParametersItem(info, elem, type, substitutionOffset, isDeprecated, activeParamIndex, name);
     }
 
-    public static final JavaCompletionItem createAnnotationItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated) {
-        return new AnnotationItem(elem, type, substitutionOffset, isDeprecated, true);
+    public static final JavaCompletionItem createAnnotationItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated) {
+        return new AnnotationItem(info, elem, type, substitutionOffset, isDeprecated, true);
     }
     
-    public static final JavaCompletionItem createAttributeItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated) {
-        return new AttributeItem(elem, type, substitutionOffset, isDeprecated);
+    public static final JavaCompletionItem createAttributeItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated) {
+        return new AttributeItem(info, elem, type, substitutionOffset, isDeprecated);
     }
     
-    public static final JavaCompletionItem createAttributeValueItem(String value, TypeElement element, int substitutionOffset) {
-        return new AttributeValueItem(value, element, substitutionOffset);
+    public static final JavaCompletionItem createAttributeValueItem(CompilationInfo info, String value, TypeElement element, int substitutionOffset) {
+        return new AttributeValueItem(info, value, element, substitutionOffset);
     }
 
-    public static final JavaCompletionItem createStaticMemberItem(DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated) {
+    public static final JavaCompletionItem createStaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated) {
         switch (memberElem.getKind()) {
             case METHOD:
             case ENUM_CONSTANT:
             case FIELD:
-                return new StaticMemberItem(type, memberElem, memberType, substitutionOffset, isDeprecated);
+                return new StaticMemberItem(info, type, memberElem, memberType, substitutionOffset, isDeprecated);
             default:
                 throw new IllegalArgumentException("kind=" + memberElem.getKind());
         }
     }
 
-    public static final JavaCompletionItem createInitializeAllConstructorItem(Iterable<? extends VariableElement> fields, TypeElement parent, int substitutionOffset) {
-        return new InitializeAllConstructorItem(fields, parent, substitutionOffset);
+    public static final JavaCompletionItem createInitializeAllConstructorItem(CompilationInfo info, Iterable<? extends VariableElement> fields, TypeElement parent, int substitutionOffset) {
+        return new InitializeAllConstructorItem(info, fields, parent, substitutionOffset);
     }
 
     public static final String COLOR_END = "</font>"; //NOI18N
@@ -614,7 +614,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private CharSequence sortText;
         private String leftText;
         
-        private ClassItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean smartType) {
+        private ClassItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean smartType) {
             super(substitutionOffset);
             this.typeHandle = TypeMirrorHandle.create(type);
             this.dim = dim;
@@ -623,7 +623,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.addTypeVars = addTypeVars;
             this.smartType = smartType;
             this.simpleName = elem.getSimpleName().toString();
-            this.typeName = Utilities.getTypeName(type, false).toString();
+            this.typeName = Utilities.getTypeName(info, type, false).toString();
             if (displayPkgName) {
                 this.enclName = Utilities.getElementName(elem.getEnclosingElement(), true).toString();
                 this.sortText = this.simpleName + Utilities.getImportanceLevel(this.enclName) + "#" + this.enclName; //NOI18N
@@ -767,14 +767,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                                 sb.append(tv.asElement().getSimpleName());
                                                 sb.append("\" type=\""); //NOI18N
                                                 ta = tv.getUpperBound();
-                                                sb.append(Utilities.getTypeName(ta, true));
+                                                sb.append(Utilities.getTypeName(controller, ta, true));
                                                 sb.append("\" default=\""); //NOI18N
-                                                sb.append(Utilities.getTypeName(ta, false));
+                                                sb.append(Utilities.getTypeName(controller, ta, false));
                                                 if (addTypeVars && SourceVersion.RELEASE_5.compareTo(controller.getSourceVersion()) <= 0)
                                                     asTemplate = true;
                                             } else {
                                                 sb.append(" editable=false default=\""); //NOI18N
-                                                sb.append(Utilities.getTypeName(ta, true));
+                                                sb.append(Utilities.getTypeName(controller, ta, true));
                                                 asTemplate = true;
                                             }
                                             sb.append("\"}"); //NOI18N
@@ -783,9 +783,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                             TypeMirror bound = ((WildcardType)ta).getExtendsBound();
                                             if (bound == null)
                                                 bound = ((WildcardType)ta).getSuperBound();
-                                            sb.append(bound != null ? Utilities.getTypeName(bound, true) : "Object"); //NOI18N
+                                            sb.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
                                             sb.append("\" default=\""); //NOI18N
-                                            sb.append(bound != null ? Utilities.getTypeName(bound, false) : "Object"); //NOI18N
+                                            sb.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
                                             sb.append("\"}"); //NOI18N
                                             asTemplate = true;
                                         } else if (ta.getKind() == TypeKind.ERROR) {
@@ -795,9 +795,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                             asTemplate = true;
                                         } else {
                                             sb.append(" type=\""); //NOI18N
-                                            sb.append(Utilities.getTypeName(ta, true));
+                                            sb.append(Utilities.getTypeName(controller, ta, true));
                                             sb.append("\" default=\""); //NOI18N
-                                            sb.append(Utilities.getTypeName(ta, false));
+                                            sb.append(Utilities.getTypeName(controller, ta, false));
                                             sb.append("\" editable=false}"); //NOI18N
                                             asTemplate = true;
                                         }
@@ -873,7 +873,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 if (val != 1 || ctor != null) {
                                     final JavaCompletionItem item = val == 0 ? createDefaultConstructorItem(elem, offset, true) :
                                             val == 2 || Utilities.hasAccessibleInnerClassConstructor(elem, scope, trees) ? null :
-                                            createExecutableItem(ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, false, false, false, true);
+                                            createExecutableItem(controller, ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, false, false, false, true);
                                     try {
                                         final Position offPosition = doc.createPosition(offset);
                                         SwingUtilities.invokeLater(new Runnable() {
@@ -912,8 +912,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String INTERFACE_COLOR = "<font color=#404040>"; //NOI18N
         private static ImageIcon icon;
         
-        private InterfaceItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean smartType) {
-            super(elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, smartType);
+        private InterfaceItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean smartType) {
+            super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, smartType);
         }
 
         protected ImageIcon getIcon(){
@@ -931,8 +931,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String ENUM = "org/netbeans/modules/editor/resources/completion/enum.png"; // NOI18N
         private static ImageIcon icon;
         
-        private EnumItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean smartType) {
-        super(elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, false, smartType);
+        private EnumItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean smartType) {
+        super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, false, smartType);
         }
 
         protected ImageIcon getIcon(){
@@ -946,8 +946,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String ANNOTATION = "org/netbeans/modules/editor/resources/completion/annotation_type.png"; // NOI18N
         private static ImageIcon icon;
         
-        private AnnotationTypeItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean smartType) {
-            super(elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, false, smartType);
+        private AnnotationTypeItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean smartType) {
+            super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, false, smartType);
         }
 
         protected ImageIcon getIcon(){
@@ -1004,12 +1004,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
         
-        private VariableItem(TypeMirror type, String varName, int substitutionOffset, boolean newVarName, boolean smartType) {
+        private VariableItem(CompilationInfo info, TypeMirror type, String varName, int substitutionOffset, boolean newVarName, boolean smartType) {
             super(substitutionOffset);
             this.varName = varName;
             this.newVarName = newVarName;
             this.smartType = smartType;
-            this.typeName = type != null ? Utilities.getTypeName(type, false).toString() : null;
+            this.typeName = type != null ? Utilities.getTypeName(info, type, false).toString() : null;
         }
         
         public int getSortPriority() {
@@ -1069,7 +1069,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
         
-        private FieldItem(VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType) {
+        private FieldItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(elem);
             this.isInherited = isInherited;
@@ -1077,7 +1077,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.smartType = smartType;
             this.simpleName = elem.getSimpleName().toString();
             this.modifiers = elem.getModifiers();
-            this.typeName = Utilities.getTypeName(type, false).toString();
+            this.typeName = Utilities.getTypeName(info, type, false).toString();
         }
         
         public int getSortPriority() {
@@ -1212,7 +1212,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
         
-        private MethodItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean smartType) {
+        private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean smartType) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(elem);
             this.isInherited = isInherited;
@@ -1228,10 +1228,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 TypeMirror tm = tIt.next();
                 if (tm == null)
                     break;
-                this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
+                this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(info, tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
             }
             TypeMirror retType = type.getReturnType();
-            this.typeName = Utilities.getTypeName(retType, false).toString();
+            this.typeName = Utilities.getTypeName(info, retType, false).toString();
             this.isPrimitive = retType.getKind().isPrimitive() || retType.getKind() == TypeKind.VOID;
         }
         
@@ -1516,8 +1516,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private boolean implement;
         private String leftText;
         
-        private OverrideMethodItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement) {
-            super(elem, type, substitutionOffset, false, false, false, false);
+        private OverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement) {
+            super(info, elem, type, substitutionOffset, false, false, false, false);
             this.implement = implement;
         }
         
@@ -1634,7 +1634,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
         
-        private GetterSetterMethodItem(VariableElement elem, TypeMirror type, int substitutionOffset, boolean setter) {
+        private GetterSetterMethodItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean setter) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(elem);            
             this.setter = setter;
@@ -1643,7 +1643,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 this.name = "set" + GeneratorUtils.getCapitalizedName(simpleName); //NOI18N
             else
                 this.name = (elem.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + GeneratorUtils.getCapitalizedName(simpleName); //NOI18N
-            this.typeName = Utilities.getTypeName(type, false).toString();
+            this.typeName = Utilities.getTypeName(info, type, false).toString();
         }
         
         public int getSortPriority() {
@@ -1817,7 +1817,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String sortText;
         private String leftText;
         
-        private ConstructorItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, boolean smartType, String name) {
+        private ConstructorItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, boolean smartType, String name) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(elem);
             this.isDeprecated = isDeprecated;
@@ -1832,7 +1832,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 TypeMirror tm = tIt.next();
                 if (tm == null)
                     break;
-                this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
+                this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(info, tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
             }
             this.isAbstract = !insertName && elem.getEnclosingElement().getModifiers().contains(Modifier.ABSTRACT);
         }
@@ -1991,14 +1991,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     try {
                         Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                         Position pos = doc.createPosition(offset2);
-                        doc.remove(offset2, length);
-                        if (insertName) {
-                            doc.insertString(pos.getOffset(), simpleName + text2, null);
-                            position [0] = doc.createPosition(pos.getOffset() - text2.length() + text2.indexOf('('));
+                        String textToReplace = doc.getText(offset2, length);
+                        String newText = insertName ? simpleName + text2 : text2;
+                        if (textToReplace.contentEquals(newText)) {
+                            c.setCaretPosition(offset2 + newText.length());
                         } else {
-                            doc.insertString(pos.getOffset(), text2, null);
-                            position [0] = doc.createPosition(pos.getOffset() - text2.length() + text2.indexOf('('));
+                            doc.remove(offset2, length);
+                            doc.insertString(pos.getOffset(), newText, null);
                         }
+                        position [0] = doc.createPosition(pos.getOffset() - text2.length() + text2.indexOf('('));
                         if (semiPosition != null)
                             doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                         else if (!isAbstract && params.isEmpty() && lpar)
@@ -2255,7 +2256,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
 
-        private ParametersItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, int activeParamsIndex, String name) {
+        private ParametersItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, int activeParamsIndex, String name) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(elem);
             this.isDeprecated = isDeprecated;
@@ -2268,10 +2269,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 TypeMirror tm = tIt.next();
                 if (tm == null)
                     break;
-                this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
+                this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(info, tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
             }
             TypeMirror retType = type.getReturnType();
-            this.typeName = Utilities.getTypeName(retType, false).toString();
+            this.typeName = Utilities.getTypeName(info, retType, false).toString();
         }
 
         public int getSortPriority() {
@@ -2445,8 +2446,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
     
     static class AnnotationItem extends AnnotationTypeItem {
         
-        private AnnotationItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated, boolean smartType) {
-            super(elem, type, 0, substitutionOffset, true, isDeprecated, false, smartType);
+        private AnnotationItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated, boolean smartType) {
+            super(info, elem, type, 0, substitutionOffset, true, isDeprecated, false, smartType);
         }
 
         public CharSequence getInsertPrefix() {
@@ -2540,12 +2541,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
 
-        private AttributeItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated) {
+        private AttributeItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(elem);
             this.isDeprecated = isDeprecated;
             this.simpleName = elem.getSimpleName().toString();
-            this.typeName = Utilities.getTypeName(type.getReturnType(), false).toString();
+            this.typeName = Utilities.getTypeName(info, type.getReturnType(), false).toString();
             AnnotationValue value = elem.getDefaultValue();
             this.defaultValue = value != null ? value.toString() : null;
         }
@@ -2619,11 +2620,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String value;
         private String leftText;
 
-        private AttributeValueItem(String value, TypeElement element, int substitutionOffset) {
+        private AttributeValueItem(CompilationInfo info, String value, TypeElement element, int substitutionOffset) {
             super(substitutionOffset);
             this.value = value;
             if (element != null)
-                delegate = createTypeItem(element, (DeclaredType)element.asType(), substitutionOffset, true, false, false, false, false);
+                delegate = createTypeItem(info, element, (DeclaredType)element.asType(), substitutionOffset, true, false, false, false, false);
         }
 
         public int getSortPriority() {
@@ -2708,14 +2709,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
         
-        private StaticMemberItem(DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated) {
+        private StaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated) {
             super(substitutionOffset);
             this.typeHandle = TypeMirrorHandle.create(type);
             this.memberElementHandle = ElementHandle.create(memberElem);
             this.isDeprecated = isDeprecated;
-            this.typeName = Utilities.getTypeName(type, false).toString();
+            this.typeName = Utilities.getTypeName(info, type, false).toString();
             this.memberName = memberElem.getSimpleName().toString();
-            this.memberTypeName = Utilities.getTypeName(memberElem.getKind().isField() ? memberType : ((ExecutableType)memberType).getReturnType(), false).toString();
+            this.memberTypeName = Utilities.getTypeName(info, memberElem.getKind().isField() ? memberType : ((ExecutableType)memberType).getReturnType(), false).toString();
             this.modifiers = memberElem.getModifiers();
             if (!memberElem.getKind().isField()) {
                 this.params = new ArrayList<ParamDesc>();
@@ -2723,7 +2724,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 Iterator<? extends TypeMirror> tIt = ((ExecutableType)memberType).getParameterTypes().iterator();
                 while(it.hasNext() && tIt.hasNext()) {
                     TypeMirror tm = tIt.next();
-                    this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(tm, false, ((ExecutableElement)memberElem).isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
+                    this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(info, tm, false, ((ExecutableElement)memberElem).isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
                 }
             }
         }
@@ -2910,18 +2911,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 if (ta.getKind() == TypeKind.TYPEVAR) {
                                     sb.append(" type=\""); //NOI18N
                                     ta = ((TypeVariable)ta).getUpperBound();
-                                    sb.append(Utilities.getTypeName(ta, true));
+                                    sb.append(Utilities.getTypeName(controller, ta, true));
                                     sb.append("\" default=\""); //NOI18N
-                                    sb.append(Utilities.getTypeName(ta, false));
+                                    sb.append(Utilities.getTypeName(controller, ta, false));
                                     sb.append("\"}"); //NOI18N
                                 } else if (ta.getKind() == TypeKind.WILDCARD) {
                                     sb.append(" type=\""); //NOI18N
                                     TypeMirror bound = ((WildcardType)ta).getExtendsBound();
                                     if (bound == null)
                                         bound = ((WildcardType)ta).getSuperBound();
-                                    sb.append(bound != null ? Utilities.getTypeName(bound, true) : "Object"); //NOI18N
+                                    sb.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
                                     sb.append("\" default=\""); //NOI18N
-                                    sb.append(bound != null ? Utilities.getTypeName(bound, false) : "Object"); //NOI18N
+                                    sb.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
                                     sb.append("\"}"); //NOI18N
                                 } else if (ta.getKind() == TypeKind.ERROR) {
                                     sb.append(" default=\""); //NOI18N
@@ -2929,9 +2930,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     sb.append("\"}"); //NOI18N
                                 } else {
                                     sb.append(" type=\""); //NOI18N
-                                    sb.append(Utilities.getTypeName(ta, true));
+                                    sb.append(Utilities.getTypeName(controller, ta, true));
                                     sb.append("\" default=\""); //NOI18N
-                                    sb.append(Utilities.getTypeName(ta, false));
+                                    sb.append(Utilities.getTypeName(controller, ta, false));
                                     sb.append("\" editable=false}"); //NOI18N
                                 }
                                 if (tas.hasNext())
@@ -3024,14 +3025,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String sortText;
         private String leftText;
         
-        private InitializeAllConstructorItem(Iterable<? extends VariableElement> fields, TypeElement parent, int substitutionOffset) {
+        private InitializeAllConstructorItem(CompilationInfo info, Iterable<? extends VariableElement> fields, TypeElement parent, int substitutionOffset) {
             super(substitutionOffset);
             this.fieldHandles = new ArrayList<ElementHandle<VariableElement>>();
             this.parentHandle = ElementHandle.create(parent);
             this.params = new ArrayList<ParamDesc>();
             for (VariableElement ve : fields) {
                 this.fieldHandles.add(ElementHandle.create(ve));
-                this.params.add(new ParamDesc(null, Utilities.getTypeName(ve.asType(), false).toString(), ve.getSimpleName().toString()));
+                this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));
             }
             this.simpleName = parent.getSimpleName().toString();
         }

@@ -266,8 +266,10 @@ public class WadlModelImpl extends WadlModel {
         return getElementRegistry().getKnownElementNames();
     }
     
-    public ChangeInfo prepareChangeInfo(List<Node> pathToRoot) {
-        ChangeInfo change = super.prepareChangeInfo(pathToRoot);
+    @Override
+    public ChangeInfo prepareChangeInfo(List<? extends Node> pathToRoot,
+            List<? extends Node> nsContextPathToRoot) {
+        ChangeInfo change = super.prepareChangeInfo(pathToRoot, nsContextPathToRoot);
         DocumentComponent parentComponent = findComponent(change.getRootToParentPath());
         if (parentComponent == null) {
             return change;
@@ -275,7 +277,7 @@ public class WadlModelImpl extends WadlModel {
         if (! (parentComponent.getModel() instanceof WadlModel)) 
         {
             getElementRegistry().addEmbeddedModelQNames((AbstractDocumentModel)parentComponent.getModel());
-            change = super.prepareChangeInfo(pathToRoot);
+            change = super.prepareChangeInfo(pathToRoot, nsContextPathToRoot);
         } else if (isDomainElement(parentComponent.getPeer()) && 
                 ! change.isDomainElement() && change.getChangedElement() != null) 
         {

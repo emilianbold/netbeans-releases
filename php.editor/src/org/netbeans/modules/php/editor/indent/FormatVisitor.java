@@ -136,9 +136,13 @@ public class FormatVisitor extends DefaultVisitor {
 	    addFormatToken(beforeTokens);
 	    if (ts.token().id() == PHPTokenId.PHPDOC_COMMENT_START
 		    || (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
-		    && "//".equals(ts.token().text().toString())
-		    && indexBeforeLastComment == -1)) {
-		indexBeforeLastComment = beforeTokens.size() - 1;
+		    && "//".equals(ts.token().text().toString()))
+		    && indexBeforeLastComment == -1) {
+                if (ts.movePrevious() && ts.token().id() == PHPTokenId.WHITESPACE && countOfNewLines(ts.token().text()) > 0) {
+                    // don't change if the line comment or a comment starts on the same line
+                    indexBeforeLastComment = beforeTokens.size() - 1;
+                }
+                ts.moveNext();
 	    }
 	}
 	if (indexBeforeLastComment > 0) { // if there is a comment, put the new lines befere the comment, not directly before the node.
@@ -154,7 +158,9 @@ public class FormatVisitor extends DefaultVisitor {
 		includeWSBeforePHPDoc = false;
 	    } else if (node instanceof FieldsDeclaration) {
 		if (isPreviousNodeTheSameInBlock(path.get(0), (Statement) node)) {
-		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
+//                    if (beforeTokens.get(indexBeforeLastComment).getId() != FormatToken.Kind.LINE_COMMENT) {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
+//                    }
 		} else {
 		    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELD, ts.offset()));
 		}
@@ -257,14 +263,24 @@ public class FormatVisitor extends DefaultVisitor {
 	    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION_LEFT_BRACE, ts.offset()));
 	    } else if (parent instanceof IfStatement) {
-		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_LEFT_BRACE, ts.offset()));
+                IfStatement ifStatement = (IfStatement) parent;
+                if (ifStatement.getFalseStatement() != null
+                        && ifStatement.getFalseStatement().getStartOffset() <= node.getStartOffset()) {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ELSE_LEFT_BRACE, ts.offset()));
+                } else {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_LEFT_BRACE, ts.offset()));
+                }
 	    } else if (parent instanceof ForStatement || parent instanceof ForEachStatement) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FOR_LEFT_BRACE, ts.offset()));
-	    } else if (parent instanceof WhileStatement || parent instanceof DoStatement) {
+	    } else if (parent instanceof WhileStatement) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE_LEFT_BRACE, ts.offset()));
+            } else if (parent instanceof DoStatement) {
+		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_DO_LEFT_BRACE, ts.offset()));
 	    } else if (parent instanceof SwitchStatement) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_SWITCH_LEFT_BACE, ts.offset()));
-	    } else if (parent instanceof CatchClause || parent instanceof TryStatement) {
+            } else if (parent instanceof TryStatement) {
+		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_TRY_LEFT_BRACE, ts.offset()));
+	    } else if (parent instanceof CatchClause) {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH_LEFT_BRACE, ts.offset()));
 	    } else {
 		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OTHER_LEFT_BRACE, ts.offset()));
@@ -724,7 +740,15 @@ public class FormatVisitor extends DefaultVisitor {
 	    isCurly = false;
 	    addAllUntilOffset(body.getStartOffset());
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_ELSE_STATEMENT, ts.offset()));
+            if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_TOKEN && ")".equals(ts.token().text().toString())) {
+                // the body is not defined yet. See issue #187665
+                addFormatToken(formatTokens);
+            } else {
+                ts.movePrevious();
+            }
+            if (!(body instanceof ASTError)) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_IF_ELSE_STATEMENT, ts.offset()));
+            }
 	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
 	    scan(body);
 	    addEndOfUnbreakableSequence(body.getEndOffset());
@@ -923,8 +947,16 @@ public class FormatVisitor extends DefaultVisitor {
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block)) {
 	    addAllUntilOffset(body.getStartOffset());
+            if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_TOKEN && ")".equals(ts.token().text().toString())) {
+                // the body is not defined yet. See issue #187665
+                addFormatToken(formatTokens);
+            } else {
+                ts.movePrevious();
+            }
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
-	    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE_STATEMENT, ts.offset()));
+            if (!(body instanceof ASTError)) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_WHILE_STATEMENT, ts.offset()));
+            }
 	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
 	    scan(body);
 	    addEndOfUnbreakableSequence(body.getEndOffset());
@@ -984,6 +1016,7 @@ public class FormatVisitor extends DefaultVisitor {
 		}
 		break;
 	    case PHP_OPENTAG:
+            case T_OPEN_TAG_WITH_ECHO:
 		tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OPEN_PHP_TAG, ts.offset()));
 		tokens.add(new FormatToken(FormatToken.Kind.OPEN_TAG, ts.offset(), ts.token().text().toString()));
 //		tokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.initialIndent));

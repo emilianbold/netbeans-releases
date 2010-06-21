@@ -91,4 +91,10 @@ public class FileObjectArchive implements Archive {
     public void clear() {
     }
 
+    @Override
+    public JavaFileObject getFile(String name) throws IOException {
+        final FileObject file = root.getFileObject(name);
+        return file == null ? null : FileObjects.nbFileObject(file, root, null, false);
+    }
+
 }

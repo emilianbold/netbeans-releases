@@ -92,7 +92,7 @@ public abstract class BaseProjectPathSupport extends BasePathSupport {
                 if (eval != null) {
                     f = antProjectHelper.resolveFile(eval);
                 }
-                if (f == null || !f.exists()) {
+                if (!f.exists()) {
                     item = Item.createBroken(eval, p);
                 } else {
                     item = Item.create(eval, p);

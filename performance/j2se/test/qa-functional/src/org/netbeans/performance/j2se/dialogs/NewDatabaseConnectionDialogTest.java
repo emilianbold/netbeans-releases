@@ -94,10 +94,10 @@ public class NewDatabaseConnectionDialogTest extends PerformanceTestCase {
     @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.db.resources.Bundle";
-        MENU = Bundle.getStringTrimmed(BUNDLE,"AddConnection");
-        TITLE = Bundle.getStringTrimmed(BUNDLE,"NewConnectionDialogTitle");
+        MENU = "New Connection";
+        TITLE = "New Database Connection";
         
-        String NODE = Bundle.getStringTrimmed(BUNDLE,"Databases"); //NOI18N impossible
+        String NODE = "Databases"; //NOI18N impossible
         thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), NODE);
         thenode.select();
     }

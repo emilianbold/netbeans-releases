@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <attr name="Loaders\text\x-schema+xml\Actions\RefactoringAll.instance\position" intvalue="2300"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\RefactoringWhereUsed.instance\position" intvalue="2200"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\encoding\apply-coco.instance\position" intvalue="100"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\encoding\apply-custom.instance\position" intvalue="200"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\encoding\apply-hl7.instance\position" intvalue="300"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\encoding\test-enc.instance\position" intvalue="700"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-netbeans-modules-xml-actions-CollectXMLAction.instance\position" intvalue="800"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-netbeans-modules-xml-schema-actions-GenerateXMLAction.instance\position" intvalue="500"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-netbeans-modules-xml-schema-actions-SchemaSourceViewOpenAction.instance\position" intvalue="300"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-netbeans-modules-xml-schema-actions-SchemaTransformAction.instance\position" intvalue="600"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-netbeans-modules-xml-schema-actions-SchemaViewOpenAction.instance\position" intvalue="0"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-netbeans-modules-xml-schema-refactoring-query-actions-QueryAction.instance\position" intvalue="1000"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-openide-actions-CopyAction.instance\position" intvalue="1300"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-openide-actions-CutAction.instance\position" intvalue="1200"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-openide-actions-DeleteAction.instance\position" intvalue="1600"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-openide-actions-FileSystemAction.instance\position" intvalue="2500"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-openide-actions-PasteAction.instance\position" intvalue="1400"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-openide-actions-PropertiesAction.instance\position" intvalue="2800"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-openide-actions-SaveAsTemplateAction.instance\position" intvalue="1900"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\org-openide-actions-ToolsAction.instance\position" intvalue="2700"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\sep-0.instance\position" intvalue="400"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\sep-1.instance\position" intvalue="700"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\sep-2.instance\position" intvalue="900"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\sep-3.instance\position" intvalue="1100"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\sep-4.instance\position" intvalue="1500"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\sep-5.instance\position" intvalue="1700"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\sep-6.instance\position" intvalue="2100"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\sep-7.instance\position" intvalue="2400"/>
+    <attr name="Loaders\text\x-schema+xml\Actions\sep-8.instance\position" intvalue="2600"/>
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-schema+xml">
+                <folder name="Actions">
+                    <file name="en-sep-1.instance_hidden"/>
+                    <file name="org-netbeans-modules-encoder-ui-basic-EncodingAction.instance">
+                        <attr name="position" intvalue="1750"/>
+                    </file>
+                    <folder name="encoding">
+                        <attr name="position" intvalue="-100"/>
+                        <file name="sep-1.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="350"/>
+                        </file>
+                        <file name="rmv-enc.instance">
+                            <attr name="instanceClass" stringvalue="org.netbeans.modules.encoder.ui.basic.RemoveEncodingAction"/>
+                            <attr name="position" intvalue="400"/>
+                        </file>
+                            <file name="sep-2.instance" url="sep-2.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="600"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

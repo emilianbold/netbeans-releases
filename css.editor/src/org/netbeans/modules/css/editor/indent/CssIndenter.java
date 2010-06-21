@@ -219,7 +219,9 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
             if (lastLBrace != -1 && token.id() != CssTokenId.S) {
                 CssStackItem state = blockStack.peek();
                 assert (state.state == StackItemState.IN_RULE || state.state == StackItemState.IN_MEDIA);
-                state.indent = ts.offset() - context.getLineNonWhiteStartOffset();
+                if (!isCommentToken(token)) {
+                    state.indent = ts.offset() - context.getLineNonWhiteStartOffset();
+                }
                 lastLBrace = -1;
             }
             if (token.id() == CssTokenId.LBRACE) {

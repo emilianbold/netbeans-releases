@@ -412,7 +412,6 @@ public class ChildrenSupportTest extends NbTestCase {
     public void testRefresh150009() {
         FileNaming fpiName = NamingFactory.fromFile(fbase);
         // remove and plug our File implementation
-        NamingFactory.remove(fpiName, fpiName.getId());
         fpiName = NamingFactory.fromFile(new File150009(fbase));
         ChildrenSupport fpi = new ChildrenSupport();
         assertNotNull(fpi.getChild("removed1", fpiName, false));

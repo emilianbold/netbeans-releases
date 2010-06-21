@@ -10,7 +10,7 @@ is divided into following sections:
   - dist
   - cleanup
         -->
-<project name="Welcome1-impl" default="default" basedir="..">
+<project name="Welcome-impl" default="default" basedir="..">
     <target name="default" depends="dist_se" description="Build whole project."/>
     <!--
                 ======================

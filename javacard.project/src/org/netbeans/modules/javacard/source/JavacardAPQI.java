@@ -88,7 +88,7 @@ public class JavacardAPQI implements AnnotationProcessingQueryImplementation {
 
         @Override
         public Iterable<? extends String> annotationProcessorsToRun() {
-            return Collections.<String>emptySet();
+            return Collections.singleton("org.netbeans.modules.javacard.source.JavaCardErrorProcessor");
         }
 
         @Override

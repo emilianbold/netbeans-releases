@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -172,6 +173,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
     }
 
 
+    @Override
     public void generateBeans(final ProgressPanel progressPanel,
             final RelatedCMPHelper helper,
             final FileObject dbSchemaFile,
@@ -208,7 +210,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         result = new Generator(entityClasses, generateNamedQueries, 
                 fullyQualifiedTableNames, regenTablesAttrs,
                 fetchType, collectionType,
-                progressContributor, panel).run();
+                progressContributor, panel, this).run();
         addToPersistenceUnit(result);
         progressContributor.progress(progressMax);
         PersistenceUtils.logUsage(JavaPersistenceGenerator.class, "USG_PERSISTENCE_ENTITY_DB_CREATED", new Integer[]{entityClasses.length});
@@ -229,7 +231,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         }
         
         Project project = FileOwnerQuery.getOwner(entities.iterator().next());
-        if (project != null && !Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {
+        if (project != null && !(Util.isSupportedJavaEEVersion(project) && Util.isContainerManaged(project)) && ProviderUtil.getDDFile(project) != null) {
             try {
                 PUDataObject pudo = ProviderUtil.getPUDataObject(project);
                 // no persistence unit was provider, we'll try find one
@@ -260,6 +262,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
     }
 
+    @Override
     public void init(WizardDescriptor wiz) {
         // get the table names for all entities in the project
         Project project = Templates.getProject(wiz);
@@ -271,6 +274,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
            
         MetadataModel<EntityMappingsMetadata> entityMappingsModel = entityClassScope.getEntityMappingsModel(true);
         readHelper = MetadataModelReadHelper.create(entityMappingsModel, new MetadataModelAction<EntityMappingsMetadata, Set<Entity>>() {
+            @Override
             public Set<Entity> run(EntityMappingsMetadata metadata) {
                 Set<Entity> result = new HashSet<Entity>();
                 for (Entity entity : metadata.getRoot().getEntity()) {
@@ -303,17 +307,21 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         }
     }
 
+    @Override
     public void uninit() {
     }
 
+    @Override
     public String getFQClassName(String tableName) {
         return entityName2TableName.get(tableName);
     }
 
+    @Override
     public String generateEntityName(String name) {
         return name;
     }
 
+    @Override
     public Set<FileObject> createdObjects() {
         return result;
     }
@@ -334,11 +342,13 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         private final CollectionType collectionType;
         private final Set<FileObject> generatedEntityFOs;
         private final Set<FileObject> generatedFOs;
+        private final PersistenceGenerator persistenceGen;
 
         public Generator(EntityClass[] entityClasses, boolean generateNamedQueries,
                 boolean fullyQualifiedTableNames, boolean regenTablesAttrs, 
                 FetchType fetchType, CollectionType collectionType,
-                ProgressContributor progressContributor, ProgressPanel progressPanel) {
+                ProgressContributor progressContributor, ProgressPanel progressPanel,
+                PersistenceGenerator persistenceGen) {
             this.entityClasses = entityClasses;
             this.generateNamedQueries = generateNamedQueries;
             this.fullyQualifiedTableNames = fullyQualifiedTableNames;
@@ -349,6 +359,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             this.progressPanel = progressPanel;
             generatedFOs = new HashSet<FileObject>();
             generatedEntityFOs = new HashSet<FileObject>();
+            this.persistenceGen = persistenceGen;
         }
 
         public Set<FileObject> run() throws IOException {
@@ -359,6 +370,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     generatedFO.delete();
                 }
                 throw e;
+            } finally {
+
             }
             return generatedEntityFOs;
         }
@@ -386,9 +399,35 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     progressPanel.setText(progressMsg);
                 }
 
-                FileObject entity = packageFileObject.getFileObject(entityClassName, "java"); //NOI18N
+                FileObject entity = packageFileObject.getFileObject(entityClassName, "java");
+
+                //NOI18N
                 switch (entityClass.getUpdateType()){
                     case RECREATE:
+                        if(entity == null){//we hit case when old entity position is different from target package
+                           String fqn = persistenceGen.getFQClassName(entityClass.getTableName());
+                           int ind = fqn.lastIndexOf(".");
+                           String pkg = ind>-1 ? fqn.substring(0, ind) : "";
+                           String rel = pkg.replaceAll("\\.", "/");
+                           FileObject oldPackage = entityClass.getRootFolder().getFileObject(rel);
+                           entity = oldPackage.getFileObject(entityClassName, "java");
+                        }
+                        // NO PK classes for views
+                        if (entityClass.isForTable() && !entityClass.isUsePkField()) {
+                            String pkClassName = createPKClassName(entityClassName);
+                            FileObject pkFO = packageFileObject.getFileObject(pkClassName, "java");
+                            if (pkFO == null) { // NOI18N
+                                String fqn = persistenceGen.getFQClassName(entityClass.getTableName());
+                                int ind = fqn.lastIndexOf(".");
+                                String pkg = ind>-1 ? fqn.substring(0, ind) : "";
+                                String rel = pkg.replaceAll("\\.", "/");
+                                FileObject oldPackage = entityClass.getRootFolder().getFileObject(rel);
+                                pkFO = oldPackage.getFileObject(pkClassName, "java");
+                            }
+                            if(pkFO != null){
+                                pkFO.delete();
+                            }
+                        }
                         entity.delete();
                         entity = null;
                     case NEW:{
@@ -443,16 +482,20 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                     JPAClassPathHelper cpHelper = new JPAClassPathHelper(bootCPs, compileCPs, sourceCPs);
 
-                    JavaSource javaSource = (pkClassFO != null) ?
+                    JavaSource javaSource = (pkClassFO != null && entityClass.getUpdateType() != UpdateType.UPDATE) ?
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO, pkClassFO) :
                         JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO);
                     javaSource.runModificationTask(new Task<WorkingCopy>() {
+                        @Override
                         public void run(WorkingCopy copy) throws IOException {
                             if (copy.getFileObject().equals(entityClassFO)) {
                                 EntityClassGenerator clsGen = new EntityClassGenerator(copy, entityClass);
                                 clsGen.run();
                             } else {
-                                new PKClassGenerator(copy, entityClass).run();
+                                if(entityClass.getUpdateType() != UpdateType.UPDATE)
+                                    new PKClassGenerator(copy, entityClass).run();
+                                else
+                                    Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.INFO, "PK Class update isn't supported"); //NOI18N //TODO: implement update
                             }
                         }
                     }).commit();
@@ -813,6 +856,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private String namedQueryPrefix;
 
             private Set<String> existingColumns = new HashSet<String>();
+            private String existingEmbeddedId = null;
+            private HashMap<String, Tree> existingJoinColumns = new HashMap<String, Tree>();
+            private HashMap<String, Tree> existingMappings = new HashMap<String, Tree>();
 
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 super(copy, entityClass);
@@ -821,11 +867,22 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 entityFQClassName = entityClass.getPackage() + "." + entityClassName;
             }
 
+            @Override
             protected void initialize() throws IOException {
                 newClassTree = genUtils.ensureNoArgConstructor(newClassTree);
                 if (genSerializableEntities && !UpdateType.UPDATE.equals(updateType)) {
                     newClassTree = genUtils.addImplementsClause(newClassTree, "java.io.Serializable"); // NOI18N
                 }
+                if (needsPKClass && existingEmbeddedId==null) {
+                    String pkFieldName = createFieldName(pkClassName);
+                    pkProperty = new Property(
+                            Modifier.PROTECTED,
+                            Collections.singletonList(genUtils.createAnnotation("javax.persistence.EmbeddedId")),
+                            pkFQClassName,
+                            pkFieldName);
+                    properties.add(pkProperty);
+                }
+
                 if (UpdateType.UPDATE.equals(updateType)){
                     collectExistingColumns();
                 } else {
@@ -863,16 +920,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 
                     newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
 
-                    if (needsPKClass) {
-                        String pkFieldName = createFieldName(pkClassName);
-                        pkProperty = new Property(
-                                Modifier.PROTECTED,
-                                Collections.singletonList(genUtils.createAnnotation("javax.persistence.EmbeddedId")),
-                                pkFQClassName,
-                                pkFieldName);
-                        properties.add(pkProperty);
-                    }
+
                 }
+
                 //TODO: javadoc - generate or fake in test mode
                 //        b.setCommentDataAuthor(authorOverride);
                 //        b.setCommentDataDate(dateOverride);
@@ -880,26 +930,82 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
             private void collectExistingColumns(){
                 for (Tree member: originalClassTree.getMembers()){
+                    List<? extends AnnotationTree> annotations = null;
+                    Tree memberType = null;
                     if (Kind.VARIABLE.equals(member.getKind())){
                         VariableTree variable = (VariableTree)member;
-                        List<? extends AnnotationTree> annotations = variable.getModifiers().getAnnotations();
+                        annotations = variable.getModifiers().getAnnotations();
+                        memberType = variable.getType();
+                    } else if(Kind.METHOD.equals(member.getKind())) {
+                        MethodTree method = (MethodTree) member;
+                        annotations = method.getModifiers().getAnnotations();
+                        memberType = method.getReturnType();
+                    }
+                    if(annotations!=null)    {
                         for(AnnotationTree annTree: annotations){
-                            if (!((IdentifierTree)annTree.getAnnotationType()).getName().contentEquals("Column")){
+                            Name nm = ((IdentifierTree)annTree.getAnnotationType()).getName();
+                            if (nm.contentEquals("Column")){//NOI18N
+                                for(ExpressionTree exTree: annTree.getArguments()){
+                                    AssignmentTree aTree = (AssignmentTree)exTree;
+                                    if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("name")){//NOI18N
+                                            existingColumns.add((String)((LiteralTree)aTree.getExpression()).getValue());
+                                            break;
+                                    }
+                                }
+                            } else if( nm.contentEquals("EmbeddedId") ){//NOI18N
+                                TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                existingEmbeddedId = tm.toString();
+                                if(pkProperty != null){
+                                    //currently unsupported update
+                                    properties.remove(pkProperty);
+                                }
+                            } else if( nm.contentEquals("JoinTable") ){//NOI18N
+                                for(ExpressionTree exTree: annTree.getArguments()){
+                                    AssignmentTree aTree = (AssignmentTree)exTree;
+                                    if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("joinTables")){//NOI18N
+                                            ExpressionTree value = aTree.getExpression();
+                                            break;
+                                    }
+                                }
+                            } else if( nm.contentEquals("JoinColumns") ){//NOI18N
+                                for(ExpressionTree exTree: annTree.getArguments()){
+                                    AssignmentTree aTree = (AssignmentTree)exTree;
+                                            ExpressionTree value = aTree.getExpression();
+                                            break;
+                                 }
+                            } else if( nm.contentEquals("JoinColumn") ){//NOI18N
+                                for(ExpressionTree exTree: annTree.getArguments()){
+                                    AssignmentTree aTree = (AssignmentTree)exTree;
+                                    if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("name")){//NOI18N
+                                            existingJoinColumns.put((String)((LiteralTree)aTree.getExpression()).getValue(), annTree);
+                                            break;
+                                    }
+                                }
+                            } else if (nm.contentEquals("OneToOne") || nm.contentEquals("OneToMany")){//NOI18
+                                //may be relation with mappedTo
+                                for(ExpressionTree expression : annTree.getArguments()){
+                                    if(expression instanceof AssignmentTree){
+                                        AssignmentTree aTree = (AssignmentTree) expression;
+                                        if(aTree.getVariable().toString().equals("mappedBy")){//NOI18N
+                                            TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                            existingMappings.put(tm.toString(), expression);
+                                            break;
+                                        }
+                                    }
+                                }
                                 continue;
                             }
-                            for(ExpressionTree exTree: annTree.getArguments()){
-                                AssignmentTree aTree = (AssignmentTree)exTree;
-                                if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("name")){
-                                        existingColumns.add((String)((LiteralTree)aTree.getExpression()).getValue());
-                                        break;
-                                }
+                            else {//NOI18N
+                                continue;
                             }
+
                         }
                     }
                 }
 
             }
 
+            @Override
             protected void generateMember(EntityMember m) throws IOException {
                 //skip generating already exist members for UPDATE type
                 if (updateType.UPDATE.equals(updateType) && existingColumns.contains(m.getColumnName())){
@@ -911,7 +1017,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 Property property = null;
                 if (isPKMember) {
                     if (needsPKClass) {
-                        pkClassVariables.add(createVariable(m));
+                        if(!updateType.UPDATE.equals(updateType)){
+                            pkClassVariables.add(createVariable(m));
+                        } else {
+                            //TODO: support update for pk
+                        }
                     } else {
                         pkProperty = property = createProperty(m);
                     }
@@ -961,6 +1071,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 namedQueryAnnotations.add(0, genUtils.createAnnotation("javax.persistence.NamedQuery", namedQueryAnnArguments)); //NOI18N
             }
 
+            @Override
             protected void afterMembersGenerated() {
                 if (!UpdateType.UPDATE.equals(updateType)){
                     addFindAllNamedQueryAnnotation();
@@ -970,6 +1081,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
             }
 
+            @Override
             protected void generateRelationship(RelationshipRole role) throws IOException {
                 String memberName = role.getFieldName();
 
@@ -995,7 +1107,17 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     annArguments.add(genUtils.createAnnotationArgument("cascade", "javax.persistence.CascadeType", "ALL")); // NOI18N
                 }
                 if (role.equals(role.getParent().getRoleB())) { // Role B
-                    annArguments.add(genUtils.createAnnotationArgument("mappedBy", role.getParent().getRoleA().getFieldName())); // NOI18N
+                    String fName = role.getParent().getRoleA().getFieldName();
+                    AssignmentTree aTree = (AssignmentTree) existingMappings.get(fieldType.toString());
+                    if(aTree != null){
+                        ExpressionTree expr = aTree.getExpression();
+                        if(expr instanceof LiteralTree){
+                            LiteralTree literal = (LiteralTree) expr;
+                            String value = literal.getValue().toString();
+                            if(value != null && value.length()>0)return;
+                        }
+                    }
+                    annArguments.add(genUtils.createAnnotationArgument("mappedBy", fName)); // NOI18N
                 } else {  // Role A
                     if (role.isMany() && role.isToMany()) { // ManyToMany
                         List<ExpressionTree> joinTableAnnArguments = new ArrayList<ExpressionTree>();
@@ -1037,6 +1159,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         CMPMappingModel relatedMappings = beanMap.get(role.getParent().getRoleB().getEntityName()).getCMPMapping();
                         ColumnData[] invColumns = (ColumnData[]) relatedMappings.getCmrFieldMapping().get(role.getParent().getRoleB().getFieldName());
                         if (columns.length == 1) {
+                            if(existingJoinColumns.get(columns[0].getColumnName()) != null){
+                                return;
+                            }
                             List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
                             attrs.add(genUtils.createAnnotationArgument("name", columns[0].getColumnName())); //NOI18N
                             attrs.add(genUtils.createAnnotationArgument("referencedColumnName", invColumns[0].getColumnName())); //NOI18N
@@ -1112,12 +1237,15 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 TreeMaker make = copy.getTreeMaker();
                 VariableTree serialVersionUID = make.Variable(make.Modifiers(serialVersionUIDModifiers), 
                         "serialVersionUID", genUtils.createType("long", typeElement), make.Literal(Long.valueOf("1"))); //NOI18N
-                
+       
                 return serialVersionUID;
             }
             
+            @Override
             protected void finish() {
                 
+                if(needsPKClass && UpdateType.UPDATE.equals(updateType))return;//do not support yet updates with pk class
+
                 if(pkProperty != null) {
                     // create a constructor which takes the primary key field as argument    
                     VariableTree pkFieldParam = genUtils.removeModifiers(pkProperty.getField());
@@ -1203,6 +1331,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 super(copy, entityClass);
             }
 
+            @Override
             protected void initialize() throws IOException {
                 newClassTree = genUtils.ensureNoArgConstructor(newClassTree);
                 // primary key class must be serializable and @Embeddable
@@ -1210,6 +1339,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Embeddable")); // NOI18N
             }
 
+            @Override
             protected void generateMember(EntityMember m) throws IOException {
                 if (!m.isPrimaryKey()) {
                     return;

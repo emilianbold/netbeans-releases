@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.versioning.spi;
 
+import java.io.IOException;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -74,8 +75,11 @@ public class VCSContextTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        dataRootDir = getWorkDir();
-        System.setProperty("netbeans.user", getWorkDir() + "/userdir");
+        dataRootDir = getDataDir();
+        File userdir = new File(getWorkDir() + "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
+        FileObject fo = FileUtil.toFileObject(getDataDir());
     }
 
     public void testForEmptyNodes() {
@@ -118,7 +122,7 @@ public class VCSContextTest extends NbTestCase {
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 1);        
     }
 
-    public void testForProjectNodes() {
+    public void testForProjectNodes() throws IOException {
         VCSContext ctx = VCSContext.forNodes(new Node[] { new DummyProjectNode(new File(dataRootDir, "workdir/root")) });
         assertTrue(ctx.getRootFiles().size() == 1);
         assertTrue(ctx.getFiles().size() == 1);
@@ -127,7 +131,7 @@ public class VCSContextTest extends NbTestCase {
     }
 
 
-    public void testSubstract() {
+    public void testSubstract() throws IOException {
         MockServices.setServices(DummySharabilityImplementations.class);
         VCSContext ctx = VCSContext.forNodes(new Node[] { new DummyProjectNode(new File(dataRootDir, "workdir/root-with-exclusions"))});
         assertTrue(ctx.getRootFiles().size() == 1);
@@ -161,7 +165,7 @@ public class VCSContextTest extends NbTestCase {
 
     private class DummyProjectNode extends AbstractNode {
 
-        public DummyProjectNode(File file) {
+        public DummyProjectNode(File file) throws IOException {
             super(Children.LEAF, Lookups.fixed(new DummyProject(file)));
         }
     }
@@ -170,8 +174,10 @@ public class VCSContextTest extends NbTestCase {
 
         private final File file;
 
-        public DummyProject(File file) {
+        public DummyProject(File file) throws IOException {
             this.file = file;
+            file.getParentFile().mkdirs();
+            file.createNewFile();
         }
 
         public FileObject getProjectDirectory() {

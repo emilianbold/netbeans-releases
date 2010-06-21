@@ -268,7 +268,7 @@ public class LogReader {
         for(int i = Math.min(makeStack.size(), level-1); i >=0; i--){
             List<String> list = makeStack.get(i);
             if (list.size() > 0) {
-                if (res.size() == 0) {
+                if (res.isEmpty()) {
                     res.addAll(list);
                 } else {
                     if (list.size() > 1) {
@@ -374,6 +374,7 @@ public class LogReader {
 
     /*package-local*/ static class LineInfo {
         public String compileLine;
+        public String compiler;
         public CompilerType compilerType = CompilerType.UNKNOWN;
 
         LineInfo(String line) {
@@ -415,6 +416,7 @@ public class LogReader {
                 start = res[0];
                 end = res[1];
                 li.compilerType = CompilerType.C;
+                li.compiler = "gcc"; // NOI18N
             }
         }
         if (li.compilerType == CompilerType.UNKNOWN) {
@@ -423,6 +425,7 @@ public class LogReader {
                 start = res[0];
                 end = res[1];
                 li.compilerType = CompilerType.CPP;
+                li.compiler = "g++"; // NOI18N
             }
         }
         if (li.compilerType == CompilerType.UNKNOWN) {
@@ -431,14 +434,25 @@ public class LogReader {
                 start = res[0];
                 end = res[1];
                 li.compilerType = CompilerType.C;
+                li.compiler = "cc"; // NOI18N
             }
         }
         if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_SUN_Cpp, INVOKE_MSVC_Cpp);
+            int[] res = foundCompiler(line, INVOKE_SUN_Cpp);
             if (res != null) {
                 start = res[0];
                 end = res[1];
                 li.compilerType = CompilerType.CPP;
+                li.compiler = "CC"; // NOI18N
+            }
+        }
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            int[] res = foundCompiler(line, INVOKE_MSVC_Cpp);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
+                li.compilerType = CompilerType.CPP;
+                li.compiler = "cl"; // NOI18N
             }
         }
 
@@ -493,7 +507,7 @@ public class LogReader {
 
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP); // NOI18N
+           gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP, li.compiler); // NOI18N
            return true;
        }
        return false;
@@ -540,10 +554,10 @@ public class LogReader {
                     PackageConfiguration pc = pkgConfig.getPkgConfig(findPkg);
                     if (pc != null) {
                         for(String p : pc.getIncludePaths()){
-                            out.append(" -I"+p); //NOI18N
+                            out.append(" -I").append(p); //NOI18N
                         }
                         for(String p : pc.getMacros()){
-                            out.append(" -D"+p); //NOI18N
+                            out.append(" -D").append(p); //NOI18N
                         }
                         out.append(" "); //NOI18N
                     }
@@ -584,7 +598,7 @@ public class LogReader {
         }
     }
 
-    private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP) {
+    private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP, String compiler) {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
         String what = DiscoveryUtils.gatherCompilerLine(line, true/*isScriptOutput*/, userIncludes, userMacros,null);
@@ -617,14 +631,14 @@ public class LogReader {
         File f = new File(file);
         if (f.exists() && f.isFile()) {
             if (TRACE) {System.err.println("**** Gotcha: " + file);}
-            result.add(new CommandLineSource(isCPP, workingDir, what, userIncludesCached, userMacrosCached));
+            result.add(new CommandLineSource(isCPP, compiler, workingDir, what, userIncludesCached, userMacrosCached));
             return true;
         }
         if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
             f = new File(guessWorkingDir+"/"+what);  //NOI18N
             if (f.exists() && f.isFile()) {
                 if (TRACE) {System.err.println("**** Gotcha guess: " + file);}
-                result.add(new CommandLineSource(isCPP, guessWorkingDir, what, userIncludesCached, userMacrosCached));
+                result.add(new CommandLineSource(isCPP, compiler, guessWorkingDir, what, userIncludesCached, userMacrosCached));
                 return true;
             }
         }
@@ -637,7 +651,7 @@ public class LogReader {
                     if (TRACE) {System.err.println("** And there is no such file under root");}
                 } else {
                     if (areThereOnlyOne) {
-                        result.add(new CommandLineSource(isCPP, out[0], what, userIncludes, userMacros));
+                        result.add(new CommandLineSource(isCPP, compiler, out[0], what, userIncludes, userMacros));
                         if (TRACE) {System.err.println("** Gotcha: " + out[0] + File.separator + what);}
                         // kinda adventure but it works
                         setGuessWorkingDir(out[0]);
@@ -660,6 +674,7 @@ public class LogReader {
         private String compilePath;
         private String sourceName;
         private String fullName;
+        private String compiler;
         private ItemProperties.LanguageKind language;
         private List<String> userIncludes;
         private List<String> systemIncludes = Collections.<String>emptyList();
@@ -667,13 +682,14 @@ public class LogReader {
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
 
-        private CommandLineSource(boolean isCPP, String compilePath, String sourcePath,
+        private CommandLineSource(boolean isCPP, String compiler, String compilePath, String sourcePath,
                 List<String> userIncludes, Map<String, String> userMacros) {
             if (isCPP) {
                 language = ItemProperties.LanguageKind.CPP;
             } else {
                 language = ItemProperties.LanguageKind.C;
             }
+            this.compiler = compiler;
             this.compilePath =compilePath;
             sourceName = sourcePath;
             if (sourceName.startsWith("/")) { // NOI18N
@@ -689,22 +705,27 @@ public class LogReader {
             this.userMacros = userMacros;
         }
 
+        @Override
         public String getCompilePath() {
             return compilePath;
         }
 
+        @Override
         public String getItemPath() {
             return fullName;
         }
 
+        @Override
         public String getItemName() {
             return sourceName;
         }
 
+        @Override
         public List<String> getUserInludePaths() {
             return userIncludes;
         }
 
+        @Override
         public List<String> getSystemInludePaths() {
             return systemIncludes;
         }
@@ -713,16 +734,24 @@ public class LogReader {
             return includedFiles;
         }
 
+        @Override
         public Map<String, String> getUserMacros() {
             return userMacros;
         }
 
+        @Override
         public Map<String, String> getSystemMacros() {
             return systemMacros;
         }
 
+        @Override
         public ItemProperties.LanguageKind getLanguageKind() {
             return language;
+        }
+
+        @Override
+        public String getCompilerName() {
+            return compiler;
         }
     }
 
@@ -770,6 +799,7 @@ public class LogReader {
 
     private final static FileFilter dirFilter = new FileFilter() {
 
+        @Override
             public boolean accept(File pathname) {
                 return pathname.isDirectory() && !DiscoveryUtils.ignoreFolder(pathname);
             }

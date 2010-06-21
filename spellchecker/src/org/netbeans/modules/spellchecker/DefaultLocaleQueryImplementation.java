@@ -141,6 +141,8 @@ public class DefaultLocaleQueryImplementation implements LocaleQueryImplementati
             pw = new PrintWriter(new OutputStreamWriter(file.getOutputStream(lock), UTF8));
             
             pw.println(locale.toString());
+
+            ComponentPeer.clearDoc2DictionaryCache();
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         } finally {

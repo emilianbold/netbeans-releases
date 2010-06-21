@@ -383,8 +383,11 @@ public class DiscoveryProjectGenerator {
                         if (prefferedFolder != null) {
                             item = projectBridge.createItem(name);
                             item = prefferedFolder.addItem(item);
+                            projectBridge.setHeaderTool(item);
                             if(!MIMENames.isCppOrC(item.getMIMEType())){
                                 needCheck.add(path);
+                            } else {
+                                if (DEBUG) {System.err.println("Source is header:"+item.getAbsPath());} // NOI18N
                             }
                             isNeedAdd = false;
                         }

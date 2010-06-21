@@ -46,16 +46,20 @@ package org.netbeans.modules.xml.xam;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import junit.framework.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.xml.xam.spi.ModelAccessProvider;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
 
 /**
- *
+ * Implements ModelAccessProvider in order to start auto synchronization (for issue #184306).
  * @author Nam Nguyen
  */
-public class AbstractModelTest extends TestCase {
+@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.ModelAccessProvider.class)})
+public class AbstractModelTest extends TestCase implements ModelAccessProvider {
     PropertyListener plistener;
     TestComponentListener listener;
     TestModel model;
@@ -63,6 +67,7 @@ public class AbstractModelTest extends TestCase {
 
     static class PropertyListener implements PropertyChangeListener {
         List<PropertyChangeEvent> events  = new ArrayList<PropertyChangeEvent>();
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             events.add(evt);
         }
@@ -87,12 +92,15 @@ public class AbstractModelTest extends TestCase {
     
     class TestComponentListener implements ComponentListener {
         List<ComponentEvent> accu = new ArrayList<ComponentEvent>();
+        @Override
         public void valueChanged(ComponentEvent evt) {
             accu.add(evt);
         }
+        @Override
         public void childrenAdded(ComponentEvent evt) {
             accu.add(evt);
         }
+        @Override
         public void childrenDeleted(ComponentEvent evt) {
             accu.add(evt);
         }
@@ -111,11 +119,14 @@ public class AbstractModelTest extends TestCase {
                     ". Instead received: " + accu, false);
         }
     }    
-    
+
+    public AbstractModelTest() {}
+
     public AbstractModelTest(String testName) {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         model = new TestModel();
         listener = new TestComponentListener();
@@ -124,6 +135,7 @@ public class AbstractModelTest extends TestCase {
         model.addPropertyChangeListener(plistener);
     }
 
+    @Override
     protected void tearDown() throws Exception {
         model.removePropertyChangeListener(plistener);
         model.removeComponentListener(listener);
@@ -134,28 +146,28 @@ public class AbstractModelTest extends TestCase {
     }
     
     public void testWeakListenerRemoval() throws Exception {
-        TestModel model = new TestModel();
-        TestComponent root = model.getRootComponent();
+        TestModel _model = new TestModel();
+        TestComponent _root = _model.getRootComponent();
         TestComponentListener listener1 = new TestComponentListener();
         TestComponentListener listener2 = new TestComponentListener();
         TestComponentListener listener3 = new TestComponentListener();
         TestComponentListener listener4 = new TestComponentListener();
         TestComponentListener listener5 = new TestComponentListener();
-        model.addComponentListener((ComponentListener)WeakListeners.create(ComponentListener.class, listener1, model));
-        model.addComponentListener((ComponentListener)WeakListeners.create(ComponentListener.class, listener2, model));
-        model.addComponentListener((ComponentListener)WeakListeners.create(ComponentListener.class, listener3, model));
-        model.addComponentListener((ComponentListener)WeakListeners.create(ComponentListener.class, listener4, model));
-        model.addComponentListener((ComponentListener)WeakListeners.create(ComponentListener.class, listener5, model));
+        _model.addComponentListener((ComponentListener)WeakListeners.create(ComponentListener.class, listener1, _model));
+        _model.addComponentListener((ComponentListener)WeakListeners.create(ComponentListener.class, listener2, _model));
+        _model.addComponentListener((ComponentListener)WeakListeners.create(ComponentListener.class, listener3, _model));
+        _model.addComponentListener((ComponentListener)WeakListeners.create(ComponentListener.class, listener4, _model));
+        _model.addComponentListener((ComponentListener)WeakListeners.create(ComponentListener.class, listener5, _model));
         
-        model.startTransaction();
-        model.addChildComponent(root, new TestComponent.B(model, 1), -1);
-        model.endTransaction();
+        _model.startTransaction();
+        _model.addChildComponent(_root, new TestComponent.B(_model, 1), -1);
+        _model.endTransaction();
         
-        listener1.assertEvent(ComponentEvent.EventType.CHILD_ADDED, root);
-        listener2.assertEvent(ComponentEvent.EventType.CHILD_ADDED, root);
-        listener3.assertEvent(ComponentEvent.EventType.CHILD_ADDED, root);
-        listener4.assertEvent(ComponentEvent.EventType.CHILD_ADDED, root);
-        listener5.assertEvent(ComponentEvent.EventType.CHILD_ADDED, root);
+        listener1.assertEvent(ComponentEvent.EventType.CHILD_ADDED, _root);
+        listener2.assertEvent(ComponentEvent.EventType.CHILD_ADDED, _root);
+        listener3.assertEvent(ComponentEvent.EventType.CHILD_ADDED, _root);
+        listener4.assertEvent(ComponentEvent.EventType.CHILD_ADDED, _root);
+        listener5.assertEvent(ComponentEvent.EventType.CHILD_ADDED, _root);
 
         listener2 = null;
         listener3 = null;
@@ -164,7 +176,7 @@ public class AbstractModelTest extends TestCase {
         System.gc();
         Thread.sleep(50);
      
-        assertEquals(1, model.getComponentListenerList().getListenerCount());
+        assertEquals(1, _model.getComponentListenerList().getListenerCount());
     }
     
     public void testStateChangeEvent() throws Exception {
@@ -173,12 +185,13 @@ public class AbstractModelTest extends TestCase {
         model.endTransaction();
         plistener.assertEvent(Model.STATE_PROPERTY, Model.State.VALID, Model.State.NOT_WELL_FORMED);
     }
-    
+
     private class FlushListener implements PropertyChangeListener {
         long flushTime = 0;
         public FlushListener() {
             model.getAccess().addFlushListener(this);
         }
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() == model.getAccess() && evt.getPropertyName().equals("flushed")) {
                 flushTime = ((Long)evt.getNewValue()).longValue();
@@ -213,6 +226,34 @@ public class AbstractModelTest extends TestCase {
         TestModel2.factory().addPropertyChangeListener(plistener);
         TestModel2 m = TestModel2.factory().getModel(Util.createModelSource(
                 "resources/test1.xml"));
-        plistener.assertEvent(TestModel2.factory().MODEL_LOADED_PROPERTY, null, m);
+        plistener.assertEvent(TestModel2.Factory.MODEL_LOADED_PROPERTY, null, m);
+    }
+
+    // Tests issue #184306
+    public void testModelWithoutDocument() throws Exception {
+        File file = new File("test_not_existing.xml");
+        // Construct a model source without Document.
+        ModelSource ms = new ModelSource(Lookups.fixed(file, (ModelAccessProvider)this), true);
+        //
+        TestModel2 model2 = new TestModel2(ms);
+        model2.sync();
+        assert model2.getState() == Model.State.NOT_SYNCED;
+        //
+        TestModel2.Factory modelFactory = TestModel2.factory();
+        model2 = modelFactory.createFreshModel(ms);
+        assert model2.getState() == Model.State.NOT_SYNCED;
+        //
+        model2 = modelFactory.getModel(ms);
+        assert model2.getState() == Model.State.NOT_SYNCED;
+        //
+        model2.getAccess().setDirty();
+        Thread.sleep(5000);
+        //
+        assert model2.getState() == Model.State.NOT_SYNCED;
+    }
+
+    @Override
+    public Object getModelSourceKey(ModelSource source) {
+        return source.getLookup().lookup(File.class);
     }
 }

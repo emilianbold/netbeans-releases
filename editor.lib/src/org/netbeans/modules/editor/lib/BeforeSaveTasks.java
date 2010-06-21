@@ -47,7 +47,6 @@ package org.netbeans.modules.editor.lib;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.CompoundEdit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.GapList;
@@ -84,7 +83,7 @@ public final class BeforeSaveTasks {
                     " is already occupied by " + beforeSaveRunnable); // NOI18N
         }
         beforeSaveRunnable = new Runnable() {
-            public void run() {
+            public @Override void run() {
                 runTasks();
             }
         };
@@ -109,13 +108,13 @@ public final class BeforeSaveTasks {
      * @return true if the tasks was removed successfully or false if the task
      *  was not found (compared by <code>Object.equals()</code>).
      */
-    public synchronized boolean removeTask(Runnable task) {
+    public synchronized boolean removeTask(Task task) {
         return tasks.remove(task);
     }
     
     private void runTasks() {
         doc.runAtomicAsUser (new Runnable () {
-            public void run () {
+            public @Override void run () {
                 CompoundEdit atomicEdit = EditorPackageAccessor.get().BaseDocument_markAtomicEditsNonSignificant(doc);
                 // Since these are before-save actions they should generally not prevent
                 // the save operation to succeed. Thus the possible exceptions thrown

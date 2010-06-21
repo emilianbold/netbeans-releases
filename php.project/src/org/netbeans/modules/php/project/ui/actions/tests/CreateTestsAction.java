@@ -360,7 +360,7 @@ public final class CreateTestsAction extends NodeAction {
     }
 
     private File getGeneratedFile(String className, File parent) {
-        return new File(parent, className + PhpUnit.TEST_FILE_SUFFIX);
+        return new File(parent, PhpUnit.makeTestFile(className));
     }
 
     private File getTestDirectory(PhpProject phpProject) {
@@ -379,7 +379,7 @@ public final class CreateTestsAction extends NodeAction {
 
         File relativeTestDirectory = new File(getTestDirectory(project), relativeSourcePath.replace('/', File.separatorChar)); // NOI18N
 
-        return new File(relativeTestDirectory, className + PhpUnit.TEST_FILE_SUFFIX);
+        return new File(relativeTestDirectory, PhpUnit.makeTestFile(className));
     }
 
     private File moveAndAdjustGeneratedFile(File generatedFile, File testFile, File sourceFile) {

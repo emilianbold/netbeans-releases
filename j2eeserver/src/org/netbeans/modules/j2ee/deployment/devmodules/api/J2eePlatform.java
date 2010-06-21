@@ -71,6 +71,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.impl.sharability.ServerLibraryTypeProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
@@ -309,6 +311,10 @@ public final class J2eePlatform {
             classpathCache = (File[])classpath.toArray(new File[classpath.size()]);
         }
         return classpathCache;
+    }
+
+    public File[] getClasspathEntries(Set<ServerLibraryDependency> libraries) {
+        return impl.getClasspathEntries(libraries);
     }
 
     /**
@@ -817,7 +823,7 @@ public final class J2eePlatform {
 
     private String getClasspathAsString() {
         File[] classpathEntr = getClasspathEntries();
-        StringBuffer classpath = new StringBuffer();
+        StringBuilder classpath = new StringBuilder();
         final String PATH_SEPARATOR = System.getProperty("path.separator"); // NOI18N
         for (int i = 0; i < classpathEntr.length; i++) {
             classpath.append(classpathEntr[i].getAbsolutePath());

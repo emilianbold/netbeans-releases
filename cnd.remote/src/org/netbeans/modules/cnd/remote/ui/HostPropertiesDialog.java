@@ -111,7 +111,7 @@ public class HostPropertiesDialog extends JPanel {
             }
 //            }
             if (changed) {
-                RemoteServerList.storePreferences(record);
+                RemoteServerList.storePreferences();
                 return true;
             }
         }

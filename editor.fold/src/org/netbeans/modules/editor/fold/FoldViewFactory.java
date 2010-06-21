@@ -66,6 +66,11 @@ import org.netbeans.modules.editor.lib2.view.EditorViewFactory;
 
 public final class FoldViewFactory extends EditorViewFactory implements FoldHierarchyListener {
 
+    /**
+     * Component's client property which can be set to view folds expanded for tooltip fold preview.
+     */
+    static final String VIEW_FOLDS_EXPANDED_PROPERTY = "view-folds-expanded"; // NOI18N
+
     // -J-Dorg.netbeans.modules.editor.fold.FoldViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(FoldViewFactory.class.getName());
 
@@ -83,10 +88,13 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
 
     private Iterator<Fold> collapsedFoldIterator;
 
+    private boolean viewFoldsExpanded;
+
     public FoldViewFactory(JTextComponent component) {
         super(component);
         foldHierarchy = FoldHierarchy.get(component);
         foldHierarchy.addFoldHierarchyListener(this);
+        viewFoldsExpanded = Boolean.TRUE.equals(component.getClientProperty(VIEW_FOLDS_EXPANDED_PROPERTY));
     }
 
     @Override
@@ -115,8 +123,11 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
 
     @Override
     public int nextViewStartOffset(int offset) {
-        updateFold(offset);
-        return foldStartOffset;
+        if (!viewFoldsExpanded) {
+            updateFold(offset);
+            return foldStartOffset;
+        }
+        return Integer.MAX_VALUE;
     }
 
     @Override

@@ -742,6 +742,21 @@ made subject to such option by the copyright holder.
             <class package="org.netbeans.api.visual.action" name="ContiguousSelectEvent" link="yes"/>
             <issue number="144139"/>
         </change>
+        <change>
+            <api name="general"/>
+            <summary>Enhancement of the old layout and adding the possibility of minimizing the gaps between nodes.</summary>
+            <version major="2" minor="25"/>
+            <date day="17" month="5" year="2010"/>
+            <author login="ep-nb"/>
+            <compatibility addition="yes"/>
+            <description>
+                The old layout was improved in a way that nodes in a subtree are vertically aligned by the center of the super nodes. Also the possibility of overlapping in the old layout was removed by adding an approach based on the envelope of the (sub)trees.
+                The second improvement was done by adding the possibility of minimizing the gaps between nodes. If a tree was very wide, the old layout used a lot of space. To prevent this the new algorithm with the possibility of minimization of gaps is based on the envelope. Therefore subtrees move as close together as possible. 
+            </description>
+            <class package="org.netbeans.api.visual.graph.layout" name="GraphLayoutFactory" link="yes"/>
+            <class package="org.netbeans.api.visual.graph.layout" name="GraphLayoutSupport" link="yes"/>
+            <issue number="178705"/>
+        </change>
     </changes>
 
     <htmlcontents>

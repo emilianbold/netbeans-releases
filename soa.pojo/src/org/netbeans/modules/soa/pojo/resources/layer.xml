@@ -47,7 +47,6 @@
             </file>
             <file name="pojobinding.wsdl" url="pojobinding.wsdl">
                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/soa/pojo/resources/pojo.png"/>
-               <!--attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/bindingwizard/resources/wsdl_file.png"/-->
                <attr name="template" boolvalue="true"/>
                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.soa.pojo.wizards.BindingWizardIterator"/>
                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/soa/pojo/resources/PojoBindingWizard.html"/>
@@ -65,9 +64,9 @@
             <file name="pojoconsumerbinding.wsdl" url="pojoconsumerbinding.wsdl">
                <attr name="template" boolvalue="true"/>
                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.soa.pojo.wizards.POJOBindingConsumerPalleteWizardIterator"/>
-               <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/bindingwizard/resources/newBindingWizard.html"/>
+               <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/soa/bindingwizard/resources/newBindingWizard.html"/>
                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.soa.pojo.resources.Bundle"/>
-               <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/bindingwizard/resources/wsdl_file.png"/>
+               <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/soa/bindingwizard/resources/wsdl_file.png"/>
                <attr name="bindingConcreteConfiguration" stringvalue="true"/>
            </file>
         </folder>

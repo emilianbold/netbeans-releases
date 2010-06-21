@@ -120,4 +120,26 @@ public class SvnKenaiAccessor {
         addVCSNoficationListener(new KenaiNotificationListener());
     }
 
+    /**
+     * Returns <code>false</code> only when the given repository is a kenai one, current user is logged in and does not have read access rights
+     * @param repositoryUrl
+     * @return
+     */
+    public boolean canRead (String repositoryUrl) {
+        return isAuthorized(repositoryUrl, VCSKenaiAccessor.RepositoryActivity.READ);
+    }
+
+    /**
+     * Returns <code>false</code> only when the given repository is a kenai one, current user is logged in and does not have commit access rights
+     * @param repositoryUrl
+     * @return
+     */
+    public boolean canWrite (String repositoryUrl) {
+        return isAuthorized(repositoryUrl, VCSKenaiAccessor.RepositoryActivity.WRITE);
+    }
+
+    private boolean isAuthorized (String repositoryUrl, VCSKenaiAccessor.RepositoryActivity permission) {
+        return kenaiAccessor == null || !kenaiAccessor.isLogged(repositoryUrl) || kenaiAccessor.isAuthorized(repositoryUrl, permission);
+    }
+
 }
