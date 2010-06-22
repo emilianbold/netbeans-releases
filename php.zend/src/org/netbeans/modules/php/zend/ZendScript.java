@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.zend;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -82,7 +81,7 @@ public class ZendScript extends PhpProgram {
     private static final String[] CMD_CREATE_CONFIG = new String[] {"create", "config"}; // NOI18N
     private static final String[] CMD_ENABLE_CONFIG = new String[] {"enable", "config.provider", "NetBeansCommandsProvider"}; // NOI18N
 
-    public ZendScript(String command) {
+    private ZendScript(String command) {
         super(command);
     }
 
@@ -145,21 +144,7 @@ public class ZendScript extends PhpProgram {
 
     @Override
     public String validate() {
-        if (!StringUtils.hasText(getProgram())) {
-            return NbBundle.getMessage(ZendScript.class, "MSG_NoZend");
-        }
-
-        File file = new File(getProgram());
-        if (!file.isAbsolute()) {
-            return NbBundle.getMessage(ZendScript.class, "MSG_ZendNotAbsolutePath");
-        }
-        if (!file.isFile()) {
-            return NbBundle.getMessage(ZendScript.class, "MSG_ZendNotFile");
-        }
-        if (!file.canRead()) {
-            return NbBundle.getMessage(ZendScript.class, "MSG_ZendCannotRead");
-        }
-        return null;
+        return FileUtils.validateScript(getProgram(), NbBundle.getMessage(ZendScript.class, "LBL_ZendScript"));
     }
 
     public static String validate(String command) {
