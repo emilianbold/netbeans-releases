@@ -60,6 +60,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.PasswordAuthentication;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -328,7 +329,7 @@ public class HgCommand {
 
     private static final String ENV_HGPLAIN = "HGPLAIN"; //NOI18N
     private static final String ENV_HGENCODING = "HGENCODING"; //NOI18N
-    private static final String UTF8 = "UTF-8"; //NOI18N
+    private static final String ENCODING = getEncoding();
 
     private static final String HG_LOG_FULL_CHANGESET_NAME = "log-full-changeset.tmpl"; //NOI18N
     private static final String HG_LOG_ONLY_FILES_CHANGESET_NAME = "log-only-files-changeset.tmpl"; //NOI18N
@@ -1861,7 +1862,9 @@ public class HgCommand {
             tempfile = File.createTempFile(HG_COMMIT_TEMPNAME, HG_COMMIT_TEMPNAME_SUFFIX);
 
             // Write to temp file
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tempfile), UTF8));
+            BufferedWriter out = new BufferedWriter(ENCODING == null 
+                    ? new OutputStreamWriter(new FileOutputStream(tempfile)) 
+                    : new OutputStreamWriter(new FileOutputStream(tempfile), ENCODING));
             out.write(commitMessage);
             out.close();
 
@@ -2855,7 +2858,9 @@ public class HgCommand {
 
     private static void setGlobalEnvVariables (Map<String, String> environment) {
         environment.put(ENV_HGPLAIN, "true"); //NOI18N
-        environment.put(ENV_HGENCODING, UTF8);
+        if (ENCODING != null) {
+            environment.put(ENV_HGENCODING, ENCODING);
+        }
     }
 
     /**
@@ -2886,8 +2891,12 @@ public class HgCommand {
         try{
             proc = pb.start();
 
-            input = new BufferedReader(new InputStreamReader(proc.getInputStream(), UTF8));
-            error = new BufferedReader(new InputStreamReader(proc.getErrorStream(), UTF8));
+            input = new BufferedReader(ENCODING == null 
+                    ? new InputStreamReader(proc.getInputStream())
+                    : new InputStreamReader(proc.getInputStream(), ENCODING));
+            error = new BufferedReader(ENCODING == null 
+                    ? new InputStreamReader(proc.getErrorStream())
+                    : new InputStreamReader(proc.getErrorStream(), ENCODING));
             final BufferedReader errorReader = error;
             final LinkedList<String> errorOutput = new LinkedList<String>();
             final BufferedReader inputReader = input;
@@ -3017,9 +3026,9 @@ public class HgCommand {
                     File tempFile = File.createTempFile(
                                                 "hg-output-style",      //NOI18N
                                                 null);    //extension (default)
-                    Writer writer = new OutputStreamWriter(
-                                                new FileOutputStream(tempFile),
-                                                UTF8);
+                    Writer writer = ENCODING == null 
+                            ? new OutputStreamWriter(new FileOutputStream(tempFile)) 
+                            : new OutputStreamWriter(new FileOutputStream(tempFile), ENCODING);
                     try {
                         writer.append("changeset = ")                   //NOI18N
                               .append('"').append(template).append('"');
@@ -3631,6 +3640,22 @@ public class HgCommand {
      * This utility class should not be instantiated anywhere.
      */
     private HgCommand() {
+    }
+
+    private static String getEncoding() {
+        String enc = null;
+        String prop = System.getProperty("mercurial.encoding", ""); //NOI18N
+        if (!prop.isEmpty()) {
+            try {
+                if (Charset.isSupported(prop)) {
+                    enc = prop;
+                }
+            } catch (java.nio.charset.IllegalCharsetNameException ex) { }
+            if (enc == null) {
+                Mercurial.LOG.log(Level.WARNING, "Unsupported encoding {0}, using default", prop); //NOI18N
+            }
+        }
+        return enc;
     }
 
     /**
