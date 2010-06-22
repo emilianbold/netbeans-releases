@@ -377,7 +377,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                         unUnique.addAll( ((ModelSource)source).getIncludedFiles() );
                     }
                     if (progress != null){
-                        progress.increment();
+                        progress.increment(null);
                     }
                 }
                 for(String path : unUnique){
