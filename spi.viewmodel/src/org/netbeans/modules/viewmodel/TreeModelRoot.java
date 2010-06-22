@@ -191,6 +191,36 @@ public class TreeModelRoot {
         }
     }
     
+    void unregisterNode (Object o, TreeModelNode n) {
+        synchronized (objectToNode) {
+            WeakReference<TreeModelNode>[] wrs = objectToNode.get(o);
+            if (wrs != null) {
+                for (int i = 0; i < wrs.length; i++) {
+                    WeakReference<TreeModelNode> wr = wrs[i];
+                    TreeModelNode tn = wr.get();
+                    if (tn == n) {
+                        if (wrs.length == 1) { // The only item
+                            objectToNode.remove(o);
+                        } else if (wrs.length == 2) { // Leave only the other item
+                            wrs = new WeakReference[] { wrs[(i + 1) % 2] };
+                            objectToNode.put (o, wrs);
+                        } else {    // Leave only the other items
+                            WeakReference[] nwrs = new WeakReference[wrs.length - 1];
+                            if (i > 0) {
+                                System.arraycopy(wrs, 0, nwrs, 0, i);
+                            }
+                            if (i < (wrs.length - 1)) {
+                                System.arraycopy(wrs, i+1, nwrs, i, wrs.length - i - 1);
+                            }
+                            objectToNode.put (o, nwrs);
+                        }
+                        return ;
+                    }
+                }
+            }
+        }
+    }
+
     TreeModelNode[] findNode (Object o) {
         WeakReference<TreeModelNode>[] wrs;
         synchronized (objectToNode) {
