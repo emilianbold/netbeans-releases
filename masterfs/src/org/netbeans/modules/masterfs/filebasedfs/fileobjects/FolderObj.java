@@ -190,7 +190,7 @@ public final class FolderObj extends BaseFileObj {
         } else {
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N                           
         }
-
+        getProvidedExtensions().createSuccess(retVal);
         return retVal;
     }
 
@@ -275,7 +275,7 @@ public final class FolderObj extends BaseFileObj {
         } else {
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
         }
-
+        getProvidedExtensions().createSuccess(retVal);
         return retVal;
     }
 
@@ -376,10 +376,12 @@ public final class FolderObj extends BaseFileObj {
 
                 if (newChild.isFolder()) {
                     if (fire) {
+                        getProvidedExtensions().createdExternally(newChild);
                         newChild.fireFileFolderCreatedEvent(expected);
                     }
                 } else {
                     if (fire) {
+                        getProvidedExtensions().createdExternally(newChild);
                         newChild.fireFileDataCreatedEvent(expected);
                     }
                 }
@@ -389,9 +391,11 @@ public final class FolderObj extends BaseFileObj {
                     if (newChild.isValid()) {
                         newChild.setValid(false);
                         if (newChild instanceof FolderObj) {
+                            getProvidedExtensions().deletedExternally(newChild);
                             ((FolderObj)newChild).refreshImpl(expected, fire);
                         } else {
                             if (fire) {
+                                getProvidedExtensions().deletedExternally(newChild);
                                 newChild.fireFileDeletedEvent(expected);
                             }
                         }

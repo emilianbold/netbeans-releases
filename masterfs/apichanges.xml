@@ -49,6 +49,29 @@ made subject to such option by the copyright holder.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="event-order">
+            <api name="masterfs"/>
+            <summary>Guaranteed event order when deleting and creating files and new calls in ProvidedExtensions</summary>
+            <version major="2" minor="27"/>
+            <date day="9" month="6" year="2010"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <ul>
+                    <li>
+                        Guaranteed event order when deleting and creating files in atomic action -
+                        <code>createSuccess</code> and <code>deleteSuccess</code> are called imediatelly
+                        after a file is created or deleted.
+                    </li>
+                    <li> new calls <code>createdExternally</code>, <code>deletedExternally</code>,
+                        <code>fileChanged</code>, <code>beforeMove</code>,
+                        <code>moveSuccess</code>, <code>moveFailure</code>
+                    </li>
+                </ul>
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="ProvidedExtensions"/>
+            <issue number="133855"/>
+        </change>
         <change id="priority-io">
             <api name="masterfs"/>
             <summary><code>ProvidedExtensions.priorityIO</code> to suspend background refresh</summary>

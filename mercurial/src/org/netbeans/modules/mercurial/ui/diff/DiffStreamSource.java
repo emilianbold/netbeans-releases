@@ -77,6 +77,7 @@ public class DiffStreamSource extends StreamSource {
      * Null is a valid value if base file does not exist in this revision. 
      */ 
     private File            remoteFile;
+    private boolean canWriteBaseFile;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -148,7 +149,7 @@ public class DiffStreamSource extends StreamSource {
 
     @Override
     public boolean isEditable() {
-        return Setup.REVISION_CURRENT.equals(revision) && isPrimary();
+        return Setup.REVISION_CURRENT.equals(revision) && isPrimary() && canWriteBaseFile;
     }
 
     private boolean isPrimary() {
@@ -229,5 +230,7 @@ public class DiffStreamSource extends StreamSource {
             failure.initCause(e);
             throw failure;
         }
+        FileObject fo = FileUtil.toFileObject(baseFile);
+        canWriteBaseFile = fo != null && fo.canWrite();
     }
 }
