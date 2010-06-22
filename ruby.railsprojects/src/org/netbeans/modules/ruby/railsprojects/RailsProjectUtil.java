@@ -381,7 +381,7 @@ public class RailsProjectUtil {
             return compareTo(new RailsVersion(3)) >= 0;
         }
 
-        public boolean isRails3Obeta4rHigher() {
+        public boolean isRails3Obeta4OrHigher() {
             return compareTo(new RailsVersion(3,0,0,"beta4")) >= 0;
         }
 
@@ -397,7 +397,13 @@ public class RailsProjectUtil {
                     if (revision > o.revision) {
                         return 1;
                     }
-                    return revision == o.revision ? this.suffix.compareTo(o.suffix) : -1;
+                    if (revision == o.revision) {
+                        if (this.suffix == null || this.suffix.isEmpty()) {
+                            return o.suffix == null || o.suffix.isEmpty() ? 0 : 1;
+                        } else {
+                            return o.suffix == null || o.suffix.isEmpty() ? -1 : this.suffix.compareTo(o.suffix);
+                        }
+                    }
                 }
             }
             return -1;

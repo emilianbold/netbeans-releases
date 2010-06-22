@@ -69,7 +69,7 @@ public final class GemFilesParser {
     private static final String DOT_GEM_SPEC = ".gemspec"; // NOI18N
     
     /** The regex for capturing version */
-    public static final String VERSION_REGEX = "(\\d+(?:\\.\\d+)*(\\.beta)?)";  //NOI18N
+    public static final String VERSION_REGEX = "(\\d+(?:\\.\\d+)*(\\.beta\\d*)?)";  //NOI18N
     /**
      * The pattern for capturing the gem name and version from file names.
      */

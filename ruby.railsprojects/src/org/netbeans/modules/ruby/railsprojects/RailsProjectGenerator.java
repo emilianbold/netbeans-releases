@@ -123,13 +123,13 @@ public class RailsProjectGenerator {
             File pwd = data.getDir().getParentFile();
             List<String> argList = new ArrayList<String>();
             if (railsVersionArg != null) {
-                if (RailsProjectUtil.versionFor(data.getRailsVersion()).isRails3Obeta4rHigher()) {
+                if (RailsProjectUtil.versionFor(data.getRailsVersion()).isRails3Obeta4OrHigher()) {
                     argList.add("new");
                 }
                 argList.add(railsVersionArg);
             } else {
                 GemManager gemManager = platform.getGemManager();
-                if (RailsProjectUtil.versionFor(gemManager.getLatestVersion("rails")).isRails3Obeta4rHigher()) {
+                if (RailsProjectUtil.versionFor(gemManager.getLatestVersion("rails")).isRails3Obeta4OrHigher()) {
                     argList.add("new");
                 }
             }
