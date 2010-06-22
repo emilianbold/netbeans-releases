@@ -242,7 +242,7 @@ class RfsLocalController extends NamedRunnable {
             timeStampFile = null;
             String errMsg = NbBundle.getMessage(getClass(), "MSG_Error_Running_Command", "mktemp -p " + remoteSyncRoot, execEnv, res.error, res.exitCode);
             logger.log(Level.INFO, errMsg);
-            err.printf("%s\n", errMsg);
+            err.printf("%s\n", errMsg); // NOI18N
             return false;
         }
     }
