@@ -2711,6 +2711,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         private StaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated) {
             super(substitutionOffset);
+            type = (DeclaredType) info.getTypes().erasure(type);
             this.typeHandle = TypeMirrorHandle.create(type);
             this.memberElementHandle = ElementHandle.create(memberElem);
             this.isDeprecated = isDeprecated;
