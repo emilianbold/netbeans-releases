@@ -79,6 +79,7 @@ public class DiffStreamSource extends StreamSource {
 
     private ExecutorGroup   group;
     private boolean         initialized;
+    private boolean canWriteBaseFile;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -127,7 +128,7 @@ public class DiffStreamSource extends StreamSource {
 
     @Override
     public synchronized boolean isEditable() {
-        return !binary && VersionsCache.REVISION_CURRENT.equals(revision) && isPrimary();
+        return !binary && VersionsCache.REVISION_CURRENT.equals(revision) && isPrimary() && canWriteBaseFile;
     }
 
     private boolean isPrimary() {
@@ -220,5 +221,6 @@ public class DiffStreamSource extends StreamSource {
         } else {
             mimeType = "text/plain"; // NOI18N
         }
+        canWriteBaseFile = fo != null && fo.canWrite();
     }
 }

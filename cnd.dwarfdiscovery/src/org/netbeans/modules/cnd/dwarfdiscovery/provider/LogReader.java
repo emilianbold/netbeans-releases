@@ -191,7 +191,7 @@ public class LogReader {
                     if (read*100/length > done && done < 100){
                         done++;
                         if (progress != null) {
-                            progress.increment();
+                            progress.increment(null);
                         }
                     }
                 }

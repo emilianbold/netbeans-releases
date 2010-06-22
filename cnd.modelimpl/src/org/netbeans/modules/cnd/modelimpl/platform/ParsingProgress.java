@@ -66,10 +66,9 @@ final class ParsingProgress {
     private static final int ALL_WORK_INT = 10000;
     private boolean started = false;
     private boolean determinate = false;
-    private static final boolean TRACE = true;
     
     /**  
-     * Delay amount of miliseconds 
+     * Delay amount of milliseconds
      * that shall pass before the progress appears in status bar
      */
     private static final int INITIAL_DELAY = 1000; // ms
@@ -135,11 +134,8 @@ final class ParsingProgress {
                 }
             }
             try {
-                if (TRACE) {
-                    handle.progress("("+curWorkedUnits+" of "+(maxWorkUnits + addedAfterStartParsing)+") "+file.getName().toString(), allWork); // NOI18N
-                } else  {
-                    handle.progress(file.getName().toString(), allWork);
-                }
+                String msg = NbBundle.getMessage(ModelSupport.class, "MSG_ParsingProgressFull", ""+curWorkedUnits, ""+(maxWorkUnits + addedAfterStartParsing), file.getName().toString()); // NOI18N
+                handle.progress(msg, allWork);
                 //assert(curWorkedUnits <= maxWorkUnits);
             } catch (NullPointerException ex) {
                 // very strange... but do not interrupt process
@@ -150,7 +146,7 @@ final class ParsingProgress {
 
     /**
      * Currently indeterminate task can be switched to show percentage completed.
-     * A common usecase is to calculate the amount of work in the beginning showing
+     * A common use case is to calculate the amount of work in the beginning showing
      * in indeterminate mode and later switch to the progress with known steps
      */
     public void switchToDeterminate(int maxWorkUnits) {

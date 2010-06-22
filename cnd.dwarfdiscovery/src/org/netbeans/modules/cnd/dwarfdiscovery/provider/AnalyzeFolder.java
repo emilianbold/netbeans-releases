@@ -270,7 +270,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                             }
                             if (progress != null) {
                                 synchronized(progress) {
-                                    progress.increment();
+                                    progress.increment(path);
                                 }
                             }
                             File file = new File(path);
@@ -331,12 +331,12 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             return name.endsWith(".exe") || name.endsWith(".dll");  // NOI18N
         } else if (Utilities.isUnix()){
             // FIXUP: There are no way to detect "executable".
-            return name.indexOf('.') < 0;
-            //try{
-            //    //Since 1.6
-            //    return file.canExecute();
-            //} catch (SecurityException ex) {
-            //}
+            //return name.indexOf('.') < 0;
+            try{
+                //Since 1.6
+                return file.canExecute();
+            } catch (SecurityException ex) {
+            }
         }
         return false;
     }
