@@ -63,7 +63,7 @@
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/jdbc-mysql-5.0.4.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/activerecord-jdbc-adapter-0.9.6-java.gem"/>
         <copy todir="${unpatched_source}/jruby-${jruby_src_version}" file="external/rspec-1.2.9.gem"/>
-        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rails-gems-2.3.4.zip"/>
+        <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rails-gems-2.3.8.zip"/>
         <unzip dest="${unpatched_source}/jruby-${jruby_src_version}" src="external/rcov-0.8.1.5.0-java.zip"/>
         <!-- Run dist-bin target in JRuby's own build.xml file -->
         <ant dir="${unpatched_source}/jruby-${jruby_src_version}" target="dist-bin" inheritall="false" inheritrefs="false"/>
