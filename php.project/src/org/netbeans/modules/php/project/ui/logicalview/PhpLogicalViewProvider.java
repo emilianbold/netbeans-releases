@@ -53,6 +53,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
+import org.netbeans.modules.php.api.doc.PhpDocs;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
@@ -60,6 +61,7 @@ import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.spi.actions.RunCommandAction;
+import org.netbeans.modules.php.spi.doc.PhpDocProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.spi.project.ActionProvider;
@@ -207,6 +209,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean context) {
+            final PhpModule phpModule = project.getPhpModule();
             PhpActionProvider provider = project.getLookup().lookup(PhpActionProvider.class);
             assert provider != null;
             List<Action> actions = new ArrayList<Action>();
@@ -215,6 +218,17 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(provider.getAction(ActionProvider.COMMAND_RUN));
             actions.add(provider.getAction(ActionProvider.COMMAND_DEBUG));
             actions.add(provider.getAction(ActionProvider.COMMAND_TEST));
+            // phpdoc
+            boolean first = true;
+            for (PhpDocProvider docProvider : PhpDocs.getDocumentations()) {
+                if (docProvider.isInPhpModule(phpModule)) {
+                    if (first) {
+                        actions.add(null);
+                        first = false;
+                    }
+                    actions.add(new PhpDocAction(phpModule, docProvider));
+                }
+            }
             actions.add(null);
             if (PhpUnit.hasValidVersion(CommandUtils.getPhpUnit(false))) {
                 // code coverage seems to be supported in php unit 3.3.0+
@@ -235,7 +249,6 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(SystemAction.get(FindAction.class));
 
             // frameworks
-            PhpModule phpModule = project.getPhpModule();
             for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
                 PhpModuleActionsExtender actionsExtender = frameworkProvider.getActionsExtender(phpModule);
                 if (actionsExtender != null) {
@@ -354,6 +367,25 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         @Override
         public void actionPerformed(ActionEvent e) {
             project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
+        }
+    }
+
+    private static final class PhpDocAction extends AbstractAction {
+        private static final long serialVersionUID = 178423135454L;
+
+        private final PhpModule phpModule;
+        private final PhpDocProvider docProvider;
+
+        public PhpDocAction(PhpModule phpModule, PhpDocProvider docProvider) {
+            super(NbBundle.getMessage(PhpLogicalViewProvider.class, "LBL_Generate", docProvider.getDisplayName()));
+
+            this.phpModule = phpModule;
+            this.docProvider = docProvider;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            docProvider.generateDocumentation(phpModule);
         }
     }
 }

@@ -49,7 +49,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.util.NbBundle;
 
 /**
@@ -107,7 +106,7 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
             String documentRoot = getFolderName(htDocs, projectName);
             String url = getDefaultUrl(projectName);
             String hint = NbBundle.getMessage(WindowsPhpEnvironment.class, "TXT_HtDocs");
-            return Arrays.asList(new DocumentRoot(documentRoot, url, hint, Utils.isFolderWritable(htDocs)));
+            return Arrays.asList(new DocumentRoot(documentRoot, url, hint, FileUtils.isDirectoryWritable(htDocs)));
         }
         return Collections.<DocumentRoot>emptyList();
     }
