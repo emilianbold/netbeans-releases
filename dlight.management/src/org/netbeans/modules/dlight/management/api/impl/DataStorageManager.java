@@ -193,6 +193,7 @@ public final class DataStorageManager {
                             ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
                             DataStorage backendStorage = getDataStorage(uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
                             proxyStorage.attachTo(backendStorage);
+                            uniqueStorages = activeStorages.get(uniqueKey);
                         }
                         newStorage.createTables(tableMetadatas);
                         if (uniqueStorages == null) {
@@ -207,12 +208,13 @@ public final class DataStorageManager {
                             ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
                             DataStorage backendStorage = getDataStorage(uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
                             proxyStorage.attachTo(backendStorage);
+                            uniqueStorages = activeStorages.get(uniqueKey);
                         }
                         newStorage.createTables(tableMetadatas);
                         if (uniqueStorages == null) {
                             uniqueStorages = new ArrayList<DataStorage>();
                         }
-                        uniqueStorages.add(newStorage);
+                        uniqueStorages.add(newStorage);                        
                         activeStorages.put(uniqueKey, uniqueStorages);
                         return newStorage;
                     }
@@ -227,6 +229,7 @@ public final class DataStorageManager {
                         ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
                         DataStorage backendStorage = getDataStorage(uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
                         proxyStorage.attachTo(backendStorage);
+                        uniqueStorages = activeStorages.get(uniqueKey);
                     }
                     if (newStorage != null) {
                         newStorage.createTables(tableMetadatas);
