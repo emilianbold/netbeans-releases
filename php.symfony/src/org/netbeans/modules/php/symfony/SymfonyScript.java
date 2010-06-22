@@ -82,7 +82,7 @@ public class SymfonyScript extends PhpProgram {
     public static final String CMD_CLEAR_CACHE = "cache:clear"; // NOI18N
     public static final String CMD_INIT_APP = "generate:app"; // NOI18N
 
-    public SymfonyScript(String command) {
+    SymfonyScript(String command) {
         super(command);
     }
 
@@ -139,21 +139,7 @@ public class SymfonyScript extends PhpProgram {
 
     @Override
     public String validate() {
-        if (!StringUtils.hasText(getProgram())) {
-            return NbBundle.getMessage(SymfonyScript.class, "MSG_NoSymfony");
-        }
-
-        File file = new File(getProgram());
-        if (!file.isAbsolute()) {
-            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyNotAbsolutePath");
-        }
-        if (!file.isFile()) {
-            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyNotFile");
-        }
-        if (!file.canRead()) {
-            return NbBundle.getMessage(SymfonyScript.class, "MSG_SymfonyCannotRead");
-        }
-        return null;
+        return FileUtils.validateScript(getProgram(), NbBundle.getMessage(SymfonyScript.class, "LBL_SymfonyScript"));
     }
 
     public static String validate(String command) {
