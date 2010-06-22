@@ -54,6 +54,7 @@ import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import java.awt.event.ActionEvent;
 import java.beans.*;
 import java.util.WeakHashMap;
+import javax.lang.model.type.NullType;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
@@ -103,6 +104,8 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
     public static final boolean debug = false;
     private final String mimeType;
+
+    private static final String NULL_SOURCE_LEVEL = "NullSourceLevel"; //NOI18N
 
     // called from the XML layer
     private static JspKit createKitForJsp() {
@@ -303,10 +306,14 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 if(sourceLevel == null) {
                     JavaKit jkit = (JavaKit)kit;
                     sourceLevel = jkit.getSourceLevel((BaseDocument)doc);
+                    if(sourceLevel == null) {
+                        sourceLevel = NULL_SOURCE_LEVEL;
+                    }
+
                     SOURCE_LEVEL_MAP.put(doc, sourceLevel);
                 }
                 //create a special javasyntax patched for use in JSPs (fix of #55628)
-                return new JavaSyntax(sourceLevel, true);
+                return new JavaSyntax(sourceLevel == NULL_SOURCE_LEVEL ? null : sourceLevel, true); // instance comparation for string is ok here
             }
         } else {
             return new HtmlSyntax();
