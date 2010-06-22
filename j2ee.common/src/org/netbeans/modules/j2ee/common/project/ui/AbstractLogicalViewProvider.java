@@ -140,7 +140,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         registerListeners(j2eeModuleProvider);
     }
 
-    protected void registerListeners(J2eeModuleProvider j2eeModuleProvider) {
+    private void registerListeners(J2eeModuleProvider j2eeModuleProvider) {
         pcl = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
                 testBroken();
@@ -327,11 +327,16 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
 
     /**
      * Used by WebProjectCustomizer to mark the project as broken when it warns user
-     * about project's broken references and advices him to use BrokenLinksAction to correct it.
+     * about project's broken references and advises him to use BrokenLinksAction to correct it.
      *
      */
     @Override
     public void testBroken () {
+        if (project.getLookup() == null) {
+            // #187910 - ignore events which are received too early, that is before
+            // project lookup was constructed
+            return;
+        }
         task.schedule(100);
     }
     
