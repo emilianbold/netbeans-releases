@@ -37,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.db.sql.history;
 
@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -100,7 +99,7 @@ public class SQLHistoryPersistenceManagerTest extends NbTestCase {
     public void testDateParsing() throws Exception {
         URL u = this.getClass().getResource("sql_history.xml");
         FileObject fo = FileUtil.toFileObject(new File(u.toURI()));
-        List<SQLHistory> sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(FileUtil.toFile(fo).getAbsolutePath(), fo.getParent());
+        List<SQLHistory> sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(fo.getParent());
         for (SQLHistory sqlHistory : sqlHistoryList) {
             assertNotNull(sqlHistory.getDate());
         }
