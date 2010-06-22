@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.filechooser.FileView;
 
 /**
  * Plugs into IDE filesystem and delegates file operations to registered versioning systems.
@@ -205,7 +206,20 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     }
 
     @Override
-    public void fileDeleted(FileEvent fe) {
+    public void deleteSuccess(FileObject fo) {
+        fileDeleted(fo);
+    }
+
+    @Override
+    public void deletedExternally(FileObject fo) {
+        fileDeleted(fo);
+    }
+
+    @Override
+    public void fileDeleted(FileEvent fe) { }
+
+    private void fileDeleted(FileObject fo) {
+        FileEvent fe = new FileEvent(fo);
         LOG.log(Level.FINE, "fileDeleted {0}", fe.getFile());
         removeFromDeletedFiles(fe.getFile());
         getInterceptor(fe, "afterDelete").afterDelete(); // NOI18N
@@ -240,17 +254,17 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     }
 
     @Override
-    public void fileFolderCreated(FileEvent fe) {
-        LOG.log(Level.FINE, "fileFolderCreated {0}", fe.getFile());
-        fileCreated(fe);
+    public void createSuccess(FileObject fo) {
+        LOG.log(Level.FINE, "createSuccess {0}", fo);
+        fileCreated(new FileEvent(fo));
     }
 
     @Override
-    public void fileDataCreated(FileEvent fe) {
-        LOG.log(Level.FINE, "fileDataCreated {0}", fe.getFile());
-        fileCreated(fe);
-    }
+    public void fileDataCreated(FileEvent fe) { }
 
+    @Override
+    public void fileFolderCreated(FileEvent fe) { }
+    
     private void fileCreated(FileEvent fe) {
         FileObject fo = fe.getFile();
         FileEx fileEx = new FileEx(fo.getParent(), fo.getNameExt(), fo.isFolder());
