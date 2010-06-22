@@ -204,7 +204,7 @@ public abstract class KenaiAccessor {
                         return;
                     }
                     KenaiSupport support = repository.getLookup().lookup(KenaiSupport.class);
-                    if(query != support.getAllIssuesQuery(repository)) {
+                    if(support == null || query != support.getAllIssuesQuery(repository)) {
                         return;
                     }
                     KenaiProject kenaiProject = repository.getLookup().lookup(KenaiProject.class);

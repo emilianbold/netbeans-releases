@@ -85,8 +85,6 @@ public abstract class BaseFileObj extends FileObject {
     //constants
     private static final String PATH_SEPARATOR = File.separator;//NOI18N
     private static final char EXT_SEP = '.';//NOI18N
-    private FileChangeListener versioningWeakListener;    
-    private final FileChangeListener versioningListener = new FileChangeListenerForVersioning();
 
     //static fields 
     static final long serialVersionUID = -1244650210876356809L;
@@ -107,9 +105,6 @@ public abstract class BaseFileObj extends FileObject {
     
     protected BaseFileObj(final File file, final FileNaming name) {
         this.fileName = name;
-        versioningWeakListener = WeakListeners.create(FileChangeListener.class, FileChangeListener.class, versioningListener, this);
-        addFileChangeListener(versioningWeakListener);
-
     }
        
     @Override
@@ -220,13 +215,17 @@ public abstract class BaseFileObj extends FileObject {
      
     @Override
     public final FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
+        ProvidedExtensions extensions = getProvidedExtensions();
+        File to = (target instanceof FolderObj) ? new File(((BaseFileObj) target).getFileName().getFile(), FileInfo.composeName(name, ext)) :
+            new File(FileUtil.toFile(target), FileInfo.composeName(name, ext));
+
+        extensions.beforeMove(this, to);
+        FileObject result = null;
+        try {
         if (!checkLock(lock)) {
             FSException.io("EXC_InvalidLock", lock, getPath()); // NOI18N
         }
-        ProvidedExtensions extensions =  getProvidedExtensions();
-        FileObject result = null;
-        File to = (target instanceof FolderObj) ? new File(((BaseFileObj) target).getFileName().getFile(), FileInfo.composeName(name, ext)) :
-            new File(FileUtil.toFile(target), FileInfo.composeName(name, ext));            
+
         final IOHandler moveHandler = extensions.getMoveHandler(getFileName().getFile(), to);
         if (moveHandler != null) {
             if (target instanceof FolderObj) {
@@ -245,6 +244,11 @@ public abstract class BaseFileObj extends FileObject {
         }
         
         FileUtil.copyAttributes(this, result);
+        } catch (IOException ioe) {
+            extensions.moveFailure(this, to);
+            throw ioe;
+        }
+        extensions.moveSuccess(this, to);
         return result;                        
     }
     
@@ -550,6 +554,8 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     public final void fireFileChangedEvent(final boolean expected) {
+        getProvidedExtensions().fileChanged(this);
+
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
         stopWatch.start();
         
@@ -639,6 +645,7 @@ public abstract class BaseFileObj extends FileObject {
                     getProvidedExtensions().deleteFailure(BaseFileObj.this);
                     throw iex;
                 }
+                getProvidedExtensions().deleteSuccess(BaseFileObj.this);
                 return true;
             }            
         };
@@ -730,6 +737,7 @@ public abstract class BaseFileObj extends FileObject {
             }
             setValid(false);
             if (fire) {
+                getProvidedExtensions().deletedExternally(this);
                 fireFileDeletedEvent(expected);
             }
         } 
@@ -904,32 +912,6 @@ public abstract class BaseFileObj extends FileObject {
         return getExistingParentFor(getFileName().getFile(), getFactory());
     }
     
-    private final class FileChangeListenerForVersioning extends FileChangeAdapter {
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            if (fe.getFile() == BaseFileObj.this) {
-                getProvidedExtensions().createSuccess(fe.getFile());
-            }
-        }
-
-        /**
-         * Implements FileChangeListener.fileFolderCreated(FileEvent fe)
-         */
-        @Override
-        public void fileFolderCreated(FileEvent fe) {
-            if (fe.getFile() == BaseFileObj.this) {            
-                getProvidedExtensions().createSuccess(fe.getFile());
-            }
-        }
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            if (fe.getFile() == BaseFileObj.this) {
-                getProvidedExtensions().deleteSuccess(fe.getFile());
-            }
-        }        
-    }    
-        
     private static class FileEventImpl extends FileEvent implements Enumeration<FileEvent> {
         private FileEventImpl next;
         public boolean hasMoreElements() {
