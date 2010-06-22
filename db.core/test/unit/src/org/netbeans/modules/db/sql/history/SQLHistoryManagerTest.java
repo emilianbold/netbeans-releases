@@ -37,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.db.sql.history;
 
@@ -145,7 +145,7 @@ public class SQLHistoryManagerTest extends NbTestCase {
             FileObject historyFileObject = root.getFileObject(SQL_HISTORY_FOLDER);
             // Limit to 3 SQL statements
             SQLHistoryPersistenceManager.getInstance().updateSQLSaved(3, historyFileObject);
-            assertEquals(3, SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyFileObject).size());
+            assertEquals(3, SQLHistoryPersistenceManager.getInstance().retrieve(historyFileObject).size());
         } catch (SQLHistoryException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
@@ -198,7 +198,7 @@ public class SQLHistoryManagerTest extends NbTestCase {
             // Limit to 0 SQL statements
             SQLHistoryManager.getInstance().updateList(0, historyFilePath, historyFileObject);
             SQLHistoryPersistenceManager.getInstance().updateSQLSaved(0, historyFileObject);
-            assertEquals(0, SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyFileObject).size());                        
+            assertEquals(0, SQLHistoryPersistenceManager.getInstance().retrieve(historyFileObject).size());                        
         } catch (SQLHistoryException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
