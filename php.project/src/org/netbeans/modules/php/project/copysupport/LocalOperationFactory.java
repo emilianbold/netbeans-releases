@@ -47,10 +47,10 @@ import java.util.Enumeration;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
@@ -113,7 +113,7 @@ final class LocalOperationFactory extends FileOperationFactory {
             writableFolder = writableFolder.getParentFile();
         }
 
-        boolean isWritable = writableFolder != null && Utils.isFolderWritable(writableFolder);
+        boolean isWritable = writableFolder != null && FileUtils.isDirectoryWritable(writableFolder);
         if (!isWritable) {
             LOGGER.log(Level.INFO, "LOCAL copying disabled for project {0}. Reason: target folder {1} is not writable", new Object[] {project.getName(), writableFolder});
 
