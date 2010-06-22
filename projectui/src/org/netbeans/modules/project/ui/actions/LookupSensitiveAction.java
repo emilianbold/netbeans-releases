@@ -48,6 +48,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -122,7 +123,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
     public @Override Object getValue( String key ) {
         init ();
         if ( needsRefresh ) {
-            doRefresh();
+            doRefresh(true);
         }
         return super.getValue( key );
     }
@@ -132,7 +133,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
     public @Override boolean isEnabled() {
         init ();
         if ( needsRefresh ) {
-            doRefresh();
+            doRefresh(true);
         }
         return super.isEnabled();
     }
@@ -173,7 +174,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
         return lookup;
     }
 
-    private void doRefresh() {
+    private void doRefresh(boolean immediate) {
         if (refreshing) {
             return;
         }
@@ -189,7 +190,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
                 r.setLoggerName(LOG.getName());
                 LOG.log(r);
             }
-            refresh( lookup );
+            refresh(lookup, immediate);
         } finally {
             refreshing = false;
         }
@@ -205,7 +206,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
     /** Place where to change properties (enablement/name) when
      *  the set of current projects changes.
      */
-    protected abstract void refresh( Lookup context );
+    protected abstract void refresh(Lookup context, boolean immediate);
 
     // Implementation of LookupListener ----------------------------------------
 
@@ -224,7 +225,7 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
 
     @Override
     public void run() {
-        doRefresh();
+        doRefresh(false);
     }
 
     // Implementation of Presenter.Menu and Presenter.Popup --------------------

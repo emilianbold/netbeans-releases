@@ -85,7 +85,7 @@ public class NetigsoActivationTest extends SetupHid {
         System.setProperty("netbeans.user", ud.getPath());
         
         data = new File(getDataDir(), "jars");
-        jars = new File(getWorkDir(), "jars");
+        jars = new File(getWorkDir(), "space in path");
         jars.mkdirs();
         File simpleModule = createTestJAR("activate", null);
     }
