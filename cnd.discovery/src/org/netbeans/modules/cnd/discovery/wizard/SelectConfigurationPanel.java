@@ -537,6 +537,7 @@ public final class SelectConfigurationPanel extends JPanel {
     public static class MyProgress implements Progress {
         private ProgressHandle handle;
         private int done;
+        private int length;
 
         @Override
         public void start() {
@@ -551,13 +552,27 @@ public final class SelectConfigurationPanel extends JPanel {
             handle = ProgressHandleFactory.createHandle(getString("AnalyzingProjectProgress"));
             handle.start(length);
             done = 0;
+            this.length = length;
         }
 
         @Override
-        public void increment() {
+        public void increment(String message) {
             if (handle != null) {
                 done++;
-                handle.progress(done);
+                if (message == null) {
+                    handle.progress(done);
+                } else {
+                    int i = message.lastIndexOf('\\');
+                    if (i < 0) {
+                        i = message.lastIndexOf('/');
+                    }
+                    if (i > 0) {
+                        String msg = NbBundle.getMessage(SelectConfigurationPanel.class, "MSG_ParsingProgressFull", ""+done, ""+length, message.substring(i+1)); // NOI18N
+                        handle.progress(msg, done);
+                    } else {
+                        handle.progress(done);
+                    }
+                }
             }
         }
 

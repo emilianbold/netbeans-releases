@@ -296,6 +296,96 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
         return 0;
     }
     
+    @Override
+    public void createdExternally(final FileObject fo) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).createdExternally(fo);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void deletedExternally(final FileObject fo) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).deletedExternally(fo);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void fileChanged(final FileObject fo) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).fileChanged(fo);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void beforeMove(final FileObject from, final File to) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).beforeMove(from, to);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void moveSuccess(final FileObject from, final File to) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).moveSuccess(from, to);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void moveFailure(final FileObject from, final File to) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                runCheckCode(new Runnable() {
+                    public void run() {
+                        ((ProvidedExtensions)iListener).moveFailure(from, to);
+                    }
+                });
+            }
+        }
+   }
+    
     public static void checkReentrancy() {
         if (reentrantCheck.get() != null) {            
             Logger.getLogger("org.netbeans.modules.masterfs.ProvidedExtensionsProxy").log(Level.INFO,"Unexpected reentrant call", new Throwable());//NOI18N

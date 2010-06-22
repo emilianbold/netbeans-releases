@@ -179,7 +179,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
         if (progress != null) {
             synchronized(progress) {
-                progress.increment();
+                progress.increment(file);
             }
         }
         return false;
