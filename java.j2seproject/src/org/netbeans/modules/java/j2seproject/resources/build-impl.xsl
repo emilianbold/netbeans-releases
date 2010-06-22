@@ -1390,6 +1390,18 @@ is divided into following sections:
                         <include name="**/*.java"/>
                     </fileset>
                 </javadoc>
+                <copy todir="${{dist.javadoc.dir}}">
+                    <xsl:call-template name="createFilesets">
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
+                        <xsl:with-param name="includes2">**/doc-files/**</xsl:with-param>
+                    </xsl:call-template>
+                    <fileset>
+                        <xsl:attribute name="dir">${build.generated.sources.dir}</xsl:attribute>
+                        <xsl:attribute name="erroronmissingdir">false</xsl:attribute>
+                        <include name="**/doc-files/**"/>
+                    </fileset>
+                </copy>
+
             </target>
             
             <target name="-javadoc-browse">
