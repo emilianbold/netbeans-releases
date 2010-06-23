@@ -547,7 +547,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     FileObject fo = null;
                     try {
                         fo = "file".equals(url.getProtocol()) ? //NOI18N
-                                FileUtil.toFileObject(new File(url.toURI())) : URLMapper.findFileObject(url);
+                                FileUtil.toFileObject(new java.io.File(url.toURI())) : URLMapper.findFileObject(url);
                     } catch (URISyntaxException ex) {
                         Exceptions.printStackTrace(ex);
                     }

@@ -64,6 +64,7 @@ import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.model.UseElement;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -257,7 +258,7 @@ public class AddUseImportRule extends AbstractRule {
                                     Collections.<HintFix>singletonList(importFix), 500));
                         }
 
-                        QualifiedName name = QualifiedName.getPreferredName(indexedName, currentScope);
+                        QualifiedName name = VariousUtils.getPreferredName(indexedName, currentScope);
                         if (name != null) {
                             ChangeNameFix changeNameFix = new ChangeNameFix(doc, node, currentScope, name, nodeName);
                             hints.add(new Hint(AddUseImportRule.this,
