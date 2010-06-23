@@ -430,7 +430,7 @@ final class ViewBuilder {
                     // Init view's length except for first replace where it's updated by EBVChildren.replace()
                     if (fReplace != pReplace) {
                         int length = createdViewEndOffset - pReplace.view.getStartOffset();
-                        pReplace.view.setLength(length);
+                        pReplace.view.setLength(length, 0, 0);
                     }
                     pReplace = null;
                 }
