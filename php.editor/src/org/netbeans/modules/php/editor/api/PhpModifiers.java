@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.editor.api;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
