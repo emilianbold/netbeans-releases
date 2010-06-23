@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -298,6 +297,38 @@ public abstract class ElementFilter {
             }
         };
     }
+    public static ElementFilter forMembersOfInterface() {
+        return new ElementFilter() {
+            private ElementFilter filterDelegate = null;
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                if (element instanceof TypeMemberElement) {
+                    if (filterDelegate == null) {
+                        filterDelegate = forKind(PhpElementKind.IFACE);
+                    }
+                    //return thisTypeElement.equals(typeElement);
+                    return filterDelegate.isAccepted(((TypeMemberElement) element).getType());
+                }
+                return true;
+            }
+        };
+    }
+    public static ElementFilter forMembersOfClass() {
+        return new ElementFilter() {
+            private ElementFilter filterDelegate = null;
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                if (element instanceof TypeMemberElement) {
+                    if (filterDelegate == null) {
+                        filterDelegate = forKind(PhpElementKind.CLASS);
+                    }
+                    //return thisTypeElement.equals(typeElement);
+                    return filterDelegate.isAccepted(((TypeMemberElement) element).getType());
+                }
+                return true;
+            }
+        };
+    }
     public static ElementFilter forMembersOfTypeName(final TypeElement typeElement) {
         return new ElementFilter() {
             private ElementFilter filterDelegate = null;
@@ -307,7 +338,21 @@ public abstract class ElementFilter {
                     if (filterDelegate == null) {
                         filterDelegate = forName(NameKind.exact(typeElement.getFullyQualifiedName()));
                     }
-                    //return thisTypeElement.equals(typeElement);
+                    return filterDelegate.isAccepted(((TypeMemberElement) element).getType());
+                }
+                return true;
+            }
+        };
+    }
+    public static ElementFilter forMembersOfTypeName(final NameKind name) {
+        return new ElementFilter() {
+            private ElementFilter filterDelegate = null;
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                if (element instanceof TypeMemberElement) {
+                    if (filterDelegate == null) {
+                        filterDelegate = forName(name);
+                    }
                     return filterDelegate.isAccepted(((TypeMemberElement) element).getType());
                 }
                 return true;
