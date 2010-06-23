@@ -86,6 +86,7 @@ import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.options.CodeCompletionPanel.CodeCompletionType;
@@ -260,7 +261,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                             LinkedList<String> segments = ifq.getFullyQualifiedName().getSegments();
                             QualifiedName fqna = QualifiedName.create(false, segments);
                             if (!namespaceScope.isDefaultNamespace() || !fqna.getKind().isUnqualified()) {
-                                QualifiedName suffix = QualifiedName.getPreferredName(fqna, namespaceScope);
+                                QualifiedName suffix = VariousUtils.getPreferredName(fqna, namespaceScope);
                                 if (suffix != null) {
                                     template.append(suffix.toString());
                                     break;
@@ -991,7 +992,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         NamespaceElement ifq = getNamespaceElement();
                         LinkedList<String> segments = ifq.getFullyQualifiedName().getSegments();
                         QualifiedName fqna = QualifiedName.create(false, segments);
-                        Collection<QualifiedName> relativeUses = QualifiedName.getRelativesToUses(namespaceScope, fqna);
+                        Collection<QualifiedName> relativeUses = VariousUtils.getRelativesToUses(namespaceScope, fqna);
                         for (QualifiedName qualifiedName : relativeUses) {
                             if (qualifiedName.getSegments().size() == 1) {
                                 isSmart = true;
@@ -999,7 +1000,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                             }
                         }
                         if (!isSmart) {
-                            relativeUses = QualifiedName.getRelativesToNamespace(namespaceScope, fqna);
+                            relativeUses = VariousUtils.getRelativesToNamespace(namespaceScope, fqna);
                             for (QualifiedName qualifiedName : relativeUses) {
                                 if (qualifiedName.getSegments().size() == 1) {
                                     isSmart = true;
