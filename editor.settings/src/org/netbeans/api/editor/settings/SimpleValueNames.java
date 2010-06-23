@@ -424,7 +424,19 @@ public final class SimpleValueNames {
      * @since 1.30
      */
     public static final String NON_PRINTABLE_CHARACTERS_VISIBLE = "non-printable-characters-visible"; //NOI18N
-    
+
+    /**
+     * Determines whether to remove trailing whitespace when saving files and how exactly to do that.
+     * Values: java.lang.String instances
+     * <ul>
+     * <li>never
+     * <li>always
+     * <li>modified-lines
+     * </ul>
+     * @since 1.33
+     */
+    public static final String ON_SAVE_REMOVE_TRAILING_WHITESPACE = "on-save-remove-trailing-whitespace"; //NOI18N
+
     @PatchedPublic
     private SimpleValueNames() {
         // to prevent instantialization

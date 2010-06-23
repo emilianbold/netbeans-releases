@@ -112,7 +112,7 @@ public class JavaNavigatorPerfTest extends NbTestCase {
                 ProjectTab pt = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
                 pt.requestActive();
                 FileObject testFile = projectDir.getFileObject("/src/bsh/This.java");
-                pt.selectNode(testFile);
+                pt.selectNodeAsync(testFile);
             }
         });
         Thread.sleep(500);
@@ -122,7 +122,7 @@ public class JavaNavigatorPerfTest extends NbTestCase {
                 ProjectTab pt = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
                 pt.requestActive();
                 FileObject testFile = projectDir.getFileObject("/src/org/gjt/sp/jedit/jEdit.java");
-                pt.selectNode(testFile);
+                pt.selectNodeAsync(testFile);
             }
         });
         Thread.sleep(5000);

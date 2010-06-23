@@ -17,13 +17,10 @@ public class NbModuleSuiteClusters extends TestCase {
         String sep = "";
         for (String d : dirs.replace(File.separatorChar, '/').split(File.pathSeparator)) {
             String sd = d.replaceFirst(".*/", "");
-            if (sd.matches("platform[0-9]*")) {
+            if (sd.matches("platform|harness")) {
                 continue;
             }
-            if (sd.matches("harness[0-9]*")) {
-                continue;
-            }
-            sb.append(sep).append(sd.replaceFirst("[0-9\\.]*$", ""));
+            sb.append(sep).append(sd);
             sep = ":";
         }
         System.setProperty("clusters", sb.toString());

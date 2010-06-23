@@ -1,8 +1,8 @@
 #Signature file v4.1
-#Version 1.16
+#Version 1.18
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -50,7 +50,7 @@ supr java.lang.Object
 hfds INSTANCE,impl,log
 
 CLSS public abstract org.netbeans.spi.options.AdvancedOption
-cons protected AdvancedOption()
+cons protected init()
  anno 0 java.lang.Deprecated()
 meth public abstract java.lang.String getDisplayName()
 meth public abstract java.lang.String getTooltip()
@@ -59,7 +59,7 @@ supr java.lang.Object
 hfds CONTROLLER,DISPLAYNAME,KEYWORDS,KEYWORDS_CATEGORY,TOOLTIP
 
 CLSS public abstract org.netbeans.spi.options.OptionsCategory
-cons public OptionsCategory()
+cons public init()
 meth public abstract java.lang.String getCategoryName()
 meth public abstract java.lang.String getTitle()
 meth public abstract org.netbeans.spi.options.OptionsPanelController create()
@@ -69,7 +69,7 @@ supr java.lang.Object
 hfds ADVANCED_OPTIONS_FOLDER,CATEGORY_NAME,CONTROLLER,ICON,KEYWORDS,KEYWORDS_CATEGORY,TITLE
 
 CLSS public abstract org.netbeans.spi.options.OptionsPanelController
-cons public OptionsPanelController()
+cons public init()
 fld public final static java.lang.String PROP_CHANGED = "changed"
 fld public final static java.lang.String PROP_HELP_CTX = "helpCtx"
 fld public final static java.lang.String PROP_VALID = "valid"
@@ -92,6 +92,7 @@ meth public org.openide.util.Lookup getLookup()
 supr java.lang.Object
 
 CLSS public abstract interface static !annotation org.netbeans.spi.options.OptionsPanelController$ContainerRegistration
+ outer org.netbeans.spi.options.OptionsPanelController
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[PACKAGE])
 intf java.lang.annotation.Annotation
@@ -103,6 +104,7 @@ meth public abstract java.lang.String iconBase()
 meth public abstract java.lang.String id()
 
 CLSS public abstract interface static !annotation org.netbeans.spi.options.OptionsPanelController$SubRegistration
+ outer org.netbeans.spi.options.OptionsPanelController
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
 intf java.lang.annotation.Annotation
@@ -114,6 +116,7 @@ meth public abstract !hasdefault java.lang.String location()
 meth public abstract java.lang.String displayName()
 
 CLSS public abstract interface static !annotation org.netbeans.spi.options.OptionsPanelController$TopLevelRegistration
+ outer org.netbeans.spi.options.OptionsPanelController
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
 intf java.lang.annotation.Annotation

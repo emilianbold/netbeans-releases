@@ -503,7 +503,7 @@ public class JiraRepository extends Repository {
         }
     }
 
-    protected JiraConfiguration createConfiguration(JiraClient client) {
+    protected JiraConfiguration createConfiguration(JiraClient client) throws CoreException {
         return new JiraConfiguration(client, JiraRepository.this);
     }
 
@@ -515,13 +515,13 @@ public class JiraRepository extends Repository {
             @Override
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
                 final JiraClient client = Jira.getInstance().getClient(getTaskRepository());
-                configuration = createConfiguration(client);
 
                 boolean needRefresh = !client.getCache().hasDetails();
                 Jira.LOG.log(Level.FINE, "configuration refresh {0} : needRefresh = {1} forceRefresh={2}", new Object[]{getUrl(), needRefresh, forceRefresh});
                 if(forceRefresh || needRefresh) {
                     Jira.getInstance().getRepositoryConnector().updateRepositoryConfiguration(getTaskRepository(), new NullProgressMonitor());
                 }
+                configuration = createConfiguration(client);
             }
         }
         ConfigurationCommand cmd = new ConfigurationCommand();

@@ -61,6 +61,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -107,7 +108,7 @@ public class ServerLocationVisual extends JPanel {
         }
         
         File serverRoot = new File(location);
-        WLPluginProperties.Version version = WLPluginProperties.getVersion(serverRoot);
+        Version version = WLPluginProperties.getVersion(serverRoot);
 
         if (!WLPluginProperties.isSupportedVersion(version)) {
             String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_INVALID_SERVER_VERSION");  // NOI18N

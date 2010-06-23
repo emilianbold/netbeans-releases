@@ -267,6 +267,7 @@ public final class NbPlatformCustomizerJavadoc extends JPanel {
                 javadocList.setSelectedValue(newUrl, true);
             }
         }
+        // XXX support adding Javadoc URL too (see java.j2seplatform)
     }//GEN-LAST:event_addZipFolder
     
     

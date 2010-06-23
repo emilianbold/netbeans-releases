@@ -66,14 +66,17 @@ public final class DelegateRepository implements Repository {
     public DelegateRepository() {
     }
 
+    @Override
     public void hang(Key key, Persistent obj) {
         delegate.hang(key, obj);
     }
 
+    @Override
     public void put(Key key, Persistent obj) {
         delegate.put(key, obj);
     }
 
+    @Override
     public Persistent get(Key key) {
         Persistent result = delegate.get(key);
         if (result == null && Stats.useNullWorkaround) {
@@ -88,19 +91,23 @@ public final class DelegateRepository implements Repository {
         return result;
     }
 
+    @Override
     public Persistent tryGet(Key key) {
         return delegate.tryGet(key);
     }
 
+    @Override
     public void remove(Key key) {
         delegate.remove(key);
     }
 
+    @Override
     public void debugClear() {
         delegate.debugClear();
         delegate = null;
     }
 
+    @Override
     public void shutdown() {
         Repository aDelegate = delegate;
         if (aDelegate != null) {
@@ -108,33 +115,40 @@ public final class DelegateRepository implements Repository {
         }
     }
 
-    public void openUnit(int unitId, String unitName) {
+    @Override
+    public void openUnit(int unitId, CharSequence unitName) {
         delegate.openUnit(unitId, unitName);
     }
 
-    public void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
+    @Override
+    public void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits) {
         Repository aDelegate = delegate;
         if (aDelegate != null) {
             aDelegate.closeUnit(unitName, cleanRepository, requiredUnits);
         }
     }
 
-    public void removeUnit(String unitName) {
+    @Override
+    public void removeUnit(CharSequence unitName) {
         delegate.removeUnit(unitName);
     }
 
+    @Override
     public void cleanCaches() {
         delegate.cleanCaches();
     }
 
+    @Override
     public void registerRepositoryListener(RepositoryListener aListener) {
         RepositoryListenersManager.getInstance().registerListener(aListener);
     }
 
+    @Override
     public void unregisterRepositoryListener(RepositoryListener aListener) {
         RepositoryListenersManager.getInstance().unregisterListener(aListener);
     }
 
+    @Override
     public void startup(int persistMechanismVersion) {
         initDelegate();
         RepositoryTranslatorImpl.startup(persistMechanismVersion);
@@ -158,6 +172,7 @@ public final class DelegateRepository implements Repository {
         }
     }
 
+    @Override
     public void debugDistribution() {
         delegate.debugDistribution();
     }

@@ -59,6 +59,7 @@ import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -98,9 +99,9 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     }
 
     public List<? extends String> getSuperInterfaceNames() {
-        if (indexedElement instanceof ClassElement) {
+        if (indexedElement instanceof TypeElement) {
             List<String> retval = new ArrayList<String>();
-            final Set<QualifiedName> superInterfaces = ((ClassElement) indexedElement).getSuperInterfaces();
+            final Set<QualifiedName> superInterfaces = ((TypeElement) indexedElement).getSuperInterfaces();
             for (QualifiedName qualifiedName : superInterfaces) {
                 retval.add(qualifiedName.toString());
             }
@@ -111,7 +112,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
     public List<? extends InterfaceScope> getSuperInterfaceScopes() {
         Set<InterfaceScope> retval = new LinkedHashSet<InterfaceScope>();
-        Set<String> keySet = (indexedElement instanceof ClassElement) ? new HashSet<String>(getSuperInterfaceNames()) : ifaces.keySet();
+        Set<String> keySet = (indexedElement instanceof TypeElement) ? new HashSet<String>(getSuperInterfaceNames()) : ifaces.keySet();
         for (String ifaceName : keySet) {
             List<? extends InterfaceScope> iface = ifaces.get(ifaceName);
             if (iface == null) {

@@ -278,7 +278,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                         }
                         
                         if (tm.getKind() != TypeKind.ERROR) {
-                            result.add(new AddThrowsClauseHintImpl(info.getJavaSource(), Utilities.getTypeName(tm, true).toString(), TypeMirrorHandle.create(tm), ElementHandle.create(method)));
+                            result.add(new AddThrowsClauseHintImpl(info.getJavaSource(), Utilities.getTypeName(info, tm, true).toString(), TypeMirrorHandle.create(tm), ElementHandle.create(method)));
                         }
                     }
                 }
@@ -291,7 +291,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                 for (TypeMirror tm : uncaught) {
                     if (tm.getKind() != TypeKind.ERROR) {
                         thandles.add(TypeMirrorHandle.create(tm));
-                        fqns.add(Utilities.getTypeName(tm, true).toString());
+                        fqns.add(Utilities.getTypeName(info, tm, true).toString());
                     }
                 }
                 

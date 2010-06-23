@@ -80,6 +80,28 @@ public class DwarfSourceReaderTest extends NbTestCase {
         return 500000;
     }
 
+    public void testDllReader(){
+        File dataDir = getDataDir();
+        String objFileName = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo";
+        Dwarf dump = null;
+        try {
+            dump = new Dwarf(objFileName);
+            for(String dll : dump.readPubNames()) {
+                assertEquals(dll, "libc.so.1"); // NOI18N
+            }
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (WrongFileFormatException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            if (dump != null) {
+                dump.dispose();
+            }
+        }
+    }
+
     public void testSunStudioCompiler(){
         TreeMap<String, String> golden = new TreeMap<String, String>();
         golden.put("TEXT_DOMAIN", "\"SUNW_OST_OSCMD\"");

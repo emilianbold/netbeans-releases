@@ -52,37 +52,37 @@ made subject to such option by the copyright holder.
                 <folder name="Files">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
                     <folder name=".subtypes">
-                        <folder name="java.io.FileOuptutStream">
-                            <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                        <folder name="java.io.FileOutputStream">
+                            <attr name="includes" stringvalue="write,flush"/>
                         </folder>
                         <folder name="java.io.FileReader">
-                            <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                            <attr name="includes" stringvalue="read,reset,skip"/>
                         </folder>
                         <folder name="java.io.FileWriter">
-                            <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                            <attr name="includes" stringvalue="write,flush"/>
                         </folder>
                     </folder>
                 </folder>
                 <folder name="Socket">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
-                    <folder name=".subtype">
-                        <folder name="java.nio.SocketChannel">
+                    <folder name=".subtypes">
+                        <folder name="java.nio.channels.SocketChannel">
                             <attr name="includes" stringvalue="read,write"/>
                         </folder>
                     </folder>
                 </folder>
                 <folder name=".subtypes">
                     <folder name="java.io.InputStream">
-                        <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                        <attr name="includes" stringvalue="read,reset,skip"/>
                     </folder>
                     <folder name="java.io.InputStreamReader">
-                        <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                        <attr name="includes" stringvalue="read,reset,skip"/>
                     </folder>
                     <folder name="java.io.OutputStream">
-                        <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                        <attr name="includes" stringvalue="write,flush"/>
                     </folder>
                     <folder name="java.io.OutputStreamWriter">
-                        <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                        <attr name="includes" stringvalue="write,flush"/>
                     </folder>
                 </folder>
             </folder>

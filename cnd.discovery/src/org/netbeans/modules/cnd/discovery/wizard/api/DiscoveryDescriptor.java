@@ -88,9 +88,9 @@ public interface DiscoveryDescriptor {
     boolean isSimpleMode();
     void setSimpleMode(boolean simple);
 
-    //boolean isCutResult();
-    //void setCutResult(boolean cutResult);
-    
+    String getCompilerName();
+    void setCompilerName(String compiler);
+
     void setMessage(String message);
 
     void clean();

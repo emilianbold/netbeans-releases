@@ -30,7 +30,7 @@
                 <package>org.netbeans.modules.bpel.debuggerbdi.rmi.wp.impl</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/bdi/bdi-1.0.0.jar</runtime-relative-path>
+                <runtime-relative-path>ext/bdi-1.0.0.jar</runtime-relative-path>
                 <binary-origin>external/bdi-1.0.0.jar</binary-origin>
             </class-path-extension>
         </data>

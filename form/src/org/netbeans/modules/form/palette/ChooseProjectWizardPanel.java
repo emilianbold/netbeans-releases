@@ -54,7 +54,6 @@ import java.util.*;
 import org.openide.WizardDescriptor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
-import org.netbeans.api.project.ant.*;
 import org.netbeans.api.project.*;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -165,9 +164,7 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
             return;
 
         List<ClassSource.ProjectEntry> entries = new ArrayList<ClassSource.ProjectEntry>();
-        for (AntArtifact aa : AntArtifactQuery.findArtifactsByType(project, /* XXX JavaProjectConstants.ARTIFACT_TYPE_JAR */ "jar")) { // NOI18N
-            entries.add(new ClassSource.ProjectEntry(aa));
-        }
+        entries.add(new ClassSource.ProjectEntry(project));
         settings.setJARFiles(entries);
     }
 

@@ -105,7 +105,40 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
-    
+        <change id="sources-support">
+            <api name="java-api-common"/>
+            <summary>Support for mutable Sources</summary>
+            <version major="1" minor="21"/>
+            <date day="3" month="6" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Adding a factory method for creating a mutable Sources implemenation which allows adding (removing)
+                    of roots.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common" name="Roots"/>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+            <issue number="148320"/>
+        </change>
+        <change id="action-provider">
+            <api name="java-api-common"/>
+            <summary>BaseActionProvider introduced</summary>
+            <version major="1" minor="20"/>
+            <date day="1" month="6" year="2010"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    J2SE implementations of ActionProvider was turned into friend API
+                    so that EE project types can reuse most of Java specific code
+                    without duplicating it.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="BaseActionProvider"/>
+            <issue number="171153"/>
+        </change>
         <change id="ap-query">
             <api name="java-api-common"/>
             <summary>Support for AnnotationProcessingQuery</summary>

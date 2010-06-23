@@ -481,7 +481,7 @@ class DiffViewManager implements ChangeListener {
     }
 
     private int computeLeftOffsetToMatchDifference(DifferencePosition differenceMatchStart, int rightOffset, Rectangle[] positions) {
-        Rectangle leftStartRect = positions[0], leftEndRect = positions[0], rightStartRect = positions[2], rightEndRect = positions[3];
+        Rectangle leftStartRect = positions[0], leftEndRect = positions[1], rightStartRect = positions[2], rightEndRect = positions[3];
         Difference diff = differenceMatchStart.getDiff();
         boolean matchStart = differenceMatchStart.isStart();
         
@@ -493,11 +493,14 @@ class DiffViewManager implements ChangeListener {
         } else {
             if (diff.getType() == Difference.ADD) {
                 value = leftStartRect.y;        // kde zacina prva, 180
-                valueSecond = rightStartRect.y + rightStartRect.height; // kde by zacinala druha, napr. 230
+                if (rightStartRect.y == 0) {
+                    value -= rightStartRect.height;
+                }
+                valueSecond = rightEndRect.y + rightStartRect.height; // kde by zacinala druha, napr. 230
             } else {
                 value = leftEndRect.y + leftEndRect.height;        // kde zacina prva, 180
                 if (diff.getType() == Difference.DELETE) {
-                    value += leftEndRect.height;
+                    value += leftStartRect.height;
                     valueSecond = rightStartRect.y + rightStartRect.height; // kde by zacinala druha, napr. 230
                 } else {
                     valueSecond = rightEndRect.y + rightEndRect.height; // kde by zacinala druha, napr. 230

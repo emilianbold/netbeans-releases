@@ -150,7 +150,8 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         for (File file : project.getIgnoredFiles()) {
             String relPath = PropertyUtils.relativizeFile(root, file);
             if (isUnderneath(relPath)) {
-                String pattern = relPath;
+                // #170570 & #185607 - no way to escape space in file path
+                String pattern = relPath.replace(" ", "*"); // NOI18N
                 if (file.isDirectory()) {
                     pattern += "/"; // NOI18N
                 }

@@ -67,7 +67,6 @@ import org.openide.util.NbPreferences;
  * @author Peter Williams
  */
 public class AddServerLocationVisualPanel extends javax.swing.JPanel implements Retriever.Updater {
-    private String nameOfBits;
 
     public static enum DownloadState { AVAILABLE, DOWNLOADING, COMPLETED };
 
@@ -93,18 +92,25 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         
         hk2HomeTextField.setText(getPreviousValue());            
         hk2HomeTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 homeFolderChanged();
             }
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 homeFolderChanged();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 homeFolderChanged();
             }                    
         });
         setDownloadState(DownloadState.AVAILABLE);
         updateMessageText("");
+        if (null == wizardIterator.getDirect()) {
+            agreeCheckBox.setEnabled(false);
+            agreeCheckBox.setToolTipText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "TIP_No_file_to_download"));
+        }
     }
     
     private String getPreviousValue() {
@@ -220,8 +226,10 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
     // ------------------------------------------------------------------------
     // Updater implementation
     // ------------------------------------------------------------------------
+    @Override
     public void updateMessageText(final String msg) {
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 if (msg.trim().startsWith("<html>")) {
                     downloadStatusLabel.setText(msg);
@@ -233,11 +241,13 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         });
     }
     
+    @Override
     public void updateStatusText(final String status) {
         statusText = status;
         fireChangeEvent();
     }
 
+    @Override
     public void clearCancelState() {
         setDownloadState(retriever.getDownloadState() == Retriever.STATUS_COMPLETE ? 
             DownloadState.COMPLETED : DownloadState.AVAILABLE);
@@ -247,6 +257,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
     // ------------------------------------------------------------------------
     private void updateButton() {
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 DownloadState state = AddServerLocationVisualPanel.this.downloadState;
                 boolean licenseAccepted = agreeCheckBox.isSelected();
@@ -283,6 +294,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
             this.nameOfBits = nameOfBits;
         }
         
+        @Override
         public boolean accept(File f) {
             if(!f.exists() || !f.canRead() || !f.isDirectory()) {
                 return false;
@@ -291,6 +303,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
             }
         }
         
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_DirType", nameOfBits);
         }

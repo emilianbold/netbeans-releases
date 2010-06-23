@@ -110,11 +110,11 @@ public class RIPlatform extends JavacardPlatform {
     private final Set<ProjectKind> suppKinds = new HashSet<ProjectKind>(5);
     static boolean inFindDefaultPlatform;
 
-    static {
+//    static {
         //XXX necessary?  Ensures that the global build.properties always
         //has a valid value...
-        getDefault();
-    }
+//        getDefault();
+//    }
     private Cards cards = new CardsImpl();
     public RIPlatform(Properties props) {
         this.props = props;

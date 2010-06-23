@@ -52,7 +52,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
@@ -77,112 +79,136 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         clean();
     }
     
-    public void clean() {
+    @Override
+    public final void clean() {
         myProperties.clear();
         myProperties.put(FOLDER_KEY, new ProviderProperty(){
             private String myPath;
+            @Override
             public String getName() {
                 return i18n("Folder_Files_Name"); // NOI18N
             }
+            @Override
             public String getDescription() {
                 return i18n("Folder_Files_Description"); // NOI18N
             }
+            @Override
             public Object getValue() {
                 return myPath;
             }
+            @Override
             public void setValue(Object value) {
                 if (value instanceof String){
                     myPath = (String)value;
                 }
             }
+            @Override
             public ProviderProperty.PropertyKind getKind() {
                 return ProviderProperty.PropertyKind.Folder;
             }
         });
         myProperties.put(RESTRICT_SOURCE_ROOT, new ProviderProperty(){
             private String myPath="";
+            @Override
             public String getName() {
                 return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
             }
+            @Override
             public String getDescription() {
                 return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
             }
+            @Override
             public Object getValue() {
                 return myPath;
             }
+            @Override
             public void setValue(Object value) {
                 if (value instanceof String){
                     myPath = (String)value;
                 }
             }
+            @Override
             public ProviderProperty.PropertyKind getKind() {
                 return ProviderProperty.PropertyKind.String;
             }
         });
         myProperties.put(RESTRICT_COMPILE_ROOT, new ProviderProperty(){
             private String myPath="";
+            @Override
             public String getName() {
                 return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
             }
+            @Override
             public String getDescription() {
                 return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
             }
+            @Override
             public Object getValue() {
                 return myPath;
             }
+            @Override
             public void setValue(Object value) {
                 if (value instanceof String){
                     myPath = (String)value;
                 }
             }
+            @Override
             public ProviderProperty.PropertyKind getKind() {
                 return ProviderProperty.PropertyKind.String;
             }
         });
     }
     
+    @Override
     public String getID() {
         return "dwarf-folder"; // NOI18N
     }
     
+    @Override
     public String getName() {
         return i18n("Folder_Provider_Name"); // NOI18N
     }
     
+    @Override
     public String getDescription() {
         return i18n("Folder_Provider_Description"); // NOI18N
     }
     
+    @Override
     public List<String> getPropertyKeys() {
         return new ArrayList<String>(myProperties.keySet());
     }
     
+    @Override
     public ProviderProperty getProperty(String key) {
         return myProperties.get(key);
     }
     
-    public int canAnalyze(ProjectProxy project) {
+    @Override
+    public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
         String root = (String)getProperty(FOLDER_KEY).getValue();
         if (root == null || root.length() == 0) {
-            return 0;
+            return ApplicableImpl.NotApplicable;
         }
         Set<String> set = getObjectFiles(root);
-        if (set.size() == 0) {
-            return 0;
+        if (set.isEmpty()) {
+            return ApplicableImpl.NotApplicable;
         }
         int i = 0;
         for(String obj : set){
             i++;
-            if (sizeComilationUnit(obj) > 0) {
-                return 50;
+            DiscoveryExtensionInterface.Applicable applicable = sizeComilationUnit(obj);
+            if (applicable.isApplicable()) {
+                return new ApplicableImpl(true, applicable.getCompilerName(), 50, applicable.isSunStudio());
             }
             if (i > 25) {
-                return 0;
+                return ApplicableImpl.NotApplicable;
             }
         }
-        return 0;
+        return ApplicableImpl.NotApplicable;
     }
     
+    @Override
     public List<Configuration> analyze(ProjectProxy project, final Progress progress) {
         isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
@@ -191,14 +217,17 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
+                @Override
                 public List<ProjectProperties> getProjectConfiguration() {
                     return ProjectImpl.divideByLanguage(getSourcesConfiguration());
                 }
                 
+                @Override
                 public List<Configuration> getDependencies() {
                     return null;
                 }
                 
+                @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null){
                         if (progress != null) {
@@ -220,6 +249,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                     return myFileProperties;
                 }
                 
+                @Override
                 public List<String> getIncludedFiles(){
                     if (myIncludedFiles == null) {
                         Set<String> set = new HashSet<String>();
@@ -240,7 +270,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                             }
                             if (progress != null) {
                                 synchronized(progress) {
-                                    progress.increment();
+                                    progress.increment(path);
                                 }
                             }
                             File file = new File(path);
@@ -301,12 +331,12 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             return name.endsWith(".exe") || name.endsWith(".dll");  // NOI18N
         } else if (Utilities.isUnix()){
             // FIXUP: There are no way to detect "executable".
-            return name.indexOf('.') < 0;
-            //try{
-            //    //Since 1.6
-            //    return file.canExecute();
-            //} catch (SecurityException ex) {
-            //}
+            //return name.indexOf('.') < 0;
+            try{
+                //Since 1.6
+                return file.canExecute();
+            } catch (SecurityException ex) {
+            }
         }
         return false;
     }
