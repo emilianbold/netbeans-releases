@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
  * @author Radek Matous
  */
 public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
+
     Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
     private final boolean isFromInterface;
     MethodDeclarationInfo(Program program, MethodDeclaration methodDeclaration, final boolean isFromInterface) {
@@ -73,8 +74,11 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
         }
     }
 
+    public static MethodDeclarationInfo create(Program program, MethodDeclaration methodDeclaration, final boolean isFromInterface) {
+        return new MethodDeclarationInfo(program, methodDeclaration, isFromInterface);
+    }
     public static MethodDeclarationInfo create(Program program,MethodDeclaration methodDeclaration, final TypeScope typeScope) {
-        return new MethodDeclarationInfo(program, methodDeclaration, typeScope.isInterface());
+        return create(program, methodDeclaration, typeScope.isInterface());
     }
     public static MethodDeclarationInfo create(MethodDeclaration classDeclaration, final TypeScope typeScope) {
         return new MethodDeclarationInfo(null, classDeclaration, typeScope.isInterface());
@@ -104,7 +108,7 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
         return new OffsetRange(name.getStartOffset(), name.getEndOffset());
     }
 
-    public List<? extends ParameterElement> getParameters() {
+    public List<ParameterElement> getParameters() {
         List<ParameterElement> retval = new ArrayList<ParameterElement>();
         List<FormalParameter> formalParameters = getOriginalNode().getFunction().getFormalParameters();
         for (FormalParameter formalParameter : formalParameters) {
