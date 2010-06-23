@@ -48,7 +48,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -104,6 +103,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
         retval.add(createMagicMethod(type, "__clone",  Modifier.PUBLIC));//NOI18N
         retval.add(createMagicMethod(type, "__construct",  Modifier.PUBLIC));//NOI18N
         retval.add(createMagicMethod(type, "__destruct",  Modifier.PUBLIC));//NOI18N
+        retval.add(createMagicMethod(type, "__invoke",  Modifier.PUBLIC));//NOI18N
         retval.add(createMagicMethod(type, "__get",  Modifier.PUBLIC, "$name"));//NOI18N
         retval.add(createMagicMethod(type, "__set",  Modifier.PUBLIC, "$name", "$value"));//NOI18N
         retval.add(createMagicMethod(type, "__isset",  Modifier.PUBLIC, "$name"));//NOI18N

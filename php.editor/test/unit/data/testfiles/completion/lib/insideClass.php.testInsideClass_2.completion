@@ -6,6 +6,7 @@ METHOD     __call($name, $arguments) - ge  [PUBLIC]   Magic Method
 METHOD     __callStatic($name, $arguments  [STATIC]   Magic Method
 METHOD     __clone() - generate            [PUBLIC]   Magic Method
 METHOD     __get($name) - generate         [PUBLIC]   Magic Method
+METHOD     __invoke() - generate           [PUBLIC]   Magic Method
 METHOD     __isset($name) - generate       [PUBLIC]   Magic Method
 METHOD     __set($name, $value) - generat  [PUBLIC]   Magic Method
 METHOD     __set_state($array) - generate  [STATIC]   Magic Method

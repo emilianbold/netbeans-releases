@@ -50,11 +50,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
  */
 public final class PhpModifiers extends Modifier {
     private int mod;
-    public static int NO_FLAGS = 0;
-    public static int ALL_FLAGS = 0xFFFFFFFF;
+    public static final int NO_FLAGS = 0;
+    public static final int ALL_FLAGS = 0xFFFFFFFF;
 
-    private static PhpModifiers EMPTY = new PhpModifiers(NO_FLAGS);
-    private static PhpModifiers ANY = new PhpModifiers(ALL_FLAGS);
+    private static final PhpModifiers EMPTY = new PhpModifiers(NO_FLAGS);
+    private static final PhpModifiers ANY = new PhpModifiers(ALL_FLAGS);
 
     public static PhpModifiers noModifiers() {
         return fromBitMask(new int[]{});

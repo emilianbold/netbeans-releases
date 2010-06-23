@@ -102,7 +102,7 @@ public class ParagraphView extends EditorBoxView<EditorView> {
     }
 
     @Override
-    public boolean setLength(int length) {
+    public boolean setLength(int length, int modOffset, int modLength) {
         this.length = length;
         return true; // ParagraphView may grow
     }
