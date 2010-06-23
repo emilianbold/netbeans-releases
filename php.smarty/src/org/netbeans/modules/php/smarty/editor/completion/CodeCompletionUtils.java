@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.smarty.editor.completion;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Locale;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -96,7 +98,7 @@ public class CodeCompletionUtils {
         tokenSequence.move(offset);
         if (tokenSequence.moveNext() || tokenSequence.movePrevious()) {
             Object tokenID = tokenSequence.token().id();
-            if (tokenID == TplTopTokenId.T_HTML || tokenID == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) {
+            if (tokenID == TplTopTokenId.T_HTML || tokenID == TplTopTokenId.T_PHP || tokenID == TplTopTokenId.T_COMMENT) {
                 return false;
             }
         }
@@ -121,26 +123,38 @@ public class CodeCompletionUtils {
         return false;
     }
 
-    static String afterSmartyCommand(Document doc, int offset) {
+    static ArrayList<String> afterSmartyCommand(Document doc, int offset) {
         int readLength = (SCANNING_MAX_FILTER_LENGHT > offset) ? offset : SCANNING_MAX_FILTER_LENGHT;
         try {
-            return getLastKeyword(doc.getText(offset - readLength, readLength), SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc)));
+            return getLastKeywords(doc.getText(offset - readLength, readLength), SmartyFramework.getOpenDelimiter(NbEditorUtilities.getFileObject(doc)));
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return "";
+        return new ArrayList();
     }
 
-    public static String getLastKeyword(String area, String openDelimiter) {
+    public static ArrayList<String> getLastKeywords(String area, String openDelimiter) {
         int delimiterPosition = area.lastIndexOf(openDelimiter);
         String searchingContent = (delimiterPosition > -1) ? area.substring(delimiterPosition + openDelimiter.length()) : area;
-        String[] keywords = searchingContent.split(" ");
-        String lastKeyword = "";
+        String[] keywords = searchingContent.split("[ =]");
+        ArrayList<String> availableItems = new ArrayList<String>();
         for (String string : keywords) {
             if (SmartyCodeCompletionOffer.getFunctionParameters().get(string) != null) {
-                lastKeyword = string;
+                if (availableItems.isEmpty()) {
+                    availableItems.add(string);
+                }
+                else {
+                    availableItems.set(0, string);
+                }
+            }
+            if (!availableItems.isEmpty()) {
+                for (TplCompletionItem completionItem : SmartyCodeCompletionOffer.getFunctionParameters().get(availableItems.get(0))) {
+                    if (completionItem.getItemText().equals(string)) {
+                        availableItems.add(string);
+                    }
+                }
             }
         }
-        return lastKeyword;
+        return availableItems;
     }
 }

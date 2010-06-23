@@ -45,9 +45,7 @@ import java.util.HashMap;
 import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem;
 import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.BuiltInFunctionsCompletionItem;
 import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.CustomFunctionsCompletionItem;
-import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.FunctionParametersCompletionItem;
 import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.VariableModifiersCompletionItem;
-import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.util.Exceptions;
 
 /**
@@ -56,24 +54,24 @@ import org.openide.util.Exceptions;
  */
 public class SmartyCodeCompletionOffer {
 
-    private final static Collection<TplCompletionItem> completionItemsFunctions = new ArrayList<TplCompletionItem>();
-    private final static Collection<TplCompletionItem> completionItemsModifiers = new ArrayList<TplCompletionItem>();
-    private final static HashMap<String, Collection<? extends CompletionItem>> completionItemsFunctionParams = new HashMap<String, Collection<? extends CompletionItem>>();
+    private final static ArrayList<TplCompletionItem> completionItemsFunctions = new ArrayList<TplCompletionItem>();
+    private final static ArrayList<TplCompletionItem> completionItemsModifiers = new ArrayList<TplCompletionItem>();
+    private final static HashMap<String, ArrayList<TplCompletionItem>> completionItemsFunctionParams = new HashMap<String, ArrayList<TplCompletionItem>>();
 
     static {
         loadFunctions(new String[]{"built-in-functions", "custom-functions"});
         loadModifiers("variable-modifiers");
     }
 
-    public static Collection<TplCompletionItem> getFunctions() {
+    public static ArrayList<TplCompletionItem> getFunctions() {
         return completionItemsFunctions;
     }
 
-    public static Collection<TplCompletionItem> getVariableModifiers() {
+    public static ArrayList<TplCompletionItem> getVariableModifiers() {
         return completionItemsModifiers;
     }
 
-    public static HashMap<String, Collection<? extends CompletionItem>> getFunctionParameters() {
+    public static HashMap<String, ArrayList<TplCompletionItem>> getFunctionParameters() {
         return completionItemsFunctionParams;
     }
 
@@ -109,10 +107,7 @@ public class SmartyCodeCompletionOffer {
 
         try {
             Collection<CodeCompletionEntryMetadata> ccData = CodeCompletionEntries.readAllCodeCompletionEntriesFromXML(inputStream, filePath);
-            for (CodeCompletionEntryMetadata codeCompletionEntryMetadata : ccData) {
-                ccList.add(codeCompletionEntryMetadata);
-            }
-//            ccList.addAll(ccData);
+            ccList.addAll(ccData);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

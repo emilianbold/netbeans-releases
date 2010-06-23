@@ -41,10 +41,10 @@
 package org.netbeans.modules.php.smarty.editor.completion;
 
 import java.lang.String;
-import java.util.Collection;
-import java.util.Collections;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -89,7 +89,7 @@ public class TplCompletionProvider implements CompletionProvider {
 
     private static class Query extends AbstractQuery {
 
-        private volatile Collection<? extends CompletionItem> items = Collections.emptyList();
+        private volatile Set<TplCompletionItem> items = new HashSet<TplCompletionItem>();
         private JTextComponent component;
 
         @Override
@@ -101,21 +101,19 @@ public class TplCompletionProvider implements CompletionProvider {
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 TplCompletionQuery.CompletionResult result = new TplCompletionQuery(doc, caretOffset).query();
-                String command = ""; boolean inSmarty = false;
+                ArrayList<String> commands; boolean inSmarty = false;
                 if (CodeCompletionUtils.insideSmartyCode(doc, caretOffset)) {
                     if (CodeCompletionUtils.inVariableModifiers(doc, caretOffset)) {
-                        items = result.getVariableModifiers();
+                        items.addAll(result.getVariableModifiers());
                         inSmarty = true;
                     }
-                    if (!(command = CodeCompletionUtils.afterSmartyCommand(doc, caretOffset)).equals("")) {
-                        items = new ArrayList<CompletionItem>(result.getParamsForCommand(command));
+                    if (!(commands = CodeCompletionUtils.afterSmartyCommand(doc, caretOffset)).isEmpty()) {
+                        items.addAll(result.getParamsForCommand(commands));
                         inSmarty = true;
                     }
                     if (!inSmarty) {
-                        if (result == null){
-                            items = Collections.emptyList();
-                        } else {
-                            items = result.getFunctions();
+                        if (result != null){
+                            items.addAll(result.getFunctions());
                         }
                     }
                 }
@@ -132,6 +130,7 @@ public class TplCompletionProvider implements CompletionProvider {
                 if (component.getText(component.getCaretPosition() - 1, 1).toString().equals("|")) {
                     return false;
                 }
+                
             } catch (BadLocationException ex) {
                 return false;
             }

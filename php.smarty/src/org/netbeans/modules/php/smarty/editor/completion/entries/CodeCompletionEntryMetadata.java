@@ -40,9 +40,8 @@ package org.netbeans.modules.php.smarty.editor.completion.entries;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem;
 import org.netbeans.modules.php.smarty.editor.completion.TplCompletionItem.FunctionParametersCompletionItem;
-import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
  *
@@ -53,7 +52,7 @@ public class CodeCompletionEntryMetadata {
     private String keyword;
     private String help;
     private String helpUrl;
-    private Collection<CompletionItem> params = new ArrayList<CompletionItem>();
+    private ArrayList<TplCompletionItem> params = new ArrayList<TplCompletionItem>();
 
     public CodeCompletionEntryMetadata(String keyword, String help, String helpUrl,
             Collection<CodeCompletionParamMetadata> params) {
@@ -81,7 +80,7 @@ public class CodeCompletionEntryMetadata {
         return helpUrl;
     }
 
-    public Collection<? extends CompletionItem> getParameters() {
+    public ArrayList<TplCompletionItem> getParameters() {
         return params;
     }
 }

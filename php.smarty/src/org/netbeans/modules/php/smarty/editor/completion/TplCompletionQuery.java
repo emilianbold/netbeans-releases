@@ -41,6 +41,7 @@
 package org.netbeans.modules.php.smarty.editor.completion;
 
 import java.util.*;
+import java.util.ArrayList;
 import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -49,7 +50,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.smarty.editor.completion.entries.SmartyCodeCompletionOffer;
-import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
  *
@@ -93,27 +93,40 @@ public class TplCompletionQuery extends UserTask {
 
     public static class CompletionResult {
 
-        private Collection<? extends CompletionItem> functions;
-        private Collection<? extends CompletionItem> variableModifiers;
-        private HashMap<String, Collection<? extends CompletionItem>> functionParams;
+        private ArrayList<TplCompletionItem> functions;
+        private ArrayList<TplCompletionItem> variableModifiers;
+        private HashMap<String, ArrayList<TplCompletionItem>> functionParams;
 
-        CompletionResult(Collection<? extends CompletionItem> functions, Collection<? extends CompletionItem>
-                variableModifiers, HashMap<String, Collection<? extends CompletionItem>> functionParams) {
+        CompletionResult(ArrayList<TplCompletionItem> functions, ArrayList<TplCompletionItem>
+                variableModifiers, HashMap<String, ArrayList<TplCompletionItem>> functionParams) {
             this.functions = functions;
             this.variableModifiers = variableModifiers;
             this.functionParams = functionParams;
         }
 
-        public Collection<? extends CompletionItem> getFunctions() {
+        public ArrayList<TplCompletionItem> getFunctions() {
             return functions;
         }
 
-        public Collection<? extends CompletionItem> getVariableModifiers() {
+        public ArrayList<TplCompletionItem> getVariableModifiers() {
             return variableModifiers;
         }
 
-        public Collection<? extends CompletionItem> getParamsForCommand(String command) {
-            return functionParams.get(command);
+        public ArrayList<TplCompletionItem> getParamsForCommand(ArrayList<String> commands) {
+            // first command contain main keyword
+            ArrayList<TplCompletionItem> availableItems = new ArrayList<TplCompletionItem>(functionParams.get(commands.get(0)));
+            // rest of them is just removed from codecompletion
+            Iterator it = availableItems.iterator();
+            while (it.hasNext()) {
+                TplCompletionItem tplCompletionItem = (TplCompletionItem)it.next();
+                for (String command : commands) {
+                    if (tplCompletionItem.getItemText().equals(command)) {
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+            return  availableItems;
         }
 
 
