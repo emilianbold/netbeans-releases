@@ -46,13 +46,11 @@ package org.netbeans.modules.apisupport.project.layers;
 
 import java.awt.EventQueue;
 import java.net.URL;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -122,16 +120,8 @@ public class OpenLayerFilesAction extends CookieAction {
         }
     }
 
-    private static void openLayerFileAndFind(DataObject layerDataObject, FileObject originalF) {
+    private static void openLayerFileAndFind(DataObject layerDataObject, final FileObject originalF) {
         try {
-            List<FileObject> lineage = new LinkedList<FileObject>();
-            FileObject parent = originalF;
-            while (parent != null) {
-                if (parent.getParent() != null) {
-                    lineage.add(0, parent);
-                }
-                parent = parent.getParent();
-            }
             InputSource in = new InputSource(layerDataObject.getPrimaryFile().getURL().toExternalForm());
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
@@ -139,38 +129,34 @@ public class OpenLayerFilesAction extends CookieAction {
             final AtomicReference<String> originatingElement = new AtomicReference<String>("");
             class Handler extends DefaultHandler2 {
                 private Locator locator;
-                private Iterator<FileObject> lineageIterator;
-                private FileObject lookingFor;
-                private boolean insideFile;
-                Handler(List<FileObject> lineage) {
-                    lineageIterator = lineage.iterator();
-                    lookingFor = lineageIterator.next();
-                }
+                private String path;
                 public @Override void setDocumentLocator(Locator l) {
                     locator = l;
                 }
                 public @Override void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
-                    insideFile = false;
-                    if (line.get() == 0) {
-                        if (((lookingFor.isFolder() ? "folder".equals(qname) : "file".equals(qname)) &&
-                            lookingFor.getNameExt().equals(attr.getValue("name")))) { // NOI18N
-                            if (lineageIterator.hasNext()) {
-                                lookingFor = lineageIterator.next();
-                            } else {
-                                line.set(locator.getLineNumber());
-                                insideFile = true;
-                            }
-                        }
+                    if (!qname.matches("file|folder")) { // NOI18N
+                        return;
+                    }
+                    String n = attr.getValue("name"); // NOI18N
+                    path = path == null ? n : path + '/' + n;
+                    if (line.get() == 0 && originalF.getPath().equals(path)) {
+                        line.set(locator.getLineNumber());
                     }
                 }
+                public @Override void endElement(String uri, String localname, String qname) throws SAXException {
+                    if (!qname.matches("file|folder")) { // NOI18N
+                        return;
+                    }
+                    int slash = path.lastIndexOf('/');
+                    path = slash == -1 ? null : path.substring(0, slash);
+                }
                 public @Override void comment(char[] ch, int start, int length) throws SAXException {
-                    // XXX this does not work for package elements - may be anywhere inside element
-                    if (insideFile) {
+                    if (originatingElement.get().isEmpty() && originalF.getPath().equals(path)) {
                         originatingElement.set(new String(ch, start, length));
                     }
                 }
             }
-            DefaultHandler2 handler = new Handler(lineage);
+            DefaultHandler2 handler = new Handler();
             parser.getXMLReader().setProperty("http://xml.org/sax/properties/lexical-handler", handler); // NOI18N
             parser.parse(in, handler);
             if (line.get() < 1) {
@@ -222,29 +208,33 @@ public class OpenLayerFilesAction extends CookieAction {
             public @Override void run(CompilationController cc) throws Exception {
                 cc.toPhase(JavaSource.Phase.RESOLVED);
                 Element el;
-                // XXX check for package names and open package-info.java instead
                 TypeElement type = cc.getElements().getTypeElement(origEl);
                 if (type != null) {
                     el = type;
                 } else {
-                    int dot = origEl.lastIndexOf('.');
-                    String clazz = origEl.substring(0, dot);
-                    type = cc.getElements().getTypeElement(clazz);
-                    if (type == null) {
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.class_not_found", origEl, prjName), 1);
-                        return;
-                    }
-                    String member = origEl.substring(dot + 1);
-                    el = null;
-                    for (Element nested : type.getEnclosedElements()) {
-                        if (nested.toString().equals(member)) {
-                            el = nested;
-                            break;
+                    PackageElement pkg = cc.getElements().getPackageElement(origEl);
+                    if (pkg != null) {
+                        el = pkg;
+                    } else {
+                        int dot = origEl.lastIndexOf('.');
+                        String clazz = origEl.substring(0, dot);
+                        type = cc.getElements().getTypeElement(clazz);
+                        if (type == null) {
+                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.class_not_found", origEl, prjName), 1);
+                            return;
                         }
-                    }
-                    if (el == null) {
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.member_not_found", member, clazz), 1);
-                        return;
+                        String member = origEl.substring(dot + 1);
+                        el = null;
+                        for (Element nested : type.getEnclosedElements()) {
+                            if (nested.toString().equals(member)) {
+                                el = nested;
+                                break;
+                            }
+                        }
+                        if (el == null) {
+                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.member_not_found", member, clazz), 1);
+                            return;
+                        }
                     }
                 }
                 if (ElementOpen.open(cc.getClasspathInfo(), el)) {
