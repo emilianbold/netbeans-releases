@@ -1081,7 +1081,9 @@ public class MultiDataObject extends DataObject {
         */
         @SuppressWarnings("deprecation")
         final void changeFile (FileObject newFile) {
-            assert newFile != null : "NPE for " + file;
+            if (newFile == null) {
+                throw new NullPointerException("NPE for " + file); // NOI18N
+            }
             if (newFile.equals (file)) {
                 return;
             }
