@@ -43,8 +43,10 @@ package org.netbeans.modules.php.editor.elements;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.editor.api.FileElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
@@ -54,6 +56,11 @@ import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
+import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.openide.util.Parameters;
 
 /**
@@ -62,6 +69,7 @@ import org.openide.util.Parameters;
 public final class FieldElementImpl extends PhpElementImpl implements FieldElement {
 
     public static final String IDX_FIELD = PHPIndexer.FIELD_FIELD;
+
     private final PhpModifiers modifiers;
     private final TypeElement enclosingType;
     private final Set<TypeResolver> instanceTypes;
@@ -112,6 +120,32 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
 
         }
         return retval;
+    }
+
+    public static Set<FieldElement> fromNode(TypeElement type, FieldsDeclaration node, ElementQuery.File fileQuery) {
+        Parameters.notNull("type", type);
+        Parameters.notNull("node", node);
+        Parameters.notNull("fileQuery", fileQuery);
+        final List<? extends SingleFieldDeclarationInfo> fields = SingleFieldDeclarationInfo.create(node);
+        final Set<FieldElement> retval = new HashSet<FieldElement>();
+        for (SingleFieldDeclarationInfo info : fields) {
+            final String returnType = VariousUtils.getFieldTypeFromPHPDoc(fileQuery.getResult().getProgram(),info.getOriginalNode());
+            retval.add(new FieldElementImpl(type, info.getName(), info.getRange().getStart(),
+                    info.getAccessModifiers().toFlags(), fileQuery.getURL().toString(), fileQuery,
+                    returnType != null ? TypeResolverImpl.parseTypes(returnType):null));
+        }
+        return retval;
+    }
+
+    public static FieldElement fromNode(final TypeElement type, final FieldAccess node,
+            final Set<TypeResolver> resolvers, final FileElementQuery fileQuery) {
+        Parameters.notNull("type", type);
+        Parameters.notNull("resolvers", resolvers);
+        Parameters.notNull("node", node);
+        Parameters.notNull("fileQuery", fileQuery);
+        final ASTNodeInfo<FieldAccess> info = ASTNodeInfo.create(node);
+        return new FieldElementImpl(type, info.getName(), info.getRange().getStart(),
+                    PhpModifiers.PUBLIC, fileQuery.getURL().toString(), fileQuery,resolvers);
     }
 
     private static boolean matchesQuery(final NameKind query, FieldSignatureParser signParser) {
