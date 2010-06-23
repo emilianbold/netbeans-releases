@@ -125,7 +125,17 @@ public class HighlightsView extends EditorView implements TextLayoutView {
     }
 
     @Override
-    public boolean setLength(int length) {
+    public boolean setLength(int length, int modOffset, int modLength) {
+        // Check that there is not a '\t' character in the inserted text
+        if (modLength > 0) {
+            Document doc = getDocument();
+            CharSequence text = DocumentUtilities.getText(doc);
+            for (int i = 0; i < modLength; i++) {
+                if (text.charAt(modOffset + i) == '\t') {
+                    return false;
+                }
+            }
+        }
         this.length = length;
         return true; // Possibly cached text layout gets released automatically
     }

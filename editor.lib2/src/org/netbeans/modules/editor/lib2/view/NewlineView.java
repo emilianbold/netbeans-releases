@@ -103,7 +103,7 @@ public final class NewlineView extends EditorView {
     }
 
     @Override
-    public boolean setLength(int length) {
+    public boolean setLength(int length, int modOffset, int modLength) {
         return false;
     }
 
