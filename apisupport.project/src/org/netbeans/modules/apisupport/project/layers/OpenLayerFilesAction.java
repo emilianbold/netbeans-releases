@@ -49,22 +49,28 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-//import java.util.HashSet;
-//import java.util.Set;
-//import org.netbeans.api.project.FileOwnerQuery;
-//import org.netbeans.api.project.Project;
-//import org.netbeans.api.project.ProjectUtils;
-//import org.netbeans.api.project.ui.OpenProjects;
-//import org.openide.DialogDisplayer;
-//import org.openide.DialogDisplayer;
-//import org.openide.NotifyDescriptor;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -80,16 +86,16 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.ext.DefaultHandler2;
 
 /**
- * Open the layer file(s) declaring the SFS node.
+ * Open the layer file or annotation declaring the SFS node.
  */
 public class OpenLayerFilesAction extends CookieAction {
 
-    protected void performAction(final Node[] activatedNodes) {
+    protected @Override void performAction(final Node[] activatedNodes) {
         RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 try {
                     FileObject f = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
                     openLayersForFile(f);
@@ -117,84 +123,153 @@ public class OpenLayerFilesAction extends CookieAction {
     }
 
     private static void openLayerFileAndFind(DataObject layerDataObject, FileObject originalF) {
-        EditorCookie editorCookie = layerDataObject.getCookie(EditorCookie.class);
-        if (editorCookie != null) {
-            editorCookie.open();
-            final LineCookie lineCookie = layerDataObject.getCookie(LineCookie.class);
-            if (lineCookie != null) {
-                List<FileObject> lineage = new LinkedList<FileObject>();
-                FileObject parent = originalF;
-                while (parent != null) {
-                    if (parent.getParent() != null) {
-                        lineage.add(0, parent);
-                    }
-                    parent = parent.getParent();
+        try {
+            List<FileObject> lineage = new LinkedList<FileObject>();
+            FileObject parent = originalF;
+            while (parent != null) {
+                if (parent.getParent() != null) {
+                    lineage.add(0, parent);
                 }
-                try {
-                    InputSource in = new InputSource(layerDataObject.getPrimaryFile().getURL().toExternalForm());
-                    SAXParserFactory factory = SAXParserFactory.newInstance();
-                    SAXParser parser = factory.newSAXParser();
-                    final int[] line = new int[1];
-                    //final int[] col = new int[1];
-                    class Handler extends DefaultHandler {
-                        private Locator locator;
-                        private Iterator<FileObject> lineageIterator;
-                        private FileObject lookingFor;
-                        Handler(List<FileObject> lineage) {
-                            lineageIterator = lineage.iterator();
-                            lookingFor = lineageIterator.next(); 
-                        }
-                        @Override
-                        public void setDocumentLocator(Locator l) {
-                            locator = l;
-                        }
-                        @Override
-                        public void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
-                            if (line[0] == 0) {
-                                if (((lookingFor.isFolder() ? "folder".equals(qname) : "file".equals(qname)) &&
-                                    lookingFor.getNameExt().equals(attr.getValue("name")))) { // NOI18N
-                                    if (lineageIterator.hasNext()) {
-                                        lookingFor = lineageIterator.next();
-                                    } else {
-                                        line[0] = locator.getLineNumber();
-                                        // col[0] = locator.getColumnNumber();
-                                    }
-                                }
+                parent = parent.getParent();
+            }
+            InputSource in = new InputSource(layerDataObject.getPrimaryFile().getURL().toExternalForm());
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser parser = factory.newSAXParser();
+            final AtomicInteger line = new AtomicInteger();
+            final AtomicReference<String> originatingElement = new AtomicReference<String>("");
+            class Handler extends DefaultHandler2 {
+                private Locator locator;
+                private Iterator<FileObject> lineageIterator;
+                private FileObject lookingFor;
+                private boolean insideFile;
+                Handler(List<FileObject> lineage) {
+                    lineageIterator = lineage.iterator();
+                    lookingFor = lineageIterator.next();
+                }
+                public @Override void setDocumentLocator(Locator l) {
+                    locator = l;
+                }
+                public @Override void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
+                    insideFile = false;
+                    if (line.get() == 0) {
+                        if (((lookingFor.isFolder() ? "folder".equals(qname) : "file".equals(qname)) &&
+                            lookingFor.getNameExt().equals(attr.getValue("name")))) { // NOI18N
+                            if (lineageIterator.hasNext()) {
+                                lookingFor = lineageIterator.next();
+                            } else {
+                                line.set(locator.getLineNumber());
+                                insideFile = true;
                             }
                         }
-                        // XXX also look for comment giving class name in same project to open, e.g.
-                        // <file name="org-netbeans-modules-apisupport-project-suite.instance">
-                        //     <!--org.netbeans.modules.apisupport.project.suite.SuiteProject-->
                     }
-                    parser.parse(in, new Handler(lineage));
-                    if (line[0] < 1) {
-                        return;
+                }
+                public @Override void comment(char[] ch, int start, int length) throws SAXException {
+                    // XXX this does not work for package elements - may be anywhere inside element
+                    if (insideFile) {
+                        originatingElement.set(new String(ch, start, length));
                     }
-                    EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            lineCookie.getLineSet().getCurrent(line[0] - 1).show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS /*, Math.max(0, col[0])*/);
-                        }
-                    });
-                } catch (Exception e) {
+                }
+            }
+            DefaultHandler2 handler = new Handler(lineage);
+            parser.getXMLReader().setProperty("http://xml.org/sax/properties/lexical-handler", handler); // NOI18N
+            parser.parse(in, handler);
+            if (line.get() < 1) {
+                return;
+            }
+            String javaIdentifier = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; //NOI18N
+            if (originatingElement.get().matches(javaIdentifier + "([.]" + javaIdentifier + ")+(\\(\\))?")) {
+                if (openOriginatingElement(layerDataObject.getPrimaryFile(), originatingElement.get())) {
                     return;
                 }
             }
+            EditorCookie editorCookie = layerDataObject.getCookie(EditorCookie.class);
+            if (editorCookie != null) {
+                editorCookie.open();
+                final LineCookie lineCookie = layerDataObject.getCookie(LineCookie.class);
+                if (lineCookie != null) {
+                    EventQueue.invokeLater(new Runnable() {
+                        public @Override void run() {
+                            lineCookie.getLineSet().getCurrent(line.get() - 1).show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+                        }
+                    });
+                }
+            }
+        } catch (Exception x) {
+            Exceptions.printStackTrace(x);
+            return;
         }
     }        
+    
+    private static boolean openOriginatingElement(FileObject layer, final String origEl) throws Exception {
+        final Project prj = FileOwnerQuery.getOwner(layer);
+        if (prj == null) {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.no_project", FileUtil.getFileDisplayName(layer)), 1);
+            return false;
+        }
+        final String prjName = ProjectUtils.getInformation(prj).getDisplayName();
+        NbModuleProvider nbm = prj.getLookup().lookup(NbModuleProvider.class);
+        if (nbm == null) {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.not_module", prjName), 1);
+            return false;
+        }
+        FileObject src = nbm.getSourceDirectory();
+        if (src == null) {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.no_src_dir", prjName), 1);
+            return false;
+        }
+        final AtomicBoolean success = new AtomicBoolean();
+        JavaSource.create(ClasspathInfo.create(src)).runWhenScanFinished(new Task<CompilationController>() {
+            public @Override void run(CompilationController cc) throws Exception {
+                cc.toPhase(JavaSource.Phase.RESOLVED);
+                Element el;
+                // XXX check for package names and open package-info.java instead
+                TypeElement type = cc.getElements().getTypeElement(origEl);
+                if (type != null) {
+                    el = type;
+                } else {
+                    int dot = origEl.lastIndexOf('.');
+                    String clazz = origEl.substring(0, dot);
+                    type = cc.getElements().getTypeElement(clazz);
+                    if (type == null) {
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.class_not_found", origEl, prjName), 1);
+                        return;
+                    }
+                    String member = origEl.substring(dot + 1);
+                    el = null;
+                    for (Element nested : type.getEnclosedElements()) {
+                        if (nested.toString().equals(member)) {
+                            el = nested;
+                            break;
+                        }
+                    }
+                    if (el == null) {
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.member_not_found", member, clazz), 1);
+                        return;
+                    }
+                }
+                if (ElementOpen.open(cc.getClasspathInfo(), el)) {
+                    success.set(true);
+                } else {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.msg.could_not_open", origEl), 1);
+                }
+            }
+        }, true).get();
+        return success.get();
+    }
 
-    public String getName() {
-         return NbBundle.getMessage(OpenLayerFilesAction.class, "LBL_open_layer_files_action");
+    public @Override String getName() {
+         return NbBundle.getMessage(OpenLayerFilesAction.class, "OpenLayerFilesAction.label");
     }
     
-    protected Class[] cookieClasses() {
-        return new Class[] {DataObject.class};
+    protected @Override Class<?>[] cookieClasses() {
+        return new Class<?>[] {DataObject.class};
     }
     
-    protected int mode() {
+    protected @Override int mode() {
         return MODE_EXACTLY_ONE;
     }
     
-    public HelpCtx getHelpCtx() {
+    public @Override HelpCtx getHelpCtx() {
         return null;
     }
     
