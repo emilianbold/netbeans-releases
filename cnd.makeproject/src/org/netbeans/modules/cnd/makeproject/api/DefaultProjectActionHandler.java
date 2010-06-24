@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -411,7 +412,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         private final InputOutput tab;
         private final String actionName;
         private long startTimeMillis;
-        private Runnable postRunnable;
+        private final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
 
         public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor,
                 InputOutput tab, String actionName) {
@@ -428,154 +429,80 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 return;
             }
             final NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
-            final NativeProcess process = (NativeProcess) event.getSource();
-            switch (event.state) {
-                case INITIAL:
-                    break;
-                case STARTING:
-                    break;
-                case RUNNING:
-                    startTimeMillis = System.currentTimeMillis();
-                    if (showHeader) {
-                        assert false;
-                        // TODO: is it needed?
-                        //String runDirToShow = execEnv.isLocal() ?
-                        //    runDir : HostInfoProvider.getMapper(execEnv).getRemotePath(runDir,true);
-                        //String preText = MessageFormat.format(getString("PRETEXT"),
-                        //        exePlusArgsQuoted(executable, arguments), runDirToShow);
-                        //err.println(preText);
-                        //err.println();
-                    }
-                    if (listener != null) {
-                        listener.executionStarted(event.pid);
-                    }
-                    break;
-                case CANCELLED: {
-                    closeOutputListener();
-                    postRunnable = new Runnable() {
-
-                        @Override
-                        public void run() {
-                            StringBuilder res = new StringBuilder();
-                            res.append(MessageFormat.format(getString("TERMINATED"),  // NOI18N
-                                    actionName.toUpperCase()));
-                            res.append(" ("); // NOI18N
-
-                            int rc = -1;
-
-                            try {
-                                rc = process.waitFor();
-                            } catch (InterruptedException ex) {
-//                                Exceptions.printStackTrace(ex);
-                            }
-
-                            if (rc != 0) {
-                                res.append(MessageFormat.format(getString("EXIT_VALUE"), rc)); // NOI18N
-                                res.append(' ');
-                            }
-
-                            res.append(MessageFormat.format(getString("TOTAL_TIME"),  // NOI18N
-                                    formatTime(System.currentTimeMillis() - startTimeMillis)));
-                            res.append(')');
-
-                            // use \n\r to correctly move cursor in terminals as well
-                            tab.getErr().printf("\n\r%s\n\r", res.toString()); // NOI18N
-                            closeIO();
-
-                            if (listener != null) {
-                                listener.executionFinished(rc);
-                            }
-
-                            StatusDisplayer.getDefault().setStatusText(
-                                    MessageFormat.format(getString("MSG_TERMINATED"), actionName)); // NOI18N
-                        }
-                    };
-                    break;
+            processRef.compareAndSet(null, (NativeProcess) event.getSource());
+            
+            if (event.state == NativeProcess.State.RUNNING) {
+                startTimeMillis = System.currentTimeMillis();
+                if (showHeader) {
+                    assert false;
+                    // TODO: is it needed?
+                    //String runDirToShow = execEnv.isLocal() ?
+                    //    runDir : HostInfoProvider.getMapper(execEnv).getRemotePath(runDir,true);
+                    //String preText = MessageFormat.format(getString("PRETEXT"),
+                    //        exePlusArgsQuoted(executable, arguments), runDirToShow);
+                    //err.println(preText);
+                    //err.println();
                 }
-                case ERROR: {
-                    closeOutputListener();
-                    postRunnable = new Runnable() {
-
-                        @Override
-                        public void run() {
-                            StringBuilder res = new StringBuilder();
-                            res.append(MessageFormat.format(getString("FAILED"), actionName.toUpperCase())); // NOI18N
-                            res.append(" ("); // NOI18N
-                            int rc = -1;
-
-                            try {
-                                rc = process.waitFor();
-                            } catch (InterruptedException ex) {
-                            }
-
-                            if (rc != 0) {
-                                res.append(MessageFormat.format(getString("EXIT_VALUE"), rc)); // NOI18N
-                                res.append(' ');
-                            }
-
-                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                            res.append(')');
-
-                            // use \n\r to correctly move cursor in terminals as well
-                            tab.getErr().printf("\n\r%s\n\r", res.toString()); // NOI18N
-                            closeIO();
-                            if (listener != null) {
-                                listener.executionFinished(rc);
-                            }
-                            StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString("MSG_FAILED"), actionName));
-                        }
-                    };
-                    break;
-                }
-                case FINISHED: {
-                    closeOutputListener();
-                    postRunnable = new Runnable() {
-
-                        @Override
-                        public void run() {
-                            int rc = -1;
-
-                            try {
-                                rc = process.waitFor();
-                            } catch (InterruptedException ex) {
-                            }
-
-                            StringBuilder res = new StringBuilder();
-                            res.append(MessageFormat.format(getString(rc == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase())); // NOI18N
-                            res.append(" ("); // NOI18N
-                            if (rc != 0) {
-                                res.append(MessageFormat.format(getString("EXIT_VALUE"), rc)); // NOI18N
-                                res.append(' ');
-                            }
-                            res.append(MessageFormat.format(getString("TOTAL_TIME"), // NOI18N
-                                    formatTime(System.currentTimeMillis() - startTimeMillis)));
-                            res.append(')');
-
-                            PrintWriter pw = (rc == 0) ? tab.getOut() : tab.getErr();
-                            // use \n\r to correctly move cursor in terminals as well
-                            pw.printf("\n\r%s\n\r", res.toString()); // NOI18N
-                            closeIO();
-
-                            if (listener != null) {
-                                listener.executionFinished(rc);
-                            }
-
-                            StatusDisplayer.getDefault().setStatusText(
-                                    MessageFormat.format(getString(
-                                    rc == 0
-                                    ? "MSG_SUCCESSFUL" // NOI18N
-                                    : "MSG_FAILED"), actionName)); // NOI18N
-                        }
-                    };
-                    break;
+                if (listener != null) {
+                    listener.executionStarted(event.pid);
                 }
             }
         }
 
         @Override
+        // Started by Execution as postRunnable
         public void run() {
-            if (postRunnable != null) {
-                postRunnable.run();
+            NativeProcess process = processRef.get();
+
+            if (process == null) {
+                return;
+            }
+            
+            int rc = -1;
+
+            try {
+                rc = process.waitFor();
+            } catch (InterruptedException ex) {
+//                Exceptions.printStackTrace(ex);
+            } finally {
+            StringBuilder res = new StringBuilder();
+
+                switch (process.getState()) {
+                    case ERROR:
+                        res.append(MessageFormat.format(getString("FAILED"), actionName.toUpperCase()));
+                        StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString("MSG_FAILED"), actionName));
+                        break;
+                    case CANCELLED:
+                        res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase()));
+                        StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString(rc == 0 ? "MSG_SUCCESSFUL" : "MSG_FAILED"), actionName));
+                        break;
+                    case FINISHED:
+                        res.append(MessageFormat.format(getString(rc == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase()));
+                        StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString(rc == 0 ? "MSG_SUCCESSFUL" : "MSG_FAILED"), actionName));
+                        break;
+                    default:
+                    // should not happen
+                }
+
+                res.append(" ("); // NOI18N
+                if (rc != 0) {
+                    res.append(MessageFormat.format(getString("EXIT_VALUE"), rc)); // NOI18N
+                    res.append(' ');
+                }
+                res.append(MessageFormat.format(getString("TOTAL_TIME"), // NOI18N
+                        formatTime(System.currentTimeMillis() - startTimeMillis)));
+                res.append(')');
+
+                PrintWriter pw = (rc == 0) ? tab.getOut() : tab.getErr();
+                // use \n\r to correctly move cursor in terminals as well
+                pw.printf("\n\r%s\n\r", res.toString()); // NOI18N
+
+                closeIO();
+                closeOutputListener();
+                
+                if (listener != null) {
+                    listener.executionFinished(rc);
+                }
             }
         }
 
