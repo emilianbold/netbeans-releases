@@ -2696,7 +2696,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Types types = controller.getTypes();
             final TreeUtilities tu = controller.getTreeUtilities();
             TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
-            final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER);
+            final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER) && elem.asType().getKind() != TypeKind.ERROR;
             if (isStatic && elem.getKind() == ElementKind.TYPE_PARAMETER)
                 return;
             final boolean isThisCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(THIS_KEYWORD);
@@ -2707,7 +2707,6 @@ public class JavaCompletionProvider implements CompletionProvider {
             final boolean[] ctorSeen = {false};
             final boolean[] nestedClassSeen = {false};
             final TypeElement enclClass = scope.getEnclosingClass();
-            final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     switch (e.getKind()) {
