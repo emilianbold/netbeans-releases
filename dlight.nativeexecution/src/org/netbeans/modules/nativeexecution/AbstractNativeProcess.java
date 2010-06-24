@@ -276,8 +276,8 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      * Terminates the underlaying system process. The system process represented
      * by this <code>AbstractNativeProcess</code> object is forcibly terminated.
      *
-     * This method is non-blocking. Returning from the call of this method
-     * does not mean that the process was already terminated.
+     * Returning from the call of this method does not mean that the process was
+     * already terminated.
      *
      */
     @Override
@@ -291,29 +291,43 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         final int timeToWait = destroyImpl();
 
         if (pid > 0 && waitTask != null && !waitTask.isDone()) {
+            Future<Integer> killTask = null;
+            
             if (timeToWait > 0) {
                 // Submit an asynchronious task that will send SIGKILL if
                 // process is still here after returned timeout...
-                final Runnable waitForTermination = new Runnable() {
+                final Callable<Integer> waitForTermination = new Callable<Integer>() {
 
                     @Override
-                    public void run() {
+                    public Integer call() throws Exception {
                         try {
                             waitTask.get(timeToWait, TimeUnit.SECONDS);
                             // We are in time with termination. Just return.
-                            return;
                         } catch (InterruptedException ex) {
                         } catch (ExecutionException ex) {
                         } catch (TimeoutException ex) {
                             // Process didn't gone.. Kill it!
                             CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null);
                         }
+
+                        return 0;
                     }
                 };
 
-                NativeTaskExecutorService.submit(waitForTermination, "Waiting " + timeToWait + " seconds for process " + id + " to terminate..."); // NOI18N
+                killTask = NativeTaskExecutorService.submit(waitForTermination,
+                        "Waiting " + timeToWait + " seconds for process " + id + " to terminate..."); // NOI18N
             } else {
-                CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null);
+                killTask = CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null);
+            }
+
+            if (killTask != null) {
+                try {
+                    killTask.get();
+                } catch (InterruptedException ex) {
+//                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
