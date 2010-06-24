@@ -858,6 +858,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private Set<String> existingColumns = new HashSet<String>();
             private String existingEmbeddedId = null;
             private HashMap<String, Tree> existingJoinColumns = new HashMap<String, Tree>();
+            private HashMap<TypeMirror, ArrayList<String>> existingJoinColumnss = new HashMap<TypeMirror, ArrayList<String>>();
             private HashMap<String, Tree> existingMappings = new HashMap<String, Tree>();
 
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
@@ -960,6 +961,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                                     properties.remove(pkProperty);
                                 }
                             } else if( nm.contentEquals("JoinTable") ){//NOI18N
+                                TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
                                 for(ExpressionTree exTree: annTree.getArguments()){
                                     AssignmentTree aTree = (AssignmentTree)exTree;
                                     if (((IdentifierTree)(aTree).getVariable()).getName().contentEquals("joinTables")){//NOI18N
@@ -968,11 +970,35 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                                     }
                                 }
                             } else if( nm.contentEquals("JoinColumns") ){//NOI18N
+                                TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                ArrayList<String> columns = new ArrayList<String> ();
                                 for(ExpressionTree exTree: annTree.getArguments()){
                                     AssignmentTree aTree = (AssignmentTree)exTree;
-                                            ExpressionTree value = aTree.getExpression();
-                                            break;
+                                    ExpressionTree value = aTree.getExpression();
+                                    if(value instanceof NewArrayTree){
+                                        NewArrayTree arrTree = (NewArrayTree) value;
+                                        List<? extends ExpressionTree> inis = arrTree.getInitializers();
+                                        for(ExpressionTree eT : inis){
+                                            if(eT instanceof AnnotationTree){
+                                                AnnotationTree aT = (AnnotationTree) eT;
+                                                Name aN = ((IdentifierTree)aT.getAnnotationType()).getName();
+                                                if(aN.contentEquals("JoinColumn")){//NOI18N
+                                                    for(ExpressionTree expTree: aT.getArguments()){
+                                                        AssignmentTree asTree = (AssignmentTree)expTree;
+                                                        if (((IdentifierTree)(asTree).getVariable()).getName().contentEquals("name")){//NOI18N
+                                                                columns.add((String)((LiteralTree)asTree.getExpression()).getValue());
+                                                                break;
+                                                        }
+                                                    }
+                                               }
+                                            }
+                                        }
+                                        Collections.sort(columns);
+
+                                        break;
+                                    }
                                  }
+                                existingJoinColumnss.put(tm, columns);
                             } else if( nm.contentEquals("JoinColumn") ){//NOI18N
                                 for(ExpressionTree exTree: annTree.getArguments()){
                                     AssignmentTree aTree = (AssignmentTree)exTree;
