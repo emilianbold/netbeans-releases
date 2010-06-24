@@ -716,6 +716,9 @@ public class TreeModelNode extends AbstractNode {
                     Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
                 }
             }
+            if (displayName == null) {
+                displayName = "";
+            }
             return displayName;
         }
     }
@@ -1615,6 +1618,10 @@ public class TreeModelNode extends AbstractNode {
         */
         @Override
         public boolean canWrite () {
+            try {
+                return model.canEditCell(object, columnModel.getID());
+            } catch (UnknownTypeException ex) {
+            }
             if (nodeColumn) return false;
             try {
                 return !model.isReadOnly (object, columnModel.getID ());

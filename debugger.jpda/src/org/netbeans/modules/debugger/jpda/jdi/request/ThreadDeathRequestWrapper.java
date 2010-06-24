@@ -61,6 +61,13 @@ public final class ThreadDeathRequestWrapper {
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static void addThreadFilter(com.sun.jdi.request.ThreadDeathRequest a, com.sun.jdi.ThreadReference b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.request.ThreadDeathRequest",
+                    "addThreadFilter",
+                    "JDI CALL: com.sun.jdi.request.ThreadDeathRequest({0}).addThreadFilter({1})",
+                    new Object[] {a, b});
+        }
         try {
             a.addThreadFilter(b);
         } catch (com.sun.jdi.InternalException ex) {
@@ -68,6 +75,13 @@ public final class ThreadDeathRequestWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.request.ThreadDeathRequest",
+                        "addThreadFilter",
+                        org.netbeans.modules.debugger.jpda.JDIExceptionReporter.RET_VOID);
+            }
         }
     }
 

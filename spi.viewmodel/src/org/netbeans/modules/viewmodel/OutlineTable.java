@@ -111,7 +111,7 @@ ExplorerManager.Provider, PropertyChangeListener {
     private final Logger logger = Logger.getLogger(OutlineTable.class.getName());
     
     private ExplorerManager     explorerManager;
-    private final MyTreeTable   treeTable;
+    final MyTreeTable           treeTable; // Accessed from tests
     Node.Property[]             columns; // Accessed from tests
     private TableColumn[]       tableColumns;
     private int[]               columnVisibleMap; // Column index -> visible index
@@ -662,9 +662,9 @@ ExplorerManager.Provider, PropertyChangeListener {
     private void updateTableColumns(Property[] columnsToSet) {
         TableColumnModel tcm = treeTable.getTable().getColumnModel();
         ETableColumnModel ecm = (ETableColumnModel) tcm;
-        int d = (isDefaultColumnAdded) ? 0 : 1;
+        //int d = (isDefaultColumnAdded) ? 1 : 0;
         int ci = 0;
-        int tci = d;
+        int tci = 0;//d;
         TableColumn[] tableColumns = new TableColumn[columns.length];
         if (defaultColumnIndex > 0) tci++;
         for (int i = 0; i < columns.length; i++) {
@@ -689,13 +689,15 @@ ExplorerManager.Provider, PropertyChangeListener {
                 tableColumns[i] = tcm.getColumn(0);
                 if (columns[i] instanceof Column) {
                     tableColumns[i].setCellEditor(((Column)columns[i]).getTableCellEditor());
-                    tableColumns[i].setCellEditor(new DelegatingCellEditor(
-                            ((Column) columns[i]).getName(),
-                            treeTable.getTable().getCellEditor(0, 0)));
-                    tableColumns[i].setCellRenderer(new DelegatingCellRenderer(
-                            ((Column) columns[i]).getName(),
-                            treeTable.getTable().getCellRenderer(0, 0)));
                 }
+                String name = tableColumns[i].getHeaderValue().toString();
+                tableColumns[i].setCellEditor(new DelegatingCellEditor(
+                        name,
+                        treeTable.getTable().getCellEditor(0, 0)));
+                tableColumns[i].setCellRenderer(new DelegatingCellRenderer(
+                        name,
+                        treeTable.getTable().getCellRenderer(0, 0)));
+                tci++;
             }
         }
         if (logger.isLoggable(Level.FINE)) {
@@ -909,7 +911,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
     }
     
-    private static class MyTreeTable extends OutlineView {
+    static class MyTreeTable extends OutlineView {  // Accessed from tests
 
         private Reference dndModelRef = new WeakReference(null);
 
