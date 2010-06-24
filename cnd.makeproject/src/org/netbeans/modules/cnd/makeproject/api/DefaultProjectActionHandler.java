@@ -457,24 +457,37 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                         @Override
                         public void run() {
                             StringBuilder res = new StringBuilder();
-                            res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase())); // NOI18N
+                            res.append(MessageFormat.format(getString("TERMINATED"),  // NOI18N
+                                    actionName.toUpperCase()));
                             res.append(" ("); // NOI18N
-                            if (process.exitValue() != 0) {
-                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+
+                            int rc = -1;
+
+                            try {
+                                rc = process.waitFor();
+                            } catch (InterruptedException ex) {
+//                                Exceptions.printStackTrace(ex);
+                            }
+
+                            if (rc != 0) {
+                                res.append(MessageFormat.format(getString("EXIT_VALUE"), rc)); // NOI18N
                                 res.append(' ');
                             }
-                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
+
+                            res.append(MessageFormat.format(getString("TOTAL_TIME"),  // NOI18N
+                                    formatTime(System.currentTimeMillis() - startTimeMillis)));
                             res.append(')');
 
                             // use \n\r to correctly move cursor in terminals as well
-                            tab.getErr().printf("\n\r%s\n\r",res.toString()); // NOI18N
+                            tab.getErr().printf("\n\r%s\n\r", res.toString()); // NOI18N
                             closeIO();
 
                             if (listener != null) {
-                                listener.executionFinished(process.exitValue());
+                                listener.executionFinished(rc);
                             }
-                            
-                            StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString("MSG_TERMINATED"), actionName)); // NOI18N
+
+                            StatusDisplayer.getDefault().setStatusText(
+                                    MessageFormat.format(getString("MSG_TERMINATED"), actionName)); // NOI18N
                         }
                     };
                     break;
@@ -488,18 +501,26 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             StringBuilder res = new StringBuilder();
                             res.append(MessageFormat.format(getString("FAILED"), actionName.toUpperCase())); // NOI18N
                             res.append(" ("); // NOI18N
-                            if (process.exitValue() != 0) {
-                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+                            int rc = -1;
+
+                            try {
+                                rc = process.waitFor();
+                            } catch (InterruptedException ex) {
+                            }
+
+                            if (rc != 0) {
+                                res.append(MessageFormat.format(getString("EXIT_VALUE"), rc)); // NOI18N
                                 res.append(' ');
                             }
+
                             res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
                             res.append(')');
 
                             // use \n\r to correctly move cursor in terminals as well
-                            tab.getErr().printf("\n\r%s\n\r",res.toString()); // NOI18N
+                            tab.getErr().printf("\n\r%s\n\r", res.toString()); // NOI18N
                             closeIO();
                             if (listener != null) {
-                                listener.executionFinished(-1);
+                                listener.executionFinished(rc);
                             }
                             StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString("MSG_FAILED"), actionName));
                         }
@@ -512,27 +533,38 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
                         @Override
                         public void run() {
-                            int rc = process.exitValue();
+                            int rc = -1;
+
+                            try {
+                                rc = process.waitFor();
+                            } catch (InterruptedException ex) {
+                            }
+
                             StringBuilder res = new StringBuilder();
                             res.append(MessageFormat.format(getString(rc == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase())); // NOI18N
                             res.append(" ("); // NOI18N
                             if (rc != 0) {
-                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+                                res.append(MessageFormat.format(getString("EXIT_VALUE"), rc)); // NOI18N
                                 res.append(' ');
                             }
-                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
+                            res.append(MessageFormat.format(getString("TOTAL_TIME"), // NOI18N
+                                    formatTime(System.currentTimeMillis() - startTimeMillis)));
                             res.append(')');
 
                             PrintWriter pw = (rc == 0) ? tab.getOut() : tab.getErr();
                             // use \n\r to correctly move cursor in terminals as well
-                            pw.printf("\n\r%s\n\r",res.toString()); // NOI18N
+                            pw.printf("\n\r%s\n\r", res.toString()); // NOI18N
                             closeIO();
 
                             if (listener != null) {
-                                listener.executionFinished(process.exitValue());
+                                listener.executionFinished(rc);
                             }
 
-                            StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString(rc == 0 ? "MSG_SUCCESSFUL" : "MSG_FAILED"), actionName));
+                            StatusDisplayer.getDefault().setStatusText(
+                                    MessageFormat.format(getString(
+                                    rc == 0
+                                    ? "MSG_SUCCESSFUL" // NOI18N
+                                    : "MSG_FAILED"), actionName)); // NOI18N
                         }
                     };
                     break;
