@@ -53,6 +53,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
@@ -135,7 +136,7 @@ public class PhpFrameworkRegistrationProcessor extends LayerGeneratingProcessor 
             }
 
             File f = layer(element)
-                    .file("PHP/Frameworks/" + classname.replace('.', '-') + ".instance") // NOI18N
+                    .file(PhpFrameworks.FRAMEWORK_PATH + "/" + classname.replace('.', '-') + ".instance") // NOI18N
                     .intvalue("position", registration.position()); // NOI18N
             if (methodname != null) {
                 f = f.methodvalue("instanceCreate", classname, methodname); // NOI18N
