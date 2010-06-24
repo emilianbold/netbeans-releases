@@ -2935,7 +2935,7 @@ public class Term extends JComponent implements Accessible {
                  */
             }
 
-            if (rend + 1 >= lastcol) {
+            if (rend >= lastcol) {
                 break;
             }
 
