@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.java.source.ant;
 
-import com.sun.istack.internal.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -538,7 +537,7 @@ out:                for (FileObject root : exec.getRoots()) {
         private final Element delegate;
         private final String projectName;
         
-        public FakeElement(final @NotNull Element delegate, String projectName) {
+        public FakeElement(final Element delegate, String projectName) {
             Parameters.notNull("delegate", delegate);   //NOI18N
             this.delegate = delegate;
             this.projectName = projectName;
