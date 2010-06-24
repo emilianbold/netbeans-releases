@@ -801,7 +801,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 v = (ObjectReference) ((JDIVariable) var).getJDIValue();
             }
             Evaluator.Result result;
-            final List<EventRequest>[] disabledBreakpoints = new List[] { null };
             final JPDAThreadImpl[] resumedThread = new JPDAThreadImpl[] { null };
             try {
                 StackFrame sf = csf.getStackFrame();
@@ -809,7 +808,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 final ThreadReference tr = StackFrameWrapper.thread(sf);
                 Runnable methodToBeInvokedNotifier = new Runnable() {
                         public void run() {
-                            if (disabledBreakpoints[0] == null) {
+                            if (resumedThread[0] == null) {
                                 JPDAThreadImpl theResumedThread = getThread(tr);
                                 try {
                                     theResumedThread.notifyMethodInvoking();
@@ -817,12 +816,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                     throw new RuntimeException(
                                         new InvalidExpressionException (pvex.getMessage()));
                                 }
-                                try {
-                                    disabledBreakpoints[0] = disableAllBreakpoints();
-                                    resumedThread[0] = theResumedThread;
-                                } catch (InternalExceptionWrapper ex) {
-                                } catch (VMDisconnectedExceptionWrapper ex) {
-                                }
+                                resumedThread[0] = theResumedThread;
                             }
                         }
                     };
@@ -859,9 +853,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     throw rex;
                 }
             } finally {
-                if (disabledBreakpoints[0] != null) {
-                    enableAllBreakpoints (disabledBreakpoints[0]);
-                }
                 if (resumedThread[0] != null) {
                     resumedThread[0].notifyMethodInvokeDone();
                 }
@@ -931,7 +922,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             boolean threadSuspended = false;
             JPDAThread frameThread = null;
             CallStackFrameImpl csf = null;
-            List<EventRequest> l = null;
             try {
                 // Remember the current stack frame, it might be necessary to re-set.
                 csf = (CallStackFrameImpl) getCurrentCallStackFrame ();
@@ -946,12 +936,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     threadSuspended = true;
                 } catch (PropertyVetoException pvex) {
                     throw new InvalidExpressionException (pvex.getMessage());
-                }
-                try {
-                    l = disableAllBreakpoints();
-                } catch (InternalExceptionWrapper ex) {
-                } catch (VMDisconnectedExceptionWrapper ex) {
-                    return null;
                 }
                 try {
                     Value v = org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
@@ -977,9 +961,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
                 throw ieex;
             } finally {
-                if (l != null) {
-                    enableAllBreakpoints (l);
-                }
                 if (threadSuspended) {
                     thread.notifyMethodInvokeDone();
                 }
@@ -1388,6 +1369,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public List<PropertyChangeEvent> notifySuspendAll(boolean doFire, boolean explicitelyPaused) {
+        return notifySuspendAll(doFire, explicitelyPaused, null);
+    }
+
+    public List<PropertyChangeEvent> notifySuspendAll(boolean doFire, boolean explicitelyPaused,
+                                                      Set<ThreadReference> ignoredThreads) {
         Collection threads = threadsTranslation.getTranslated();
         List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>(threads.size());
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
@@ -1397,7 +1383,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
                                    status == JPDAThread.STATE_UNKNOWN ||
                                    status == JPDAThread.STATE_ZOMBIE);
-                if (!invalid) {
+                if (!invalid && (ignoredThreads == null || !ignoredThreads.contains(((JPDAThreadImpl) threadOrGroup).getThreadReference()))) {
                     try {
                         PropertyChangeEvent event = ((JPDAThreadImpl) threadOrGroup).notifySuspended(doFire, explicitelyPaused);
                         if (event != null) {
@@ -1449,9 +1435,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         } finally {
             accessLock.readLock().unlock();
-        }
-        if (operator.flushStaledEvents()) {
-            return ;
         }
         PropertyChangeEvent stateChangeEvent;
         //notifyToBeResumedAll();
@@ -1542,9 +1525,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
         } finally {
             accessLock.readLock().unlock();
         }
-        if (operator.flushStaledEvents()) {
-            return false;
-        }
         setState (STATE_RUNNING);
         return true;
     }
@@ -1559,9 +1539,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         } finally {
             accessLock.readLock().unlock();
-        }
-        if (operator.flushStaledEvents()) {
-            return ;
         }
         setState (STATE_RUNNING);
         currentThread.resume();
@@ -1916,61 +1893,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (old == callStackFrame) return null;
         else return new PropertyChangeEvent(this, PROP_CURRENT_CALL_STACK_FRAME,
                                             old, callStackFrame);
-    }
-
-    private List<EventRequest> disableAllBreakpoints () throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
-        logger.fine ("disableAllBreakpoints() start.");
-        List<EventRequest> l = new ArrayList<EventRequest>();
-        VirtualMachine vm = getVirtualMachine ();
-        if (vm == null) return l;
-        EventRequestManager erm = VirtualMachineWrapper.eventRequestManager (vm);
-        l.addAll (EventRequestManagerWrapper.accessWatchpointRequests (erm));
-        l.addAll (EventRequestManagerWrapper.breakpointRequests (erm));
-        l.addAll (EventRequestManagerWrapper.classPrepareRequests (erm));
-        l.addAll (EventRequestManagerWrapper.classUnloadRequests (erm));
-        l.addAll (EventRequestManagerWrapper.exceptionRequests (erm));
-        l.addAll (EventRequestManagerWrapper.methodEntryRequests (erm));
-        l.addAll (EventRequestManagerWrapper.methodExitRequests (erm));
-        l.addAll (EventRequestManagerWrapper.modificationWatchpointRequests (erm));
-//        l.addAll (erm.stepRequests ());
-        l.addAll (EventRequestManagerWrapper.threadDeathRequests (erm));
-        l.addAll (EventRequestManagerWrapper.threadStartRequests (erm));
-        int i = l.size () - 1;
-        for (; i >= 0; i--)
-            if (!EventRequestWrapper.isEnabled (l.get (i)))
-                l.remove (i);
-            else
-                try {
-                    EventRequestWrapper.disable(l.get(i));
-                } catch (ObjectCollectedExceptionWrapper ex) {
-                } catch (InvalidRequestStateExceptionWrapper ex) {
-                }
-        operator.breakpointsDisabled();
-        logger.fine ("disableAllBreakpoints() end.");
-        return l;
-    }
-
-    private void enableAllBreakpoints (List<EventRequest> l) {
-        logger.fine ("enableAllBreakpoints() start.");
-        operator.breakpointsEnabled();
-        int i, k = l.size ();
-        for (i = 0; i < k; i++)
-            try {
-                EventRequestWrapper.enable (l.get (i));
-            } catch (IllegalThreadStateException ex) {
-                // see #53163
-                // this can occurr if there is some "old" StepRequest and
-                // thread named in the request has died
-            } catch (ObjectCollectedExceptionWrapper ocex) {
-                // Something in the request was collected.
-            } catch (InvalidRequestStateException ex) {
-                // workaround for #51176
-            } catch (InvalidRequestStateExceptionWrapper ex) {
-            } catch (InternalExceptionWrapper ex) {
-            } catch (VMDisconnectedExceptionWrapper ex) {
-                return ;
-            }
-        logger.fine ("enableAllBreakpoints() end.");
     }
 
     private void checkJSR45Languages (JPDAThread t) {

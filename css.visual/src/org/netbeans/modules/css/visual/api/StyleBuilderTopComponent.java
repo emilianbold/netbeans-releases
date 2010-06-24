@@ -45,8 +45,6 @@ package org.netbeans.modules.css.visual.api;
 
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
-import org.netbeans.modules.css.visual.api.CssRuleContext;
-import org.netbeans.modules.css.visual.api.StyleBuilderPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -55,13 +53,18 @@ import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.editor.model.CssRule;
 import org.netbeans.modules.css.visual.ui.StyleBuilderAction;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.util.Utilities;
 
 /**
  * CssStyleBuilder TopComponent
@@ -69,7 +72,7 @@ import org.openide.util.Utilities;
  * @author Marek Fukala
  */
 public final class StyleBuilderTopComponent extends TopComponent {
-    
+
     //StyleBuilder UI states
     /** Model is updating, show wait clocks.*/
     public static final int MODEL_UPDATING = 1;
@@ -79,67 +82,59 @@ public final class StyleBuilderTopComponent extends TopComponent {
     public static final int MODEL_ERROR = 3;
     /** Model OK, but no rule selected, show warning panel */
     public static final int OUT_OF_RULE = 4;
-    
-    
     private static final String DEFAULT_TC_NAME = NbBundle.getMessage(StyleBuilderAction.class, "CTL_CSSStyleBuilderTopComponent");
-    
     private static StyleBuilderTopComponent instance;
-    
     /** path to the icon used by the component and its open action */
     private static final String ICON_PATH = "org/netbeans/modules/css/resources/style_builder_view_toolbar.png"; //NOI18N
-    
     private static final String PREFERRED_ID = "StyleBuilderTC"; //NOI18N
-    
     private StyleBuilderPanel styleBuilderPanel = StyleBuilderPanel.createInstance();
-    
     private JPanel BROKEN_MODEL_PANEL, NO_RULE_SELECTED_PANEL;
-    
+
     private StyleBuilderTopComponent() {
         initComponents();
-        
+
         setToolTipText(NbBundle.getMessage(StyleBuilderAction.class, "HINT_CSSStyleBuilderTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        
+
         NO_RULE_SELECTED_PANEL = makeMsgPanel(NbBundle.getMessage(StyleBuilderAction.class, "Out_Of_Rule"));
         BROKEN_MODEL_PANEL = makeMsgPanel(NbBundle.getMessage(StyleBuilderAction.class, "Broken_Model"));
-        
+
         setPanelMode(OUT_OF_RULE);
     }
-    
-     public void setContent(CssRuleContext content){
+
+    public void setContent(CssRuleContext content) {
         CssRule rule = content.selectedRuleContent().rule();
         setName((rule != null ? rule.name() + " - " : "") + DEFAULT_TC_NAME);//NOI18N
         styleBuilderPanel.setContent(content);
     }
-    
+
     public void setPanelMode(int mode) {
-        JPanel shownPanel = null;
-        switch(mode) {
-        case MODEL_OK:
-            styleBuilderPanel.setCursor(null);
-            removeAll();
-            add(styleBuilderPanel, java.awt.BorderLayout.CENTER);
-            break;
-        case MODEL_ERROR:
-            removeAll();
-            setName(DEFAULT_TC_NAME);//set default TC name
-            add(BROKEN_MODEL_PANEL, java.awt.BorderLayout.CENTER);
-            break;
-        case MODEL_UPDATING:
-            styleBuilderPanel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            break;
-        case OUT_OF_RULE:
-            setName(DEFAULT_TC_NAME);//set default TC name
-            removeAll();
-            add(NO_RULE_SELECTED_PANEL, java.awt.BorderLayout.CENTER);
-            break;
-        default:
-            throw new IllegalArgumentException("Invalid StyleBuilder mode = " + mode); //NOI18N
+        switch (mode) {
+            case MODEL_OK:
+                styleBuilderPanel.setCursor(null);
+                removeAll();
+                add(styleBuilderPanel, java.awt.BorderLayout.CENTER);
+                break;
+            case MODEL_ERROR:
+                removeAll();
+                setName(DEFAULT_TC_NAME);//set default TC name
+                add(BROKEN_MODEL_PANEL, java.awt.BorderLayout.CENTER);
+                break;
+            case MODEL_UPDATING:
+                styleBuilderPanel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                break;
+            case OUT_OF_RULE:
+                setName(DEFAULT_TC_NAME);//set default TC name
+                removeAll();
+                add(NO_RULE_SELECTED_PANEL, java.awt.BorderLayout.CENTER);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid StyleBuilder mode = " + mode); //NOI18N
         }
         validate();
         repaint();
     }
-      
+
     private JPanel makeMsgPanel(String message) {
         JPanel p = new JPanel();
         p.setBackground(Color.WHITE);
@@ -149,7 +144,7 @@ public final class StyleBuilderTopComponent extends TopComponent {
         msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
         return p;
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -160,12 +155,9 @@ public final class StyleBuilderTopComponent extends TopComponent {
 
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
-    
-    
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
@@ -177,7 +169,7 @@ public final class StyleBuilderTopComponent extends TopComponent {
         }
         return instance;
     }
-    
+
     /**
      * Obtain the CSSStyleBuilderTopComponent instance. Never call {@link #getDefault} directly!
      */
@@ -189,37 +181,79 @@ public final class StyleBuilderTopComponent extends TopComponent {
             return getDefault();
         }
         if (win instanceof StyleBuilderTopComponent) {
-            return (StyleBuilderTopComponent)win;
+            return (StyleBuilderTopComponent) win;
         }
         Logger.getLogger(StyleBuilderTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");//NOI18N
+                "There seem to be multiple components with the '" + PREFERRED_ID
+                + "' ID. That is a potential source of errors and unexpected behavior.");//NOI18N
         return getDefault();
     }
-    
+
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
-    
+
     public void componentActivated() {
         super.componentActivated();
     }
-    
+
+    @Override
+    public void requestActive() {
+        super.requestActive();
+        focusEditor();
+    }
+
+    @Override
+    public void requestVisible() {
+        super.requestVisible();
+        focusEditor();
+    }
+
+    private void focusEditor() {
+        //transfer the focus to the editor
+        Document doc = styleBuilderPanel.getActiveDocument();
+        if (doc != null) {
+            DataObject dob = NbEditorUtilities.getDataObject(doc);
+            if (dob != null) {
+                EditorCookie ec = dob.getCookie(EditorCookie.class);
+                if (ec != null) {
+                    JEditorPane[] panes = ec.getOpenedPanes();
+                    if (panes != null && panes.length > 0) {
+                        final JEditorPane active = panes[0];
+                        RequestProcessor.getDefault().post(new Runnable() {
+
+                            public void run() {
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        Utilities.requestFocus(active);
+                                    }
+                                });
+                            }
+                        }, 100);
+
+                    }
+                }
+            }
+        }
+    }
+
     /** replaces this in object stream */
     public Object writeReplace() {
         return new ResolvableHelper();
     }
-    
+
     protected String preferredID() {
         return PREFERRED_ID;
     }
-    
+
     final static class ResolvableHelper implements Serializable {
+
         private static final long serialVersionUID = 1L;
+
         public Object readResolve() {
             return StyleBuilderTopComponent.getDefault();
         }
     }
-    
-   
 }

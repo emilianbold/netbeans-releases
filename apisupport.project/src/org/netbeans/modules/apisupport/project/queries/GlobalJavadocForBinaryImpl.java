@@ -45,15 +45,20 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery.Result;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -66,16 +71,17 @@ import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Able to find Javadoc in the appropriate NbPlatform for the given URL.
  *
  * @author Jesse Glick, Martin Krauskopf
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class)
+@ServiceProvider(service=JavadocForBinaryQueryImplementation.class)
 public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryImplementation {
     
-    public JavadocForBinaryQuery.Result findJavadoc(final URL root) {
+    public @Override JavadocForBinaryQuery.Result findJavadoc(final URL root) {
         try {
             if (root.getProtocol().equals("jar")) { // NOI18N
                 return findForBinaryRoot(root);
@@ -118,14 +124,15 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
         if (supposedPlaf == null) {
             // try external clusters
             URL[] javadocRoots = ModuleList.getJavadocRootsForExternalModule(binaryRootF);
-            if (javadocRoots.length > 0)
-                return findByDashedCNB(cnbdashes, javadocRoots);
+            if (javadocRoots.length > 0) {
+                return findByDashedCNB(cnbdashes, javadocRoots, true);
+            }
             Util.err.log(binaryRootF + " does not correspond to a known platform"); // NOI18N
             return null;
         }
         Util.err.log("Platform in " + supposedPlaf.getDestDir() + " claimed to have Javadoc roots "
             + Arrays.asList(supposedPlaf.getJavadocRoots()));
-        return findByDashedCNB(cnbdashes, supposedPlaf.getJavadocRoots());
+        return findByDashedCNB(cnbdashes, supposedPlaf.getJavadocRoots(), true);
     }
 
     /**
@@ -149,7 +156,7 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
                 for (NbPlatform plaf : NbPlatform.getPlatformsOrNot()) {
                     Util.err.log("Platform in " + plaf.getDestDir() + " claimed to have Javadoc roots "
                             + Arrays.asList(plaf.getJavadocRoots()));
-                    Result r = findByDashedCNB(cnb.replace('.', '-'), plaf.getJavadocRoots());
+                    Result r = findByDashedCNB(cnb.replace('.', '-'), plaf.getJavadocRoots(), false);
                     if (r != null) {
                         return r;
                     }
@@ -158,8 +165,14 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
         }
         return null;
     }
+    
+    /**
+     * Map from Javadoc root URLs to whether it is known to actually exist.
+     */
+    private static final Map<String,Boolean> knownGoodJavadoc = Collections.synchronizedMap(new HashMap<String,Boolean>());
    
-    private Result findByDashedCNB(final String cnbdashes, final URL[] roots) throws MalformedURLException {
+    @SuppressWarnings("DE_MIGHT_IGNORE")
+    private Result findByDashedCNB(final String cnbdashes, final URL[] roots, boolean allowRemote) throws MalformedURLException {
         final List<URL> candidates = new ArrayList<URL>();
         for (URL root : roots) {
             // XXX: so should be checked, instead of always adding both?
@@ -172,21 +185,35 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
         while (it.hasNext()) {
             URL u = it.next();
             if (URLMapper.findFileObject(u) == null) {
-                Util.err.log("No such Javadoc candidate URL " + u);
-                it.remove();
+                String uS = u.toString();
+                Boolean knownGood = knownGoodJavadoc.get(uS);
+                if (knownGood == null) {
+                    knownGood = false;
+                    // Do not check, or cache, non-network URLs.
+                    if (allowRemote && uS.startsWith("http")) { // NOI18N
+//                        System.err.println("need to check " + uS);
+                        try {
+                            new URL(u, "package-list").openStream().close();
+                            knownGood = true;
+                        } catch (IOException x) {/* failed */}
+                        knownGoodJavadoc.put(uS, knownGood);
+                    }
+                }
+                if (!knownGood) {
+                    Util.err.log("No such Javadoc candidate URL " + u);
+                    it.remove();
+                }
             }
         }
         if (candidates.isEmpty()) {
             return null;
         }
         return new JavadocForBinaryQuery.Result() {
-            public URL[] getRoots() {
+            public @Override URL[] getRoots() {
                 return candidates.toArray(new URL[candidates.size()]);
             }
-            public void addChangeListener(ChangeListener l) {
-            }
-            public void removeChangeListener(ChangeListener l) {
-            }
+            public @Override void addChangeListener(ChangeListener l) {}
+            public @Override void removeChangeListener(ChangeListener l) {}
         };
     }
 

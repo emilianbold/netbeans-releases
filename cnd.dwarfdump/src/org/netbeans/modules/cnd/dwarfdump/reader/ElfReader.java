@@ -232,7 +232,12 @@ public class ElfReader extends ByteStreamReader {
         setDataEncoding(elfHeader.elfData);
         setFileClass(elfHeader.elfClass);
         seek(shiftIvArchive);
-        boolean is64 = readByte() == (byte)0xcf;
+        byte firstByte = readByte();
+        boolean is64 = firstByte == (byte)0xcf;
+        if (firstByte == (byte)0xfe) {
+            elfHeader.elfData = MSB;
+            setDataEncoding(elfHeader.elfData);
+        }
         seek(shiftIvArchive+16);
         int ncmds = readInt();
         /*int sizeOfCmds =*/ readInt();

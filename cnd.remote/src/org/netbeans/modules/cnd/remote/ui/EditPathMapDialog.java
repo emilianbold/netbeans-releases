@@ -134,8 +134,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
     private final JButton btnOK;
     private Dialog presenter;
-    private ServerRecord currentHost;
-    private DefaultComboBoxModel serverListModel;
+    private final ServerRecord currentHost;
+    private final DefaultComboBoxModel serverListModel;
     private final String pathToValidate;
     private final Map<ServerRecord, PathMapTableModel> cache = new HashMap<ServerRecord, PathMapTableModel>();
     private ProgressHandle phandle;
@@ -174,7 +174,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
             jScrollPane3.setOpaque(false);
         }
 
-        initTableModel(currentHost);
+        initTableModel();
     }
 
     private void initTable(){
@@ -264,32 +264,32 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         tblPathMappings.addMouseListener(menuListener);
     }
 
-    private synchronized void initTableModel(final ServerRecord host) {
-        PathMapTableModel tableModel = cache.get(host);
+    private synchronized void initTableModel() {
+        PathMapTableModel tableModel = cache.get(currentHost);
         if (tableModel == null) {
             enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Loading"));
             handleProgress(true);
             tableModel = new PathMapTableModel();
-            cache.put(host, tableModel);
+            cache.put(currentHost, tableModel);
             RequestProcessor.getDefault().post(new Runnable() {
 
                 @Override
                 public void run() {
-                    final PathMapTableModel tm = prepareTableModel(host.getExecutionEnvironment());
-                    cache.put(host, tm);
+                    final PathMapTableModel tm = prepareTableModel(currentHost.getExecutionEnvironment());
+                    cache.put(currentHost, tm);
                     SwingUtilities.invokeLater(new Runnable() {
 
                         @Override
                         public void run() {
                             handleProgress(false);
-                            updatePathMappingsTable(tm, host.getExecutionEnvironment());
+                            updatePathMappingsTable(tm);
                             enableControls(true, "");
                         }
                     });
                 }
             });
         }
-        updatePathMappingsTable(tableModel, host.getExecutionEnvironment());
+        updatePathMappingsTable(tableModel);
     }
 
     private PathMapTableModel prepareTableModel(Map<String, String> pm) {
@@ -315,10 +315,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         txtError.setText(message);
     }
 
-    private void updatePathMappingsTable(DefaultTableModel tableModel, ExecutionEnvironment env) {
+    private void updatePathMappingsTable(DefaultTableModel tableModel) {
         tblPathMappings.setModel(tableModel);
-        tblPathMappings.getColumnModel().getColumn(0).setCellEditor(new PathCellEditor(ExecutionEnvironmentFactory.getLocal()));
-        tblPathMappings.getColumnModel().getColumn(1).setCellEditor(new PathCellEditor(env));
     }
 
     private PathMapTableModel prepareTableModel(ExecutionEnvironment host) {
@@ -356,7 +354,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
         lblHostName = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        tblPathMappings = new javax.swing.JTable();
+        tblPathMappings = new PathTable();
         jScrollPane2 = new javax.swing.JScrollPane();
         txtExplanation = new javax.swing.JTextArea();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -480,7 +478,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                     public void run() {
                         if (tblPathMappings != null) {
                             handleProgress(false);
-                            updatePathMappingsTable(tm, currentHost.getExecutionEnvironment());
+                            updatePathMappingsTable(tm);
                             enableControls(true, "");
                         }
                     }
@@ -686,7 +684,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 field.requestFocusInWindow();
                 field.selectAll();
             } else {
-                JTextField field = (JTextField) tab.getEditorComponent();
+                JPanel panel = (JPanel) tab.getEditorComponent();
+                JTextField field = (JTextField) panel.getComponent(0);
                 field.setCaretPosition(field.getText().length());
                 field.requestFocusInWindow();
                 field.selectAll();
@@ -713,6 +712,20 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         @Override
         public Class<?> getColumnClass(int columnIndex) {
             return String.class;
+        }
+    }
+
+    private class PathTable extends JTable {
+        @Override
+        public TableCellEditor getCellEditor(int row, int column) {
+            switch (column) {
+                case 0:
+                    return new PathCellEditor(ExecutionEnvironmentFactory.getLocal());
+                case 1:
+                    return new PathCellEditor(currentHost.getExecutionEnvironment());
+                default:
+                    throw new IllegalArgumentException("Invalid column number" + column); //NOI18N
+            }
         }
     }
 }

@@ -1179,7 +1179,7 @@ public class TreeModelNode extends AbstractNode {
         private final ColumnModel[]   columns;
         protected final TreeModelRoot      treeModelRoot;
         protected Object            object;
-        protected WeakHashMap<Object, WeakReference<TreeModelNode>> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
+        protected final WeakHashMap<Object, WeakReference<TreeModelNode>> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
         private final int[]         evaluated = { 0 }; // 0 - not yet, 1 - evaluated, -1 - timeouted
         private RefreshingInfo      evaluatingRefreshingInfo;
         private Object[]            children_evaluated;
@@ -1384,13 +1384,15 @@ public class TreeModelNode extends AbstractNode {
             //System.err.println(this.hashCode()+" applyChildren("+refreshSubNodes+")");
             //System.err.println("applyChildren("+Arrays.toString(ch)+", "+doSetObject+")");
             int i, k = ch.length; 
-            WeakHashMap<Object, WeakReference<TreeModelNode>> newObjectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
             for (i = 0; i < k; i++) {
                 if (ch [i] == null) {
                     throw new NullPointerException("Null child at index "+i+", parent: "+object+", model: "+model);
                 }
                 if (doSetObject) {
-                    WeakReference<TreeModelNode> wr = objectToNode.get(ch [i]);
+                    WeakReference<TreeModelNode> wr;
+                    synchronized (objectToNode) {
+                        wr = objectToNode.get(ch [i]);
+                    }
                     if (wr == null) continue;
                     TreeModelNode tmn = wr.get ();
                     if (tmn == null) continue;
@@ -1399,11 +1401,7 @@ public class TreeModelNode extends AbstractNode {
                     } else {
                         tmn.setObjectNoRefresh(ch[i]);
                     }
-                    newObjectToNode.put (ch [i], wr);
                 }
-            }
-            if (doSetObject) {
-                objectToNode = newObjectToNode;
             }
             setKeys (ch);
 
@@ -1483,8 +1481,22 @@ public class TreeModelNode extends AbstractNode {
                 object
             );
             //System.err.println("created node for ("+object+") = "+tmn);
-            objectToNode.put (object, new WeakReference<TreeModelNode>(tmn));
+            synchronized (objectToNode) {
+                objectToNode.put (object, new WeakReference<TreeModelNode>(tmn));
+            }
             return new Node[] {tmn};
+        }
+
+        @Override
+        protected void destroyNodes(Node[] nodes) {
+            super.destroyNodes(nodes);
+            for (Node n : nodes) {
+                if (n instanceof TreeModelNode) {
+                    TreeModelNode tmn = (TreeModelNode) n;
+                    treeModelRoot.unregisterNode (tmn.object, tmn);
+                    destroyNodes(tmn.getChildren().getNodes());
+                }
+            }
         }
 
         public static class RefreshingInfo {
@@ -1799,6 +1811,15 @@ public class TreeModelNode extends AbstractNode {
                 }
                 synchronized (properties) {
                     return properties.get (id + "#html");
+                }
+            }
+            if (attributeName.equals("suppressCustomEditor")) {
+                // Do not invoke custom property editor when we render the cell.
+                try {
+                    if (model.canRenderCell(object, id)) {
+                        return Boolean.TRUE;
+                    }
+                } catch (UnknownTypeException ex) {
                 }
             }
             return super.getValue (attributeName);

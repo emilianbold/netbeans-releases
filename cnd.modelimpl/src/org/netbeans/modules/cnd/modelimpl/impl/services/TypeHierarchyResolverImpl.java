@@ -46,6 +46,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -82,6 +83,9 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
 
     @Override
     public Collection<CsmReference> getSubTypes(CsmClass referencedClass, boolean directSubtypesOnly) {
+        if (referencedClass == null) {
+            return Collections.<CsmReference>emptySet();
+        }
         return getSubTypesImpl(referencedClass, directSubtypesOnly);
     }
 
@@ -92,7 +96,10 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> fullMap = getOrCreateFullMap(project, fileVersion);
         Collection<CsmReference> res = new ArrayList<CsmReference>();
         for(CsmUID<CsmClass> cls : getSubTypesImpl(referencedClass, fullMap, directSubtypesOnly)) {
-            res.add(CsmReferenceSupport.createObjectReference(cls.getObject()));
+            CsmClass clsObj = cls.getObject();
+            if (clsObj != null) {
+                res.add(CsmReferenceSupport.createObjectReference(clsObj));
+            }
         }
         return res;
     }
@@ -110,9 +117,11 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
             for(CsmUID<CsmClass> reference : res) {
                 if (!antiLoop.contains(reference)) {
                     CsmClass cls = reference.getObject();
-                    for(CsmUID<CsmClass> increment : getSubTypesImpl(cls, map)) {
-                        if (!antiLoop.contains(increment)) {
-                            step.add(increment);
+                    if (cls != null) {
+                        for(CsmUID<CsmClass> increment : getSubTypesImpl(cls, map)) {
+                            if (!antiLoop.contains(increment)) {
+                                step.add(increment);
+                            }
                         }
                     }
                     antiLoop.add(reference);

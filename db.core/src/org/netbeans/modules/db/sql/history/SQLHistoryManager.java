@@ -37,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.db.sql.history;
 
@@ -58,6 +58,7 @@ import org.openide.util.NbBundle;
 public class SQLHistoryManager  {
     public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
     public static final String SQL_HISTORY_FILE_NAME = "sql_history.xml";  // NOI18N
+    public static final String SAVE_STATEMENTS_MAX_LIMIT_ENTERED = "100"; // NOI18N
     private static SQLHistoryManager _instance = null;    
     private static final Logger LOGGER = Logger.getLogger(SQLHistory.class.getName());
     private List<SQLHistory> sqlList = new ArrayList<SQLHistory>();
@@ -161,7 +162,7 @@ public class SQLHistoryManager  {
         List<SQLHistory> updatedSQLHistoryList = new ArrayList<SQLHistory>();
         int numItemsToRemove = 0;
         try {
-            updatedSQLHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
+            updatedSQLHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(root);
             if (limit >= updatedSQLHistoryList.size()) {
                 // no changes needed to the current list
                 return -1;

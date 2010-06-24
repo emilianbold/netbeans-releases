@@ -223,7 +223,7 @@ public abstract class RemotePathMap extends PathMap {
         }
         String ulpath = unifySeparators(lpath);
         for (Map.Entry<String, String> entry : map.entrySet()) {
-            String mpoint = unifySeparators(entry.getValue());
+            String mpoint = unifySeparators(entry.getKey());
             if (ulpath.startsWith(mpoint)) {
                 return true;
             }

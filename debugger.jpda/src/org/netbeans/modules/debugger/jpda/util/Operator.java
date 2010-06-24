@@ -52,10 +52,9 @@ import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.StepRequest;
 import com.sun.jdi.ThreadReference;
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,12 +81,11 @@ import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.ThreadDeathEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.ThreadStartEventWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.ErrorManager;
-import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Listens for events coming from a remove VM and notifies registered objects.
@@ -120,12 +118,13 @@ public class Operator {
     public static final String SILENT_EVENT_PROPERTY = "silent"; // NOI18N
 
     private Thread            thread;
-    private boolean           breakpointsDisabled;
-    private List<EventSet>    staledEvents = new ArrayList<EventSet>();
-    private List<EventRequest> staledRequests = new ArrayList<EventRequest>();
+    private final Set<ThreadReference> methodInvokingThreads = new HashSet<ThreadReference>();
     private boolean           stop;
     private boolean           canInterrupt;
     private JPDADebuggerImpl  debugger;
+    private RequestProcessor  eventHandler;
+    private Map<ThreadReference, HandlerTask> eventHandlers = new HashMap<ThreadReference, HandlerTask>();
+    private final List<EventSet> parallelEvents = new LinkedList<EventSet>();
 
     /**
      * Creates an operator for a given virtual machine. The operator will listen
@@ -167,25 +166,13 @@ public class Operator {
             params [0] = null;
             params [1] = null;
             params [2] = null;
-            boolean processStaledEvents = false;
 
        loop: for (;;) {
                  try {
                      EventSet eventSet = null;
-                     if (processStaledEvents) {
-                         synchronized (Operator.this) {
-                             if (staledEvents.size() == 0) {
-                                 processStaledEvents = false;
-                             } else {
-                                eventSet = staledEvents.remove(0);
-                                while (staledRequests.size() > 0) {
-                                    EventRequest request = staledRequests.remove(0);
-                                    EventRequestManagerWrapper.deleteEventRequest(
-                                            VirtualMachineWrapper.eventRequestManager(MirrorWrapper.virtualMachine(request)),
-                                            request);
-                                }
-                                //eventSet.virtualMachine.suspend();
-                             }
+                     synchronized (parallelEvents) {
+                         if (!parallelEvents.isEmpty()) {
+                             eventSet = parallelEvents.remove(0);
                          }
                      }
                      if (eventSet == null) {
@@ -208,7 +195,6 @@ public class Operator {
                                     break;
                                 }
                             }
-                            processStaledEvents = true;
                             continue;
                         }
                         synchronized (Operator.this) {
@@ -221,26 +207,6 @@ public class Operator {
                          if (r == null || !Boolean.TRUE.equals(EventRequestWrapper.getProperty (r, SILENT_EVENT_PROPERTY))) {
                              silent = false;
                              break;
-                         }
-                     }
-                     if (!silent) {
-                         synchronized (Operator.this) {
-                             if (breakpointsDisabled) {
-                                 if (EventSetWrapper.suspendPolicy(eventSet) == EventRequest.SUSPEND_ALL) {
-                                    staledEvents.add(eventSet);
-                                    try {
-                                        EventSetWrapper.resume(eventSet);
-                                    } catch (IllegalThreadStateExceptionWrapper itex) {
-                                        logger.throwing(Operator.class.getName(), "loop", itex);
-                                    } catch (ObjectCollectedExceptionWrapper ocex) {
-                                        logger.throwing(Operator.class.getName(), "loop", ocex);
-                                    }
-                                    if (logger.isLoggable(Level.FINE)) {
-                                        logger.fine("RESUMING "+eventSet);
-                                    }
-                                 }
-                                 continue;
-                             }
                          }
                      }
 
@@ -261,6 +227,11 @@ public class Operator {
                          if (thref != null) {
                              break;
                          }
+                     }
+                     Set<ThreadReference> ignoredThreads = new HashSet<ThreadReference>();
+                     if (testIgnoreEvent(eventSet, ignoredThreads)) {
+                         eventSet.resume();
+                         continue;
                      }
                      if (thref != null && !isThreadEvent) {
                          debugger.getThreadsCache().assureThreadIsCached(thref);
@@ -355,7 +326,8 @@ public class Operator {
                          } else {
                              if (!silent && suspendedAll) {
                                  //TODO: Not really all might be suspended!
-                                 List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false);
+                                 List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false,
+                                                                                              ignoredThreads.isEmpty() ? null : ignoredThreads);
                                  if (eventAccessLock != null) {
                                     logger.finer("Write access lock RELEASED:"+eventAccessLock);
                                     eventAccessLock.unlock();
@@ -482,7 +454,8 @@ public class Operator {
                      if (!resume) { // notify about the suspend if not resumed.
                          if (!silent && suspendedAll) {
                              //TODO: Not really all might be suspended!
-                             List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false);
+                             List<PropertyChangeEvent> events = debugger.notifySuspendAll(false, false,
+                                                                                          ignoredThreads.isEmpty() ? null : ignoredThreads);
                              if (eventAccessLock != null) {
                                 logger.finer("Write access lock RELEASED:"+eventAccessLock);
                                 eventAccessLock.unlock();
@@ -614,38 +587,6 @@ public class Operator {
      */
     public synchronized void register (EventRequest req, Executor e) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         EventRequestWrapper.putProperty(req, "executor", e); // NOI18N
-        if (staledEvents.size() > 0 && req instanceof StepRequest) {
-            boolean addAsStaled = false;
-            for (Iterator<EventSet> it = staledEvents.iterator(); it.hasNext(); ) {
-                EventSet evSet = it.next();
-                for (Iterator<Event> itSet = evSet.iterator(); itSet.hasNext(); ) {
-                    Event ev = itSet.next();
-                    try {
-                        EventRequest evReq = EventWrapper.request(ev);
-                        if (!(evReq instanceof StepRequest)) {
-                            addAsStaled = true;
-                            break;
-                        } else {
-                            ThreadReference evThread = StepRequestWrapper.thread((StepRequest) evReq);
-                            ThreadReference reqThread = StepRequestWrapper.thread((StepRequest) req);
-                            if (reqThread.equals(evThread)) {
-                                addAsStaled = true;
-                                break;
-                            }
-                        }
-                    } catch (VMDisconnectedExceptionWrapper ex) {
-                        return ;
-                    } catch (InternalExceptionWrapper ex) {
-                    }
-                }
-                if (addAsStaled) break;
-            }
-            // Will be added if there is not a staled step event or if all staled
-            // step events are on different threads.
-            if (addAsStaled) {
-                staledRequests.add(req);
-            }
-        };
     }
 
     /**
@@ -660,7 +601,6 @@ public class Operator {
         if (e != null) {
             e.removed(req);
         }
-        staledRequests.remove(req);
         if (req instanceof StepRequest) {
             ThreadReference tr = StepRequestWrapper.thread((StepRequest) req);
             debugger.getThread(tr).setInStep(false, null);
@@ -672,8 +612,6 @@ public class Operator {
      */
     public void stop() {
         synchronized (this) {
-            staledRequests.clear();
-            staledEvents.clear();
             if (stop) return ; // Do not interrupt the thread when we're stopped
             stop = true;
             if (canInterrupt) {
@@ -682,30 +620,113 @@ public class Operator {
         }
     }
 
-    /**
-     * Notifies that breakpoints were disabled and therefore no breakpoint events should occur
-     * until {@link #breakpointsEnabled} is called.
-     */
-    public synchronized void breakpointsDisabled() {
-        breakpointsDisabled = true;
-    }
-
-    /**
-     * Notifies that breakpoints were enabled again and therefore breakpoint events can occur.
-     */
-    public synchronized void breakpointsEnabled() {
-        breakpointsDisabled = false;
-    }
-
-    public boolean flushStaledEvents() {
-        boolean areStaledEvents;
+    private void startEventHandlerThreadFor(final ThreadReference tr) {
+        RequestProcessor rp;
         synchronized (this) {
-            areStaledEvents = staledEvents.size() > 0;
-            if (areStaledEvents) {
-                thread.interrupt();
+            if (eventHandler == null) {
+                eventHandler = new RequestProcessor("Debugger Event Handler", 10);  // NOI18N
+            }
+            rp = eventHandler;
+        }
+        final Thread[] threadPtr = new Thread[] { null };
+        RequestProcessor.Task task = rp.post(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (threadPtr) {
+                    threadPtr[0] = Thread.currentThread();
+                    threadPtr.notifyAll();
+                }
+                EventQueue eventQueue;
+                try {
+                    eventQueue = VirtualMachineWrapper.eventQueue(MirrorWrapper.virtualMachine(tr));
+                } catch (InternalExceptionWrapper ex) {
+                    return ;
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return ;
+                }
+                for (;;) {
+                    EventSet eventSet;
+                    try {
+                        eventSet = EventQueueWrapper.remove(eventQueue);
+                        
+                        Set<ThreadReference> ignoredThreads = new HashSet<ThreadReference>();
+                        if (testIgnoreEvent(eventSet, ignoredThreads)) {
+                            eventSet.resume();
+                        } else {
+                            synchronized (parallelEvents) {
+                                parallelEvents.add(eventSet);
+                            }
+                        }
+
+                    } catch (InterruptedException ex) {
+                        return ;
+                    } catch (InternalExceptionWrapper ex) {
+                        //Exceptions.printStackTrace(ex);
+                        // Ignore
+                        continue;
+                    } catch (VMDisconnectedExceptionWrapper ex) {
+                        return ;
+                    }
+
+                }
+            }
+        }, 500);
+        eventHandlers.put(tr, new HandlerTask(task, threadPtr));
+    }
+
+    public void notifyMethodInvoking(ThreadReference tr) {
+        if (Thread.currentThread() == thread) {
+            // start another event handler thread...
+            startEventHandlerThreadFor(tr);
+        }
+        synchronized (methodInvokingThreads) {
+            methodInvokingThreads.add(tr);
+        }
+    }
+
+    public void notifyMethodInvokeDone(ThreadReference tr) {
+        if (Thread.currentThread() == thread) {
+            HandlerTask task = eventHandlers.remove(tr);
+            if (task != null) {
+                task.cancel();
             }
         }
-        return areStaledEvents;
+        synchronized (methodInvokingThreads) {
+            methodInvokingThreads.remove(tr);
+        }
+    }
+
+    private boolean testIgnoreEvent(EventSet eventSet, Set<ThreadReference> resumedThreads) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+        ThreadReference tref = null;
+        for (Event e : eventSet) {
+            if (e instanceof LocatableEvent) {
+                tref = LocatableEventWrapper.thread((LocatableEvent) e);
+            }
+        }
+        if (tref != null) {
+            synchronized (methodInvokingThreads) {
+                if (methodInvokingThreads.contains(tref)) {
+                    return true;
+                }
+            }
+        }
+        int suspendPolicy = EventSetWrapper.suspendPolicy(eventSet);
+        if (suspendPolicy == EventRequest.SUSPEND_ALL) {
+            // Event suspended all threads, including those in which a method is being invoked.
+            synchronized (methodInvokingThreads) {
+                for (ThreadReference tr : methodInvokingThreads) {
+                    try {
+                        ThreadReferenceWrapper.resume(tr);
+                        resumedThreads.add(tr);
+                    } catch (ObjectCollectedExceptionWrapper ex) {
+                    } catch (IllegalThreadStateExceptionWrapper ex) {
+                    }
+                }
+            }
+            // We handle resumed threads later - exclude them from notifying, etc.
+            // TODO: If we hit this just before a method invoke, the thread will be suspended double-times.
+        }
+        return false;
     }
 
     private void printEvent (Event e, Executor exec) {
@@ -748,4 +769,34 @@ public class Operator {
             logger.fine(ex.getLocalizedMessage());
         }
     }
+    
+    private static final class HandlerTask {
+
+        private RequestProcessor.Task task;
+        private Thread[] threadPtr;
+
+        HandlerTask(RequestProcessor.Task task, Thread[] threadPtr) {
+            this.task = task;
+            this.threadPtr = threadPtr;
+        }
+
+        void cancel() {
+            if (!task.cancel()) {
+                synchronized (threadPtr) {
+                    if (threadPtr[0] == null) {
+                        try {
+                            threadPtr.wait();
+                        } catch (InterruptedException ex) {
+                        }
+                    }
+                }
+                Thread t = threadPtr[0];
+                if (t != null) {
+                    t.interrupt();
+                    task.waitFinished();
+                }
+            }
+        }
+    }
+
 }

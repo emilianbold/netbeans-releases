@@ -1747,6 +1747,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             <exclude name="**/*.html"/><exclude name="**/*.css"/> <!-- JavaHelp etc. pages use their own header style -->
             <exclude name="**/test/**/data/"/> <!-- test data should never be touched -->
             <exclude name="**/*.orig"/> <!-- result of hg revert -->
+            <exclude name="*/external/"/> <!-- foreign licenses etc. -->
             <exclude name="contrib/"/><exclude name="l10n/"/><exclude name="misc/"/><exclude name="nb-javac/"/> <!-- subrepos -->
         </fileset>
         <property name="prefix" value="^([ \t]*[*#/;%~-]*[ \t]*)?"/>
@@ -1778,6 +1779,26 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             <fileset refid="fs"/>
         </checklicense>
         <checklicense fragment="by Sun in the GPL" fail="whenpresent">
+            <fileset refid="fs"/>
+        </checklicense>
+        <!-- Samples: -->
+        <checklicense>
+            <fileset refid="fs"/>
+            <convert token="${prefix}Copyright \(c\) \d+(?:-\d+)?, Sun Microsystems, Inc\." prefix="true">
+                <line text="Copyright (c) 2010, Oracle."/>
+            </convert>
+            <convert token=" \* Neither the name of Sun Microsystems, Inc\. nor the names of its ">
+                <line text=" * Neither the name of Oracle nor the names of its "/>
+            </convert>
+            <convert token=" \* Neither the name of Sun Microsystems nor the names of its contributors">
+                <line text=" * Neither the name of Oracle nor the names of its contributors"/>
+            </convert>
+            <!-- XXX there are other patterns in mobility.midpexamples -->
+        </checklicense>
+        <checklicense fragment=", Sun Microsystems, Inc." fail="whenpresent">
+            <fileset refid="fs"/>
+        </checklicense>
+        <checklicense fragment="the name of Sun Microsystems" fail="whenpresent">
             <fileset refid="fs"/>
         </checklicense>
     </target>

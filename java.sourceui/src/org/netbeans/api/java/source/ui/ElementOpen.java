@@ -48,6 +48,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.lang.model.element.ElementKind;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
@@ -74,6 +77,9 @@ public final class ElementOpen {
      */
     public static boolean open(final ClasspathInfo cpInfo, final ElementHandle<? extends Element> el) {
         FileObject fo = SourceUtils.getFile(el, cpInfo);
+        if (fo != null && fo.isFolder()) {
+            fo = fo.getFileObject("package-info.java"); // NOI18N
+        }
         Object[] openInfo = fo != null ? getOpenInfo(fo, el) : null;
         if (openInfo != null) {
             assert openInfo[0] instanceof FileObject;
@@ -155,14 +161,14 @@ public final class ElementOpen {
     private static final int AWT_TIMEOUT = 1000;
     private static final int NON_AWT_TIMEOUT = 2000;
 
-    private static int getOffset(FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
+    private static int getOffset(final FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
         final int[]  result = new int[] {-1};
         
         final JavaSource js = JavaSource.forFileObject(fo);
         if (js != null) {
             final AtomicBoolean cancel = new AtomicBoolean();
             final Task<CompilationController> t = new Task<CompilationController>() {
-                public void run(CompilationController info) {
+                public @Override void run(CompilationController info) throws IOException {
                     if (cancel.get()) {
                         return;
                     }
@@ -174,6 +180,16 @@ public final class ElementOpen {
                     Element el = handle.resolve(info);
                     if (el == null) {
                         log.severe("Cannot resolve " + handle + ". " + info.getClasspathInfo());
+                        return;
+                    }
+                    
+                    if (el.getKind() == ElementKind.PACKAGE) {
+                        // FindDeclarationVisitor does not work since there is no visitPackage.
+                        // Imprecise but should usually work:
+                        Matcher m = Pattern.compile("(?m)^package (.+);$").matcher(fo.asText(/*FileEncodingQuery.getEncoding(fo).name()*/)); // NOI18N
+                        if (m.find()) {
+                            result[0] = m.start();
+                        }
                         return;
                     }
 

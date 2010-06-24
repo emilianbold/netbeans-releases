@@ -45,7 +45,10 @@ package org.netbeans.modules.viewmodel;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
@@ -59,6 +62,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.Models;
@@ -68,6 +72,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  * Test of TableRendererModel.
@@ -360,6 +365,23 @@ public class TableRendererTest extends NbTestCase {
 
         @Override
         public boolean isCellEditable(EventObject anEvent) {
+            if (anEvent.getSource() instanceof JTable) {
+                JTable table = (JTable) anEvent.getSource();
+                if (anEvent instanceof MouseEvent) {
+                    MouseEvent event = (MouseEvent) anEvent;
+                    Point p = event.getPoint();
+                    int row = table.rowAtPoint(p);
+                    int col = table.columnAtPoint(p);
+                    Rectangle rect = table.getCellRect(row, col, true);
+                    p.translate(-rect.x, -rect.y);
+                    System.out.println("isCellEditable("+anEvent+")");
+                    System.out.println("Point "+p+"in rectangle "+rect);
+                    if (p.x > rect.width - 24) {
+                        // last 24 points not editable
+                        return false;
+                    }
+                }
+            }
             return true;
         }
 
@@ -387,7 +409,7 @@ public class TableRendererTest extends NbTestCase {
         }
     }
 
-    private static final class TableRendererModelImpl implements TableRendererModel, TreeModel, TableModel {
+    private static final class TableRendererModelImpl implements TableRendererModel, TreeModel, TableModel, ExtendedNodeModel {
 
         private List<ModelListener> listeners = new ArrayList<ModelListener>();
 
@@ -469,6 +491,61 @@ public class TableRendererTest extends NbTestCase {
         @Override
         public void setValueAt(Object node, String columnID, Object value) throws UnknownTypeException {
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getDisplayName(Object node) throws UnknownTypeException {
+            return node.toString();
+        }
+
+        @Override
+        public String getIconBase(Object node) throws UnknownTypeException {
+            return null;
+        }
+
+        @Override
+        public String getShortDescription(Object node) throws UnknownTypeException {
+            return "Short Description of "+node;
+        }
+
+        @Override
+        public boolean canRename(Object node) throws UnknownTypeException {
+            return Integer.parseInt((String) node) % 3 == 0;
+        }
+
+        @Override
+        public boolean canCopy(Object node) throws UnknownTypeException {
+            return false;
+        }
+
+        @Override
+        public boolean canCut(Object node) throws UnknownTypeException {
+            return false;
+        }
+
+        @Override
+        public Transferable clipboardCopy(Object node) throws IOException, UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Transferable clipboardCut(Object node) throws IOException, UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
+            return new PasteType[] {};
+        }
+
+        @Override
+        public void setName(Object node, String name) throws UnknownTypeException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
+            return null;
         }
         
     }

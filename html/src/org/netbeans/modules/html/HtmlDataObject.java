@@ -176,7 +176,11 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     String getFileEncoding() {
         InputStream is = null;
         try {
-            is = getPrimaryFile().getInputStream();
+            FileObject pf = getPrimaryFile();
+            if(!pf.isValid()) {
+                return null;
+            }
+            is = pf.getInputStream();
             return getFileEncoding(is);
         } catch (IOException ex) {
             LOG.log(Level.WARNING, null, ex);

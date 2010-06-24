@@ -50,8 +50,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -113,17 +111,16 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         createNextPrevFailureButtons();
 
         JToolBar toolbar = new JToolBar(SwingConstants.VERTICAL);
-        toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.Y_AXIS));
         toolbar.add(rerunButton);
+        toolbar.add(new JToolBar.Separator());
         toolbar.add(btnFilter);
         toolbar.add(previousFailure);
         toolbar.add(nextFailure);
-        toolbar.add(Box.createHorizontalGlue());
         
         toolbar.setFocusable(false);
+        toolbar.setRollover(true);
         toolbar.setFloatable(false);
-        toolbar.setBorderPainted(false);
-        
+
         return toolbar;
     }
     

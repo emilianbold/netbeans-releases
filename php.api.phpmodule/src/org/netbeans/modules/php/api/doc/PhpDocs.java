@@ -37,36 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.api.elements;
 
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import java.util.EnumSet;
-import org.netbeans.modules.php.editor.api.PhpElementKind;
+package org.netbeans.modules.php.api.doc;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.php.spi.doc.PhpDocProvider;
+import org.openide.util.Lookup;
+import org.openide.util.LookupListener;
+import org.openide.util.Parameters;
+import org.openide.util.lookup.Lookups;
 
 /**
- *
- * @author Radek Matous
+ * This class provides access to the list of registered {@link PhpDocProvider PHP documentation providers}.
+ * <p>
+ * The path is "{@value #DOCS_PATH}" on SFS.
+ * @author Tomas Mysik
+ * @since 1.35
  */
-public final class ElementInfo {
-    public static boolean isClassMember(PhpElement element) {
-        EnumSet<PhpElementKind> classMembers = EnumSet.of(
-                PhpElementKind.FIELD,
-                PhpElementKind.METHOD,
-                PhpElementKind.TYPE_CONSTANT);
-        return classMembers.contains(element.getPhpElementKind());
+public final class PhpDocs {
+
+    /**
+     * Path on SFS where {@link PhpDocProvider PHP documentation providers} need to be registered.
+     */
+    public static final String DOCS_PATH = "PHP/Docs"; //NOI18N
+
+    private static final Lookup.Result<PhpDocProvider> DOCS = Lookups.forPath(DOCS_PATH).lookupResult(PhpDocProvider.class);
+
+    private PhpDocs() {
     }
 
-    public static boolean isFromIndex(PhpElement element) {
-        return element.getElementQuery().getQueryScope().equals(ElementQuery.QueryScope.INDEX_SCOPE);
+    /**
+     * Get all registered {@link PhpDocProvider}s.
+     * @return a list of all registered {@link PhpDocProvider}s; never {@code null}.
+     */
+    public static List<PhpDocProvider> getDocumentations() {
+        return new ArrayList<PhpDocProvider>(DOCS.allInstances());
     }
 
-    public static boolean isFromModel(PhpElement element) {
-        return element.getElementQuery().getQueryScope().equals(ElementQuery.QueryScope.FILE_SCOPE);
+    /**
+     * Add {@link LookupListener listener} to be notified when documentation providers change
+     * (new provider added, existing removed).
+     * @param listener {@link LookupListener listener} to be added
+     * @see #removeDocumentationsListener(LookupListener)
+     */
+    public static void addDocumentationsListener(LookupListener listener) {
+        Parameters.notNull("listener", listener);
+        DOCS.addLookupListener(listener);
     }
 
-    public static boolean isFullyQualified(PhpElement element) {
-        return element instanceof FullyQualifiedElement;
+    /**
+     * Remove {@link LookupListener listener}.
+     * @param listener {@link LookupListener listener} to be removed
+     * @see #addDocumentationsListener(LookupListener)
+     */
+    public static void removeDocumentationsListener(LookupListener listener) {
+        Parameters.notNull("listener", listener);
+        DOCS.removeLookupListener(listener);
     }
 }

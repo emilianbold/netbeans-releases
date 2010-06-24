@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
@@ -55,6 +56,8 @@ import org.openide.util.NbBundle;
  */
 public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=100)
 class FtpSyncFactory extends BaseSyncFactory {
+
+    /*package*/ static final boolean ENABLE_FTP = CndUtils.getBoolean("cnd.remote.scp", false);
 
     /** this factory ID -  public for test purposes */
     public static final String ID = "ftp"; //NOI18N
@@ -82,6 +85,6 @@ class FtpSyncFactory extends BaseSyncFactory {
 
     @Override
     public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ! RemoteUtil.isForeign(execEnv);
+        return ENABLE_FTP && ! RemoteUtil.isForeign(execEnv);
     }
 }
