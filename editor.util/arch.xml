@@ -44,7 +44,7 @@ by other editor related modules.
         </question>
 -->
 <answer id="arch-overall">
-The module defines <api name="EditorUtilitiesAPI" group="java" type="export" category="friend"/>.
+The module defines <api name="EditorUtilitiesAPI" group="java" type="export" category="devel"/>.
 <br/>
 The present clients are editor/lib and editor/fold modules.
 </answer>
