@@ -71,6 +71,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -606,6 +607,22 @@ NodeActionsProvider {
 
     private JFileChooser newSourceFileChooser;
 
+    static File getCurrentSourceRoot() {
+        FileObject fo = EditorContextDispatcher.getDefault().getMostRecentFile();
+        if (fo == null) {
+            return null;
+        }
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if (cp == null) {
+            return null;
+        }
+        fo = cp.findOwnerRoot(fo);
+        if (fo == null) {
+            return null;
+        }
+        return FileUtil.toFile(fo);
+    }
+
     private final Action NEW_SOURCE_ROOT_ACTION = new AbstractAction(
             NbBundle.getMessage(SourcesCurrentModel.class, "CTL_SourcesModel_Action_AddSrc")) {
         public void actionPerformed (ActionEvent e) {
@@ -631,6 +648,10 @@ NodeActionsProvider {
                     }
 
                 });
+            }
+            File currentSourceRoot = getCurrentSourceRoot();
+            if (currentSourceRoot != null) {
+                newSourceFileChooser.setSelectedFile(currentSourceRoot);
             }
             int state = newSourceFileChooser.showDialog(org.openide.windows.WindowManager.getDefault().getMainWindow(),
                                       NbBundle.getMessage(SourcesCurrentModel.class, "CTL_SourcesModel_AddSrc_Btn"));
