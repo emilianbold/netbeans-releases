@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.html.editor;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -72,6 +75,10 @@ public class HtmlPreferences {
     private static final String SECTION_MODE_PROPERTY_NAME = "extractInlinedStylePanelSectionMode"; //NOI18N
     private static Mode SECTION_MODE_DEFAULT = Mode.refactorToExistingEmbeddedSection;
 
+    private static String mimetypesWithDisabledHtmlErrorChecking;
+    private static final String mimetypesWithDisabledHtmlErrorChecking_key = "mimetypesWithDisabledHtmlErrorChecking"; //NOI18N
+    private static String mimetypesWithDisabledHtmlErrorChecking_default = ""; //NOI18N
+    private static String mimetypesDelimiter = ";"; //NOI18N
     
     private static AtomicBoolean initialized = new AtomicBoolean(false);
     private static Preferences preferences;
@@ -93,6 +100,9 @@ public class HtmlPreferences {
             }
             if (settingName == null || SECTION_MODE_PROPERTY_NAME.equals(settingName)) {
                 sectionMode = Mode.valueOf(preferences.get(SECTION_MODE_PROPERTY_NAME, SECTION_MODE_DEFAULT.name()));
+            }
+            if (settingName == null || mimetypesWithDisabledHtmlErrorChecking_key.equals(settingName)) {
+                mimetypesWithDisabledHtmlErrorChecking = preferences.get(mimetypesWithDisabledHtmlErrorChecking_key, mimetypesWithDisabledHtmlErrorChecking_default);
             }
         }
     };
@@ -157,6 +167,55 @@ public class HtmlPreferences {
     public static void setExtractInlinedStylePanelSectionMode(Mode mode) {
         lazyIntialize();
         preferences.put(SECTION_MODE_PROPERTY_NAME, mode.name());
+    }
+
+
+    public static Collection<String> getMimetypesWithDisabledHtmlErrorChecking() {
+        lazyIntialize();
+        return getMimetypesWithDisabledHtmlErrorCheckingAsCollection();
+    }
+
+    public static boolean isHtmlErrorCheckingDisabledForMimetype(String mimetype) {
+        return getMimetypesWithDisabledHtmlErrorChecking().contains(mimetype);
+    }
+
+    public static void setHtmlErrorChecking(String mimetype, boolean enabled) {
+        lazyIntialize();
+        Collection<String> mimescol = getMimetypesWithDisabledHtmlErrorCheckingAsCollection();
+
+        if(mimescol.contains(mimetype)) {
+            if(!enabled) {
+                return ; //already disabled
+            } else {
+                //already disabled, but should be enabled
+                mimescol.remove(mimetype);
+            }
+        } else {
+            if(!enabled) {
+                mimescol.add(mimetype);
+            } else {
+                return ; //already enabled
+            }
+        }
+
+        preferences.put(mimetypesWithDisabledHtmlErrorChecking_key, encodeMimetypes(mimescol));
+
+    }
+
+    private static String encodeMimetypes(Collection<String> mimes) {
+        StringBuilder b = new StringBuilder();
+        for(String m : mimes) {
+            b.append(m);
+            b.append(mimetypesDelimiter);
+        }
+        return b.toString();
+    }
+
+    private static Collection<String> getMimetypesWithDisabledHtmlErrorCheckingAsCollection() {
+        //return modifiable collection!
+        ArrayList<String> list = new ArrayList<String>();
+        list.addAll(Arrays.asList(mimetypesWithDisabledHtmlErrorChecking.split(mimetypesDelimiter)));
+        return list;
     }
 
 }
