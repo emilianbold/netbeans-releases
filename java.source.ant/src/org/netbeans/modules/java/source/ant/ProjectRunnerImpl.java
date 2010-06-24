@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.source.ant;
 
+import com.sun.istack.internal.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -503,7 +504,15 @@ out:                for (FileObject root : exec.getRoots()) {
         }
 
         public Element getProjectElement() {
-            return new FakeElement(this.apc.getProjectElement(), projectName);
+            final Element element = apc.getProjectElement();
+            if (element == null) {
+                final File fo = this.apc.getFile();
+                throw new NullPointerException(String.format("Cannot parse: %s exists: %b readable: %b",
+                        fo == null ? null  : fo.getAbsolutePath(),
+                        fo == null ? false : fo.exists(),
+                        fo == null ? false : fo.canRead()));
+            }
+            return new FakeElement(element, projectName);
         }
 
         public Throwable getParseException() {
@@ -529,7 +538,8 @@ out:                for (FileObject root : exec.getRoots()) {
         private final Element delegate;
         private final String projectName;
         
-        public FakeElement(Element delegate, String projectName) {
+        public FakeElement(final @NotNull Element delegate, String projectName) {
+            Parameters.notNull("delegate", delegate);   //NOI18N
             this.delegate = delegate;
             this.projectName = projectName;
         }
