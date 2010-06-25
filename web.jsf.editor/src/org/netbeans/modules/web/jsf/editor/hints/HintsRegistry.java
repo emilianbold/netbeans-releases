@@ -71,6 +71,7 @@ public class HintsRegistry {
         //init providers
         PROVIDERS.add(new ComponentUsagesChecker());
         PROVIDERS.add(new LibraryDeclarationChecker());
+        PROVIDERS.add(new ELSyntaxChecker());
 //        PROVIDERS.add(new ElChecker());
     }
 
