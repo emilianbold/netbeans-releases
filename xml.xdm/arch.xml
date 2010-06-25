@@ -88,25 +88,6 @@ made subject to such option by the copyright holder.
        the underlying source</li>
        <li>Visitor support</li>
    </ul>
-   <api name="org.netbeans.modules.xml.xdm" category="friend" type="export" group="java">
-       This package provides API's for obtaining an XDM document and mutating 
-       the XDM tree.
-   </api>
-   <api name="org.netbeans.modules.xml.xdm.diff" category="friend" type="export" group="java">
-       XML diff capabilities are exposed through this package. 
-   </api>
-   <api name="org.netbeans.modules.xml.xdm.nodes" category="friend" type="export" group="java">
-       XDM based implementation of DOM interfaces. 
-   </api>
-   <api name="org.netbeans.modules.xml.xdm.xam" category="friend" type="export" group="java">
-       XAM model and component abstractions based on XDM tree. This is the
-       basis for XML language models (like WSDL, Schema, and BPEL).
-   </api>
-   <api name="org.netbeans.modules.xml.xdm.visitor" category="friend" type="export" group="java">
-       Visitors for operations over the XDM such as generating XPath
-       expressions, calculatin document position and finding elements by 
-       position. 
-   </api>
  </answer>
 
 
