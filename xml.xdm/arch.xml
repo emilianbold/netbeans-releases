@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-overall">
   <p>
-   XDM (XML Document Model) provides a XAM based full fidelity XML model which
+   <api type="export" name="XDM" group="java" category="devel">XDM (XML Document Model)</api> provides a XAM based full fidelity XML model which
    implements the org.w3c.dom interfaces. The intention is not to provide an
    an alternate implementation of the dom interfaces but only to reuse part of 
    the api where it makes sense and more importantly provide a foundation on 
