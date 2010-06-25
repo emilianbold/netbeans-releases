@@ -43,8 +43,10 @@
  */
 package org.openide.actions;
 
+import javax.swing.Action;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
@@ -59,15 +61,18 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.*;
 import javax.swing.undo.*;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 
 
-/** Undo an edit.
+/** Undo an edit. Since version 6.18 this class
+* implements {@link ContextAwareAction}.
 *
 * @see UndoRedo
 * @author   Ian Formanek, Jaroslav Tulach
 */
-public class UndoAction extends CallableSystemAction {
+public class UndoAction extends CallableSystemAction
+implements ContextAwareAction {
     /** initialized listener */
     private static Listener listener;
 
@@ -189,6 +194,11 @@ public class UndoAction extends CallableSystemAction {
     @Override
     protected boolean asynchronous() {
         return false;
+    }
+
+    @Override
+    public Action createContextAwareInstance(Lookup actionContext) {
+        return new UndoRedoAction(actionContext, true, false);
     }
 
     /** Listener on changes of selected workspace element and
