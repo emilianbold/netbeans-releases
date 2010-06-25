@@ -294,6 +294,8 @@ public class ProjectUtils {
         public @Override void propertyChange(PropertyChangeEvent evt) {
             if (ProjectInformation.PROP_ICON.equals(evt.getPropertyName())) {
                 updateIcon();
+            } else {
+                pcs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
             }
         }
         
