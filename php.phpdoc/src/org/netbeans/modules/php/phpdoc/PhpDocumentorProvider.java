@@ -55,6 +55,7 @@ public final class PhpDocumentorProvider extends PhpDocProvider {
         super("phpDocumentor", NbBundle.getMessage(PhpDocumentorProvider.class, "LBL_Name")); // NOI18N
     }
 
+    @PhpDocProvider.Registration(position=100)
     public static PhpDocumentorProvider getInstance() {
         return INSTANCE;
     }

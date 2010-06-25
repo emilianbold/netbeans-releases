@@ -39,26 +39,30 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.php.api.annotations;
 
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.api.doc.PhpDocs;
+import org.netbeans.modules.php.spi.doc.PhpDocProvider;
 import org.openide.util.lookup.ServiceProvider;
 
+/**
+ * @author Tomas Mysik
+ */
 @ServiceProvider(service = Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class PhpFrameworkRegistrationProcessor extends BaseRegistrationProcessor<PhpFrameworkProvider, PhpFrameworkProvider.Registration> {
+public class PhpDocRegistrationProcessor extends BaseRegistrationProcessor<PhpDocProvider, PhpDocProvider.Registration> {
 
     @Override
     protected String getPath() {
-        return PhpFrameworks.FRAMEWORK_PATH;
+        return PhpDocs.DOCS_PATH;
     }
 
     @Override
-    protected int getPosition(PhpFrameworkProvider.Registration registration) {
+    protected int getPosition(PhpDocProvider.Registration registration) {
         return registration.position();
     }
 }
