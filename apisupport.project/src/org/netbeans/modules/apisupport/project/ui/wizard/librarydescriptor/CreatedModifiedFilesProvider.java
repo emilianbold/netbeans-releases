@@ -58,7 +58,6 @@ import java.util.zip.ZipOutputStream;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFilesFactory;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.openide.filesystems.FileObject;
@@ -177,7 +176,7 @@ final class CreatedModifiedFilesProvider  {
         return retval;
     }
     
-    private static class ZipAndCopyOperation extends CreatedModifiedFilesFactory.OperationBase {
+    private static class ZipAndCopyOperation extends CreatedModifiedFiles.AbstractOperation {
         private FileObject folderToZip;
         private String relativePath;
         ZipAndCopyOperation(Project prj, FileObject folderToZip, String relativePath) {
