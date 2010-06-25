@@ -407,10 +407,7 @@ document fidelity, undo/redo, and the ability to sync with the underlying source
         </question>
 -->
  <answer id="deploy-dependencies">
-  <p>
-   This module is only exposing friend api's, thus a friend entry must be added
-   to this module before use. 
-  </p>
+   <defaultanswer generate="here"/>
  </answer>
 
 
@@ -479,7 +476,7 @@ document fidelity, undo/redo, and the ability to sync with the underlying source
 -->
  <answer id="deploy-packages">
   <p>
-   currently friends support is being used, thus all clients are known.
+   yes
   </p>
  </answer>
 
