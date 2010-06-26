@@ -582,6 +582,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
                 </not>
             </or>
         </condition>
+        <property name="sigtest.check.type" value="check"/>
 
         <typedef name="exportedapi" classname="org.netbeans.nbbuild.ExportedAPICondition" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <condition property="sigtest.mail" value="api-changes@netbeans.org">
@@ -592,7 +593,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         </condition>
         <property name="sigtest.mail" value="${commit.mail}"/>
 
-        <echo>sigtest check: ${module.name}; cnb: ${code.name.base.dashes}; email: ${sigtest.mail}</echo>
+        <echo>sigtest check: ${module.name}; cnb: ${code.name.base.dashes}; email: ${sigtest.mail}; type: ${sigtest.check.type}</echo>
     </target>
 
     <target name="gen-sigtest" depends="-sigtest-init">
@@ -610,7 +611,6 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
     </target>
 
     <target name="check-sigtest" depends="-sigtest-init" unless="sigtest.skip.check.condition">
-        <property name="sigtest.check.type" value="check"/>
         <mkdir dir="${sigtest.output.dir}"/>
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
