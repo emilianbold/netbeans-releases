@@ -92,7 +92,9 @@ public class ComputeImportsTest extends NbTestCase {
         "sun.text.normalizer.RangeValueIterator.Element",
         "javax.xml.bind.Element",
         "javax.lang.model.element.Element",
-        "com.sun.xml.internal.ws.api.server.Adapter.Toolkit"
+        "com.sun.org.apache.xalan.internal.xsltc.runtime.AttributeList",
+        "com.sun.xml.internal.ws.api.server.Adapter.Toolkit",
+        "sunw.io.Serializable"
     }));
     
     private static final Set<String> NO_MASKS = new HashSet<String>();
@@ -192,6 +194,10 @@ public class ComputeImportsTest extends NbTestCase {
         doTest("Test97420", NO_MASKS, NO_MASKS);
     }
     
+    public void testFilterByKind() throws Exception {
+        doTest("TestFilterByKind", JDK16_MASKS, JDK16_MASKS);
+    }
+    
     private void prepareTest(String capitalizedName) throws Exception {
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
@@ -225,6 +231,8 @@ public class ComputeImportsTest extends NbTestCase {
         TestUtil.copyFiles(getDataDir(), FileUtil.toFile(sourceRoot), files);
         
         packageRoot.refresh();
+        
+        SourceUtilsTestUtil.compileRecursively(sourceRoot);
         
         testSource = packageRoot.getFileObject(capitalizedName + ".java");
         
