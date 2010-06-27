@@ -84,17 +84,24 @@ public class UndoRedoTest extends NbTestCase implements ChangeListener {
         ur.addChangeListener(this);
         MyEdit me = new MyEdit();
         ur.undoableEditHappened(new UndoableEditEvent(this, me));
-        assertEquals("One change", 1, cnt);
+        assertChange("One change");
         assertTrue("Can undo now", ur.canUndo());
         ur.undo();
         assertFalse("Cannot undo", ur.canUndo());
-        assertEquals("Snd change", 2, cnt);
+        assertChange("Snd change");
 
         assertTrue("But redo", ur.canRedo());
         ur.redo();
-        assertEquals("Third change", 3, cnt);
+        assertChange("Third change");
         assertEquals("One undo", 1, me.undo);
         assertEquals("One redo", 1, me.redo);
+    }
+    
+    private void assertChange(String msg) {
+        if (cnt == 0) {
+            fail(msg);
+        }
+        cnt = 0;
     }
 
     @Override
