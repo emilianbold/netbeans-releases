@@ -92,6 +92,7 @@ public class ComputeImportsTest extends NbTestCase {
         "sun.text.normalizer.RangeValueIterator.Element",
         "javax.xml.bind.Element",
         "javax.lang.model.element.Element",
+        "com.sun.xml.internal.ws.api.server.Adapter.Toolkit"
     }));
     
     private static final Set<String> NO_MASKS = new HashSet<String>();
@@ -131,19 +132,16 @@ public class ComputeImportsTest extends NbTestCase {
         doTest("TestSimple", JDK16_MASKS, JDK16_MASKS);
     }
     
-    //IZ 102613 -- bugous 'discouraged' hints
-    public void XtestFilterDeclaration() throws Exception {
+    public void testFilterDeclaration() throws Exception {
         doTest("TestFilterDeclaration", JDK16_MASKS, NO_MASKS);
     }
     
-    //IZ 102613 -- bugous 'discouraged' hints
-    public void XtestFilterTypedInitializator() throws Exception {
+    public void testFilterTypedInitializator() throws Exception {
         doTest("TestFilterTypedInitializator", JDK16_MASKS, NO_MASKS);
     }
     
-    //IZ 102613 -- bugous 'discouraged' hints
-    public void XtestFilterWithMethods() throws Exception {
-        doTest("TestFilterWithMethods", NO_MASKS, NO_MASKS);
+    public void testFilterWithMethods() throws Exception {
+        doTest("TestFilterWithMethods", JDK16_MASKS, JDK16_MASKS);
     }
     
     public void testGetCookie() throws Exception {
@@ -166,8 +164,7 @@ public class ComputeImportsTest extends NbTestCase {
         doTest("TestUnfinishedMethod", NO_MASKS, NO_MASKS);
     }
     
-    //IZ 102613 -- bugous 'discouraged' hints
-    public void XtestUnsupportedOperation1() throws Exception {
+    public void testUnsupportedOperation1() throws Exception {
         doTest("TestUnsupportedOperation1", JDK16_MASKS, NO_MASKS);
     }
     
