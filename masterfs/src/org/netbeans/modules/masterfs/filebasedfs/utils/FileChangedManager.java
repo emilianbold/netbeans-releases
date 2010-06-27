@@ -52,12 +52,17 @@ import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Radek Matous
  */
-@org.openide.util.lookup.ServiceProvider(service=java.lang.SecurityManager.class)
+@ServiceProviders({
+    @ServiceProvider(service=SecurityManager.class),
+    @ServiceProvider(service=FileChangedManager.class)
+})
 public class FileChangedManager extends SecurityManager {
     private static final Logger LOG = Logger.getLogger(FileChangedManager.class.getName());
     private static  FileChangedManager INSTANCE;
@@ -75,13 +80,15 @@ public class FileChangedManager extends SecurityManager {
     private static final ThreadLocal<AtomicBoolean> IDLE_ON = new ThreadLocal<AtomicBoolean>();
     
     public FileChangedManager() {
-        INSTANCE = this;
     }
     
-    public static FileChangedManager getInstance() {
+    public static synchronized FileChangedManager getInstance() {
         if (INSTANCE == null) {
-            Lookup.getDefault().lookup(SecurityManager.class);
-            assert INSTANCE != null;
+            INSTANCE = Lookup.getDefault().lookup(FileChangedManager.class);
+            if (INSTANCE == null) {
+                // for test purposes
+                INSTANCE = new FileChangedManager();
+            }
         }
         return INSTANCE;
     }
@@ -163,7 +170,7 @@ public class FileChangedManager extends SecurityManager {
         }
     }
 
-    private static boolean isIdleIO() {
+    static boolean isIdleIO() {
         return IDLE_IO.get() != null;
     }
 
@@ -196,7 +203,7 @@ public class FileChangedManager extends SecurityManager {
             if (l < load && priorityIO.get() == 0) {
                 return;
             }
-            if (ChildrenSupport.isLock()) {
+            if (ChildrenSupport.isLock() || Thread.holdsLock(NamingFactory.class)) {
                 return;
             }
             Runnable goingToSleep = IDLE_CALL.get();

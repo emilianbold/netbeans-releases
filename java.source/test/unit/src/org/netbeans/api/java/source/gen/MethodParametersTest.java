@@ -232,7 +232,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n\n" +
             "import java.io.File;\n\n" +
             "public class Test {\n" +
-            "    public void taragui(final File elaborada,final File carqueja) {\n" +
+            "    public void taragui(final File elaborada, final File carqueja) {\n" +
             "    }\n" +
             "}\n";
 

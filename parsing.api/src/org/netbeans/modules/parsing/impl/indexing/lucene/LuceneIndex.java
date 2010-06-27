@@ -146,7 +146,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
         LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
             public Void run() throws IOException {
                 checkPreconditions();
-                
+
                 final List<LuceneDocument> toAdd;
                 final List<String> toRemove;
 
@@ -156,22 +156,24 @@ public class LuceneIndex implements IndexImpl, Evictable {
 
                     LuceneIndex.this.toAdd.clear();
                     LuceneIndex.this.toRemove.clear();
-                    if (indexedIndexables != null) {
-                        for(Indexable i : indexedIndexables) {
-                            LuceneIndex.this.staleFiles.remove(i.getRelativePath());
+
+                    if (!staleFiles.isEmpty()) {
+                        if (indexedIndexables != null) {
+                            for(Indexable i : indexedIndexables) {
+                                LuceneIndex.this.staleFiles.remove(i.getRelativePath());
+                            }
+                        } else {
+                            for(LuceneDocument ldoc : toAdd) {
+                                LuceneIndex.this.staleFiles.remove(ldoc.getSourceName());
+                            }
+                            LuceneIndex.this.staleFiles.removeAll(toRemove);
                         }
-                    } else {
-                        for(LuceneDocument ldoc : toAdd) {
-                            LuceneIndex.this.staleFiles.remove(ldoc.getSourceName());
-                        }
-                        LuceneIndex.this.staleFiles.removeAll(toRemove);
                     }
                 }
 
                 if (toAdd.size() > 0 || toRemove.size() > 0) {
                     flush(indexFolder, toAdd, toRemove, LuceneIndex.this.directory, lmListener, optimize);
                 }
-                
                 return null;
             }
         });

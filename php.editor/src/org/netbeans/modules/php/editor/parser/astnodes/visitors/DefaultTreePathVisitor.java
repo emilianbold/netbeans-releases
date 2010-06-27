@@ -177,6 +177,13 @@ public class DefaultTreePathVisitor extends DefaultVisitor{
         path.addFirst(node);super.visit(node);path.removeFirst();
     }
 
+    protected void addToPath(ASTNode node) {
+        path.addFirst(node);
+    }
+    protected void removeFromPath() {
+        path.removeFirst();
+    }
+
     @Override
     public void visit(ASTError astError) {
         super.visit(astError);

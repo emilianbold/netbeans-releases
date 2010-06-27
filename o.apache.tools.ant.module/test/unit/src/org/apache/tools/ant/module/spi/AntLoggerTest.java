@@ -62,7 +62,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 
 // For debugging info, add to nbproject/private/private.properties:
-// test-unit-sys-prop.org.apache.tools.ant.module.bridge.impl.NbBuildLogger.LOG_AT_WARNING=true
+// test-unit-sys-prop.org.apache.tools.ant.module.bridge.impl.NbBuildLogger.level=FINEST
 
 /**
  * Tests functionality of {@link AntLogger}.

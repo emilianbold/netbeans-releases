@@ -103,7 +103,11 @@ public class ComputeAnnotations extends JavaParserResultTask<Result> {
 
         if (cancel.get()) return ;
         
-        AnnotationsHolder.get(info.getFileObject()).setNewAnnotations(annotations);
+        AnnotationsHolder holder = AnnotationsHolder.get(info.getFileObject());
+
+        if (holder != null) {
+            holder.setNewAnnotations(annotations);
+        }
 
         long end = System.currentTimeMillis();
 
@@ -134,12 +138,16 @@ public class ComputeAnnotations extends JavaParserResultTask<Result> {
                 String dn;
 
                 if (overridden) {
-                    if (ee.getEnclosingElement().getKind().isInterface() || ee.getKind().isInterface()) {
+                    if (ee.getModifiers().contains(Modifier.ABSTRACT)) {
                         type = AnnotationType.HAS_IMPLEMENTATION;
                         dn = NbBundle.getMessage(ComputeAnnotations.class, "TP_HasImplementations");
                     } else {
                         type = AnnotationType.IS_OVERRIDDEN;
-                        dn = NbBundle.getMessage(ComputeAnnotations.class, "TP_IsOverridden");
+                        if (ee.getKind().isClass()) {
+                            dn = NbBundle.getMessage(ComputeAnnotations.class, "TP_HasSubclasses");
+                        } else {
+                            dn = NbBundle.getMessage(ComputeAnnotations.class, "TP_IsOverridden");
+                        }
                     }
                 } else {
                     StringBuffer tooltip = new StringBuffer();

@@ -64,7 +64,7 @@ public interface Unit {
      * Gets this unit unique name. 
      * This name should be the same as Key.getUnit()
      */
-    public String getName();
+    public CharSequence getName();
 
     /** 
      * Gets the object stored by the given key 

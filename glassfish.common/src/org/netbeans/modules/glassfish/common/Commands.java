@@ -85,6 +85,8 @@ public class Commands {
     public static final ServerCommand STOP = new ServerCommand("stop-domain") { // NOI18N
     };
 
+    public static final ServerCommand RESTART = new ServerCommand("restart-domain") { // NOI18N
+    };
     /**
      * Command to list applications current deployed on the server.
      */

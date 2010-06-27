@@ -261,7 +261,6 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
             }
         });
 
-        cdiCheckbox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cdiCheckbox, org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "PanelSharabilityVisual.cdiCheckbox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);

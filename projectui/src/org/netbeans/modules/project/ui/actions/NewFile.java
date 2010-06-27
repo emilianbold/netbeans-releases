@@ -100,11 +100,11 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         putValue("iconBase","org/netbeans/modules/project/ui/resources/newFile.png"); //NOI18N
         putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
         OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
-        refresh( getLookup() );
+        refresh(getLookup(), true);
     }
 
     @Override
-    protected void refresh( Lookup context ) {
+    protected void refresh(Lookup context, boolean immediate) {
         // #59615: update synch if possible; only replan if not already in EQ.
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
@@ -269,7 +269,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        refresh( Lookup.EMPTY );
+        refresh(Lookup.EMPTY, false);
     }
 
     public static String TEMPLATE_PROPERTY = "org.netbeans.modules.project.ui.actions.NewFile.Template"; // NOI18N

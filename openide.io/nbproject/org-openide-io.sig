@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.20
+#Version 1.23
 
 CLSS public abstract interface java.io.Closeable
 meth public abstract void close() throws java.io.IOException
@@ -8,14 +8,14 @@ CLSS public abstract interface java.io.Flushable
 meth public abstract void flush() throws java.io.IOException
 
 CLSS public java.io.PrintWriter
-cons public PrintWriter(java.io.File) throws java.io.FileNotFoundException
-cons public PrintWriter(java.io.File,java.lang.String) throws java.io.FileNotFoundException,java.io.UnsupportedEncodingException
-cons public PrintWriter(java.io.OutputStream)
-cons public PrintWriter(java.io.OutputStream,boolean)
-cons public PrintWriter(java.io.Writer)
-cons public PrintWriter(java.io.Writer,boolean)
-cons public PrintWriter(java.lang.String) throws java.io.FileNotFoundException
-cons public PrintWriter(java.lang.String,java.lang.String) throws java.io.FileNotFoundException,java.io.UnsupportedEncodingException
+cons public init(java.io.File) throws java.io.FileNotFoundException
+cons public init(java.io.File,java.lang.String) throws java.io.FileNotFoundException,java.io.UnsupportedEncodingException
+cons public init(java.io.OutputStream)
+cons public init(java.io.OutputStream,boolean)
+cons public init(java.io.Writer)
+cons public init(java.io.Writer,boolean)
+cons public init(java.lang.String) throws java.io.FileNotFoundException
+cons public init(java.lang.String,java.lang.String) throws java.io.FileNotFoundException,java.io.UnsupportedEncodingException
 fld protected java.io.Writer out
 meth protected void clearError()
 meth protected void setError()
@@ -59,8 +59,8 @@ hfds autoFlush,formatter,lineSeparator,psOut,trouble
 CLSS public abstract interface java.io.Serializable
 
 CLSS public abstract java.io.Writer
-cons protected Writer()
-cons protected Writer(java.lang.Object)
+cons protected init()
+cons protected init(java.lang.Object)
 fld protected java.lang.Object lock
 intf java.io.Closeable
 intf java.io.Flushable
@@ -87,7 +87,7 @@ CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
-cons protected Enum(java.lang.String,int)
+cons protected init(java.lang.String,int)
 intf java.io.Serializable
 intf java.lang.Comparable<{java.lang.Enum%0}>
 meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
@@ -104,7 +104,7 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -120,7 +120,7 @@ meth public java.lang.String toString()
 CLSS public abstract interface java.util.EventListener
 
 CLSS public java.util.EventObject
-cons public EventObject(java.lang.Object)
+cons public init(java.lang.Object)
 fld protected java.lang.Object source
 intf java.io.Serializable
 meth public java.lang.Object getSource()
@@ -129,7 +129,7 @@ supr java.lang.Object
 hfds serialVersionUID
 
 CLSS public abstract org.openide.windows.IOColorLines
-cons public IOColorLines()
+cons public init()
 meth protected abstract void println(java.lang.CharSequence,org.openide.windows.OutputListener,boolean,java.awt.Color) throws java.io.IOException
 meth public static boolean isSupported(org.openide.windows.InputOutput)
 meth public static void println(org.openide.windows.InputOutput,java.lang.CharSequence,java.awt.Color) throws java.io.IOException
@@ -137,7 +137,7 @@ meth public static void println(org.openide.windows.InputOutput,java.lang.CharSe
 supr java.lang.Object
 
 CLSS public abstract org.openide.windows.IOColorPrint
-cons public IOColorPrint()
+cons public init()
 meth protected abstract void print(java.lang.CharSequence,org.openide.windows.OutputListener,boolean,java.awt.Color) throws java.io.IOException
 meth public static boolean isSupported(org.openide.windows.InputOutput)
 meth public static void print(org.openide.windows.InputOutput,java.lang.CharSequence,java.awt.Color) throws java.io.IOException
@@ -145,7 +145,7 @@ meth public static void print(org.openide.windows.InputOutput,java.lang.CharSequ
 supr java.lang.Object
 
 CLSS public abstract org.openide.windows.IOColors
-cons public IOColors()
+cons public init()
 innr public final static !enum OutputType
 meth protected abstract java.awt.Color getColor(org.openide.windows.IOColors$OutputType)
 meth protected abstract void setColor(org.openide.windows.IOColors$OutputType,java.awt.Color)
@@ -155,6 +155,7 @@ meth public static void setColor(org.openide.windows.InputOutput,org.openide.win
 supr java.lang.Object
 
 CLSS public final static !enum org.openide.windows.IOColors$OutputType
+ outer org.openide.windows.IOColors
 fld public final static org.openide.windows.IOColors$OutputType ERROR
 fld public final static org.openide.windows.IOColors$OutputType HYPERLINK
 fld public final static org.openide.windows.IOColors$OutputType HYPERLINK_IMPORTANT
@@ -186,12 +187,14 @@ hfds LOGGER,defaultIOContainer,provider
 hcls Trivial
 
 CLSS public abstract interface static org.openide.windows.IOContainer$CallBacks
+ outer org.openide.windows.IOContainer
 meth public abstract void activated()
 meth public abstract void closed()
 meth public abstract void deactivated()
 meth public abstract void selected()
 
 CLSS public abstract interface static org.openide.windows.IOContainer$Provider
+ outer org.openide.windows.IOContainer
 meth public abstract boolean isActivated()
 meth public abstract boolean isCloseable(javax.swing.JComponent)
 meth public abstract javax.swing.JComponent getSelected()
@@ -207,7 +210,7 @@ meth public abstract void setToolTipText(javax.swing.JComponent,java.lang.String
 meth public abstract void setToolbarActions(javax.swing.JComponent,javax.swing.Action[])
 
 CLSS public abstract org.openide.windows.IOPosition
-cons public IOPosition()
+cons public init()
 innr public abstract interface static Position
 meth protected abstract org.openide.windows.IOPosition$Position currentPosition()
 meth public static boolean isSupported(org.openide.windows.InputOutput)
@@ -215,10 +218,11 @@ meth public static org.openide.windows.IOPosition$Position currentPosition(org.o
 supr java.lang.Object
 
 CLSS public abstract interface static org.openide.windows.IOPosition$Position
+ outer org.openide.windows.IOPosition
 meth public abstract void scrollTo()
 
 CLSS public abstract org.openide.windows.IOProvider
-cons protected IOProvider()
+cons protected init()
 meth public abstract org.openide.windows.InputOutput getIO(java.lang.String,boolean)
 meth public abstract org.openide.windows.OutputWriter getStdOut()
 meth public java.lang.String getName()
@@ -229,8 +233,25 @@ meth public static org.openide.windows.IOProvider getDefault()
 supr java.lang.Object
 hcls Trivial
 
+CLSS public abstract org.openide.windows.IOSelect
+cons public init()
+innr public final static !enum AdditionalOperation
+meth protected abstract void select(java.util.Set<org.openide.windows.IOSelect$AdditionalOperation>)
+meth public static boolean isSupported(org.openide.windows.InputOutput)
+meth public static void select(org.openide.windows.InputOutput,java.util.Set<org.openide.windows.IOSelect$AdditionalOperation>)
+supr java.lang.Object
+
+CLSS public final static !enum org.openide.windows.IOSelect$AdditionalOperation
+ outer org.openide.windows.IOSelect
+fld public final static org.openide.windows.IOSelect$AdditionalOperation OPEN
+fld public final static org.openide.windows.IOSelect$AdditionalOperation REQUEST_ACTIVE
+fld public final static org.openide.windows.IOSelect$AdditionalOperation REQUEST_VISIBLE
+meth public static org.openide.windows.IOSelect$AdditionalOperation valueOf(java.lang.String)
+meth public static org.openide.windows.IOSelect$AdditionalOperation[] values()
+supr java.lang.Enum<org.openide.windows.IOSelect$AdditionalOperation>
+
 CLSS public abstract org.openide.windows.IOTab
-cons public IOTab()
+cons public init()
 meth protected abstract java.lang.String getToolTipText()
 meth protected abstract javax.swing.Icon getIcon()
 meth protected abstract void setIcon(javax.swing.Icon)
@@ -265,7 +286,7 @@ meth public abstract void setInputVisible(boolean)
 meth public abstract void setOutputVisible(boolean)
 
 CLSS public abstract org.openide.windows.OutputEvent
-cons public OutputEvent(org.openide.windows.InputOutput)
+cons public init(org.openide.windows.InputOutput)
 meth public abstract java.lang.String getLine()
 meth public org.openide.windows.InputOutput getInputOutput()
 supr java.util.EventObject
@@ -278,7 +299,7 @@ meth public abstract void outputLineCleared(org.openide.windows.OutputEvent)
 meth public abstract void outputLineSelected(org.openide.windows.OutputEvent)
 
 CLSS public abstract org.openide.windows.OutputWriter
-cons protected OutputWriter(java.io.Writer)
+cons protected init(java.io.Writer)
 meth public abstract void println(java.lang.String,org.openide.windows.OutputListener) throws java.io.IOException
 meth public abstract void reset() throws java.io.IOException
 meth public void println(java.lang.String,org.openide.windows.OutputListener,boolean) throws java.io.IOException

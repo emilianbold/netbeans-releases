@@ -231,7 +231,7 @@ public class LookupSensitiveActionUILogTest extends NbTestCase {
             performCounter++;
         }
            
-        protected void refresh( Lookup context ) {
+        protected @Override void refresh(Lookup context, boolean immediate) {
             refreshCounter++;
             
             DataObject dobj = context.lookup(DataObject.class);

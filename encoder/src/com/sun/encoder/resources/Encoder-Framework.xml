@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+<library version="1.0">
+    <name>Encoder-Framework</name>
+    <type>j2se</type>
+    <localizing-bundle>com.sun.encoder.resources.Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst://com.sun.encoder/modules/ext/encoderframework.jar!/</resource>
+        <resource>jar:nbinst://com.sun.encoder/modules/ext/encoderfrmwk-xsdextension.jar!/</resource>
+        <resource>jar:nbinst://org.apache.xmlbeans/modules/ext/xbean.jar!/</resource>
+    </volume>
+    <volume>
+        <type>src</type>
+        
+    </volume>
+    <volume>
+        <type>javadoc</type>            
+        
+    </volume>
+</library>

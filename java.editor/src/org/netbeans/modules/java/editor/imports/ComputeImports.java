@@ -44,10 +44,15 @@
 package org.netbeans.modules.java.editor.imports;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -382,6 +387,57 @@ public class ComputeImports {
             
             return null;
         }
+
+        @Override
+        public Void visitNewClass(NewClassTree node, Map<String, Object> p) {
+            filterByNotAcceptedKind(node.getIdentifier(), ElementKind.ENUM);
+            scan(node.getEnclosingExpression(), new HashMap<String, Object>());
+            scan(node.getIdentifier(), p);
+            scan(node.getTypeArguments(), new HashMap<String, Object>());
+            scan(node.getArguments(), new HashMap<String, Object>());
+            scan(node.getClassBody(), new HashMap<String, Object>());
+            return null;
+        }
+
+        @Override
+        public Void visitMethodInvocation(MethodInvocationTree node, Map<String, Object> p) {
+            scan(node.getTypeArguments(), new HashMap<String, Object>());
+            scan(node.getMethodSelect(), p);
+            scan(node.getArguments(), new HashMap<String, Object>());
+            return null;
+        }
+
+        @Override
+        public Void visitNewArray(NewArrayTree node, Map<String, Object> p) {
+            scan(node.getType(), p);
+            scan(node.getDimensions(), new HashMap<String, Object>());
+            scan(node.getInitializers(), new HashMap<String, Object>());
+            return null;
+        }
+
+        @Override
+        public Void visitParameterizedType(ParameterizedTypeTree node, Map<String, Object> p) {
+            scan(node.getType(), p);
+            scan(node.getTypeArguments(), new HashMap<String, Object>());
+            return null;
+        }
+
+        @Override
+        public Void visitClass(ClassTree node, Map<String, Object> p) {
+            if (getCurrentPath().getParentPath().getLeaf().getKind() != Kind.NEW_CLASS) {
+                filterByAcceptedKind(node.getExtendsClause(), ElementKind.CLASS);
+                for (Tree intf : node.getImplementsClause()) {
+                    filterByAcceptedKind(intf, ElementKind.INTERFACE, ElementKind.ANNOTATION_TYPE);
+                }
+            }
+            return super.visitClass(node, p);
+        }
+
+        @Override
+        public Void visitAnnotation(AnnotationTree node, Map<String, Object> p) {
+            filterByAcceptedKind(node.getAnnotationType(), ElementKind.ANNOTATION_TYPE);
+            return super.visitAnnotation(node, p);
+        }
         
         private static final Set<Kind> SAFE_KIND_FOR_SCOPE = EnumSet.of(Kind.COMPILATION_UNIT, Kind.CLASS);
         
@@ -397,6 +453,26 @@ public class ComputeImports {
             }
             
             return info.getTrees().getScope(tp);
+        }
+        
+        private void filterByAcceptedKind(Tree toFilter, ElementKind acceptedKind, ElementKind... otherAcceptedKinds) {
+            filterByKind(toFilter, EnumSet.of(acceptedKind, otherAcceptedKinds), EnumSet.noneOf(ElementKind.class));
+        }
+        
+        private void filterByNotAcceptedKind(Tree toFilter, ElementKind notAcceptedKind, ElementKind... otherNotAcceptedKinds) {
+            filterByKind(toFilter, EnumSet.noneOf(ElementKind.class), EnumSet.of(notAcceptedKind, otherNotAcceptedKinds));
+        }
+        
+        private void filterByKind(Tree toFilter, Set<ElementKind> acceptedKinds, Set<ElementKind> notAcceptedKinds) {
+            if (toFilter == null) return;
+            switch (toFilter.getKind()) {
+                case IDENTIFIER:
+                    hints.add(new KindHint(((IdentifierTree) toFilter).getName().toString(), acceptedKinds, notAcceptedKinds));
+                    break;
+                case PARAMETERIZED_TYPE:
+                    filterByKind(((ParameterizedTypeTree) toFilter).getType(), acceptedKinds, notAcceptedKinds);
+                    break;
+            }
         }
     }
     
@@ -417,11 +493,6 @@ public class ComputeImports {
         }
         
         public boolean filter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates) {
-            return false;
-        }
-        
-        //IZ 102613 -- bugous 'discouraged' hints
-        public boolean Xfilter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates) {
             List<TypeElement> left = null;
             List<TypeElement> right = null;
             boolean leftReadOnly = false;
@@ -473,11 +544,6 @@ public class ComputeImports {
         }
         
         public boolean filter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates) {
-            return false;
-        }
-        
-        //IZ 102613 -- bugous 'discouraged' hints
-        private boolean Xfilter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates) {
             List<TypeElement> cands = candidates.get(simpleName);
             
             if (cands == null || cands.isEmpty())
@@ -504,6 +570,42 @@ public class ComputeImports {
                 
                 if (!found) {
                     toRemove.add(te);
+                }
+            }
+            
+            return cands.removeAll(toRemove);
+        }
+        
+    }
+    
+    public static final class KindHint implements Hint {
+        
+        private String simpleName;
+        private Set<ElementKind> acceptedKinds;
+        private Set<ElementKind> notAcceptedKinds;
+
+        public KindHint(String simpleName, Set<ElementKind> acceptedKinds, Set<ElementKind> notAcceptedKinds) {
+            this.simpleName = simpleName;
+            this.acceptedKinds = acceptedKinds;
+            this.notAcceptedKinds = notAcceptedKinds;
+        }
+        
+        public boolean filter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates) {
+            List<TypeElement> cands = candidates.get(simpleName);
+            
+            if (cands == null || cands.isEmpty())
+                return false;
+            
+            List<TypeElement> toRemove = new ArrayList<TypeElement>();
+            
+            for (TypeElement te : cands) {
+                if (!acceptedKinds.isEmpty() && !acceptedKinds.contains(te.getKind())) {
+                    toRemove.add(te);
+                    continue;
+                }
+                if (!notAcceptedKinds.isEmpty() && notAcceptedKinds.contains(te.getKind())) {
+                    toRemove.add(te);
+                    continue;
                 }
             }
             

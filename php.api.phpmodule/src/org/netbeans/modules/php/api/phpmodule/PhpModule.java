@@ -46,7 +46,6 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -93,16 +92,16 @@ public abstract class PhpModule {
     public abstract PhpModuleProperties getProperties();
 
     /**
-     * Get {@link Preferences} of this PHP module for the given PHP framework provider.
+     * Get {@link Preferences} of this PHP module.
      * This method is suitable for storing (and reading) PHP module specific properties.
      * For more information, see {@link org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, Class, boolean)}.
-     * @param clazz PHP framework provider class which defines the namespace of preferences
+     * @param clazz a class which defines the namespace of preferences
      * @param shared whether the returned settings should be shared
-     * @return {@link Preferences} for this PHP module and the given PHP framework provider
+     * @return {@link Preferences} for this PHP module and the given class
      * @since 1.26
      * @see org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, Class, boolean)
      */
-    public abstract <T extends PhpFrameworkProvider> Preferences getPreferences(Class<T> clazz, boolean shared);
+    public abstract Preferences getPreferences(Class<?> clazz, boolean shared);
 
     /**
      * Gets PHP module for the given {@link FileObject}.

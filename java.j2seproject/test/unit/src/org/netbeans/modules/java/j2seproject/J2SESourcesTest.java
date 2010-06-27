@@ -53,7 +53,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
@@ -115,7 +114,7 @@ public class J2SESourcesTest extends NbTestCase {
 // To reproduce it uncomment following line
 //        build.delete();
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        props.setProperty(J2SEProjectProperties.BUILD_DIR, path);
+        props.setProperty(ProjectProperties.BUILD_DIR, path);
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
         pm = ProjectManager.getDefault();
         project = pm.findProject(projdir);

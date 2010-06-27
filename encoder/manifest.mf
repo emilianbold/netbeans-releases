@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Specification-Version: 6.9
+OpenIDE-Module: org.netbeans.modules.encoder
+OpenIDE-Module-Layer: com/sun/encoder/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: com/sun/encoder/resources/Bundle.properties

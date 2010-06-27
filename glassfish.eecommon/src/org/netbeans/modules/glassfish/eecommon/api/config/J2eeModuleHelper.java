@@ -63,6 +63,7 @@ import org.openide.filesystems.FileUtil;
 public abstract class J2eeModuleHelper {
 
     private static final Map<Object, J2eeModuleHelper> helperMap;
+    private static final Map<Object, J2eeModuleHelper> gfhelperMap;
 
     static {
         Map<Object, J2eeModuleHelper> map = new HashMap<Object, J2eeModuleHelper>();
@@ -71,10 +72,20 @@ public abstract class J2eeModuleHelper {
         map.put(J2eeModule.Type.EAR, new EarDDHelper());
         map.put(J2eeModule.Type.CAR, new ClientDDHelper());
         helperMap = Collections.unmodifiableMap(map);
+        map = new HashMap<Object, J2eeModuleHelper>();
+        map.put(J2eeModule.Type.WAR, new WebDDHelper("WEB-INF/glassfish-web.xml",null));
+        map.put(J2eeModule.Type.EJB, new EjbDDHelper("META-INF/glassfish-ejb-jar.xml", "META-INF/glassfish-cmp-mappings.xml"));
+        map.put(J2eeModule.Type.EAR, new EarDDHelper("META-INF/glassfish-application.xml", null));
+        map.put(J2eeModule.Type.CAR, new ClientDDHelper("META-INF/glassfish-application-client.xml",null));
+        gfhelperMap = Collections.unmodifiableMap(map);
     }
 
-    public static final J2eeModuleHelper getJ2eeModuleHelper(Object type) {
+    public static final J2eeModuleHelper getSunDDModuleHelper(Object type) {
         return helperMap.get(type);
+    }
+
+    public static final J2eeModuleHelper getGlassfishDDModuleHelper(Object type) {
+        return gfhelperMap.get(type);
     }
 
     public static final J2eeModuleHelper getWsModuleHelper(String primarySunDDName) {
@@ -165,8 +176,12 @@ public abstract class J2eeModuleHelper {
     public static class WebDDHelper extends J2eeModuleHelper {
 
         private WebDDHelper() {
+            this("WEB-INF/sun-web.xml", null);
+        }
+
+        private WebDDHelper(String dd1, String dd2) {
             super(J2eeModule.WAR, J2eeModule.WEB_XML, J2eeModule.WEBSERVICES_XML,
-                    "WEB-INF/sun-web.xml", null);
+                    dd1, dd2);
         }
 
         @Override
@@ -222,8 +237,12 @@ public abstract class J2eeModuleHelper {
     public static class EjbDDHelper extends J2eeModuleHelper {
 
         private EjbDDHelper() {
+            this("META-INF/sun-ejb-jar.xml", "META-INF/sun-cmp-mappings.xml");
+        }
+
+        private EjbDDHelper(String dd1, String dd2) {
             super(J2eeModule.EJB, "ejb-jar.xml", "webservices.xml",
-                "META-INF/sun-ejb-jar.xml", "META-INF/sun-cmp-mappings.xml");
+                dd1,dd2);
         }
 
         @Override
@@ -250,8 +269,11 @@ public abstract class J2eeModuleHelper {
     public static class EarDDHelper extends J2eeModuleHelper {
 
         private EarDDHelper() {
-            super(J2eeModule.EAR, "application.xml", null,
-                    "META-INF/sun-application.xml", null);
+            this("META-INF/sun-application.xml", null);
+        }
+
+        private EarDDHelper(String dd1, String dd2) {
+            super(J2eeModule.EAR, "application.xml", null, dd1, dd2);
         }
 
         @Override
@@ -278,8 +300,11 @@ public abstract class J2eeModuleHelper {
     public static class ClientDDHelper extends J2eeModuleHelper {
 
         private ClientDDHelper() {
-            super(J2eeModule.CLIENT, "application-client.xml", null,
-                    "META-INF/sun-application-client.xml", null);
+            this("META-INF/sun-application-client.xml", null);
+        }
+
+        private ClientDDHelper(String dd1, String dd2) {
+            super(J2eeModule.CLIENT, "application-client.xml", null, dd1, dd2);
         }
 
         @Override

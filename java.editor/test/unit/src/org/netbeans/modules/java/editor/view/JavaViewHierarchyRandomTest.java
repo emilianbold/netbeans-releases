@@ -66,7 +66,7 @@ import org.netbeans.modules.editor.lib2.view.ViewHierarchyRandomTesting;
  */
 public class JavaViewHierarchyRandomTest extends NbTestCase {
 
-    private static final int OP_COUNT = 10000;
+    private static final int OP_COUNT = 100;
 
     private static final Level LOG_LEVEL = Level.FINE;
 
@@ -79,8 +79,9 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
 //        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testInsertRemoveSingleChar", "")});
 //        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testUndo750", "")});
 //        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testUndoRedoSimple", "")});
-        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testInsertTextWithNewlines", "")});
+//        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testInsertTextWithNewlines", "")});
 //        filter.setIncludes(new Filter.IncludeExclude[] { new Filter.IncludeExclude("testInsertSimpleRemoveContent", "")});
+//        filter.setIncludes(new Filter.IncludeExclude[]{new Filter.IncludeExclude("testNewlineLineOne", "")});
 //        setFilter(filter);
     }
 

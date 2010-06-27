@@ -117,8 +117,14 @@ public class MakefileParser extends Parser {
             Token<MakefileTokenId> token = tokenSequence.token();
 
             switch (token.id()) {
+                case DEFINE:
+                    makefileElements.add(createDefine(fobj, tokenSequence));
+                    startIndex = tokenSequence.index() + 1;
+                    break;
+
                 case EQUALS:
                 case COLON_EQUALS:
+                case PLUS_EQUALS:
                     tokenSequence.moveIndex(startIndex);
                     makefileElements.add(createMacro(fobj, tokenSequence));
                     startIndex = tokenSequence.index() + 1;
@@ -144,6 +150,36 @@ public class MakefileParser extends Parser {
         return cancelled.get()? null : new MakefileParseResult(snapshot, makefileElements);
     }
 
+    private static MakefileMacro createDefine(FileObject fobj, TokenSequence<MakefileTokenId> tokenSequence) {
+        StringBuilder nameBuilder = new StringBuilder();
+        int startOffset = tokenSequence.offset();
+        NAME_LOOP: while (tokenSequence.moveNext()) {
+            Token<MakefileTokenId> token = tokenSequence.token();
+            switch (token.id()) {
+                case COMMENT:
+                case NEW_LINE:
+                    break NAME_LOOP;
+                default:
+                    nameBuilder.append(token.text());
+            }
+        }
+
+        StringBuilder valueBuilder = new StringBuilder();
+        VALUE_LOOP: while (tokenSequence.moveNext()) {
+            Token<MakefileTokenId> token = tokenSequence.token();
+            switch (token.id()) {
+                case ENDEF:
+                    break VALUE_LOOP;
+                default:
+                    valueBuilder.append(token.text());
+            }
+        }
+
+        int endOffset = tokenSequence.offset();
+
+        return MakefileApiAccessor.getInstance().newMakefileMacro(fobj, startOffset, endOffset, nameBuilder.toString().trim(), valueBuilder.toString().trim());
+    }
+
     private static MakefileMacro createMacro(FileObject fobj, TokenSequence<MakefileTokenId> tokenSequence) {
         StringBuilder nameBuilder = new StringBuilder();
         int startOffset = -1;
@@ -155,6 +191,7 @@ public class MakefileParser extends Parser {
             switch (token.id()) {
                 case EQUALS:
                 case COLON_EQUALS:
+                case PLUS_EQUALS:
                     break NAME_LOOP;
                 default:
                     nameBuilder.append(token.text());

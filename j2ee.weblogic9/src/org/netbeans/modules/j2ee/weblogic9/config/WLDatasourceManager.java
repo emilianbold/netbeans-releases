@@ -49,17 +49,14 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.spi.status.ProgressEvent;
-import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
+import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLCommandDeployer;
@@ -131,7 +128,7 @@ public class WLDatasourceManager implements DatasourceManager {
         WLCommandDeployer deployer = new WLCommandDeployer(WLDeploymentFactory.getInstance(),
                 manager.getInstanceProperties());
         ProgressObject po = deployer.deployDatasource(toDeploy.values());
-        waitFor(po);
+        ProgressObjectSupport.waitFor(po);
         if (po.getDeploymentStatus().isFailed()) {
             String msg = NbBundle.getMessage(WLDatasourceManager.class, "MSG_FailedToDeployDatasource");
             throw new ConfigurationException(msg);
@@ -161,23 +158,5 @@ public class WLDatasourceManager implements DatasourceManager {
             map.put(datasource.getJndiName(), datasource);
         }
         return map;
-    }
-
-    private void waitFor(ProgressObject obj) {
-        final CountDownLatch latch = new CountDownLatch(1);
-        obj.addProgressListener(new ProgressListener() {
-
-            @Override
-            public void handleProgressEvent(ProgressEvent pe) {
-                if (pe.getDeploymentStatus().isCompleted() || pe.getDeploymentStatus().isFailed()) {
-                    latch.countDown();
-                }
-            }
-        });
-        try {
-            latch.await(WLDeploymentManager.MANAGER_TIMEOUT, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
     }
 }

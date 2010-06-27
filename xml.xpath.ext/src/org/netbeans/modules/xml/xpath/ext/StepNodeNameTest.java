@@ -43,6 +43,10 @@ public class StepNodeNameTest implements StepNodeTest {
     /** The node name. */
     private QName mNodeName;
     
+    public StepNodeNameTest(String nodeName) {
+        this(new QName(nodeName));
+    }
+
     /**
      * Constructor.
      * @param nodeName the node name

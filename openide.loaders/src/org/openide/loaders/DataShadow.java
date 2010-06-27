@@ -887,7 +887,9 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                     FileSystem fs = orig.getFileSystem();
                     try {
                         Image i = Introspector.getBeanInfo(fs.getClass()).getIcon(type);
-                        return fs.getStatus().annotateIcon(i, type, obj.original.files());
+                        if (i != null) {
+                            return fs.getStatus().annotateIcon(i, type, obj.original.files());
+                        }
                     } catch (IntrospectionException ie) {
                         Logger.getLogger(DataShadow.class.getName()).log(Level.WARNING, null, ie);
                         // ignore

@@ -146,9 +146,8 @@ public final class TabView extends EditorView implements TabableView {
     }
 
     @Override
-    public boolean setLength(int length) {
-        this.length = length;
-        return true;
+    public boolean setLength(int length, int modOffset, int modLength) {
+        return false; // Need to recompute total width 
     }
 
     @Override
@@ -183,7 +182,7 @@ public final class TabView extends EditorView implements TabableView {
         int charIndex = offset - startOffset;
         if (charIndex == 1) {
             mutableBounds.x += firstTabWidth;
-        } else {
+        } else if (charIndex > 1) {
             int extraTabCount = getLength() - 1;
             if (extraTabCount > 0) {
                 mutableBounds.x += firstTabWidth + (charIndex - 1) * ((width - firstTabWidth) / extraTabCount);

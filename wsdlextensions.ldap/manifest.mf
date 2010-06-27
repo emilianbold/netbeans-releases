@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Specification-Version: 6.9
 OpenIDE-Module: org.netbeans.modules.wsdlextensions.ldap
 OpenIDE-Module-Layer: org/netbeans/modules/wsdlextensions/ldap/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/wsdlextensions/ldap/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
 
 Name: org/netbeans/modules/wsdlextensions/ldap/ldif/LDataLoader.class
 OpenIDE-Module-Class: Loader
-

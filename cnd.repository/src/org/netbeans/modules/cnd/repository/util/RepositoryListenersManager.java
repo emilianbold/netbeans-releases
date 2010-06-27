@@ -84,7 +84,7 @@ public class RepositoryListenersManager {
         }
     }
     
-    public boolean fireUnitOpenedEvent(final String unitName){
+    public boolean fireUnitOpenedEvent(final CharSequence unitName){
         boolean toOpen = true;
         try {
             rwLock.readLock().lock();
@@ -98,7 +98,7 @@ public class RepositoryListenersManager {
         return toOpen;
     }
     
-    public void fireUnitClosedEvent(final String unitName) {
+    public void fireUnitClosedEvent(final CharSequence unitName) {
         try {
             rwLock.readLock().lock();
             if (theListener != null) {
@@ -109,7 +109,7 @@ public class RepositoryListenersManager {
         }
     }
     
-    public void fireAnException(final String unitName, final RepositoryException exception) {
+    public void fireAnException(final CharSequence unitName, final RepositoryException exception) {
         try {
             rwLock.readLock().lock();
             if (theListener != null) {

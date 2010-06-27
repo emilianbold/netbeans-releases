@@ -30,7 +30,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -40,9 +39,9 @@ import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
-import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
+import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
@@ -50,7 +49,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 
 /**
  * APT Walker which only gathers macromap. Shouldn't be used directly but
- * only overriden by walkers which don't need to gather any info in the includes
+ * only overridden by walkers which don't need to gather any info in the includes
  * just want macromap from them.
  * Also this walker holds plumbing code for blocks gathering due to it's being
  * used only for semantic highlighting walkers. This should be refactored out if
@@ -64,7 +63,8 @@ public class APTSelfWalker extends APTAbstractWalker {
         super(apt, preprocHandler, cacheEntry);
     }
     
-    protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, APTMacroMap.State postIncludeState) {
+    @Override
+    protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState) {
         if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex())) {
             try {
                 APTFile apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(resolvedPath.getPath()));
@@ -82,7 +82,7 @@ public class APTSelfWalker extends APTAbstractWalker {
             } finally {
                 getIncludeHandler().popInclude();
             }
-            return postIncludeState == null;
+            return (postIncludeState == null) || !postIncludeState.hasPostIncludeMacroState();
         } else {
             return false;
         }

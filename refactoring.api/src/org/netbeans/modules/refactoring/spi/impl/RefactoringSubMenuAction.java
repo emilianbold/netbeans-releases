@@ -88,13 +88,16 @@ public final class RefactoringSubMenuAction extends TextAction implements Presen
         this.showIcons = showIcons;
     }
     
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
     }
     
+    @Override
     public javax.swing.JMenuItem getMenuPresenter() {
         return new SubMenu();
     }
     
+    @Override
     public javax.swing.JMenuItem getPopupPresenter() {
         return getMenuPresenter();
     }
@@ -135,7 +138,7 @@ public final class RefactoringSubMenuAction extends TextAction implements Presen
         private void createMenuItems() {
             removeAll();
             FileObject fo = FileUtil.getConfigFile("Menu/Refactoring"); // NOI18N
-            DataFolder df = DataFolder.findFolder(fo);
+            DataFolder df = fo == null ? null : DataFolder.findFolder(fo);
                 
             if (df != null) {
                 wasSeparator = true;

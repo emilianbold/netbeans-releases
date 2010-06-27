@@ -61,6 +61,7 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.util.Exceptions;
@@ -148,6 +149,46 @@ public class CachingArchive implements Archive {
         folders = null;
         names = null;
         nameOffset = 0;
+    }
+
+    @Override
+    public JavaFileObject getFile(final @NonNull String name) {
+        Map<String, Folder> folders = doInit();        
+        final int index = name.lastIndexOf('/');    //NOI18N
+        String folder, sn;
+        if (index<=0) {
+            folder = "";    //NOI18N
+            sn = name;
+        } else {
+            folder = name.substring(0,index);
+            sn = name.substring(index+1);
+        }
+        Folder files = folders.get(folder);
+        if (files == null) {
+            return null;
+        }
+        else {
+            assert !keepOpened || zipFile != null;
+            for (int i = 0; i < files.idx; i += files.delta){
+                final String baseName = getString(files.indices[i], files.indices[i+1]);
+                if (sn.equals(baseName)) {
+                    long mtime = join(files.indices[i+3], files.indices[i+2]);
+                    if (zipFile == null) {
+                        if (files.delta == 4) {
+                            return FileObjects.zipFileObject(archiveFile, folder, baseName, mtime);
+                        }
+                        else {
+                            assert files.delta == 6;
+                            long offset = join(files.indices[i+5], files.indices[i+4]);
+                            return FileObjects.zipFileObject(archiveFile, folder, baseName, mtime, offset);
+                        }
+                    } else {
+                        return FileObjects.zipFileObject( zipFile, folder, baseName, mtime);
+                    }
+                }
+            }
+            return null;
+        }
     }
                       
     // Private methods ---------------------------------------------------------

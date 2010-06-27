@@ -43,9 +43,12 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.save.ListMatcher;
+import org.netbeans.modules.java.source.save.Measure;
 
 /**
  * Test ListMatcher.
@@ -161,6 +164,56 @@ public class ListMatcherTest extends NbTestCase {
             String result = matcher.printResult(false);
             System.err.println("-----------");
             System.err.println("testComplex");
+            System.err.println("-----------");
+            System.err.println(result);
+            assertEquals(golden, result);
+        } else {
+            assertTrue("No match!", false);
+        }
+    }
+
+    public void testSimilar1() {
+        String[] oldL = {       "A" };
+        String[] newL = { "A1", "A" };
+        String golden =
+                "{insert} A1\n" +
+                "{nochange} A\n";
+        ListMatcher<String> matcher = ListMatcher.<String>instance(Arrays.asList(oldL), Arrays.asList(newL), new Comparator<String>(){
+            @Override
+            public int compare(String o1, String o2) {
+                if (o1.equals(o2)) return Measure.OBJECTS_MATCH;
+                if (o1.startsWith(o2) || o2.startsWith(o1)) return Measure.ALMOST_THE_SAME;
+                return Measure.INFINITE_DISTANCE;
+            }
+        });
+        if (matcher.match()) {
+            String result = matcher.printResult(false);
+            System.err.println("-----------");
+            System.err.println("testSimilar1");
+            System.err.println("-----------");
+            System.err.println(result);
+            assertEquals(golden, result);
+        } else {
+            assertTrue("No match!", false);
+        }
+    }
+
+    public void testSimilar2() {
+        String[] oldL = {       "A1" };
+        String[] newL = { "A3", "A2" };
+        String golden =
+                "{insert} A3\n" +
+                "{modify} A2\n";
+        ListMatcher<String> matcher = ListMatcher.<String>instance(Arrays.asList(oldL), Arrays.asList(newL), new Comparator<String>(){
+            @Override
+            public int compare(String o1, String o2) {
+                return Math.abs(o1.charAt(1) - o2.charAt(1));
+            }
+        });
+        if (matcher.match()) {
+            String result = matcher.printResult(false);
+            System.err.println("-----------");
+            System.err.println("testSimilar2");
             System.err.println("-----------");
             System.err.println(result);
             assertEquals(golden, result);
