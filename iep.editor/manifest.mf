@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.iep.editor
 OpenIDE-Module-Layer: org/netbeans/modules/iep/editor/mf-layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/iep/editor/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.0.1
 Name: org/netbeans/modules/iep/editor/PlanDataLoader.class
 Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
 OpenIDE-Module-Class: Loader 
