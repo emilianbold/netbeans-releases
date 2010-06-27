@@ -194,6 +194,10 @@ public class ComputeImportsTest extends NbTestCase {
         doTest("Test97420", NO_MASKS, NO_MASKS);
     }
     
+    public void test102613() throws Exception {
+        doTest("Test102613", NO_MASKS, NO_MASKS);
+    }
+    
     public void testFilterByKind() throws Exception {
         doTest("TestFilterByKind", JDK16_MASKS, JDK16_MASKS);
     }

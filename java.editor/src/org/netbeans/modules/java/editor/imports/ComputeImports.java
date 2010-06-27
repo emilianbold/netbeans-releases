@@ -48,6 +48,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Scope;
@@ -390,7 +391,35 @@ public class ComputeImports {
         @Override
         public Void visitNewClass(NewClassTree node, Map<String, Object> p) {
             filterByNotAcceptedKind(node.getIdentifier(), ElementKind.ENUM);
-            return super.visitNewClass(node, p);
+            scan(node.getEnclosingExpression(), new HashMap<String, Object>());
+            scan(node.getIdentifier(), p);
+            scan(node.getTypeArguments(), new HashMap<String, Object>());
+            scan(node.getArguments(), new HashMap<String, Object>());
+            scan(node.getClassBody(), new HashMap<String, Object>());
+            return null;
+        }
+
+        @Override
+        public Void visitMethodInvocation(MethodInvocationTree node, Map<String, Object> p) {
+            scan(node.getTypeArguments(), new HashMap<String, Object>());
+            scan(node.getMethodSelect(), p);
+            scan(node.getArguments(), new HashMap<String, Object>());
+            return null;
+        }
+
+        @Override
+        public Void visitNewArray(NewArrayTree node, Map<String, Object> p) {
+            scan(node.getType(), p);
+            scan(node.getDimensions(), new HashMap<String, Object>());
+            scan(node.getInitializers(), new HashMap<String, Object>());
+            return null;
+        }
+
+        @Override
+        public Void visitParameterizedType(ParameterizedTypeTree node, Map<String, Object> p) {
+            scan(node.getType(), p);
+            scan(node.getTypeArguments(), new HashMap<String, Object>());
+            return null;
         }
 
         @Override
