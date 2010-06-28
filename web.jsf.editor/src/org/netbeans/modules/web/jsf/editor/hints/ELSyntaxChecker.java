@@ -44,7 +44,6 @@ package org.netbeans.modules.web.jsf.editor.hints;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.el.ELException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
@@ -52,13 +51,11 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.core.syntax.checker.JspElChecker;
-import org.netbeans.modules.web.jsf.editor.el.JsfElExpression;
 import org.netbeans.modules.web.jsf.editor.el.JsfElParser;
+import org.netbeans.modules.web.jsf.editor.el.JsfElParser.ELParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -68,7 +65,6 @@ import org.openide.util.Exceptions;
  * @author Erno Mononen
  */
 final class ELSyntaxChecker extends HintsProvider {
-
 
     @Override
     public List<Hint> compute(RuleContext context) {
@@ -83,7 +79,7 @@ final class ELSyntaxChecker extends HintsProvider {
         ExpressionCollector collector = new ExpressionCollector(doc, webModule);
         doc.render(collector);
         List<Hint> result = new ArrayList<Hint>();
-        for (JsfElExpression each : collector.getResult()) {
+        for (ELParseResult each : collector.getResult()) {
             Hint error = checkSyntax(each);
             if (error != null) {
                 result.add(error);
@@ -93,32 +89,26 @@ final class ELSyntaxChecker extends HintsProvider {
         return result;
     }
 
-    private Hint checkSyntax(JsfElExpression expression) {
-        // XXX work in progress; JsfElExpression doesn't provide correct expressions,
-        // e.g. method invocations with parameters is not given as a single expression
-        String fullExpression = expression.isDefferedExecution()
-                ? "#{" + expression.getExpression() + "}"
-                : "${" + expression.getExpression() + "}";
-        try {
-            JsfElParser.parse(fullExpression);
-        } catch (ELException e) {
-            Hint hint = new Hint(HintsProvider.DEFAULT_ERROR_RULE,
-                    e.getCause().getLocalizedMessage(),
-                    expression.getFileObject(),
-                    new OffsetRange(expression.getStartOffset(),
-                    expression.getStartOffset() + fullExpression.length()),
+    private Hint checkSyntax(ELParseResult parseResult) {
+
+        if (parseResult.isValid()) {
+            return null;
+        }
+
+        Hint hint = new Hint(HintsProvider.DEFAULT_ERROR_RULE,
+                    parseResult.getError().getLocalizedMessage(),
+                    parseResult.getFileObject(),
+                    parseResult.getOffset(),
                     Collections.<HintFix>emptyList(),
                     HintsProvider.DEFAULT_ERROR_HINT_PRIORITY);
             return hint;
-        }
-        return null;
     }
 
     private static class ExpressionCollector implements Runnable {
 
         private final Document doc;
         private final WebModule webModule;
-        private final List<JsfElExpression> result = new ArrayList<JsfElExpression>();
+        private final List<ELParseResult> result = new ArrayList<ELParseResult>();
 
         public ExpressionCollector(Document doc, WebModule webModule) {
             this.doc = doc;
@@ -144,26 +134,27 @@ final class ELSyntaxChecker extends HintsProvider {
             }
         }
 
-    private void collectExpressions(int offset, TokenSequence<ELTokenId> tokenSequence) {
-        try {
-            JsfElExpression elExpr = new JsfElExpression(webModule, doc, offset);
-            elExpr.parse();
-            int startOffset = elExpr.getStartOffset();
-            if (startOffset == -1) {
-                tokenSequence.move(offset);
-                if (!tokenSequence.movePrevious()) {
-                    return;
+        private void collectExpressions(int offset, TokenSequence<ELTokenId> tokenSequence) {
+            try {
+                JsfElParser parser = JsfElParser.create(doc, offset);
+                ELParseResult parseResult = parser.parse();
+                if (parseResult == null) {
+                    tokenSequence.move(offset);
+                    if (!tokenSequence.movePrevious()) {
+                        return;
+                    }
+                    collectExpressions(tokenSequence.offset(), tokenSequence);
+                } else {
+                    result.add(parseResult);
+//                    int startOffset = parseResult.getOffset().getStart();
+//                    collectExpressions(startOffset, tokenSequence);
                 }
-                collectExpressions(tokenSequence.offset(), tokenSequence);
-            } else {
-                result.add(elExpr);
-                collectExpressions(startOffset, tokenSequence);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
         }
-    }
-        List<JsfElExpression> getResult() {
+
+        List<ELParseResult> getResult() {
             return result;
         }
     }
