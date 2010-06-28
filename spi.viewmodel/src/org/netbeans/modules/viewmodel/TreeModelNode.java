@@ -1631,7 +1631,10 @@ public class TreeModelNode extends AbstractNode {
         @Override
         public boolean canWrite () {
             try {
-                return model.canEditCell(object, columnModel.getID());
+                boolean canEdit = model.canEditCell(object, columnModel.getID());
+                if (canEdit) {
+                    return canEdit;
+                }
             } catch (UnknownTypeException ex) {
             }
             if (nodeColumn) return false;
@@ -1882,7 +1885,13 @@ public class TreeModelNode extends AbstractNode {
         IllegalArgumentException, java.lang.reflect.InvocationTargetException {
             Executor exec = asynchronous(model, CALL.VALUE, object);
             if (exec == AsynchronousModelFilter.CURRENT_THREAD) {
-                setTheValue(value);
+                try {
+                    setTheValue(value);
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t) {
+                    throw new InvocationTargetException(t);
+                }
             } else {
                 exec.execute(new Runnable() {
                     public void run() {
