@@ -100,6 +100,14 @@ public class PullAction extends ContextAction {
     }
 
     @Override
+    public String getName(String role, Node[] activatedNodes) {
+        VCSContext ctx = HgUtils.getCurrentContext(activatedNodes);
+        Set<File> roots = HgUtils.getRepositoryRoots(ctx);
+        String name = roots.size() == 1 ? "CTL_MenuItem_PullRoot" : "CTL_MenuItem_PullLocal"; //NOI18N
+        return roots.size() == 1 ? NbBundle.getMessage(PullAction.class, name, roots.iterator().next().getName()) : NbBundle.getMessage(PullAction.class, name);
+    }
+    
+    @Override
     protected void performContextAction(Node[] nodes) {
         final VCSContext context = HgUtils.getCurrentContext(nodes);
         final Set<File> repositoryRoots = HgUtils.getRepositoryRoots(context);

@@ -48,6 +48,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -79,6 +80,14 @@ public class RollbackAction extends ContextAction {
 
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Rollback";                                 //NOI18N
+    }
+
+    @Override
+    public String getName(String role, Node[] activatedNodes) {
+        VCSContext ctx = HgUtils.getCurrentContext(activatedNodes);
+        Set<File> roots = HgUtils.getRepositoryRoots(ctx);
+        String name = roots.size() == 1 ? "CTL_MenuItem_RollbackRoot" : "CTL_MenuItem_Rollback"; //NOI18N
+        return roots.size() == 1 ? NbBundle.getMessage(RollbackAction.class, name, roots.iterator().next().getName()) : NbBundle.getMessage(RollbackAction.class, name);
     }
 
     @Override

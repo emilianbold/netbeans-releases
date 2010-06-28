@@ -91,13 +91,13 @@ public class ShareMenu extends AbstractAction implements DynamicMenuContent {
         JMenu menu = new JMenu(this);
         org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ShareMenu.class, "CTL_MenuItem_ShareMenu")); // NOI18N
         
-        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(PushAction.class), NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_PushLocal"))); //NOI18N
+        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(PushAction.class), SystemAction.get(PushAction.class).getName()));
         org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
         item = menu.add(new SystemActionBridge(SystemAction.get(PushOtherAction.class), NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_PushOther"))); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         
-        item = menu.add(new SystemActionBridge(SystemAction.get(PullAction.class), NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_PullLocal"))); //NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(PullAction.class), SystemAction.get(PullAction.class).getName()));
         org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
         item = menu.add(new SystemActionBridge(SystemAction.get(PullOtherAction.class), NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_PullOther"))); //NOI18N

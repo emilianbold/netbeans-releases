@@ -96,7 +96,7 @@ public class RecoverMenu extends AbstractAction implements DynamicMenuContent {
         item = menu.add(new SystemActionBridge(SystemAction.get(BackoutAction.class), NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Backout"))); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         
-        item = menu.add(new SystemActionBridge(SystemAction.get(RollbackAction.class), NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Rollback"))); //NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(RollbackAction.class), SystemAction.get(RollbackAction.class).getName()));
         org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         
         item = menu.add(new SystemActionBridge(SystemAction.get(VerifyAction.class), NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Verify"))); //NOI18N
