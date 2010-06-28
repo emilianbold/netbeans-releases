@@ -459,10 +459,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             StringBuilder res = new StringBuilder();
                             res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase())); // NOI18N
                             res.append(" ("); // NOI18N
-                            if (process.exitValue() != 0) {
-                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                res.append(' ');
-                            }
+//                            if (process.exitValue() != 0) {
+//                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+//                                res.append(' ');
+//                            }
                             res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
                             res.append(')');
 
@@ -471,7 +471,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             closeIO();
 
                             if (listener != null) {
-                                listener.executionFinished(process.exitValue());
+                                listener.executionFinished(-1);
                             }
                             
                             StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString("MSG_TERMINATED"), actionName)); // NOI18N
