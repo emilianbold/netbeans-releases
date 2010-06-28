@@ -280,8 +280,16 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
 
     void refreshAnnotations(Set<File> files, boolean removeFromCache) {
         if (files == null) {            
+            LOG.log(Level.FINE, "refreshing all annotations"); //NOI18N
             refreshAllAnnotationsTask.schedule(2000);
             return;
+        }
+        
+        if (removeFromCache) {
+            LOG.log(Level.FINE, "refreshing annotations for {0}", files); //NOI18N
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, "refreshing annotations called from:", new Exception()); //NOI18N
+            }
         }
         
         for (File file : files) {
