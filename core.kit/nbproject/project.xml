@@ -9,7 +9,7 @@
                     <code-name-base>org.netbeans.core</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>3.6</specification-version>
+                        <specification-version>3.20.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -55,7 +55,7 @@
                     <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>1.11</specification-version>
+                        <specification-version>2.25.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

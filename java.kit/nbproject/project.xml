@@ -86,21 +86,21 @@
                     <code-name-base>org.netbeans.modules.java.freeform</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.7</specification-version>
+                        <specification-version>1.21.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.helpset</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.8.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.hints</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.20</specification-version>
+                        <specification-version>1.39.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -120,7 +120,7 @@
                     <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.12</specification-version>
+                        <specification-version>1.38.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -180,7 +180,7 @@
                     <code-name-base>org.netbeans.modules.junit</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.23</specification-version>
+                        <specification-version>2.36.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

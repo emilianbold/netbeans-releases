@@ -8,7 +8,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.libs.bugtracking</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.7.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
