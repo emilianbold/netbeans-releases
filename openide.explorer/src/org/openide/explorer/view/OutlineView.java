@@ -1143,7 +1143,7 @@ public class OutlineView extends JScrollPane {
      * Extension of the ETable that allows adding a special comparator
      * for sorting the rows.
      */
-    private static class OutlineViewOutline extends Outline {
+    static class OutlineViewOutline extends Outline {
         private final PropertiesRowModel rowModel;
         private static final String COLUMNS_SELECTOR_HINT = "ColumnsSelectorHint"; // NOI18N
 
@@ -1161,6 +1161,10 @@ public class OutlineView extends JScrollPane {
             super(mdl);
             this.rowModel = rowModel;
             setSelectVisibleColumnsLabel(NbBundle.getMessage(OutlineView.class, "CTL_ColumnsSelector")); //NOI18N
+        }
+
+        PropertiesRowModel getRowModel() {
+            return rowModel;
         }
         
         @Override

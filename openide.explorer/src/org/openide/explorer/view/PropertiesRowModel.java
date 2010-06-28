@@ -48,8 +48,11 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.EmptyStackException;
 import java.util.WeakHashMap;
 import javax.swing.JLabel;
@@ -58,15 +61,20 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.TableModelEvent;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.openide.explorer.UIException;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.RowModel;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -290,13 +298,77 @@ class PropertiesRowModel implements RowModel {
         return null;
     }
 
+    private boolean ignoreSetValue;
+
+    void setIgnoreSetValue(boolean ignoreSetValue) {
+        this.ignoreSetValue = ignoreSetValue;
+    }
 
     public void setValueFor(Object node, int column, Object value) {
-        // Intentionally left empty. The cell editor components are
+        // Intentionally ignore this method when the cell editor components are
         // PropertyPanels that will propagate the change into the target
         // property object - no need to do anything in this method.
+        //System.err.println("PropertiesRowModel.setValueFor("+node+", "+column+", "+value+") ignored = "+ignoreSetValue);
+        if (ignoreSetValue) {
+            return ;
+        }
+        // Otherwise someone is explicitly trying to set the value:
+        Node n = Visualizer.findNode(node);
+        if (n == null) {
+            throw new IllegalStateException("TreeNode must be VisualizerNode but was: " + node + " of class " + node.getClass().getName());
+        }
+        Node.Property theRealProperty = getPropertyFor(n, prop[column]);
+        try {
+            theRealProperty.setValue(value);
+        } catch (IllegalAccessException ex) {
+            processThrowable(ex, theRealProperty.getDisplayName(), value);
+        } catch (IllegalArgumentException ex) {
+            processThrowable(ex, theRealProperty.getDisplayName(), value);
+        } catch (InvocationTargetException ex) {
+            processThrowable(ex.getTargetException(), theRealProperty.getDisplayName(), value);
+        }
     }
     
+    /** Processes <code>Throwable</code> thrown from <code>setAsText</code>
+     * or <code>setValue</code> call on <code>editor</code>. Helper method.
+     * Almost copied from PropUtils */
+    private static void processThrowable(Throwable throwable, String title, Object newValue) {
+        //Copied from old PropertyPanel impl
+        if (throwable instanceof ThreadDeath) {
+            throw (ThreadDeath) throwable;
+        }
+
+        String locMsg = Exceptions.findLocalizedMessage(throwable);
+
+        if (locMsg != null
+            && (throwable.getLocalizedMessage() != throwable.getMessage())) { //XXX See issue 34569
+
+            String msg = MessageFormat.format(
+                    NbBundle.getMessage(PropertiesRowModel.class, "FMT_ErrorSettingValue"), new Object[] { newValue, title }
+                ); //NOI18N
+            UIException.annotateUser(throwable, msg,
+                                     throwable.getLocalizedMessage(), throwable,
+                                     new Date());
+        } else if (throwable instanceof NumberFormatException) {
+            //Handle NFE's from the core sun.beans property editors w/o raising stack traces
+            UIException.annotateUser(throwable, throwable.getMessage(),
+                                     MessageFormat.format(NbBundle.getMessage(PropertiesRowModel.class,
+                                                                              "FMT_BAD_NUMBER_FORMAT"),
+                                                          new Object[]{newValue}),
+                                     null, null);
+        }
+
+        String msg = Exceptions.findLocalizedMessage(throwable);
+        if (msg == null) {
+            msg = MessageFormat.format(
+                    NbBundle.getMessage(PropertiesRowModel.class, "FMT_ErrorSettingValue"), new Object[] { newValue, title }
+                ); //NOI18N
+
+        }
+        NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
+        DialogDisplayer.getDefault().notifyLater(d);
+    }
+
     public void setProperties(Node.Property[] newProperties) {
         prop = newProperties;
         names = new String [prop.length];
