@@ -67,7 +67,7 @@ public class KenaiNBProjectAnnotator implements ProjectIconAnnotator {
     @Override
     public Image annotateIcon(Project p, Image original, boolean openedNode) {
         String s = (String) p.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
-        if (s != null || KenaiProject.getNameForRepository(s) != null) {
+        if (s != null && KenaiProject.getNameForRepository(s) != null) {
             original = ImageUtilities.addToolTipToImage(original, tooltip);
             original = ImageUtilities.mergeImages(original, kenaiBadge, 16, 0);
             return original;
