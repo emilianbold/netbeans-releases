@@ -150,7 +150,7 @@ public class WebProjectUtilities {
     public static final String MINIMUM_ANT_VERSION = "1.6.5";
     
     private static final Logger LOGGER = Logger.getLogger(WebProjectUtilities.class.getName());
-    private static String RESOURCE_FOLDER = "org/netbeans/modules/web/project/ui/resources/"; //NOI18N
+    private static String RESOURCE_FOLDER = "/org/netbeans/modules/web/project/ui/resources/"; //NOI18N
     private WebProjectUtilities() {}
     
     /**
