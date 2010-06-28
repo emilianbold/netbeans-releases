@@ -528,18 +528,15 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                 synchronized (cachedValues) {
                     cachedValues.put(key, new Item(value));
                 }
-                // reference to the key must be added to index for every file in the set and every parent
+                // reference to the key must be added to index for every file in the set
                 // so the key can be quickly found when refresh annotations event comes
                 for (FileObject fo : files) {
-                    boolean added = false;
-                    do {
-                        Set<ItemKey<T, KEY>> sets = index.get(fo);
-                        if (sets == null) {
-                            sets = new HashSet<ItemKey<T, KEY>>();
-                            index.put(fo, sets);
-                        }
-                        added = sets.add(key);
-                    } while (added && (fo = fo.getParent()) != null);
+                    Set<ItemKey<T, KEY>> sets = index.get(fo);
+                    if (sets == null) {
+                        sets = new HashSet<ItemKey<T, KEY>>();
+                        index.put(fo, sets);
+                    }
+                    sets.add(key);
                 }
                 removeOldValues();
             }
@@ -666,20 +663,16 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         private void removeFromIndex (ItemKey<T, KEY> key) {
             assert Thread.holdsLock(writeLock);
             Set<? extends FileObject> files = key.getFiles();
-            Set<FileObject> removedFor = new HashSet<FileObject>();
-            // remove all references for every file and it's parents from the index
+            // remove all references for every file in the key from the index
             for (FileObject fo : files) {
-                do {
-                    removedFor.add(fo);
-                    Set<ItemKey<T, KEY>> sets = index.get(fo);
-                    if (sets != null) {
-                        sets.remove(key);
-                        if (sets.isEmpty()) {
-                            // remove the whole entry
-                            index.remove(fo);
-                        }
+                Set<ItemKey<T, KEY>> sets = index.get(fo);
+                if (sets != null) {
+                    sets.remove(key);
+                    if (sets.isEmpty()) {
+                        // remove the whole entry
+                        index.remove(fo);
                     }
-                } while ((fo = fo.getParent()) != null && !removedFor.contains(fo));
+                }
             }
         }
 
