@@ -122,13 +122,21 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
         int size = ignorePathList.getModel().getSize();
         for (int i = 0; i < size; ++i) {
             BasePathSupport.Item item = (BasePathSupport.Item) ignorePathList.getModel().getElementAt(i);
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(item.getFilePath())));
-            if (fo != null) {
-                if (!CommandUtils.isUnderAnySourceGroup(project, fo, false)) {
-                    category.setErrorMessage(NbBundle.getMessage(CustomizerIgnorePath.class, "MSG_NotSourceGroupSubdirectory", fo.getNameExt()));
-                    category.setValid(false);
-                    return;
-                }
+            if (item.isBroken()) {
+                continue;
+            }
+            String filePath = item.getFilePath();
+            FileObject fo = project.getHelper().resolveFileObject(filePath);
+            if (fo == null) {
+                // not broken but not found?!
+                category.setErrorMessage(NbBundle.getMessage(CustomizerIgnorePath.class, "MSG_NotFound", filePath));
+                category.setValid(false);
+                return;
+            }
+            if (!CommandUtils.isUnderAnySourceGroup(project, fo, false)) {
+                category.setErrorMessage(NbBundle.getMessage(CustomizerIgnorePath.class, "MSG_NotSourceGroupSubdirectory", fo.getNameExt()));
+                category.setValid(false);
+                return;
             }
         }
         category.setErrorMessage(null);

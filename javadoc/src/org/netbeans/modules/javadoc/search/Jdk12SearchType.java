@@ -44,7 +44,9 @@
 
 package org.netbeans.modules.javadoc.search;
 
-import org.openide.filesystems.FileObject;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /* Base class providing search for JDK1.2/1.3 documentation
@@ -75,19 +77,14 @@ public class Jdk12SearchType extends JavadocSearchType {
 //        this.firePropertyChange("caseSensitive", oldVal ? Boolean.TRUE : Boolean.FALSE, caseSensitive ? Boolean.TRUE : Boolean.FALSE);   //NOI18N
     }
 
-    public @Override FileObject getDocFileObject(FileObject apidocRoot) {
-    
-        FileObject fo = apidocRoot.getFileObject( "index-files" ); // NOI18N
-        if ( fo != null ) {
-            return fo;
+    public @Override URL getDocFileObject(URL apidocRoot) {
+        URL u = URLUtils.findOpenable(apidocRoot, "index-files/index-1.html"); // NOI18N
+        try {
+            return u != null ? new URL(apidocRoot, "index-files/") : URLUtils.findOpenable(apidocRoot, "index-all.html"); // NOI18N
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
         }
-
-        fo = apidocRoot.getFileObject( "index-all.html" ); // NOI18N
-        if ( fo != null ) {
-            return fo;
-        }
-
-        return null;
     }    
     
     /** Returns Java doc search thread for doument
@@ -97,12 +94,12 @@ public class Jdk12SearchType extends JavadocSearchType {
      * @return IndexSearchThread
      * @see IndexSearchThread
      */    
-    public @Override IndexSearchThread getSearchThread(String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer) {
+    public @Override IndexSearchThread getSearchThread(String toFind, URL fo, IndexSearchThread.DocIndexItemConsumer diiConsumer) {
         return new SearchThreadJdk12 ( toFind, fo, diiConsumer, isCaseSensitive() );
     }
 
 
-    public @Override boolean accepts(FileObject apidocRoot, String encoding) {
+    public @Override boolean accepts(URL apidocRoot, String encoding) {
         //XXX returns always true, must be the last JavadocType
         return true;
     }

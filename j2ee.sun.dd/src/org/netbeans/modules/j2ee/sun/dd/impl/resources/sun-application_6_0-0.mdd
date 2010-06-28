@@ -10,7 +10,7 @@
                 public void setVersion(java.math.BigDecimal value) {
                 }
                 public java.math.BigDecimal getVersion() {
-                    return new java.math.BigDecimal("5.0");
+                    return new java.math.BigDecimal("6.0");
                 }
                 public org.xml.sax.SAXParseException getError() {
                     return null;

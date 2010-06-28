@@ -46,6 +46,7 @@ package org.netbeans.modules.css.visual.api;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
 import org.netbeans.modules.css.visual.ui.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +64,8 @@ import javax.swing.border.EmptyBorder;
 public final class StyleBuilderPanel extends JPanel {
 
     private List<StyleEditor> styleEditorList = new ArrayList<StyleEditor>();
+
+    private Document activeDocument;
 
     public static StyleBuilderPanel createInstance() {
         return new StyleBuilderPanel();
@@ -103,9 +106,15 @@ public final class StyleBuilderPanel extends JPanel {
     }
 
     public void setContent(CssRuleContext content){
+        this.activeDocument = content.document();
+
         for(StyleEditor editor : styleEditorList) {
             editor.setContent(content);
         }
+    }
+
+    public Document getActiveDocument() {
+        return this.activeDocument;
     }
 
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents

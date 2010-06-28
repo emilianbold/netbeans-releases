@@ -114,7 +114,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
 
         setEnabledAppletControls(appletDescRadioButton.isSelected());
 
-        if (jwsProps.isJnlpImplPreviousVersion) {
+        if (jwsProps.jnlpImplOldOrModified) {
             warningArea.setVisible(true);
             extResButton.setEnabled(false);
             appletDescRadioButton.setEnabled(false);

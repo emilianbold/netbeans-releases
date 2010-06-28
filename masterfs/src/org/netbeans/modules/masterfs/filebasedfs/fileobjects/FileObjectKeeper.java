@@ -153,7 +153,7 @@ final class FileObjectKeeper implements FileChangeListener {
 
     private void listenToAll(Callable<?> stop) {
         assert Thread.holdsLock(this);
-        assert kept == null;
+        assert kept == null : "Already listening to " + kept + " now requested for " + root;
         kept = new HashSet<FolderObj>();
         LinkedList<File> it = new LinkedList<File>();
         listenTo(root, true, it);

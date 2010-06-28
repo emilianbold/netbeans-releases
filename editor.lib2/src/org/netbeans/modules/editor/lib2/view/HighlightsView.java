@@ -125,7 +125,17 @@ public class HighlightsView extends EditorView implements TextLayoutView {
     }
 
     @Override
-    public boolean setLength(int length) {
+    public boolean setLength(int length, int modOffset, int modLength) {
+        // Check that there is not a '\t' character in the inserted text
+        if (modLength > 0) {
+            Document doc = getDocument();
+            CharSequence text = DocumentUtilities.getText(doc);
+            for (int i = 0; i < modLength; i++) {
+                if (text.charAt(modOffset + i) == '\t') {
+                    return false;
+                }
+            }
+        }
         this.length = length;
         return true; // Possibly cached text layout gets released automatically
     }
@@ -210,6 +220,8 @@ public class HighlightsView extends EditorView implements TextLayoutView {
                 textLayout.getCharacterCount() + " != textLength=" + textLength; // NOI18N
         // If offset is >getEndOffset() use view-end-offset - otherwise it would throw exception from textLayout.getCaretInfo()
 	int charIndex = Math.min(offset - startOffset, textLength);
+        // When e.g. creating fold-preview the offset can be < startOffset
+        charIndex = Math.max(charIndex, 0);
 	TextHitInfo hit = (bias == Position.Bias.Forward)
                 ? TextHitInfo.afterOffset(charIndex)
                 : TextHitInfo.beforeOffset(charIndex);

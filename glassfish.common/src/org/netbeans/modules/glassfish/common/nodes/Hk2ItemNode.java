@@ -96,10 +96,12 @@ public class Hk2ItemNode extends AbstractNode {
         
         if(decorator.isRefreshable()) {
             getCookieSet().add(new RefreshModulesCookie() {
+                @Override
                 public void refresh() {
                     refresh(null, null);
                 }
 
+                @Override
                 public void refresh(String expected, String unexpected) {
                     Children children = getChildren();
                     if(children instanceof Refreshable) {
@@ -125,6 +127,7 @@ public class Hk2ItemNode extends AbstractNode {
         
         if(decorator.canDeployTo()) {
             getCookieSet().add(new DeployDirectoryCookie() {
+                @Override
                 public void deployDirectory() {
                     JFileChooser chooser = new JFileChooser();
                     chooser.setDialogTitle(NbBundle.getMessage(Hk2ItemNode.class, "LBL_ChooseButton")); // NOI18N
@@ -154,6 +157,7 @@ public class Hk2ItemNode extends AbstractNode {
                 
                 private volatile WeakReference<Future<OperationState>> status;
 
+                @Override
                 public Future<OperationState> undeploy() {
                     Future<OperationState> result = null;
                     GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
@@ -165,6 +169,7 @@ public class Hk2ItemNode extends AbstractNode {
                     return result;
                 }
 
+                @Override
                 public boolean isRunning() {
                     WeakReference<Future<OperationState>> localref = status;
                     if(localref == null) {

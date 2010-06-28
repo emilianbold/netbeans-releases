@@ -219,7 +219,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             if (addJaxWsLib) {
                 MavenModelUtils.addJaxws21Library(project);
             }
-            generateJaxWSImplFromTemplate(pkg, WSUtils.isEJB(project));
+            generateJaxWSImplFromTemplate(pkg, WSUtils.isEJB(project), false);
             handle.finish();
         } else if (serviceType == WizardProperties.ENCAPSULATE_SESSION_BEAN) {
             String wsName = Templates.getTargetName(wiz);
@@ -317,7 +317,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
                 // create empty web service implementation class
                 FileObject pkg = Templates.getTargetFolder(wiz);
-                final FileObject targetFile = generateJaxWSImplFromTemplate(pkg, false);
+                final FileObject targetFile = generateJaxWSImplFromTemplate(pkg, false, true);
 
                 // execute wsimport goal
                 RunConfig cfg = RunUtils.createRunConfig(
@@ -356,11 +356,11 @@ public class JaxWsServiceCreator implements ServiceCreator {
         handle.finish();
     }
     
-    private FileObject generateJaxWSImplFromTemplate(FileObject pkg, boolean isEjbTemplate) throws IOException {
+    private FileObject generateJaxWSImplFromTemplate(FileObject pkg, boolean isEjbTemplate, boolean fromWsdl) throws IOException {
         DataFolder df = DataFolder.findFolder(pkg);
         FileObject template = Templates.getTemplate(wiz);
 
-        if ((Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN)) {
+        if (!fromWsdl && (Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN)) {
             FileObject templateParent = template.getParent();
             template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
         }

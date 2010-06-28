@@ -223,7 +223,7 @@ class FontPanel extends JPanel {
 		}
 		if (simulateSlowness)
 		    Thread.sleep(100);	// millis
-		setProgress(fx);
+		setProgress((100 * fx) / fontNames.length);
 	    }
 
 	    return result;

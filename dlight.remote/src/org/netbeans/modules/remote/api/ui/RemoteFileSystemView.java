@@ -100,7 +100,15 @@ import org.openide.util.Exceptions;
     @Override
     public File createFileObject(File dir, String filename) {
         String parent = dir == null ? fs.getRoot().getPath() : dir.getPath();
-        return createFileObject(parent + "/" + filename); // NOI18N
+        if (isAbsolute(filename)) {
+            return createFileObject(filename);
+        } else {
+            return createFileObject(parent + "/" + filename); // NOI18N
+        }
+    }
+
+    private static boolean isAbsolute(String fileName) {
+        return fileName.length() > 0 && fileName.charAt(0) == '/';
     }
 
     @Override
@@ -142,6 +150,9 @@ import org.openide.util.Exceptions;
     
     @Override
     public File getParentDirectory(File dir) {
+        if (dir == null) {
+            return null;
+        }
         File parentFile = dir.getParentFile();
         return parentFile == null ? null : createFileObject(parentFile.getPath());
     }

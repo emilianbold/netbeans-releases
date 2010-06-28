@@ -22,4 +22,5 @@ function getCompany() {
       "phone3_type" => $this->getPhone3_type()
   );
 }
+
 ?>

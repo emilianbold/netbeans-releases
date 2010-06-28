@@ -1,8 +1,9 @@
 Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Specification-Version: 6.9
 OpenIDE-Module: org.netbeans.modules.wlm.editor
 OpenIDE-Module-Layer: org/netbeans/modules/worklist/editor/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/worklist/editor/Bundle.properties
-OpenIDE-Module-Specification-Version: 6.5.1
 
 Name: org/netbeans/modules/worklist/dataloader/WorklistDataLoader.class
 OpenIDE-Module-Class: Loader

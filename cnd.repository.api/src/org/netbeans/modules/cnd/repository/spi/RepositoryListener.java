@@ -55,14 +55,14 @@ public interface RepositoryListener {
      * invoked once an access to not yet opened unit happens
      * @param unitName String the name of the unit
      */
-    boolean unitOpened(final String unitName);
+    boolean unitOpened(final CharSequence unitName);
 
     /**
      * invoked once a unit is closed
      * @param unitName String the name of the unit
      */    
-    void unitClosed(final String unitName);
+    void unitClosed(final CharSequence unitName);
     
-    void anExceptionHappened(final String unitName, RepositoryException exc);
+    void anExceptionHappened(final CharSequence unitName, RepositoryException exc);
 
 }

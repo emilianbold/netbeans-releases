@@ -37,12 +37,11 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.sql.history;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,9 +55,6 @@ import org.openide.util.NbPreferences;
  * @author John Baker
  */
 public class SQLHistoryModelImpl implements SQLHistoryModel {    
-    private static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
-    private static final String SQL_HISTORY_FILE_NAME = "sql_history";  // NOI18N
-    private static final String SAVE_STATEMENTS_MAX_LIMIT_ENTERED = "10000"; // NOI18N
     private static final int SAVE_STATEMENTS_EMPTY = 0; // NOI18N
     private static final String SAVE_STATEMENTS_CLEARED = ""; // NOI18N  
     private static final Logger LOGGER = Logger.getLogger(SQLHistoryModelImpl.class.getName());
@@ -66,30 +62,33 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
 
     List<SQLHistory> _sqlHistoryList = new ArrayList<SQLHistory>();
     
+    @Override
     public void initialize() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void setFilter(String filter) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public String getFilter() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public List<SQLHistory> getSQLHistoryList() throws SQLHistoryException {
         List<SQLHistory> retrievedSQL = new ArrayList<SQLHistory>();
         _sqlHistoryList.clear();
         try {
             boolean isRewriteSQLRequired = false;
-            FileObject historyRoot = USERDIR.getFileObject(SQL_HISTORY_FOLDER);
+            FileObject historyRoot = USERDIR.getFileObject(SQLHistoryManager.SQL_HISTORY_FOLDER);
             if (historyRoot == null) {
                 return new ArrayList<SQLHistory>();
             }
-            String historyFilePath = FileUtil.getFileDisplayName(historyRoot) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N            
             // Read persisted SQL from  file            
-            retrievedSQL = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyRoot);
+            retrievedSQL = SQLHistoryPersistenceManager.getInstance().retrieve(historyRoot);
             // Remove duplicates
             if (!isSQLUnique(retrievedSQL)) {
                 retrievedSQL = removeDuplicates(retrievedSQL);
@@ -98,7 +97,7 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
             // Get saved limit
             String savedLimit = NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
             if (savedLimit.equals(SAVE_STATEMENTS_CLEARED)) {
-                savedLimit = SAVE_STATEMENTS_MAX_LIMIT_ENTERED;
+                savedLimit = SQLHistoryManager.SAVE_STATEMENTS_MAX_LIMIT_ENTERED;
             }
             int limit = Integer.parseInt(savedLimit);
             // Remove any elements if save limit is exceeded
@@ -171,6 +170,7 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
         return revSqLHistoryList;
     }
 
+    @Override
     public void setSQLHistoryList(List<SQLHistory> sqlHistoryList) {
         _sqlHistoryList = sqlHistoryList;
     }

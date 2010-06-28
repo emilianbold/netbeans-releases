@@ -51,6 +51,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -81,6 +82,7 @@ import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.weblogic9.URLWait;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
@@ -435,6 +437,67 @@ public final class WLCommandDeployer {
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
                             NbBundle.getMessage(WLCommandDeployer.class, "MSG_Datasource_Completed")));
+                }
+            }
+        });
+
+        return progress;
+    }
+
+    public ProgressObject deployLibraries(final Set<File> libraries) {
+        final WLProgressObject progress = new WLProgressObject(new TargetModuleID[0]);
+
+        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
+                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Started")));
+
+        factory.getExecutorService().submit(new Runnable() {
+
+            @Override
+            public void run() {
+                boolean failed = false;
+                for (File library : libraries) {
+                    ExecutionService service = createService("-deploy", null,
+                            "-library" , library.getAbsolutePath()); // NOI18N
+                    Future<Integer> result = service.run();
+                    try {
+                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                        if (value.intValue() != 0) {
+                            failed = true;
+                            progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                    ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Failed")));
+                            break;
+                        } else {
+                            continue;
+                        }
+                    } catch (InterruptedException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Failed_Interrupted")));
+                        result.cancel(true);
+                        Thread.currentThread().interrupt();
+                        break;
+                    } catch (TimeoutException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Failed_Timeout")));
+                        result.cancel(true);
+                        break;
+                    } catch (ExecutionException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Failed_With_Message")));
+                        break;
+                    }
+                }
+                if (!failed) {
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
+                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Library_Completed")));
                 }
             }
         });

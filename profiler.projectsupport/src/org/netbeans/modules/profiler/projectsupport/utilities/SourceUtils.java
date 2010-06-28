@@ -1434,13 +1434,13 @@ public final class SourceUtils {
         List<ExecutableElement> methods = null;
 
         if (methodName.equals(VM_CONSTRUCTUR_SIG)) {
-            methods = constructorsIn(parentClass.getEnclosedElements());
+            methods = constructorsIn(ci.getElements().getAllMembers(parentClass));
 
         //    } else if (methodName.equals(VM_INITIALIZER_SIG)) {
         //      methods = constructorsIn(parentClass.getEnclosedElements());
         } else {
             // retrieve all defined methods
-            methods = methodsIn(parentClass.getEnclosedElements());
+            methods = methodsIn(ci.getElements().getAllMembers(parentClass));
         }
 
 // loop over all methods

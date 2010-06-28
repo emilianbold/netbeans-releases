@@ -397,8 +397,12 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     
     private void refreshPlatforms() {
         Logger logger = Logger.getLogger(SuiteCustomizerLibraries.class.getName());
-        logger.log(Level.FINE, "refreshPlatforms --> " + getProperties().getActivePlatform().getLabel());
-        platformValue.setModel(new PlatformComponentFactory.NbPlatformListModel(getProperties().getActivePlatform())); // refresh
+        NbPlatform plaf = getProperties().getActivePlatform();
+        if (plaf == null) { // #186992
+            return;
+        }
+        logger.log(Level.FINE, "refreshPlatforms --> {0}", plaf.getLabel());
+        platformValue.setModel(new PlatformComponentFactory.NbPlatformListModel(plaf)); // refresh
         platformValue.requestFocus();
     }
     

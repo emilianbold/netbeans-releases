@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.php.editor.model.nodes;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
@@ -87,6 +89,18 @@ public class InterfaceDeclarationInfo extends ASTNodeInfo<InterfaceDeclaration> 
 
     public List<? extends Expression> getInterfaces() {
         return getOriginalNode().getInterfaes();
+    }
+
+    public Set<QualifiedName> getInterfaceNames() {
+        final Set<QualifiedName> retval = new HashSet<QualifiedName>();
+        final List<Expression> interfaes = getOriginalNode().getInterfaes();
+        for (Expression iface : interfaes) {
+            QualifiedName ifaceName = QualifiedName.create(iface);
+            if (ifaceName != null) {
+                retval.add(ifaceName);
+            }
+        }
+        return retval;
     }
 
 }

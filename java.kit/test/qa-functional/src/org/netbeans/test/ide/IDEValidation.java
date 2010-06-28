@@ -337,6 +337,7 @@ public class IDEValidation extends JellyTestCase {
         moveClassDialog.waitClosed();
         // "Delete"
         newClassNode = new Node(sampleProjectPackage, "SampleClass11"); // NOI18N
+        new EventTool().waitNoEvent(5000);
         new DeleteAction().perform(newClassNode);
         // "Safe Delete"
         String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_SafeDel_Delete"); // NOI18N

@@ -44,11 +44,11 @@
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executors;
@@ -187,7 +187,13 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
             return;
         }
         if (local) {
-            final List<CompilerFlavor> flavors = CompilerSetFactory.getCompilerSetFlavor(new File(path).getAbsolutePath(), csm.getPlatform());
+            List<CompilerFlavor> flavors = CompilerSetFactory.getCompilerSetFlavor(new File(path).getAbsolutePath(), csm.getPlatform());
+            if (flavors.isEmpty() && new File(path).exists()) {
+                CompilerFlavor flavor = CompilerFlavor.getUnknown(csm.getPlatform());
+                if (flavor != null) {
+                    flavors = Collections.<CompilerFlavor>singletonList(flavor);
+                }
+            }
             if (flavors.size() > 0) {
                 String baseDirectory = getBaseDirectory();
                 String compilerSetName = getCompilerSetName().trim();
@@ -218,6 +224,16 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
             if (css.size() > 0) {
                 synchronized (lastFoundLock) {
                     lastFoundRemoteCompilerSet = css.get(0);
+                }
+            } else {
+                CompilerFlavor flavor = CompilerFlavor.getUnknown(csm.getPlatform());
+                if (flavor != null) {
+                    String baseDirectory = getBaseDirectory();
+                    String compilerSetName = getCompilerSetName().trim();
+                    CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
+                    synchronized (lastFoundLock) {
+                        lastFoundRemoteCompilerSet = cs;
+                    }
                 }
             }
         }
@@ -317,15 +333,22 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
 
     private void validateData() {
         boolean valid = true;
+        boolean enableFamily = true;
         final String path = tfBaseDirectory.getText().trim();
         showStatus(""); // NOI18N
         synchronized (lastFoundLock) {
             if (lastFoundRemoteCompilerSet == null) {
                 valid = false;
+                enableFamily = false;
                 showError(NbBundle.getMessage(getClass(), path.length() == 0 ? "BASE_EMPTY" : "REMOTEBASE_INVALID", path));
+            } else {
+                if (CompilerSet.UNKNOWN.equals(lastFoundRemoteCompilerSet.getName())) {
+                    valid = false;
+                    showError(NbBundle.getMessage(getClass(), "REMOTEBASE_INVALID", path));
+                }
             }
         }
-        cbFamily.setEnabled(valid);
+        cbFamily.setEnabled(enableFamily);
         tfName.setEnabled(valid);
 
         String compilerSetName = ToolUtils.replaceOddCharacters(tfName.getText().trim(), '_');

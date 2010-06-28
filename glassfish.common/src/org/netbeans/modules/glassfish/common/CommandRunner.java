@@ -141,6 +141,14 @@ public class CommandRunner extends BasicTask<OperationState> {
     }
     
     /**
+     * Sends restart-domain command to server (asynchronous)
+     *
+     */
+    public Future<OperationState> restartServer() {
+        return execute(Commands.RESTART, "MSG_RESTART_SERVER_IN_PROGRESS"); // NOI18N
+    }
+
+    /**
      * Sends list-applications command to server (synchronous)
      * 
      * @return String array of names of deployed applications.
@@ -405,14 +413,17 @@ public class CommandRunner extends BasicTask<OperationState> {
                             TrustManager[] tm = new TrustManager[]{
                                 new X509TrustManager() {
 
+                                @Override
                                     public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
                                         return;
                                     }
 
+                                @Override
                                     public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
                                         return;
                                     }
 
+                                @Override
                                     public X509Certificate[] getAcceptedIssuers() {
                                         return null;
                                     }

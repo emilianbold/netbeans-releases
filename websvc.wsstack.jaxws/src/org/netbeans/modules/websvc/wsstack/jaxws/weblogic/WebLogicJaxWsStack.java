@@ -82,6 +82,8 @@ public class WebLogicJaxWsStack implements WSStackImplementation<JaxWs> {
     public boolean isFeatureSupported(Feature feature) {
         if (feature == JaxWs.Feature.TESTER_PAGE) {
             return true;
+        } else if (feature == JaxWs.Feature.JSR109) {
+            return true;
         } else {
             return false;
         }
@@ -91,15 +93,20 @@ public class WebLogicJaxWsStack implements WSStackImplementation<JaxWs> {
         return new JaxWs.UriDescriptor() {
 
             public String getServiceUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return applicationRoot+"/"+serviceName; //NOI18N
+                if (isEjb) {
+                    return portName+"/"+serviceName;
+                } else {
+                    return (applicationRoot.length() >0 ? applicationRoot+"/":"")+serviceName;
+                }
             }
 
             public String getDescriptorUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
                 return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl"; //NOI18N
             }
             
-            public String getTesterPageUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return applicationRoot+"/"+serviceName; //NOI18N
+            public String getTesterPageUri(String host, String port, String applicationRoot, String serviceName, String portName, boolean isEjb) {
+                String prefix = "http://"+host+":"+port+"/wls_utc/begin.do?wsdlUrl="; //NOI18N
+                return prefix+"http://"+host+":"+port+"/"+getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl";
             }
             
         };
