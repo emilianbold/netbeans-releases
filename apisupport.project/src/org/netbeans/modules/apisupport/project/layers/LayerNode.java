@@ -113,9 +113,14 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
     public static Environment.Provider createProvider() {
         class EP implements Environment.Provider {
             public Lookup getEnvironment(DataObject obj) {
+                FileObject xml = obj.getPrimaryFile();
+                Project p = FileOwnerQuery.getOwner(xml);
+                if (p == null) {
+                    return Lookup.EMPTY;
+                }
                 DataNode dn = new DataNode(obj, Children.LEAF);
                 dn.setIconBaseWithExtension("org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"); // NOI18N
-                LayerNode ln = new LayerNode(dn, new LayerHandle(null, obj.getPrimaryFile()), false);
+                LayerNode ln = new LayerNode(dn, new LayerHandle(p, xml), false);
                 return Lookups.singleton(ln);
             }
         }
