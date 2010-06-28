@@ -70,10 +70,12 @@ public class ShareMenu extends AbstractAction implements DynamicMenuContent {
         this.ctx = ctx;
     }
 
+    @Override
     public JComponent[] getMenuPresenters() {
         return new JComponent [] { createMenu() };
     }
 
+    @Override
     public JComponent[] synchMenuPresenters(JComponent[] items) {
         return new JComponent [] { createMenu() };
     }
@@ -83,6 +85,7 @@ public class ShareMenu extends AbstractAction implements DynamicMenuContent {
         return true;
     }
 
+    @Override
     public void actionPerformed(ActionEvent ev) {
         // no operation
     }

@@ -89,11 +89,12 @@ public class PushAction extends ContextAction {
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.isEmpty())
             return false;
         return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_PushLocal";                                //NOI18N
     }
@@ -112,6 +113,7 @@ public class PushAction extends ContextAction {
         final Set<File> repositoryRoots = HgUtils.getRepositoryRoots(context);
         // run the whole bulk operation in background
         Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 for (File repositoryRoot : repositoryRoots) {
                     final File repository = repositoryRoot;
@@ -119,6 +121,7 @@ public class PushAction extends ContextAction {
                     // run every repository fetch in its own support with its own output window
                     RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
                     HgProgressSupport support = new HgProgressSupport() {
+                        @Override
                         public void perform() {
                             getDefaultAndPerformPush(repository, this.getLogger());
                             canceled[0] = isCanceled();

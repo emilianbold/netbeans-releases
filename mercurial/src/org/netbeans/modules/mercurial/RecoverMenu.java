@@ -70,18 +70,22 @@ public class RecoverMenu extends AbstractAction implements DynamicMenuContent {
         this.ctx = ctx;
     }
 
+    @Override
     public JComponent[] getMenuPresenters() {
         return new JComponent [] { createMenu() };
     }
 
+    @Override
     public JComponent[] synchMenuPresenters(JComponent[] items) {
         return new JComponent [] { createMenu() };
     }
 
+    @Override
     public boolean isEnabled() {
         return true;
     }
 
+    @Override
     public void actionPerformed(ActionEvent ev) {
         // no operation
     }

@@ -78,6 +78,7 @@ public class RollbackAction extends ContextAction {
         return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Rollback";                                 //NOI18N
     }
@@ -103,6 +104,7 @@ public class RollbackAction extends ContextAction {
          
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
                 
                 OutputLogger logger = getLogger();

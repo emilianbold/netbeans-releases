@@ -87,6 +87,7 @@ public class FetchAction extends ContextAction {
         return HgUtils.isFromHgRepository(context);
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_FetchLocal";                               //NOI18N
     }
@@ -105,6 +106,7 @@ public class FetchAction extends ContextAction {
         final Set<File> repositoryRoots = HgUtils.getRepositoryRoots(context);
         // run the whole bulk operation in background
         Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 for (File repositoryRoot : repositoryRoots) {
                     final File root = repositoryRoot;
@@ -112,6 +114,7 @@ public class FetchAction extends ContextAction {
                     RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                     // run every repository fetch in its own support with its own output window
                     HgProgressSupport support = new HgProgressSupport() {
+                        @Override
                         public void perform() {
                             performFetch(root, this.getLogger());
                             canceled[0] = isCanceled();
