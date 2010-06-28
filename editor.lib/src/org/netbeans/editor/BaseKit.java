@@ -1038,7 +1038,10 @@ public class BaseKit extends DefaultEditorKit {
 
 
 
-    /** Default typed action */
+    /** 
+     * @deprecated Please do not subclass this class. Use Typing Hooks instead, for details see
+     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+     */
     public static class DefaultKeyTypedAction extends LocalBaseAction {
 
         static final long serialVersionUID = 3069164318144463899L;
