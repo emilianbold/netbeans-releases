@@ -46,14 +46,13 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
-import java.util.prefs.Preferences;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.phpdoc.ui.BrowseFolderPanel;
+import org.netbeans.modules.php.phpdoc.ui.PhpDocPreferences;
 import org.netbeans.modules.php.phpdoc.ui.options.PhpDocOptions;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
@@ -67,9 +66,6 @@ public class PhpDocScript extends PhpProgram {
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
     public static final String OPTIONS_SUB_PATH = "PhpDoc"; // NOI18N
-
-    private static final String PHPDOC_DIR = "phpdoc.dir"; // NOI18N
-    private static final String PHPDOC_TITLE = "phpdoc.title"; // NOI18N
 
     private PhpDocScript(String command) {
         super(command);
@@ -110,15 +106,10 @@ public class PhpDocScript extends PhpProgram {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                Preferences preferences = phpModule.getPreferences(PhpDocScript.class, false);
-                String phpDocDir = preferences.get(PHPDOC_DIR, null);
+                String phpDocDir = PhpDocPreferences.getPhpDocDir(phpModule, true);
                 if (phpDocDir == null) {
-                    phpDocDir = BrowseFolderPanel.open(phpModule);
-                    if (phpDocDir == null) {
-                        // cancelled
-                        return;
-                    }
-                    preferences.put(PHPDOC_DIR, phpDocDir);
+                    // canceled
+                    return;
                 }
 
                 ExternalProcessBuilder processBuilder = getProcessBuilder()
@@ -130,7 +121,7 @@ public class PhpDocScript extends PhpProgram {
                         .addArgument(phpDocDir)
                         // title
                         .addArgument("-ti") // NOI18N
-                        .addArgument(preferences.get(PHPDOC_TITLE, phpModule.getDisplayName()));
+                        .addArgument(PhpDocPreferences.getPhpDocTitle(phpModule));
                 ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
                         .frontWindow(false)
                         .optionsPath(getOptionsPath());
@@ -141,7 +132,11 @@ public class PhpDocScript extends PhpProgram {
                             executionDescriptor,
                             NbBundle.getMessage(PhpDocScript.class, "LBL_GeneratingPhpDocForProject", phpModule.getDisplayName()));
                     if (status == 0) {
-                        HtmlBrowser.URLDisplayer.getDefault().showURL(new File(phpDocDir, "index.html").toURI().toURL()); // NOI18N
+                        File index = new File(phpDocDir, "index.html"); // NOI18N
+                        if (index.isFile()) {
+                            // false for pdf e.g.
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(index.toURI().toURL());
+                        }
                     }
                 } catch (ExecutionException ex) {
                     UiUtils.processExecutionException(ex, getOptionsPath());
