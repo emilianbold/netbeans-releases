@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.php.spi.doc;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.util.Parameters;
 
@@ -117,4 +121,42 @@ public abstract class PhpDocProvider {
      * @see PhpModule#getPreferences(Class, boolean)
      */
     public abstract void generateDocumentation(PhpModule phpModule);
+
+    /**
+     * Declarative registration of a singleton PHP documentation provider provider.
+     * By marking an implementation class or a factory method with this annotation,
+     * you automatically register that implementation, normally in {@link org.netbeans.modules.php.api.doc.PhpDocs#DOCS_PATH}.
+     * The class must be public and have:
+     * <ul>
+     *  <li>a public no-argument constructor, or</li>
+     *  <li>a public static factory method.</li>
+     * </ul>
+     *
+     * <p>Example of usage:
+     * <pre>
+     * package my.module;
+     * import org.netbeans.modules.php.spi.doc.PhpDocProvider;
+     * &#64;PhpDocProvider.Registration(position=100)
+     * public class MyDoc extends PhpDocProvider {...}
+     * </pre>
+     * <pre>
+     * package my.module;
+     * import org.netbeans.modules.php.spi.doc.PhpDocProvider;
+     * public class MyDoc extends PhpDocProvider {
+     *     &#64;PhpDocProvider.Registration(position=100)
+     *     public static PhpDocProvider getInstance() {...}
+     * }
+     * </pre>
+     * @since 1.37
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    public @interface Registration {
+        /**
+         * An optional position in which to register this documentation provider relative to others.
+         * Lower-numbered services are returned in the lookup result first.
+         * Providers with no specified position are returned last.
+         */
+        int position() default Integer.MAX_VALUE;
+    }
 }

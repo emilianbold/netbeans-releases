@@ -40,34 +40,29 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.phpdoc;
+package org.netbeans.modules.php.api.annotations;
 
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
-import org.netbeans.modules.php.api.util.UiUtils;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import org.netbeans.modules.php.api.doc.PhpDocs;
 import org.netbeans.modules.php.spi.doc.PhpDocProvider;
-import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
-public final class PhpDocumentorProvider extends PhpDocProvider {
-    public static final String PHPDOC_LAST_FOLDER_SUFFIX = ".phpdoc.dir"; // NOI18N
+/**
+ * @author Tomas Mysik
+ */
+@ServiceProvider(service = Processor.class)
+@SupportedSourceVersion(SourceVersion.RELEASE_6)
+public class PhpDocRegistrationProcessor extends BaseRegistrationProcessor<PhpDocProvider, PhpDocProvider.Registration> {
 
-    private static final PhpDocumentorProvider INSTANCE = new PhpDocumentorProvider();
-
-    private PhpDocumentorProvider() {
-        super("phpDocumentor", NbBundle.getMessage(PhpDocumentorProvider.class, "LBL_Name")); // NOI18N
-    }
-
-    @PhpDocProvider.Registration(position=100)
-    public static PhpDocumentorProvider getInstance() {
-        return INSTANCE;
+    @Override
+    protected String getPath() {
+        return PhpDocs.DOCS_PATH;
     }
 
     @Override
-    public void generateDocumentation(PhpModule phpModule) {
-        try {
-            PhpDocScript.getDefault().generateDocumentation(phpModule);
-        } catch (InvalidPhpProgramException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpDocScript.OPTIONS_SUB_PATH);
-        }
+    protected int getPosition(PhpDocProvider.Registration registration) {
+        return registration.position();
     }
 }

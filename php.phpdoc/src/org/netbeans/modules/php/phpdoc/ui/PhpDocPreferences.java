@@ -40,34 +40,52 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.phpdoc;
+package org.netbeans.modules.php.phpdoc.ui;
 
+import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.spi.doc.PhpDocProvider;
-import org.openide.util.NbBundle;
 
-public final class PhpDocumentorProvider extends PhpDocProvider {
-    public static final String PHPDOC_LAST_FOLDER_SUFFIX = ".phpdoc.dir"; // NOI18N
+public final class PhpDocPreferences {
+    private static final String PHPDOC_DIR = "phpdoc.dir"; // NOI18N
+    private static final String PHPDOC_TITLE = "phpdoc.title"; // NOI18N
 
-    private static final PhpDocumentorProvider INSTANCE = new PhpDocumentorProvider();
-
-    private PhpDocumentorProvider() {
-        super("phpDocumentor", NbBundle.getMessage(PhpDocumentorProvider.class, "LBL_Name")); // NOI18N
+    private PhpDocPreferences() {
     }
 
-    @PhpDocProvider.Registration(position=100)
-    public static PhpDocumentorProvider getInstance() {
-        return INSTANCE;
-    }
-
-    @Override
-    public void generateDocumentation(PhpModule phpModule) {
-        try {
-            PhpDocScript.getDefault().generateDocumentation(phpModule);
-        } catch (InvalidPhpProgramException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpDocScript.OPTIONS_SUB_PATH);
+    public static String getPhpDocDir(PhpModule phpModule, boolean showPanel) {
+        Preferences preferences = getPreferences(phpModule);
+        String phpDocDir = preferences.get(PHPDOC_DIR, null);
+        if (phpDocDir == null && showPanel) {
+            phpDocDir = BrowseFolderPanel.open(phpModule);
+            if (phpDocDir == null) {
+                // cancelled
+                return null;
+            }
+            setPhpDocDir(phpModule, phpDocDir);
         }
+        return phpDocDir;
+    }
+
+    public static void setPhpDocDir(PhpModule phpModule, String phpDocDir) {
+        getPreferences(phpModule).put(PHPDOC_DIR, phpDocDir);
+    }
+
+    public static String getPhpDocTitle(PhpModule phpModule) {
+        return getPreferences(phpModule).get(PHPDOC_TITLE, getDefaultPhpDocTitle(phpModule));
+    }
+
+    public static void setPhpDocTitle(PhpModule phpModule, String phpDocTitle) {
+        if (phpDocTitle.equals(getDefaultPhpDocTitle(phpModule))) {
+            return;
+        }
+        getPreferences(phpModule).put(PHPDOC_TITLE, phpDocTitle);
+    }
+
+    private static Preferences getPreferences(PhpModule phpModule) {
+        return phpModule.getPreferences(PhpDocPreferences.class, false);
+    }
+
+    private static String getDefaultPhpDocTitle(PhpModule phpModule) {
+        return phpModule.getDisplayName();
     }
 }
