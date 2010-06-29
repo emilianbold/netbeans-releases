@@ -94,13 +94,19 @@ made subject to such option by the copyright holder.
             </file>
             <file name="org-openide-actions-GotoAction.instance"/>
             <file name="org-openide-actions-PasteAction.instance"/>
-            <file name="org-openide-actions-RedoAction.instance"/>
+            <file name="org-openide-actions-RedoAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.actions.UndoRedoAction.create"/>
+                <attr name="undo" boolvalue="true"/>
+            </file>
             <file name="org-openide-actions-ReplaceAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.callback"/>
                 <attr name="key" stringvalue="org.openide.actions.ReplaceAction"/>
                 <attr name="displayName" bundlevalue="org.openide.actions.Bundle#Replace"/>
             </file>
-            <file name="org-openide-actions-UndoAction.instance"/>
+            <file name="org-openide-actions-UndoAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.actions.UndoRedoAction.create"/>
+                <attr name="redo" boolvalue="true"/>
+            </file>
         </folder>
 
         <folder name="Profile">

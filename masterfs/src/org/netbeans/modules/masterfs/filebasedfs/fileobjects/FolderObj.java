@@ -183,7 +183,12 @@ public final class FolderObj extends BaseFileObj {
 
         final FileObjectFactory factory = getFactory();
         if (factory != null) {
-            retVal = (FolderObj) factory.getValidFileObject(folder2Create, FileObjectFactory.Caller.Others);
+            BaseFileObj exists = factory.getValidFileObject(folder2Create, FileObjectFactory.Caller.Others);
+            if (exists instanceof FolderObj) {
+                retVal = (FolderObj)exists;
+            } else {
+                FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N                           
+            }
         }
         if (retVal != null) {
             retVal.fireFileFolderCreatedEvent(false);

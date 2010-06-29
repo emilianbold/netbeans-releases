@@ -84,6 +84,7 @@ import org.openide.util.Utilities;
  */
 public class FolderObjTest extends NbTestCase {
     File testFile;
+    Logger LOG;
     
     public FolderObjTest(String testName) {
         super(testName);
@@ -92,6 +93,7 @@ public class FolderObjTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        LOG = Logger.getLogger("test." + getName());
         testFile = getWorkDir();        
     }
 
@@ -99,7 +101,8 @@ public class FolderObjTest extends NbTestCase {
     protected Level logLevel() {
         String[] testsWithEnabledLogger = new String[] {
             "testCreateFolder72617",
-            "testCreateData72617"
+            "testCreateData72617",
+            "testFileObjectDistributionWorksAccuratelyAccordingToChildrenCache"
         };
         return (Arrays.asList(testsWithEnabledLogger).contains(getName())) ? 
             Level.FINEST : Level.OFF;
@@ -317,9 +320,12 @@ public class FolderObjTest extends NbTestCase {
         assertTrue(existsChild(workDirFo, fold.getName()));        
         workDirFo.refresh();
         assertNull(workDirFo.getFileObject(fold.getName()));                                        
-        assertFalse(existsChild(workDirFo, fold.getName()));        
+        assertFalse(existsChild(workDirFo, fold.getName()));
+        LOG.info("Before mkdir: " + fold);
         fold.mkdir();
-        assertNotNull(workDirFo.getFileObject(fold.getName()));
+        LOG.info("After mkdir: " + fold);
+        assertNotNull("Just created folder shall be visible", workDirFo.getFileObject(fold.getName()));
+        LOG.info("OK, passed thru");
         assertTrue(existsChild(workDirFo, fold.getName()));        
         workDirFo.getFileSystem().refresh(false);
         assertNotNull(workDirFo.getFileObject(fold.getName()));                                        

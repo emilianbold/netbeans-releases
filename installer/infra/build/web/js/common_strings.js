@@ -37,7 +37,7 @@
  * copyright holder.
  */
 
-PLATFORM_LONG_NAMES  [0] = "Windows 2000/XP/Vista";
+PLATFORM_LONG_NAMES  [0] = "Windows";
 PLATFORM_SHORT_NAMES [0] = "Windows";
 PLATFORM_LONG_NAMES  [1] = "Linux (x86/x64)";
 PLATFORM_SHORT_NAMES [1] = "Linux";
