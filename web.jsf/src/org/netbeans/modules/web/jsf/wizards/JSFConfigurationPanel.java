@@ -176,7 +176,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         }
         return framework.extendImpl(webModule);
     }
-    
+
     public ExtenderController getController() {
         return controller;
     }

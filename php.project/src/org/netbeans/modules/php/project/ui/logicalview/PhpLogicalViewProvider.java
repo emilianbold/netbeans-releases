@@ -80,6 +80,7 @@ import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
@@ -372,6 +373,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
     private static final class PhpDocAction extends AbstractAction {
         private static final long serialVersionUID = 178423135454L;
+        private static final RequestProcessor RP = new RequestProcessor("Generating php documentation", 2); // NOI18N
 
         private final PhpModule phpModule;
         private final PhpDocProvider docProvider;
@@ -385,7 +387,12 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            docProvider.generateDocumentation(phpModule);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    docProvider.generateDocumentation(phpModule);
+                }
+            });
         }
     }
 }
