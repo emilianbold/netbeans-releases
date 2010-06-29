@@ -2650,10 +2650,12 @@ public class CasualDiff {
                         // print fill-in
                         copyTo(localPointer, pos[0], printer);
                     }
-                    localPointer = pos[0];
-                    if (pos.length > 3 && pos[3] != (-1) && j + 1 < result.length) {
-                        copyTo(localPointer, localPointer = pos[3], printer);
-                        printer.print(estimator.append(i));
+                    if (pos[0] >= localPointer) {
+                        localPointer = pos[0];
+                        if (pos.length > 3 && pos[3] != (-1) && j + 1 < result.length) {
+                            copyTo(localPointer, localPointer = pos[3], printer);
+                            printer.print(estimator.append(i));
+                        }
                     }
                     copyTo(localPointer, localPointer = pos[1], printer);
                     lastdel = null;
