@@ -56,31 +56,30 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.phpdoc.PhpDocumentorProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public final class BrowseFolderPanel extends JPanel {
     private static final long serialVersionUID = 1743213547571L;
-    private static final String PHPDOC_LAST_FOLDER_SUFFIX = ".phpdoc.dir"; // NOI18N
 
     private final String info;
-    private final FileObject sourceDir;
+    private final PhpModule phpModule;
 
     private DialogDescriptor dialogDescriptor;
     private NotificationLineSupport notificationLineSupport;
 
-    private BrowseFolderPanel(String info, FileObject sourceDir) {
+    private BrowseFolderPanel(String info, PhpModule phpModule) {
         assert info != null;
-        assert sourceDir != null;
+        assert phpModule != null;
 
         this.info = info;
-        this.sourceDir = sourceDir;
+        this.phpModule = phpModule;
 
         initComponents();
 
@@ -105,7 +104,7 @@ public final class BrowseFolderPanel extends JPanel {
 
     public static String open(PhpModule phpModule) {
         String info = NbBundle.getMessage(BrowseFolderPanel.class, "LBL_SelectDocFolder", phpModule.getDisplayName());
-        BrowseFolderPanel panel = new BrowseFolderPanel(info, phpModule.getSourceDirectory());
+        BrowseFolderPanel panel = new BrowseFolderPanel(info, phpModule);
         panel.dialogDescriptor = new DialogDescriptor(
                 panel,
                 NbBundle.getMessage(BrowseFolderPanel.class, "LBL_SelectDir"),
@@ -188,11 +187,11 @@ public final class BrowseFolderPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseDocFolderButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseDocFolderButtonActionPerformed
-        File phpDocDir = new FileChooserBuilder(BrowseFolderPanel.class.getName() + PHPDOC_LAST_FOLDER_SUFFIX)
+        File phpDocDir = new FileChooserBuilder(PhpDocumentorProvider.class.getName() + PhpDocumentorProvider.PHPDOC_LAST_FOLDER_SUFFIX + phpModule.getName())
                 .setTitle(info)
                 .setDirectoriesOnly(true)
                 .setFileHiding(true)
-                .setDefaultWorkingDirectory(FileUtil.toFile(sourceDir))
+                .setDefaultWorkingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()))
                 .showOpenDialog();
         if (phpDocDir != null) {
             phpDocDir = FileUtil.normalizeFile(phpDocDir);

@@ -61,6 +61,7 @@ import org.openide.util.NbBundle;
 public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
     private static final ZendPhpFrameworkProvider INSTANCE = new ZendPhpFrameworkProvider();
 
+    @PhpFrameworkProvider.Registration(position=200)
     public static ZendPhpFrameworkProvider getInstance() {
         return INSTANCE;
     }

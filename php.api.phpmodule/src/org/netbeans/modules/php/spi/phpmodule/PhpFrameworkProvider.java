@@ -43,6 +43,10 @@
 package org.netbeans.modules.php.spi.phpmodule;
 
 import java.io.File;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
@@ -58,7 +62,7 @@ import org.openide.util.Parameters;
  * specific configuration files.</p>
  *
  * <p>Instances of this class are registered in the <code>{@value org.netbeans.modules.php.api.phpmodule.PhpFrameworks#FRAMEWORK_PATH}</code>
- * in the module layer.</p>
+ * in the module layer, see {@link Registration}.</p>
  *
  * @author Tomas Mysik
  */
@@ -222,5 +226,43 @@ public abstract class PhpFrameworkProvider {
      * @since 1.24
      */
     public void phpModuleClosed(PhpModule phpModule) {
+    }
+
+    /**
+     * Declarative registration of a singleton PHP framework provider.
+     * By marking an implementation class or a factory method with this annotation,
+     * you automatically register that implementation, normally in {@link org.netbeans.modules.php.api.phpmodule.PhpFrameworks#FRAMEWORK_PATH}.
+     * The class must be public and have:
+     * <ul>
+     *  <li>a public no-argument constructor, or</li>
+     *  <li>a public static factory method.</li>
+     * </ul>
+     *
+     * <p>Example of usage:
+     * <pre>
+     * package my.module;
+     * import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+     * &#64;PhpFrameworkProvider.Registration(position=100)
+     * public class MyFramework extends PhpFrameworkProvider {...}
+     * </pre>
+     * <pre>
+     * package my.module;
+     * import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+     * public class MyFramework extends PhpFrameworkProvider {
+     *     &#64;PhpFrameworkProvider.Registration(position=100)
+     *     public static PhpFrameworkProvider getInstance() {...}
+     * }
+     * </pre>
+     * @since 1.36
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    public @interface Registration {
+        /**
+         * An optional position in which to register this framework provider relative to others.
+         * Lower-numbered services are returned in the lookup result first.
+         * Providers with no specified position are returned last.
+         */
+        int position() default Integer.MAX_VALUE;
     }
 }

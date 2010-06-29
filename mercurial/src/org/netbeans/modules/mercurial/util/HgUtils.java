@@ -1589,11 +1589,11 @@ itor tabs #66700).
      * @param repository repository root
      * @param filesUnderRoot set of repository roots
      * @param file file to add
-     * @return true if the file or any of it's ancestors was originally in the set
+     * @return newly added root or null if the to be added file is already contained in seen roots
      */
-    public static boolean prepareRootFiles(File repository, Set<File> filesUnderRoot, File file) {
-        boolean alreadyAdded = false;
+    public static File prepareRootFiles(File repository, Set<File> filesUnderRoot, File file) {
         boolean added = false;
+        File addedRoot = null;
         for (File fileUnderRoot : filesUnderRoot) {
             // try to find a common parent for planned files
             File childCandidate = file;
@@ -1601,7 +1601,6 @@ itor tabs #66700).
             added = true;
             if (childCandidate.equals(ancestorCandidate) || ancestorCandidate.equals(repository)) {
                 // file has already been inserted or scan is planned for the whole repository root
-                alreadyAdded = true;
                 break;
             }
             if (childCandidate.equals(repository)) {
@@ -1619,7 +1618,6 @@ itor tabs #66700).
             }
             if (ancestorCandidate == fileUnderRoot) {
                 // already added
-                alreadyAdded = true;
                 break;
             } else if (!FileStatusCache.FULL_REPO_SCAN_ENABLED && ancestorCandidate != childCandidate && ancestorCandidate.equals(repository)) {
                 // common ancestor is the repo root and neither one of the candidates was originally the repo root
@@ -1633,7 +1631,7 @@ itor tabs #66700).
                 } else {
                     filesUnderRoot.remove(fileUnderRoot);
                 }
-                filesUnderRoot.add(ancestorCandidate);
+                filesUnderRoot.add(addedRoot = ancestorCandidate);
                 break;
             } else {
                 added = false;
@@ -1641,9 +1639,9 @@ itor tabs #66700).
         }
         if (!added) {
             // not added yet
-            filesUnderRoot.add(file);
+            filesUnderRoot.add(addedRoot = file);
         }
-        return alreadyAdded;
+        return addedRoot;
     }
 
     /**
