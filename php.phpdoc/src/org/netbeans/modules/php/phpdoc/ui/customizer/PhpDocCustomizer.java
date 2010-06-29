@@ -40,34 +40,40 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.phpdoc;
+package org.netbeans.modules.php.phpdoc.ui.customizer;
 
+import javax.swing.JComponent;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.spi.doc.PhpDocProvider;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public final class PhpDocumentorProvider extends PhpDocProvider {
-    public static final String PHPDOC_LAST_FOLDER_SUFFIX = ".phpdoc.dir"; // NOI18N
+public class PhpDocCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
 
-    private static final PhpDocumentorProvider INSTANCE = new PhpDocumentorProvider();
+    private static final String PHP_DOC = "PhpDoc"; // NOI18N
 
-    private PhpDocumentorProvider() {
-        super("phpDocumentor", NbBundle.getMessage(PhpDocumentorProvider.class, "LBL_Name")); // NOI18N
-    }
-
-    @PhpDocProvider.Registration(position=100)
-    public static PhpDocumentorProvider getInstance() {
-        return INSTANCE;
+    @Override
+    public Category createCategory(Lookup context) {
+        return ProjectCustomizer.Category.create(
+                PHP_DOC,
+                NbBundle.getMessage(PhpDocCustomizer.class, "LBL_Config_PhpDoc"),
+                null,
+                (ProjectCustomizer.Category[]) null);
     }
 
     @Override
-    public void generateDocumentation(PhpModule phpModule) {
-        try {
-            PhpDocScript.getDefault().generateDocumentation(phpModule);
-        } catch (InvalidPhpProgramException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpDocScript.OPTIONS_SUB_PATH);
-        }
+    public JComponent createComponent(Category category, Lookup context) {
+        PhpModule phpModule = PhpModule.lookupPhpModule(context);
+        return new PhpDocPanel(category, phpModule);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = UiUtils.CUSTOMIZER_PATH,
+        position = 360
+    )
+    public static PhpDocCustomizer createCustomizer() {
+        return new PhpDocCustomizer();
     }
 }

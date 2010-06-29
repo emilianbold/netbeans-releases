@@ -732,7 +732,12 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
         
         if (customizer) {
-            return true;
+             return true;
+        }
+
+        if (controller.getProperties().getProperty("NoDocBase") != null) {  //NOI18N
+            controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_MissingDocBase"));
+            return false;
         }
 
         controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
