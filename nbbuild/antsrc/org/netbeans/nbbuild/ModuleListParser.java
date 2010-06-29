@@ -403,14 +403,20 @@ final class ModuleListParser {
             faketask.setName("suite.dir");
             faketask.setValue(properties.get("suite.dir"));
             faketask.execute();
+            faketask.setName("suite.build.dir");
+            faketask.setValue(fakeproj.replaceProperties("${suite.dir}/build"));
+            faketask.execute();
             faketask.setName("cluster");
-            faketask.setValue(fakeproj.replaceProperties("${suite.dir}/build/cluster"));
+            faketask.setValue(fakeproj.replaceProperties("${suite.build.dir}/cluster"));
             faketask.execute();
             break;
         case STANDALONE:
             assert path == null;
+            faketask.setName("build.dir");
+            faketask.setValue(fakeproj.replaceProperties("${basedir}/build"));
+            faketask.execute();
             faketask.setName("cluster");
-            faketask.setValue(fakeproj.replaceProperties("${basedir}/build/cluster"));
+            faketask.setValue(fakeproj.replaceProperties("${build.dir}/cluster"));
             faketask.execute();
             break;
         default:

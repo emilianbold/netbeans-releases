@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <import file="../default.xml"/>
     <import file="common.xml"/>
     
-    <target name="common-init" depends="default.init"/>
+    <target name="common-init" depends="default.init,-build-dir-init"/>
     <target name="init" depends="basic-init,files-init,build-init,-javac-init,-init-proxy"/>
     
     <condition property="proxy.host+port">
@@ -131,8 +131,8 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <property name="build.package.index" value="false"/>
         <property name="manifest.mf" location="manifest.mf"/>
         <property name="src.dir" location="src"/>
-        <property name="build.classes.dir" location="build/classes"/>
-        <property name="build.classes.dir.ml" location="build/ml/classes"/>
+        <property name="build.classes.dir" location="${build.dir}/classes"/>
+        <property name="build.classes.dir.ml" location="${build.dir}/ml/classes"/>
         <property name="nbm" value="${code.name.base.dashes}.nbm"/>
         <property name="nbm.homepage" value="http://www.netbeans.org/"/>
         <property name="nbm.distribution" value="${dist.base}/${nbm}"/>
@@ -141,7 +141,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <property name="nbm.needs.restart" value="false"/>
         <property name="nbm.is.global" value=""/>
         <property name="nbm_alias" value="nb_ide"/>
-        <condition property="nbm.target.dir" value="${basedir}/build">
+        <condition property="nbm.target.dir" value="${build.dir}">
              <not>
                  <isset property="base.nbm.target.dir"/>
              </not>
@@ -154,11 +154,11 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
             </not>
         </condition>
         <property name="jnlp.dest.dir" location="${nb_all}/nbbuild/build/jnlp"/>
-        <property name="build.javahelp.dir" location="build/javahelp"/>
+        <property name="build.javahelp.dir" location="${build.dir}/javahelp"/>
         <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
         <property name="javahelp.search" value="JavaHelpSearch"/>
         <property name="javahelp.excludes" value="credits.html"/>
-        <property name="netbeans.zipped.sources.dir" value="build/sources"/>
+        <property name="netbeans.zipped.sources.dir" location="${build}/sources"/>
         <property name="locales" value=""/>
         <property name="brandings" value=""/>
         <property name="locjar.locales" value="${locales}"/>
@@ -243,7 +243,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
 
     <target name="-verify-apichanges" if="javadoc.apichanges" depends="basic-init">
         <xmlvalidate file="${javadoc.apichanges}" failonerror="true"/>
-        <xslt in="${javadoc.apichanges}" out="build/apichanges.html" style="${nb_all}/nbbuild/javadoctools/apichanges.xsl">
+        <xslt in="${javadoc.apichanges}" out="${build.dir}/apichanges.html" style="${nb_all}/nbbuild/javadoctools/apichanges.xsl">
             <param name="javadoc-url-base" expression="."/>
         </xslt>
         <!-- XXX could perhaps validate arch.xml too, if it exists -->
@@ -274,8 +274,8 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
     </target>
 
     <target name="-create-license.file" depends="init">
-        <mkdir dir="build"/>
-        <property name="license.file.override" location="build/license"/>
+        <mkdir dir="${build.dir}"/>
+        <property name="license.file.override" location="${build.dir}/license"/>
         <property name="extra.license.files" value=""/>
         <taskdef name="releasefileslicense" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesLicense" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <releasefileslicense license="${license.file.override}" standardlicense="${nb_all}/nbbuild/standard-nbm-license.txt" extralicensefiles="${extra.license.files}"/>
@@ -553,7 +553,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
     
     <target name="-sigtest-init" depends="build-init">
         <property name="sigtest.basedir" location="nbproject"/>
-        <property name="sigtest.output.dir" location="build/test/sigtest/results"/>
+        <property name="sigtest.output.dir" location="${build.dir}/test/sigtest/results"/>
         <mkdir dir="${sigtest.basedir}"/>
         <property name="sigtest.file" location="${sigtest.basedir}/${code.name.base.dashes}.sig"/>
         <property name="sigtest.public.packages" value="${public.packages}"/>
