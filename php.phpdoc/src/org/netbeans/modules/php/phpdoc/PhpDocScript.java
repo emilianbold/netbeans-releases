@@ -57,11 +57,8 @@ import org.netbeans.modules.php.phpdoc.ui.options.PhpDocOptions;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 public class PhpDocScript extends PhpProgram {
-    private static final RequestProcessor RP = new RequestProcessor(PhpDocScript.class.getName(), Runtime.getRuntime().availableProcessors());
-
     public static final String SCRIPT_NAME = "phpdoc"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
@@ -103,50 +100,45 @@ public class PhpDocScript extends PhpProgram {
     }
 
     public void generateDocumentation(final PhpModule phpModule) {
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                String phpDocDir = PhpDocPreferences.getPhpDocDir(phpModule, true);
-                if (phpDocDir == null) {
-                    // canceled
-                    return;
-                }
+        String phpDocDir = PhpDocPreferences.getPhpDocDir(phpModule, true);
+        if (phpDocDir == null) {
+            // canceled
+            return;
+        }
 
-                ExternalProcessBuilder processBuilder = getProcessBuilder()
-                        // from
-                        .addArgument("-d") // NOI18N
-                        .addArgument(FileUtil.toFile(phpModule.getSourceDirectory()).getAbsolutePath())
-                        // to
-                        .addArgument("-t") // NOI18N
-                        .addArgument(phpDocDir)
-                        // title
-                        .addArgument("-ti") // NOI18N
-                        .addArgument(PhpDocPreferences.getPhpDocTitle(phpModule));
-                ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
-                        .frontWindow(false)
-                        .optionsPath(getOptionsPath());
+        ExternalProcessBuilder processBuilder = getProcessBuilder()
+                // from
+                .addArgument("-d") // NOI18N
+                .addArgument(FileUtil.toFile(phpModule.getSourceDirectory()).getAbsolutePath())
+                // to
+                .addArgument("-t") // NOI18N
+                .addArgument(phpDocDir)
+                // title
+                .addArgument("-ti") // NOI18N
+                .addArgument(PhpDocPreferences.getPhpDocTitle(phpModule));
+        ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
+                .frontWindow(false)
+                .optionsPath(getOptionsPath());
 
-                try {
-                    int status = executeAndWait(
-                            processBuilder,
-                            executionDescriptor,
-                            NbBundle.getMessage(PhpDocScript.class, "LBL_GeneratingPhpDocForProject", phpModule.getDisplayName()));
-                    if (status == 0) {
-                        File index = new File(phpDocDir, "index.html"); // NOI18N
-                        if (index.isFile()) {
-                            // false for pdf e.g.
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(index.toURI().toURL());
-                        }
-                    }
-                } catch (ExecutionException ex) {
-                    UiUtils.processExecutionException(ex, getOptionsPath());
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                } catch (MalformedURLException ex) {
-                    LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+        try {
+            int status = executeAndWait(
+                    processBuilder,
+                    executionDescriptor,
+                    NbBundle.getMessage(PhpDocScript.class, "LBL_GeneratingPhpDocForProject", phpModule.getDisplayName()));
+            if (status == 0) {
+                File index = new File(phpDocDir, "index.html"); // NOI18N
+                if (index.isFile()) {
+                    // false for pdf e.g.
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(index.toURI().toURL());
                 }
             }
-        });
+        } catch (ExecutionException ex) {
+            UiUtils.processExecutionException(ex, getOptionsPath());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+        }
     }
 
     public static String validate(String command) {

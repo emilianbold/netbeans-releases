@@ -116,6 +116,8 @@ public abstract class PhpDocProvider {
 
     /**
      * Generate PHP documentation for the given PHP module. Called only if {@link #isInPhpModule(PhpModule)} returns {@code true}.
+     * <p>
+     * This method runs in a background thread.
      * @param  phpModule the PHP module; never <code>null</code>
      * @see #isInPhpModule(PhpModule)
      * @see PhpModule#getPreferences(Class, boolean)
