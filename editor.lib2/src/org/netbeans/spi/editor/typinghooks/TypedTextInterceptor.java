@@ -77,34 +77,34 @@ import org.netbeans.modules.editor.lib2.typinghooks.TypingHooksSpiAccessor;
  * method.
  *
  * <ul>
- * <li>{@link #beforeInsertion(Context)} - It's called before any text is inserted
+ * <li>{@link #beforeInsert(Context)} - It's called before any text is inserted
  *   into a document. No document lock is held when this method is called. The method
  *   can't modify the text that will be inserted (and it's not supposed to do any tricks to
  *   break this rule). An interceptor can stop further processing of the event by returning
  *   <code>true</code> from this method. If it does so, no other interceptors'
- *   <code>beforeInsertion</code> method will be called and the processing will be terminated
+ *   <code>beforeInsert</code> method will be called and the processing will be terminated
  *   without inserting any text.
  *
- * <li>{@link #textTyped(MutableContext)} - This method is called during the text
- *   insertion stage immediatelly before the text is inserted into a document. At this
+ * <li>{@link #insert(MutableContext)} - This method is called during the text
+ *   insertion stage immediately before the text is inserted into a document. At this
  *   time the document is already write locked, but the interceptors are not expected
  *   to modify its content directly. Instead they can change the text that will be
  *   inserted by calling {@link MutableContext#setText(java.lang.String, int)} method.
  *   The text insertion is strictly controlled by the infrastructure and has to obey some
  *   additional rules (eg. correctly replacing selected text, handling insert vs override
  *   modes of the caret, etc). The first interceptor that modifies the insertion text
- *   will win and no other interceptor's <code>textTyped</code> method will be called.
+ *   will win and no other interceptor's <code>insert</code> method will be called.
  *
- * <li>{@link #afterInsertion(Context)} - This is the last method in the processing
+ * <li>{@link #afterInsert(Context)} - This is the last method in the processing
  *   chain and it will be called when the text is already inserted in the document.
- *   Similarily as in <code>beforeInsertion</code> the document is not locked when
+ *   Similarly as in <code>beforeInsert</code> the document is not locked when
  *   this method is called.
  * 
  * <li>{@link #cancelled(Context)} - This is an additional method that will be called
  *   when the processing is terminated in the before-insertion stage (ie. by an interceptor
- *   returning <code>true</code> from its <code>beforeInsertion</code> method).
+ *   returning <code>true</code> from its <code>beforeInsert</code> method).
  *   The infrastructure will only call this method on interceptors that have already
- *   had their <code>beforeInsertion</code> method called, but not on those that
+ *   had their <code>beforeInsert</code> method called, but not on those that
  *   have not yet been called at all.
  * </ul>
  *
@@ -123,10 +123,10 @@ public interface TypedTextInterceptor {
      * passed to the method provides access to the editor pane and the edited document,
      * but does not allow to modify the text that will be inserted.
      *
-     * <p>This method can be used for stopping futher processing of the current
+     * <p>This method can be used for stopping further processing of the current
      * key typed event. If this method returns <code>true</code> the processing will
      * be terminated and {@link #cancelled(Context)} will be called for all the intercetors
-     * that have already had their <code>beforeInsertion</code> method called (insluding
+     * that have already had their <code>beforeInsert</code> method called (including
      * the one that terminated the processing). The rest of the interceptors waiting
      * in the queue will not be called at all.
      *
@@ -141,7 +141,7 @@ public interface TypedTextInterceptor {
      * @throws BadLocationException Since the document is not locked prior calling this
      *   method the processing may fail when working with stale context data.
      */
-    boolean beforeInsertion(Context context) throws BadLocationException;
+    boolean beforeInsert(Context context) throws BadLocationException;
 
     /**
      * This method is called immediately before the text is inserted into a document.
@@ -159,7 +159,7 @@ public interface TypedTextInterceptor {
      *
      * @throws BadLocationException If the processing fails.
      */
-    void textTyped(MutableContext context) throws BadLocationException;
+    void insert(MutableContext context) throws BadLocationException;
 
     /**
      * This method is called after text is inserted into a document and its editor's
@@ -175,15 +175,15 @@ public interface TypedTextInterceptor {
      * @throws BadLocationException Since the document is not locked prior calling this
      *   method the processing may fail when working with stale context data.
      */
-    void afterInsertion(Context context) throws BadLocationException;
+    void afterInsert(Context context) throws BadLocationException;
 
     /**
      * This method is called when the normal processing is terminated by some
-     * interceptor's <code>beforeInsertion</code> method. Please note that this
-     * method will not be called if the <code>beforeInsertion</code> method was not
+     * interceptor's <code>beforeInsert</code> method. Please note that this
+     * method will not be called if the <code>beforeInsert</code> method was not
      * called.
      * 
-     * @param context The context object used for calling the <code>beforeInsertion</code>
+     * @param context The context object used for calling the <code>beforeInsert</code>
      *   method.
      */
     void cancelled(Context context);
@@ -218,7 +218,7 @@ public interface TypedTextInterceptor {
         /**
          * Gets the insertion offset. This is the offset in the document where
          * user typed the text (ie. where the currently processed <code>KeyEvent</code>
-         * happend). This is also the offset where the insertion text will end up.
+         * happened). This is also the offset where the insertion text will end up.
          *
          * @return The offset in the edited document.
          */
@@ -231,12 +231,12 @@ public interface TypedTextInterceptor {
          * by the user or its modification provided by one of the interceptors.
          *
          * <p>It is guaranteed that the text will have length equal to 1 for contexts
-         * that are passed to <code>beforeInsertion</code> and <code>textTyped</code>
+         * that are passed to <code>beforeInsert</code> and <code>insert</code>
          * methods. In these methods <code>getText</code> returns exactly what
          * a user typed in the editor.
          *
-         * <p>In the <code>afterInsertion</code> method the text returned from <code>getText</code>
-         * method can have any lenght and will correspond to either the originally typed
+         * <p>In the <code>afterInsert</code> method the text returned from <code>getText</code>
+         * method can have any length and will correspond to either the originally typed
          * text or to text supplied by one of the interceptors participating in
          * the key typed event processing.
          * 
@@ -277,7 +277,7 @@ public interface TypedTextInterceptor {
 
         /**
          * Sets the insertion text and adjusted caret position. This method can
-         * be used for modifying text typed by a user that would nornally be
+         * be used for modifying text typed by a user that would normally be
          * inserted into a document.
          *
          * <p>There is no restriction on the new text

@@ -338,16 +338,16 @@ public final class LegacyFormattersProvider implements MimeDataProvider {
             this.formatter = formatter;
         }
 
-        public boolean beforeInsertion(Context context) throws BadLocationException {
+        public boolean beforeInsert(Context context) throws BadLocationException {
             // no-op
             return false;
         }
 
-        public void textTyped(MutableContext context) throws BadLocationException {
+        public void insert(MutableContext context) throws BadLocationException {
             // no-op
         }
 
-        public void afterInsertion(Context context) throws BadLocationException {
+        public void afterInsert(Context context) throws BadLocationException {
             if (context.getDocument() instanceof BaseDocument) {
                 BaseDocument doc = (BaseDocument) context.getDocument();
                 int [] fmtBlk = formatter.getReformatBlock(context.getComponent(), context.getText());

@@ -166,16 +166,16 @@ public final class AutomatedIndenting {
             this.linePatterns = linePatterns;
         }
 
-        public boolean beforeInsertion(Context context) {
+        public boolean beforeInsert(Context context) {
             // no-op
             return false;
         }
 
-        public void textTyped(MutableContext context) {
+        public void insert(MutableContext context) {
             // no-op
         }
 
-        public void afterInsertion(Context context) {
+        public void afterInsert(Context context) {
             int textLen = context.getText().length();
             if (textLen > 0) {
                 CharSequence lineText;

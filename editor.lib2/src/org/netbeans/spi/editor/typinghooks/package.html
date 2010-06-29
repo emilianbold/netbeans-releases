@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
   </p>
 
   <p>
-  The editor actions superceeded by Typing Hooks SPI are still available and the code
+  The editor actions superceded by Typing Hooks SPI are still available and the code
   that uses them should still work. But they will be deprecated and eventually removed.
   </p>
 
@@ -69,7 +69,7 @@ made subject to such option by the copyright holder.
 
   <p>
   Netbeans editor panes are ordinary <code>JTextComponent</code>s and therefore
-  they fully follow keyboeard events processing scheme defined by Swing (please read
+  they fully follow keyboard events processing scheme defined by Swing (please read
   more about <i>Text Input</i> in <code>JTextComponent</code>'s javadoc). For the
   purpose of understanding Typing Hooks SPI it is important to note that
   the SPI interceptors are at the very end of the <code>KeyEvent</code> processing
@@ -156,10 +156,10 @@ made subject to such option by the copyright holder.
   <h3>Threading and synchronization</h3>
 
   <p>
-  As explained earlier Netbeans editors follow swing conepts for handling keyboard
+  As explained earlier Netbeans editors follow swing concepts for handling keyboard
   events. All keyboard events processing and editor actions invocation in swing
   editors is done in the AWT thread, which means that events are processed in one
-  thread only and in the order as they happend. The same applies for interceptors
+  thread only and in the order as they happened. The same applies for interceptors
   and Typing Hooks SPI in general.
   </p>
 
@@ -186,7 +186,7 @@ made subject to such option by the copyright holder.
   <p>
   Many languages need to automatically reindent lines as user types certain
   statements. For example in java language the 'case' statements in a 'switch' block
-  should be aligned to the same column similarily as in the code snippet below.
+  should be aligned to the same column similarly as in the code snippet below.
   The java editor helps users to do that by automatically indenting the lines that
   contain 'case' statements as soon as a user types the double colon at the end of the statement.
   </p>
@@ -206,7 +206,7 @@ made subject to such option by the copyright holder.
   <p>
   This can easily be done by implementing
   <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/typinghooks/TypedTextInterceptor.html">TypedTextInterceptor</a></code>
-  and its <code>afterInsertion</code> method. The implementation can check the text
+  and its <code>afterInsert</code> method. The implementation can check the text
   inserted in the document as a result of the key typed event processing and reindent
   the line if its text matches required pattern.
   </p>

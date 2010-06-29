@@ -82,7 +82,7 @@ public final class TypedTextInterceptorsManager {
         public boolean beforeInsertion() {
             for(TypedTextInterceptor i : interceptors) {
                 try {
-                    if (i.beforeInsertion(context)) {
+                    if (i.beforeInsert(context)) {
                         return true;
                     }
                 } catch (Exception e) {
@@ -103,7 +103,7 @@ public final class TypedTextInterceptorsManager {
 
             for(TypedTextInterceptor i : interceptors) {
                 try {
-                    i.textTyped(context);
+                    i.insert(context);
                 } catch (Exception e) {
                     LOG.log(Level.INFO, "TypedTextInterceptor crashed in textTyped(): " + i, e); //NOI18N
                     TypingHooksSpiAccessor.get().resetContextData(context);
@@ -123,7 +123,7 @@ public final class TypedTextInterceptorsManager {
         public void afterInsertion() {
             for(TypedTextInterceptor i : interceptors) {
                 try {
-                    i.afterInsertion(context);
+                    i.afterInsert(context);
                 } catch (Exception e) {
                     LOG.log(Level.INFO, "TypedTextInterceptor crashed in afterInsertion(): " + i, e); //NOI18N
                 }
