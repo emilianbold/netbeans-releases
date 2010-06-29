@@ -41,27 +41,47 @@
  */
 package org.netbeans.modules.web.jsf.editor.el;
 
+import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.jsf.editor.JsfHtmlExtension;
+import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import java.io.IOException;
+import javax.swing.text.Document;
+import org.openide.filesystems.FileObject;
 import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import javax.el.ELException;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.web.jsf.editor.TestBase;
 import static org.junit.Assert.*;
 
 /**
  * Currently no real tests but temporary test code just to help
  * understanding and debug the EL parser.
  */
-public class JsfElParserTest {
+public class JsfElParserTest extends TestBase {
 
     private static NodeVisitor printing;
 
-    public JsfElParserTest() {
+    public JsfElParserTest(String name) {
+        super(name);
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        HtmlExtension.register("text/xhtml", new JsfHtmlExtension()); //NOI18N
+
         printing = new NodeVisitor() {
 
             @Override
@@ -139,6 +159,58 @@ public class JsfElParserTest {
         }
     }
 
+    @Test
+    public void testParseResult() throws Exception {
+        FileObject file = getTestFile("testfiles/home.xhtml");
+        initEL(file);
+        assertNotNull(file);
+        Document doc = getDefaultDocument(file);
+        ELParserResult parserResult = JsfElParser.create(doc).parse();
+
+        assertNotNull(parserResult);
+        assertTrue(parserResult.isValid());
+
+        List<ELElement> elements = parserResult.getElements();
+        assertEquals(11, elements.size());
+        
+        for (ELElement each : elements) {
+            assertTrue(each.isValid());
+        }
+
+        // check order
+        assertEquals("#{game.smallest}", elements.get(0).getExpression());
+        assertEquals("#{game.number eq game.guess}", elements.get(4).getExpression());
+        assertEquals("#{game.number gt game.guess and game.guess ne 0}", elements.get(9).getExpression());
+        assertEquals("#{game.number lt game.guess and game.guess ne 0}", elements.get(10).getExpression());
+    }
+
+    @Test
+    public void testParseResultErrors() throws Exception {
+        FileObject file = getTestFile("testfiles/home_with_errors.xhtml");
+        initEL(file);
+        assertNotNull(file);
+        Document doc = getDefaultDocument(file);
+        ELParserResult parserResult = JsfElParser.create(doc).parse();
+
+        assertNotNull(parserResult);
+        assertFalse(parserResult.isValid());
+
+        List<ELElement> elements = parserResult.getElements();
+        assertEquals(11, elements.size());
+
+        // check elements with errors
+        assertFalse(elements.get(2).isValid());
+        assertNotNull(elements.get(2).getError());
+        assertFalse(elements.get(4).isValid());
+        assertNotNull(elements.get(4).getError());
+
+        // check valid elems
+        assertTrue(elements.get(0).isValid());
+        assertNull(elements.get(0).getError());
+        assertTrue(elements.get(9).isValid());
+        assertNull(elements.get(9).getError());
+    }
+
     static void print(String expr, Node node) {
         System.out.println("------------------------------");
         System.out.println("AST for " + expr);
@@ -156,5 +228,30 @@ public class JsfElParserTest {
             Node child = node.jjtGetChild(i);
             printTree(child, ++level);
         }
+    }
+
+    private void initEL(FileObject file) throws ParseException {
+        final HtmlExtension hext = new JsfHtmlExtension();
+
+        //init the EL embedding
+        Source source = Source.create(file);
+        ParserManager.parse(Collections.singletonList(source), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                HtmlParserResult result = (HtmlParserResult) WebUtils.getResultIterator(resultIterator, "text/html").getParserResult();
+
+                //enable EL
+                ((JsfHtmlExtension) hext).checkELEnabled(result);
+                //block until the recolor AWT task finishes
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    public void run() {
+                        //no-op
+                    }
+                });
+            }
+        });
+
     }
 }

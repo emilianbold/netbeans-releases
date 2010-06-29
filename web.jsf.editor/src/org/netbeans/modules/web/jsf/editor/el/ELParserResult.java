@@ -39,51 +39,55 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor.hints;
+
+package org.netbeans.modules.web.jsf.editor.el;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.text.Document;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.editor.el.JsfElParser;
-import org.netbeans.modules.web.jsf.editor.el.ELElement;
-import org.netbeans.modules.web.jsf.editor.el.ELParserResult;
 import org.openide.filesystems.FileObject;
 
 /**
- * Hints provider for checking syntax of EL expressions.
+ * ParserResult for EL expressions in a file.
  *
  * @author Erno Mononen
  */
-final class ELSyntaxChecker extends HintsProvider {
+public final class ELParserResult {
+
+    private final FileObject fileObject;
+    private final List<ELElement> elements = new ArrayList<ELElement>();
+
+    public ELParserResult(FileObject fileObject) {
+        this.fileObject = fileObject;
+    }
+
+    public List<ELElement> getElements() {
+        return Collections.unmodifiableList(elements);
+    }
+
+    boolean add(ELElement element) {
+        return elements.add(element);
+    }
+
+    public FileObject getFileObject() {
+        return fileObject;
+    }
+
+    public boolean hasElements() {
+        return !elements.isEmpty();
+    }
+
+    public boolean isValid() {
+        for (ELElement each : elements) {
+            if (!each.isValid()) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     @Override
-    public List<Hint> compute(RuleContext context) {
-
-        ELParserResult parserResult = JsfElParser.create(context.doc).parse();
-
-        if (parserResult.isValid()) {
-            return Collections.emptyList();
-        }
-
-        List<Hint> result = new ArrayList<Hint>();
-        for (ELElement each : parserResult.getElements()) {
-            if (each.isValid()) {
-                continue;
-            }
-            Hint hint = new Hint(HintsProvider.DEFAULT_ERROR_RULE,
-                    each.getError().getLocalizedMessage(),
-                    parserResult.getFileObject(),
-                    each.getOffset(),
-                    Collections.<HintFix>emptyList(),
-                    HintsProvider.DEFAULT_ERROR_HINT_PRIORITY);
-            result.add(hint);
-        }
-
-        return result;
+    public String toString() {
+        return "ELParserResult{" + "fileObject=" + fileObject + "elements=" + elements + '}';
     }
 }

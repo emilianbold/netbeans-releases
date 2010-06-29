@@ -67,19 +67,16 @@ import org.openide.filesystems.FileObject;
  */
 public final class JsfElParser {
 
-   private static final Logger LOGGER = Logger.getLogger(JsfElParser.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(JsfElParser.class.getName());
+    private final Document document;
+    private final String snapshot;
 
-   private final Document document;
-   private final int offset;
-   private final String snapshot;
-
-   private JsfElParser(Document document, int offset, String snapshot) {
+    private JsfElParser(Document document, String snapshot) {
         this.document = document;
-        this.offset = offset;
         this.snapshot = snapshot;
     }
 
-   public static JsfElParser create(final Document document, final int offset) throws BadLocationException {
+    public static JsfElParser create(final Document document) {
         //clone the document's text
         final AtomicReference<BadLocationException> ble = new AtomicReference<BadLocationException>();
         final AtomicReference<String> snap = new AtomicReference<String>();
@@ -93,33 +90,82 @@ public final class JsfElParser {
                     ble.set(ex);
                 }
             }
-
         });
-        if(ble.get() != null) {
-            throw ble.get();
+        if (ble.get() != null) {
+            throw new RuntimeException(ble.get());
         }
 
         String snapshot = snap.get();
-        return new JsfElParser(document, offset, snapshot);
+        return new JsfElParser(document, snapshot);
+    }
+    
+    /**
+     * Parses the given expression and returns the root AST node for it.
+     *
+     * @param expr the expression to parse.
+     * @return the root AST node
+     * @throws ELException if the given expression is not valid EL.
+     */
+    public static Node parse(String expr) {
+        return ELParser.parse(expr);
     }
 
-   /**
-    * Parses the given expression and returns the root AST node for it.
-    *
-    * @param expr the expression to parse.
-    * @return the root AST node
-    * @throws ELException if the given expression is not valid EL.
-    */
-   public static Node parse(String expr) {
-       return ELParser.parse(expr);
-//       return root(expressionBuilderFor(expr).createNode(expr));
-    }
+    /**
+     * @return
+     */
+    public ELParserResult parse() {
 
-   public ELParseResult parse() {
+        FileObject fo = NbEditorUtilities.getFileObject(document);
+        ELParserResult result = new ELParserResult(fo);
+
         String documentMimetype = NbEditorUtilities.getMimeType(document);
         Language lang = Language.find(documentMimetype);
 
-        if(lang == null) {
+        if (lang == null) {
+            return result;
+        }
+
+        TokenHierarchy<?> th = TokenHierarchy.get(document);
+        TokenSequence<?> topLevel = th.tokenSequence();
+
+        if (topLevel == null) {
+            return result;
+        }
+
+        topLevel.moveStart();
+
+        while (topLevel.moveNext()) {
+
+            TokenSequence<ELTokenId> elTokenSequence = topLevel.embedded(ELTokenId.language());
+
+            if (elTokenSequence != null) {
+                String expression = topLevel.token().text().toString();
+                int startOffset = topLevel.offset();
+                int endOffset = startOffset + expression.length();
+                OffsetRange range = new OffsetRange(startOffset, endOffset);
+                try {
+                    Node node = parse(expression);
+                    result.add(ELElement.valid(node, range, expression));
+                } catch (ELException ex) {
+                    result.add(ELElement.error(ex, range, expression));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Parse the EL expression at the given offset.
+     * 
+     * @param offset
+     * @return
+     */
+    public ELElement parse(int offset) {
+        String documentMimetype = NbEditorUtilities.getMimeType(document);
+        Language lang = Language.find(documentMimetype);
+
+        if (lang == null) {
             return null;
         }
         //get the input attributes from the document and use then for the TokenHierarchy creation
@@ -142,14 +188,11 @@ public final class JsfElParser {
                 int startOffset = last.offset();
                 int endOffset = startOffset + expression.length();
                 OffsetRange range = new OffsetRange(startOffset, endOffset);
-                LOGGER.info("Resolving EL for: " + expression);
                 try {
                     Node result = parse(expression);
-                    LOGGER.info("Result: " + result);
-                    return ELParseResult.valid(result, range, fo);
+                    return ELElement.valid(result, range, expression);
                 } catch (ELException ex) {
-                    LOGGER.info("Error: " + ex);
-                    return ELParseResult.error(ex, range, fo);
+                    return ELElement.error(ex, range, expression);
                 }
             } else {
                 //not el, scan next embedded token sequence
@@ -167,7 +210,7 @@ public final class JsfElParser {
         return null;
     }
 
-   /**
+    /**
      * Gets the AST root of the given node.
      * 
      * @param node
@@ -207,51 +250,5 @@ public final class JsfElParser {
 
         return result;
 
-    }
-
-    // temp class for supporting offsets for nodes (need to modify the parser 
-    // to add offsets into the nodes themselves).
-    public static final class ELParseResult {
-
-        private final Node node;
-        private final OffsetRange offset;
-        private final ELException error;
-        private final FileObject file;
-
-        private ELParseResult(Node node, OffsetRange offset, ELException error, FileObject file) {
-            assert node == null || error == null;
-            this.node = node;
-            this.offset = offset;
-            this.error = error;
-            this.file = file;
-        }
-
-        static ELParseResult valid(Node node, OffsetRange offset, FileObject file) {
-            return new ELParseResult(node, offset, null, file);
-        }
-
-        static ELParseResult error(ELException error, OffsetRange offset, FileObject file) {
-            return new ELParseResult(null, offset, error, file);
-        }
-
-        public Node getNode() {
-            return node;
-        }
-
-        public OffsetRange getOffset() {
-            return offset;
-        }
-
-        public boolean isValid() {
-            return error == null;
-        }
-
-        public ELException getError() {
-            return error;
-        }
-
-        public FileObject getFileObject() {
-            return file;
-        }
     }
 }
