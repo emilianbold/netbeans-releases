@@ -73,7 +73,7 @@ public class PhpDocCustomizer implements ProjectCustomizer.CompositeCategoryProv
         projectType = UiUtils.CUSTOMIZER_PATH,
         position = 360
     )
-    public static PhpDocCustomizer createSources() {
+    public static PhpDocCustomizer createCustomizer() {
         return new PhpDocCustomizer();
     }
 }
