@@ -64,6 +64,7 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     private static final SymfonyPhpFrameworkProvider INSTANCE = new SymfonyPhpFrameworkProvider();
 
+    @PhpFrameworkProvider.Registration(position=100)
     public static SymfonyPhpFrameworkProvider getInstance() {
         return INSTANCE;
     }
