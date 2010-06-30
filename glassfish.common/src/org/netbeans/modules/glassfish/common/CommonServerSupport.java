@@ -438,6 +438,17 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
     
     @Override
+    public Future<OperationState> enable(final OperationStateListener stateListener, final String name) {
+        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
+        return mgr.enable(name);
+    }
+    @Override
+    public Future<OperationState> disable(final OperationStateListener stateListener, final String name) {
+        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
+        return mgr.disable(name);
+    }
+
+    @Override
     public Future<OperationState> execute(ServerCommand command) {
         CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties());
         return mgr.execute(command);
