@@ -180,6 +180,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             fireChange ();
         } else {
             FoDFileSystem.getInstance().refresh();
+            waitForDelegateWizard ();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     waitForDelegateWizard ();
