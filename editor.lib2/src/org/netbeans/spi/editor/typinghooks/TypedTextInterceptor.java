@@ -316,24 +316,29 @@ public interface TypedTextInterceptor {
         private static final class Accessor extends TypingHooksSpiAccessor {
 
             @Override
-            public MutableContext createContext(JTextComponent c, int offset, String typedText) {
+            public MutableContext createTtiContext(JTextComponent c, int offset, String typedText) {
                 return new MutableContext(c, offset, typedText);
             }
 
             @Override
-            public Object[] getContextData(MutableContext context) {
+            public Object[] getTtiContextData(MutableContext context) {
                 return context.insertionText != null ?
                     new Object [] { context.insertionText, context.caretPosition } :
                     null;
             }
 
             @Override
-            public void resetContextData(MutableContext context) {
+            public void resetTtiContextData(MutableContext context) {
                 context.insertionText = null;
                 context.caretPosition = -1;
             }
 
-        }
+            @Override
+            public DeletedTextInterceptor.Context createDtiContext(JTextComponent c, int offset, String removedText, boolean backwardDelete) {
+                return new DeletedTextInterceptor.Context(c, offset, removedText, backwardDelete);
+            }
+            
+        } // End of Accessor class
 
         static {
             TypingHooksSpiAccessor.register(new Accessor());

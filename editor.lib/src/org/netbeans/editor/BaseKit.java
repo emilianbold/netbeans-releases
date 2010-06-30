@@ -90,6 +90,7 @@ import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.typinghooks.DeletedTextInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedTextInterceptorsManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
@@ -1078,25 +1079,41 @@ public class BaseKit extends DefaultEditorKit {
                 final String cmd = evt.getActionCommand();
                 if (cmd != null && cmd.length() == 1 && cmd.charAt(0) >= 0x20 && cmd.charAt(0) != 0x7F) {
                     if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("Processing command char: " + Integer.toHexString(cmd.charAt(0))); //NOI18N
+                        LOG.log(Level.FINE, "Processing command char: {0}", Integer.toHexString(cmd.charAt(0))); //NOI18N
                     }
 
-                    int insertionOffset = computeInsertionOffset(target.getCaret());
-                    TypedTextInterceptorsManager.Transaction transaction = TypedTextInterceptorsManager.getInstance().openTransaction(
+                    final BaseDocument doc = (BaseDocument)target.getDocument();
+                    final int insertionOffset = computeInsertionOffset(target.getCaret());
+                    final TypedTextInterceptorsManager.Transaction transaction = TypedTextInterceptorsManager.getInstance().openTransaction(
                             target, insertionOffset, cmd);
+                    
                     try {
                         if (!transaction.beforeInsertion()) {
-                            Object [] result = transaction.textTyped();
-                            String insertionText = result == null ? cmd : (String) result[0];
-                            int caretPosition = result == null ? -1 : (Integer) result[1];
-
-                            if (performTextInsertion(target, insertionOffset, insertionText, caretPosition)) {
+                            final Object [] result = new Object [] { Boolean.FALSE, "" }; //NOI18N
+                            doc.runAtomicAsUser (new Runnable () {
+                                public void run () {
+                                    Object [] r = transaction.textTyped();
+                                    String insertionText = r == null ? cmd : (String) r[0];
+                                    int caretPosition = r == null ? -1 : (Integer) r[1];
+                                    
+                                    try {
+                                        performTextInsertion(target, insertionOffset, insertionText, caretPosition);
+                                        result[0] = Boolean.TRUE;
+                                        result[1] = insertionText;
+                                    } catch (BadLocationException ble) {
+                                        LOG.log(Level.FINE, null, ble);
+                                        target.getToolkit().beep();
+                                    }
+                                }
+                            });
+                            
+                            if (((Boolean)result[0]).booleanValue()) {
                                 transaction.afterInsertion();
 
                                 // XXX: this is potentially wrong and we may need to call this with
                                 // the original cmd; or maybe only if insertionText == cmd; but maybe
                                 // it does not matter, because nobody seems to be overwriting this method anyway
-                                checkIndent(target, insertionText);
+                                checkIndent(target, (String)result[1]);
                             } // else text insertion failed
                         }
                     } finally {
@@ -1112,7 +1129,7 @@ public class BaseKit extends DefaultEditorKit {
                                 sb.append(" ");
                             }
                         }
-                        LOG.fine("Invalid command: '" + sb + "'"); //NOI18N
+                        LOG.log(Level.FINE, "Invalid command: {0}", sb); //NOI18N
                     }                    
                 }
             }
@@ -1178,7 +1195,7 @@ public class BaseKit extends DefaultEditorKit {
         // Private implementation
         // --------------------------------------------------------------------
 
-        private boolean performTextInsertion(final JTextComponent target, final int insertionOffset, final String insertionText, final int caretPosition) {
+        private void performTextInsertion(JTextComponent target, int insertionOffset, String insertionText, int caretPosition) throws BadLocationException {
             final BaseDocument doc = (BaseDocument)target.getDocument();
             
             try {
@@ -1187,49 +1204,37 @@ public class BaseKit extends DefaultEditorKit {
                 LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
             }
 
-            final boolean [] ret = new boolean [] { false };
-            doc.runAtomicAsUser (new Runnable () {
-                public void run () {
-                    DocumentUtilities.setTypingModification(doc, true);
+            DocumentUtilities.setTypingModification(doc, true);
+            try {
+                EditorUI editorUI = Utilities.getEditorUI(target);
+                Caret caret = target.getCaret();
+
+                editorUI.getWordMatch().clear(); // reset word matching
+                Boolean overwriteMode = (Boolean)editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+                boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
+                if (Utilities.isSelectionShowing(caret)) { // valid selection
                     try {
-                        EditorUI editorUI = Utilities.getEditorUI(target);
-                        Caret caret = target.getCaret();
-
-                        editorUI.getWordMatch().clear(); // reset word matching
-                        Boolean overwriteMode = (Boolean)editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
-                        boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
-                        if (Utilities.isSelectionShowing(caret)) { // valid selection
-                            try {
-                                doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
-                                replaceSelection(target, insertionOffset, caret, insertionText, ovr);
-                            } finally {
-                                doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
-                            }
-                        } else { // no selection
-                            if (ovr && insertionOffset < doc.getLength() && doc.getChars(insertionOffset, 1)[0] != '\n') { //NOI18N
-                                // overwrite current char
-                                insertString(doc, insertionOffset, caret, insertionText, true);
-                            } else { // insert mode
-                                insertString(doc, insertionOffset, caret, insertionText, false);
-                            }
-                        }
-
-                        if (caretPosition != -1) {
-                            assert caretPosition >= 0 && caretPosition < insertionText.length();
-                            caret.setDot(insertionOffset + caretPosition);
-                        }
-
-                        ret[0] = true;
-                    } catch (Exception e) {
-                        LOG.log(Level.FINE, null, e);
-                        target.getToolkit().beep();
+                        doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
+                        replaceSelection(target, insertionOffset, caret, insertionText, ovr);
                     } finally {
-                        DocumentUtilities.setTypingModification(doc, false);
+                        doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
+                    }
+                } else { // no selection
+                    if (ovr && insertionOffset < doc.getLength() && doc.getChars(insertionOffset, 1)[0] != '\n') { //NOI18N
+                        // overwrite current char
+                        insertString(doc, insertionOffset, caret, insertionText, true);
+                    } else { // insert mode
+                        insertString(doc, insertionOffset, caret, insertionText, false);
                     }
                 }
-            });
 
-            return ret[0];
+                if (caretPosition != -1) {
+                    assert caretPosition >= 0 && caretPosition < insertionText.length();
+                    caret.setDot(insertionOffset + caretPosition);
+                }
+            } finally {
+                DocumentUtilities.setTypingModification(doc, false);
+            }
         }
 
         private int computeInsertionOffset(Caret caret) {
@@ -1567,7 +1572,10 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
-    /** Remove previous or next character */
+    /** 
+     * @deprecated Please do not subclass this class. Use Typing Hooks instead, for details see
+     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+     */
     public static class DeleteCharAction extends LocalBaseAction {
 
         protected boolean nextChar;
@@ -1591,44 +1599,90 @@ public class BaseKit extends DefaultEditorKit {
 		final int dot = caret.getDot();
 		final int mark = caret.getMark();
 
-                doc.runAtomicAsUser (new Runnable () {
-                    public void run () {
-                    DocumentUtilities.setTypingModification(doc, true);
-
-                    try {
-                        if (dot != mark) { // remove selection
-                            doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
-                        } else {
-                            if (nextChar) { // remove next char
-                                char ch = doc.getChars(dot, 1)[0];
-                                doc.remove(dot, 1);
-                                charDeleted(doc, dot, caret, ch);
-                            } else { // remove previous char
-                                char ch = doc.getChars(dot-1, 1)[0];
-                                doc.remove(dot - 1, 1);
-                                charBackspaced(doc, dot-1, caret, ch);
+                if (dot != mark) {
+                    // remove selection
+                    doc.runAtomicAsUser (new Runnable () {
+                        public void run () {
+                            DocumentUtilities.setTypingModification(doc, true);
+                            try {
+                                doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
+                            } catch (BadLocationException e) {
+                                target.getToolkit().beep();
+                            } finally {
+                                DocumentUtilities.setTypingModification(doc, false);
                             }
                         }
-                    } catch (BadLocationException e) {
+                    });
+                } else {
+                    char [] removedChar = null;
+                    
+                    try {
+                        removedChar = nextChar ? 
+                        dot < doc.getLength() - 1 ? doc.getChars(dot, 1) : null : 
+                        dot > 0 ? doc.getChars(dot - 1, 1) : null;
+                    } catch (BadLocationException ble) {
                         target.getToolkit().beep();
-                    } finally {
-                        DocumentUtilities.setTypingModification(doc, false);
                     }
+                    
+                    if (removedChar != null) {
+                        final String removedText = String.valueOf(removedChar);
+                        final DeletedTextInterceptorsManager.Transaction t = DeletedTextInterceptorsManager.getInstance().openTransaction(target, dot, removedText, !nextChar);
+                        try {
+                            if (!t.beforeRemove()) {
+                                final boolean [] result = new boolean [] { false };
+                                doc.runAtomicAsUser (new Runnable () {
+                                    public void run () {
+                                        DocumentUtilities.setTypingModification(doc, true);
+                                        try {
+                                            if (nextChar) { // remove next char
+                                                doc.remove(dot, 1);
+                                            } else { // remove previous char
+                                                doc.remove(dot - 1, 1);
+                                            }
+
+                                            t.textDeleted();
+
+                                            if (nextChar) {
+                                                charDeleted(doc, dot, caret, removedText.charAt(0));
+                                            } else {
+                                                charBackspaced(doc, dot - 1, caret, removedText.charAt(0));
+                                            }
+
+                                            result[0] = true;
+                                        } catch (BadLocationException e) {
+                                            target.getToolkit().beep();
+                                        } finally {
+                                            DocumentUtilities.setTypingModification(doc, false);
+                                        }
+                                    }
+                                });
+
+                                if (result[0]) {
+                                    t.afterRemove();
+                                }
+                            }
+                        } finally {
+                            t.close();
+                        }
                     }
-                });
+                }
             }
         }
 
-      protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) 
-	throws BadLocationException
-      {
-      }
-      
-      protected void charDeleted(BaseDocument doc, int dotPos, Caret caret, char ch) 
-	throws BadLocationException
-      {
-      }
-    }
+        /**
+         * @deprecated Please use Typing Hooks instead, for details see
+         *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+         */
+        protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
+        }
+
+        /**
+         * @deprecated Please use Typing Hooks instead, for details see
+         *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+         */
+        protected void charDeleted(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
+        }
+    } // End of DeleteCharAction class
 
     public static class ReadOnlyAction extends LocalBaseAction {
 

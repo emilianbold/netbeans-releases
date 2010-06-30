@@ -1115,6 +1115,10 @@ public class ExtKit extends BaseKit {
 
     }
 
+    /** 
+     * @deprecated Please do not subclass this class. Use Typing Hooks instead, for details see
+     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+     */
   public static class ExtDeleteCharAction extends DeleteCharAction {
 
     public ExtDeleteCharAction(String nm, boolean nextChar) {

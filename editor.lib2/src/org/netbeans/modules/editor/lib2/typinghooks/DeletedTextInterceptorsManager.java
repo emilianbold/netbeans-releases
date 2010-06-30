@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.editor.lib2.typinghooks;
@@ -55,25 +58,25 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
+import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
 
 /**
  *
  * @author vita
  */
-public final class TypedTextInterceptorsManager {
+public final class DeletedTextInterceptorsManager {
 
-    public static TypedTextInterceptorsManager getInstance() {
+    public static DeletedTextInterceptorsManager getInstance() {
         if (instance == null) {
-            instance = new TypedTextInterceptorsManager();
+            instance = new DeletedTextInterceptorsManager();
         }
         return instance;
     }
 
-    public Transaction openTransaction(JTextComponent c, int offset, String typedText) {
+    public Transaction openTransaction(JTextComponent c, int offset, String removedText, boolean backwardDelete) {
         synchronized (this) {
             if (transaction == null) {
-                transaction = new Transaction(c, offset, typedText);
+                transaction = new Transaction(c, offset, removedText, backwardDelete);
                 return transaction;
             } else {
                 throw new IllegalStateException("Too many transactions; only one at a time is allowed!"); //NOI18N
@@ -83,14 +86,14 @@ public final class TypedTextInterceptorsManager {
 
     public final class Transaction {
 
-        public boolean beforeInsertion() {
-            for(TypedTextInterceptor i : interceptors) {
+        public boolean beforeRemove() {
+            for(DeletedTextInterceptor i : interceptors) {
                 try {
-                    if (i.beforeInsert(context)) {
+                    if (i.beforeRemove(context)) {
                         return true;
                     }
                 } catch (Exception e) {
-                    LOG.log(Level.INFO, "TypedTextInterceptor crashed in beforeInsert(): " + i, e); //NOI18N
+                    LOG.log(Level.INFO, "DeletedTextInterceptor crashed in beforeRemove(): " + i, e); //NOI18N
                 }
             }
 
@@ -98,38 +101,27 @@ public final class TypedTextInterceptorsManager {
             return false;
         }
 
-        /**
-         *
-         * @return [0] == insertionText, [1] == new caret position (!) within [0]
-         */
-        public Object [] textTyped() {
+        public void textDeleted() {
             Object [] data = null;
 
-            for(TypedTextInterceptor i : interceptors) {
+            for(DeletedTextInterceptor i : interceptors) {
                 try {
-                    i.insert(context);
+                    i.remove(context);
                 } catch (Exception e) {
-                    LOG.log(Level.INFO, "TypedTextInterceptor crashed in insert(): " + i, e); //NOI18N
-                    TypingHooksSpiAccessor.get().resetTtiContextData(context);
+                    LOG.log(Level.INFO, "DeletedTextInterceptor crashed in remove(): " + i, e); //NOI18N
                     continue;
-                }
-
-                data = TypingHooksSpiAccessor.get().getTtiContextData(context);
-                if (data != null) {
-                    break;
                 }
             }
 
             phase++;
-            return data;
         }
 
-        public void afterInsertion() {
-            for(TypedTextInterceptor i : interceptors) {
+        public void afterRemove() {
+            for(DeletedTextInterceptor i : interceptors) {
                 try {
-                    i.afterInsert(context);
+                    i.afterRemove(context);
                 } catch (Exception e) {
-                    LOG.log(Level.INFO, "TypedTextInterceptor crashed in afterInsert(): " + i, e); //NOI18N
+                    LOG.log(Level.INFO, "DeletedTextInterceptor crashed in afterRemove(): " + i, e); //NOI18N
                 }
             }
 
@@ -138,16 +130,16 @@ public final class TypedTextInterceptorsManager {
 
         public void close() {
             if (phase < 3) {
-                for(TypedTextInterceptor i : interceptors) {
+                for(DeletedTextInterceptor i : interceptors) {
                     try {
                         i.cancelled(context);
                     } catch (Exception e) {
-                        LOG.log(Level.INFO, "TypedTextInterceptor crashed in cancelled(): " + i, e); //NOI18N
+                        LOG.log(Level.INFO, "DeletedTextInterceptor crashed in cancelled(): " + i, e); //NOI18N
                     }
                 }
             }
 
-            synchronized (TypedTextInterceptorsManager.this) {
+            synchronized (DeletedTextInterceptorsManager.this) {
                 transaction = null;
             }
         }
@@ -156,12 +148,12 @@ public final class TypedTextInterceptorsManager {
         // Private implementation
         // ------------------------------------------------------------------------
 
-        private final TypedTextInterceptor.MutableContext context;
-        private final Collection<? extends TypedTextInterceptor> interceptors;
+        private final DeletedTextInterceptor.Context context;
+        private final Collection<? extends DeletedTextInterceptor> interceptors;
         private int phase = 0;
 
-        private Transaction(JTextComponent c, int offset, String typedText) {
-            this.context = TypingHooksSpiAccessor.get().createTtiContext(c, offset, typedText);
+        private Transaction(JTextComponent c, int offset, String removedText, boolean backwardDelete) {
+            this.context = TypingHooksSpiAccessor.get().createDtiContext(c, offset, removedText, backwardDelete);
             this.interceptors = getInterceptors(c.getDocument(), offset);
         }
     } // End of Transaction class
@@ -170,37 +162,37 @@ public final class TypedTextInterceptorsManager {
     // Private implementation
     // ------------------------------------------------------------------------
 
-    private static final Logger LOG = Logger.getLogger(TypedTextInterceptorsManager.class.getName());
+    private static final Logger LOG = Logger.getLogger(DeletedTextInterceptorsManager.class.getName());
     
-    private static TypedTextInterceptorsManager instance;
+    private static DeletedTextInterceptorsManager instance;
 
     private Transaction transaction = null;
-    private final Map<MimePath, Reference<Collection<TypedTextInterceptor>>> cache = new WeakHashMap<MimePath, Reference<Collection<TypedTextInterceptor>>>();
+    private final Map<MimePath, Reference<Collection<DeletedTextInterceptor>>> cache = new WeakHashMap<MimePath, Reference<Collection<DeletedTextInterceptor>>>();
     
-    private TypedTextInterceptorsManager() {
+    private DeletedTextInterceptorsManager() {
 
     }
 
     // XXX: listne on changes in MimeLookup
-    private Collection<? extends TypedTextInterceptor> getInterceptors(Document doc, int offset) {
+    private Collection<? extends DeletedTextInterceptor> getInterceptors(Document doc, int offset) {
         List<TokenSequence<?>> seqs = TokenHierarchy.get(doc).embeddedTokenSequences(offset, true);
         TokenSequence<?> seq = seqs.isEmpty() ? null : seqs.get(seqs.size() - 1);
         MimePath mimePath = seq == null ? MimePath.parse(DocumentUtilities.getMimeType(doc)) : MimePath.parse(seq.languagePath().mimePath());
         
         synchronized (cache) {
-            Reference<Collection<TypedTextInterceptor>> ref = cache.get(mimePath);
-            Collection<TypedTextInterceptor> interceptors = ref == null ? null : ref.get();
+            Reference<Collection<DeletedTextInterceptor>> ref = cache.get(mimePath);
+            Collection<DeletedTextInterceptor> interceptors = ref == null ? null : ref.get();
 
             if (interceptors == null) {
-                Collection<? extends TypedTextInterceptor.Factory> factories = MimeLookup.getLookup(mimePath).lookupAll(TypedTextInterceptor.Factory.class);
-                interceptors = new HashSet<TypedTextInterceptor>(factories.size());
+                Collection<? extends DeletedTextInterceptor.Factory> factories = MimeLookup.getLookup(mimePath).lookupAll(DeletedTextInterceptor.Factory.class);
+                interceptors = new HashSet<DeletedTextInterceptor>(factories.size());
 
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "TypedTextInterceptor.Factory instances for {0} {" , mimePath.getPath()); //NOI18N
+                    LOG.log(Level.FINE, "DeletedTextInterceptor.Factory instances for {0} {" , mimePath.getPath()); //NOI18N
                 }
 
-                for(TypedTextInterceptor.Factory f : factories) {
-                    TypedTextInterceptor interceptor = f.createTypedTextInterceptor(mimePath);
+                for(DeletedTextInterceptor.Factory f : factories) {
+                    DeletedTextInterceptor interceptor = f.createDeletedTextInterceptor(mimePath);
                     if (interceptor != null) {
                         interceptors.add(interceptor);
                     }
@@ -214,7 +206,7 @@ public final class TypedTextInterceptorsManager {
                 }
 
                 // XXX: this should really be a timed WeakReference
-                cache.put(mimePath, new SoftReference<Collection<TypedTextInterceptor>>(interceptors));
+                cache.put(mimePath, new SoftReference<Collection<DeletedTextInterceptor>>(interceptors));
             }
 
             return interceptors;
