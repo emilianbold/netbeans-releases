@@ -1196,10 +1196,26 @@ public class CasualDiff {
 
     protected int diffReturn(JCReturn oldT, JCReturn newT, int[] bounds) {
         int localPointer = bounds[0];
-        if (oldT.expr != null && newT.expr != null) {
-            int[] exprBounds = getBounds(oldT.expr);
-            copyTo(bounds[0], exprBounds[0]);
-            localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
+        if (oldT.expr != newT.expr) {
+            if (oldT.expr == null) {
+                tokenSequence.move(endPos(oldT));
+                tokenSequence.movePrevious();
+                copyTo(localPointer, localPointer = tokenSequence.offset());
+                if (tokenSequence.token().id() == JavaTokenId.SEMICOLON) {
+                    tokenSequence.movePrevious();
+                }
+                if (tokenSequence.token().id() != JavaTokenId.WHITESPACE) {
+                    printer.print(" ");
+                }
+                printer.print(newT.expr);
+            } else if (newT.expr == null) {
+                copyTo(localPointer, localPointer = getOldPos(oldT) + "return".length());
+                localPointer = endPos(oldT.expr);
+            } else {
+                int[] exprBounds = getBounds(oldT.expr);
+                copyTo(bounds[0], exprBounds[0]);
+                localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
+            }
         }
         copyTo(localPointer, bounds[1]);
 
