@@ -169,19 +169,19 @@ public class CreateModuleXML extends Task {
         Collections.sort(eagerNames);
         Collections.sort(hiddenNames);
         if (!enabledNames.isEmpty()) {
-            log("Enabled modules: " + enabledNames);
+            log("Enabled modules: " + enabledNames, Project.MSG_VERBOSE);
         }
         if (!disabledNames.isEmpty()) {
-            log("Disabled modules: " + disabledNames);
+            log("Disabled modules: " + disabledNames, Project.MSG_VERBOSE);
         }
         if (!autoloadNames.isEmpty()) {
-            log("Autoload modules: " + autoloadNames);
+            log("Autoload modules: " + autoloadNames, Project.MSG_VERBOSE);
         }
         if (!eagerNames.isEmpty()) {
-            log("Eager modules: " + eagerNames);
+            log("Eager modules: " + eagerNames, Project.MSG_VERBOSE);
         }
         if (!hiddenNames.isEmpty()) {
-            log("Hidden modules: " + hiddenNames);
+            log("Hidden modules: " + hiddenNames, Project.MSG_VERBOSE);
         }
     }
     
