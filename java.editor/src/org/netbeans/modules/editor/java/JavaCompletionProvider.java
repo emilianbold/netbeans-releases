@@ -49,6 +49,7 @@ import com.sun.source.util.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -550,7 +551,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case ENUM_CONSTANT:
                 case FIELD:
                 case METHOD:
-                    documentation = JavaCompletionDoc.create(controller, el);
+                    documentation = JavaCompletionDoc.create(controller, el, new Callable<Boolean>() {
+                        public Boolean call() {
+                            return isTaskCancelled();
+                        }
+                    });
                 }
             }
         }
