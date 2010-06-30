@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,7 +51,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.profiler.results.cpu.marking.MarkMapper;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkingEngine;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
@@ -112,7 +110,11 @@ public class TestBase extends NbTestCase {
         myCategorization = new Categorization(myJavaApp);
         myCategorization.reset();
         MarkingEngine.getDefault().configure(myCategorization.getMappings(), Collections.emptyList());
-        
+    }
+    
+    protected void resetMarkMappings(){
+        MarkingEngine.getDefault().configure(new MarkMapping[]{}, Collections.emptyList());
+        MarkingEngine.getDefault().configure(myCategorization.getMappings(), Collections.emptyList());
     }
     
     protected String getProjectName(){
