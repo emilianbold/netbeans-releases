@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.symfony;
 
 import java.io.File;
+import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
@@ -54,6 +55,7 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.symfony.commands.SymfonyCommandSupport;
 import org.netbeans.modules.php.symfony.editor.SymfonyEditorExtender;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,7 +64,10 @@ import org.openide.util.NbBundle;
 public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
     public static final String FILE_CONFIG = "config/ProjectConfiguration.class.php"; // NOI18N
 
+    private static final String ICON_PATH = "org/netbeans/modules/php/symfony/ui/resources/symfony_badge_8.png"; // NOI18N
     private static final SymfonyPhpFrameworkProvider INSTANCE = new SymfonyPhpFrameworkProvider();
+
+    private final BadgeIcon badgeIcon;
 
     @PhpFrameworkProvider.Registration(position=100)
     public static SymfonyPhpFrameworkProvider getInstance() {
@@ -71,6 +76,14 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     private SymfonyPhpFrameworkProvider() {
         super(NbBundle.getMessage(SymfonyPhpFrameworkProvider.class, "LBL_FrameworkName"), NbBundle.getMessage(SymfonyPhpFrameworkProvider.class, "LBL_FrameworkDescription"));
+        badgeIcon = new BadgeIcon(
+                ImageUtilities.loadImage(ICON_PATH),
+                SymfonyPhpFrameworkProvider.class.getResource("/" + ICON_PATH)); // NOI18N
+    }
+
+    @Override
+    public BadgeIcon getBadgeIcon() {
+        return badgeIcon;
     }
 
     /**
