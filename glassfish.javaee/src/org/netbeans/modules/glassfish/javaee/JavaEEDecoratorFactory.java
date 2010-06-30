@@ -99,6 +99,8 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
             "org/netbeans/modules/glassfish/javaee/resources/appclient.gif"; // NOI18N
     private static final String JAVAMAIL_ICON =
             "org/netbeans/modules/glassfish/javaee/resources/javamail.gif"; // NOI18N
+    private static final String DISABLED_BADGE =
+            "org/netbeans/modules/glassfish/javaee/resources/disabled-badge.gif"; // NOI18N
     
     public static final Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
@@ -109,34 +111,89 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
     
     public static final Decorator J2EE_APPLICATION = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_ARCHIVE); }
     };
     
     public static final Decorator WEB_APPLICATION = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return true; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.WAR_ARCHIVE); }
     };
     
     public static final Decorator EJB_JAR = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EJB_ARCHIVE); }
     };
 
     public static final Decorator APPCLIENT = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(APPCLIENT_ICON); }
     };
 
     public static final Decorator CONNECTOR = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(CONNECTOR_ICON); }
     };
     
+    public static final Decorator DISABLED_J2EE_APPLICATION = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
+        @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_ARCHIVE); }
+        @Override public Image getIconBadge() {return ImageUtilities.loadImage(DISABLED_BADGE); }
+    };
+
+    public static final Decorator DISABLED_WEB_APPLICATION = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
+        @Override public boolean canShowBrowser() { return true; }
+        @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.WAR_ARCHIVE); }
+        @Override public Image getIconBadge() {return ImageUtilities.loadImage(DISABLED_BADGE); }
+    };
+
+    public static final Decorator DISABLED_EJB_JAR = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
+        @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EJB_ARCHIVE); }
+        @Override public Image getIconBadge() {return ImageUtilities.loadImage(DISABLED_BADGE); }
+    };
+
+    public static final Decorator DISABLED_APPCLIENT = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(APPCLIENT_ICON); }
+        @Override public Image getIconBadge() {return ImageUtilities.loadImage(DISABLED_BADGE); }
+    };
+
+    public static final Decorator DISABLED_CONNECTOR = new Decorator() {
+        @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(CONNECTOR_ICON); }
+        @Override public Image getIconBadge() {return ImageUtilities.loadImage(DISABLED_BADGE); }
+    };
+
     public static final Decorator JDBC_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(JDBC_RESOURCE_ICON); }
@@ -199,7 +256,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         @Override public String getCmdPropertyName() { return "jndi_name"; }
     };
     
-    private static Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();
+    private static final Map<String, Decorator> decoratorMap = new HashMap<String, Decorator>();
     
     static {
         // !PW XXX need to put in correct strings, then define as static 
@@ -209,6 +266,11 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         decoratorMap.put(GlassfishModule.EAR_CONTAINER, J2EE_APPLICATION);
         decoratorMap.put(GlassfishModule.APPCLIENT_CONTAINER, APPCLIENT);
         decoratorMap.put(GlassfishModule.CONNECTOR_CONTAINER, CONNECTOR);
+        decoratorMap.put(Decorator.DISABLED+GlassfishModule.WEB_CONTAINER, DISABLED_WEB_APPLICATION);
+        decoratorMap.put(Decorator.DISABLED+GlassfishModule.EJB_CONTAINER, DISABLED_EJB_JAR);
+        decoratorMap.put(Decorator.DISABLED+GlassfishModule.EAR_CONTAINER, DISABLED_J2EE_APPLICATION);
+        decoratorMap.put(Decorator.DISABLED+GlassfishModule.APPCLIENT_CONTAINER, DISABLED_APPCLIENT);
+        decoratorMap.put(Decorator.DISABLED+GlassfishModule.CONNECTOR_CONTAINER, DISABLED_CONNECTOR);
         decoratorMap.put(GlassfishModule.JDBC_RESOURCE, JDBC_MANAGED_DATASOURCES);
         decoratorMap.put(GlassfishModule.JDBC_CONNECTION_POOL, CONNECTION_POOLS);
         decoratorMap.put(GlassfishModule.JDBC, JDBC_FOLDER);

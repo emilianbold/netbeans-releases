@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,46 +40,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.spi;
+package org.netbeans.modules.glassfish.common.nodes.actions;
+
+import java.util.concurrent.Future;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.openide.nodes.Node;
+
 
 /**
+ * @author vince kraemer
  *
- * @author Peter Williams
+ * based on UndeployModuleCookie
+ * @author Michal Mocnak
+ * @auther Peter Williams
  */
-public class AppDesc {
+public interface EnableModulesCookie extends Node.Cookie {
     
-    private final String name;
-    private final String path;
-    private final String contextRoot;
-    private final boolean enabled;
+    public Future<OperationState> enableModule();
     
-    public AppDesc(final String name, final String path, final String contextRoot, boolean enabled) {
-        this.name = name;
-        this.path = path;
-        this.contextRoot = contextRoot;
-        this.enabled = enabled;
-    }
-
-    public String getName() {
-        return name;
-    }
-    
-    public String getPath() {
-        return path;
-    }
-    
-    public String getContextRoot() {
-        return contextRoot;
-    }
-
-    public boolean getEnabled() {
-        return enabled;
-    }
+    public boolean isRunning();
     
 }
