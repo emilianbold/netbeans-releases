@@ -43,27 +43,33 @@
 package org.netbeans.modules.php.project;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
-import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=ProjectIconAnnotator.class)
 public class PhpProjectAnnotator implements ProjectIconAnnotator {
     private static final String TOOLTIP = "<img src=\"%s\">&nbsp;%s"; // NOI18N
 
-    private final LookupListener frameworksListener = new FrameworksListener();
     final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final PropertyChangeListener propertyChangeListener;
 
     public PhpProjectAnnotator() {
-        PhpFrameworks.addFrameworksListener(frameworksListener);
+        propertyChangeListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (PhpProject.PROP_FRAMEWORKS.equals(evt.getPropertyName())) {
+                    changeSupport.fireChange();
+                }
+            }
+        };
     }
 
     @Override
@@ -72,6 +78,8 @@ public class PhpProjectAnnotator implements ProjectIconAnnotator {
         if (phpProject == null) {
             return original;
         }
+
+        ProjectPropertiesSupport.addWeakPropertyChangeListener(phpProject, propertyChangeListener);
 
         // badge - 1st wins; tooltip - all frameworks
         Image badged = original;
@@ -97,12 +105,5 @@ public class PhpProjectAnnotator implements ProjectIconAnnotator {
     @Override
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
-    }
-
-    private final class FrameworksListener implements LookupListener {
-        @Override
-        public void resultChanged(LookupEvent ev) {
-            changeSupport.fireChange();
-        }
     }
 }
