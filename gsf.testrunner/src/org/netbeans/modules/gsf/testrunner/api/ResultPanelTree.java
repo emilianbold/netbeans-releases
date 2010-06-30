@@ -52,7 +52,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.accessibility.AccessibleContext;
 import javax.swing.ActionMap;
 import javax.swing.JPanel;
@@ -309,6 +311,16 @@ final class ResultPanelTree extends JPanel
      */
     Node[] getSelectedNodes() {
         return explorerManager.getSelectedNodes();
+    }
+
+    Set<Testcase> getFailedTests(){
+        Set<Testcase> failedTests = new HashSet();
+        for(TestMethodNode node:getFailedTestMethodNodes()){
+            if (node.failed()){
+                failedTests.add(node.getTestCase());
+            }
+        }
+        return failedTests;
     }
 
     /**

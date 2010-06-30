@@ -118,7 +118,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
     protected boolean init() {
         boolean needsInit = super.init();
         if (needsInit) {
-            refreshView(null);
+            refreshView(null, true);
         }
         return needsInit;
     }
@@ -164,7 +164,7 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
                 } else {
                     // #47160: was a supported command (e.g. on a freeform project) but was then removed.
                     Toolkit.getDefaultToolkit().beep();
-                    refreshView(null);
+                    refreshView(null, false);
                 }
             }
         }
@@ -181,12 +181,12 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
     public @Override void propertyChange( PropertyChangeEvent evt ) {
         if (OpenProjectList.PROPERTY_MAIN_PROJECT.equals(evt.getPropertyName()) ||
             OpenProjectList.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-            refreshView(null);
+            refreshView(null, false);
         }
     }
 
-    private void refreshView(final Lookup context) {
-        RP.post(new Runnable() {
+    private void refreshView(final Lookup context, boolean immediate) {
+        Runnable r= new Runnable() {
             public @Override void run() {
 
         Project p = OpenProjectList.getDefault().getMainProject();
@@ -239,7 +239,12 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
             }
         });
             }
-        });
+        };
+        if (immediate) {
+            r.run();
+        } else {
+            RP.post(r);
+        }
     }
 
     private String getPresenterName(String name, Project mPrj, Project cPrj) {
@@ -309,8 +314,8 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
     }
 
     @Override
-    protected void refresh(Lookup context) {
-        refreshView(context);
+    protected void refresh(Lookup context, boolean immediate) {
+        refreshView(context, immediate);
     }
 
     /* Backed out; see issue #105664 for discussion:

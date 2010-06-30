@@ -92,7 +92,7 @@ public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
              .enableModules(".*").clusters(".*")));
         return suite;
     }
-    
+
     public void testEARProjectNodePopupMenu() {
         testNode(getEARProjectNode(), null);
     }
@@ -144,7 +144,7 @@ public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
     public void testEJBsSourceNodePopupMenu() {
         testNode(getEJBProjectNode(), "Source Packages");
     }
-    
+
     public void testSessionBeanNodePopupMenu() {
         testNode(getEJBProjectNode(), "Enterprise Beans|TestSessionSB");
     }

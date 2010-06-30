@@ -116,8 +116,8 @@ public class JBossJaxWsStack implements WSStackImplementation<JaxWs> {
                 return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl"; //NOI18N
             }
 
-            public String getTesterPageUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?Tester"; //NOI18N
+            public String getTesterPageUri(String host, String port, String applicationRoot, String serviceName, String portName, boolean isEjb) {
+                return "";
             }
             
         };

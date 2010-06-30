@@ -273,7 +273,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 targetFailed();
                 break;
             case TERMINATED:
-                targetFinished(event.status);
+                targetTerminated();
                 break;
             case DONE:
                 targetFinished(event.status);
@@ -298,37 +298,41 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
     }
 
-    private void targetFinished(Integer status) {
-        int exitCode = -1;
+    private void targetTerminated() {
+        // use \r\n to correctly move cursor in terminals as well
+        io.getOut().printf("\r\n"); // NOI18N
+        
+        StatusDisplayer.getDefault().setStatusText(getMessage("Status.RunTerminated")); // NOI18N
+        io.getErr().printf("%s\r\n", getMessage("Output.RunTerminated")); // NOI18N
 
+        for (ExecutionListener l : listeners) {
+            l.executionFinished(-1);
+        }
+    }
+
+    private void targetFinished(Integer status) {
         // use \r\n to correctly move cursor in terminals as well
         io.getOut().printf("\r\n"); // NOI18N
 
-        if (status == null) {
-            StatusDisplayer.getDefault().setStatusText(getMessage("Status.RunTerminated")); // NOI18N
-            io.getErr().println(getMessage("Output.RunTerminated")); // NOI18N
+        int exitCode = status.intValue();
+        boolean success = exitCode == 0;
+
+        StatusDisplayer.getDefault().setStatusText(
+                getMessage(success ? "Status.RunSuccessful" : "Status.RunFailed")); // NOI18N
+
+        String time = formatTime(System.currentTimeMillis() - startTimeMillis);
+
+        if (success) {
+            // use \r\n to correctly move cursor in terminals as well
+            io.getOut().printf("%s\r\n", getMessage("Output.RunSuccessful", time)); // NOI18N);
         } else {
-            exitCode = status.intValue();
-            boolean success = exitCode == 0;
-
-            StatusDisplayer.getDefault().setStatusText(
-                    getMessage(success ? "Status.RunSuccessful" : "Status.RunFailed")); // NOI18N
-
-            String time = formatTime(System.currentTimeMillis() - startTimeMillis);
-            
-            if (success) {
-                // use \r\n to correctly move cursor in terminals as well
-                io.getOut().printf("%s\r\n", getMessage("Output.RunSuccessful", time)); // NOI18N);
-            } else {
-                // use \r\n to correctly move cursor in terminals as well
-                io.getErr().printf("%s\r\n", getMessage("Output.RunFailed", exitCode, time)); // NOI18N
-            }
+            // use \r\n to correctly move cursor in terminals as well
+            io.getErr().printf("%s\r\n", getMessage("Output.RunFailed", exitCode, time)); // NOI18N
         }
 
         for (ExecutionListener l : listeners) {
             l.executionFinished(exitCode);
         }
-
     }
 
     private static String formatTime(long millis) {

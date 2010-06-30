@@ -59,10 +59,11 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
  */
 public class HashMapRepository implements Repository {
 
+    @Override
     public void debugDistribution() {
     }
 
-    /** repersents a single unit */
+    /** represents a single unit */
     private static class Unit {
         
         private Map<Key,Persistent> map = new ConcurrentHashMap<Key,Persistent>();
@@ -116,48 +117,58 @@ public class HashMapRepository implements Repository {
         return unit;
     }
     
+    @Override
     public void put(Key key, Persistent obj) {
         assert obj != null;
         getUnit(key.getUnit()).put(key, obj);
     }
 
+    @Override
     public Persistent get(Key key) {
         return getUnit(key.getUnit()).get(key);
     }
 
+    @Override
     public Persistent tryGet(Key key) {
 	return get(key);
     }
     
+    @Override
     public void remove(Key key) {
         getUnit(key.getUnit()).remove(key);
     }
 
+    @Override
     public void hang(Key key, Persistent obj) {
         put(key, obj);
     }
 
+    @Override
     public void debugClear() {
         // do nothing
     }
     
+    @Override
     public void shutdown() {
         synchronized( unitsLock ) {
             units.clear();
         }
     }
 
-    public void openUnit(int unitId, String unitName) {
+    @Override
+    public void openUnit(int unitId, CharSequence unitName) {
     }
     
-    public synchronized void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
+    @Override
+    public synchronized void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits) {
         removeUnit(unitName);
     }
     
-    public synchronized void removeUnit(String unitName) {
+    @Override
+    public synchronized void removeUnit(CharSequence unitName) {
         for( Iterator<CharSequence> iter = units.keySet().iterator(); iter.hasNext(); ) {
             CharSequence key = iter.next();
-            if( key.toString().equals(unitName)) {
+            if( key.equals(unitName)) {
                 synchronized( unitsLock ) {
                     iter.remove();
                     return;
@@ -166,18 +177,22 @@ public class HashMapRepository implements Repository {
         }
     }
 
+    @Override
     public void cleanCaches() {
         // do nothing
     }
 
+    @Override
     public void registerRepositoryListener(RepositoryListener aListener) {
         // do nothing
     }
 
+    @Override
     public void unregisterRepositoryListener(RepositoryListener aListener) {
         // do nothing
     }
 
+    @Override
     public void startup(int persistMechanismVersion) {
     }
 

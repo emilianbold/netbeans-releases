@@ -21,7 +21,7 @@
         <property name="installer.build.dir" value="${suite.location}/build/installer"/>
         <property name="suite.dist.directory" value="${suite.location}/dist"/>
         <property name="suite.dist.zip"       value="${suite.dist.directory}/${suite.props.app.name}.zip"/>
-        <property name="${installers.file.prefix}" value="${suite.props.app.name}"/>
+        <property name="installers.file.prefix" value="${suite.props.app.name}"/>
         <delete dir="${installer.build.dir}" includeemptydirs="yes" failonerror="false"/>
 
         <mkdir dir="${installer.build.dir}"/>

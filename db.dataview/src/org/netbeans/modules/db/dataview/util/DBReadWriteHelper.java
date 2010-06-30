@@ -174,11 +174,12 @@ public class DBReadWriteHelper {
                 }
             }
             case Types.TINYINT: {
-                byte tidata = rs.getByte(index);
+                // byte primitive data type is not enough for UNSIGNED TINYINT
+                short tidata = rs.getShort(index);
                 if (rs.wasNull()) {
                     return null;
                 } else {
-                    return new Byte(tidata);
+                    return new Short(tidata);
                 }
             }
             // JDBC/ODBC bridge JDK1.4 brings back -9 for nvarchar columns in

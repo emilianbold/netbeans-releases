@@ -45,6 +45,7 @@ package org.netbeans.modules.php.editor.api.elements;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.php.editor.elements.VariableElementImpl;
 
 /**
  *
@@ -71,6 +72,23 @@ public abstract class ElementTransformation<S extends PhpElement> {
                 if (element instanceof TypeMemberElement) {
                     TypeMemberElement typeMemberElement = (TypeMemberElement) element;
                     return typeMemberElement.getType();
+                }
+                return null;
+            }
+        };
+    }
+
+    /**
+     * intended for frameworks
+     * @return
+     */
+    public static ElementTransformation<VariableElement> fieldsToVariables() {
+        return new ElementTransformation<VariableElement>() {
+            @Override
+            public VariableElement transform(PhpElement element) {
+                if (element instanceof FieldElement) {
+                    FieldElement field = (FieldElement) element;
+                    return VariableElementImpl.create(field.getName(), field.getOffset(), field.getFilenameUrl(), field.getElementQuery(), field.getInstanceTypes());
                 }
                 return null;
             }

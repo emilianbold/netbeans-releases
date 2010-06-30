@@ -52,10 +52,10 @@ public interface RepositoryTranslation {
     /**
      * Methods to translate Strings to indexes for repository clients
      */
-    int getFileIdByName(final int unitId, final String fileName);
-    String getFileNameById(final int unitId, final int fileId);
-    String getFileNameByIdSafe(final int unitId, final int fileId);
-    int getUnitId(String unitName);
-    String getUnitName(int unitId);    
-    String getUnitNameSafe(int unitId);
+    int getFileIdByName(final int unitId, final CharSequence fileName);
+    CharSequence getFileNameById(final int unitId, final int fileId);
+    CharSequence getFileNameByIdSafe(final int unitId, final int fileId);
+    int getUnitId(CharSequence unitName);
+    CharSequence getUnitName(int unitId);
+    CharSequence getUnitNameSafe(int unitId);
 }

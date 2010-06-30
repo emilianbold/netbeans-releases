@@ -833,22 +833,27 @@ public class SolarisLogReader {
             this.userMacros = userMacros;
         }
 
+        @Override
         public String getCompilePath() {
             return compilePath;
         }
 
+        @Override
         public String getItemPath() {
             return fullName;
         }
 
+        @Override
         public String getItemName() {
             return sourceName;
         }
 
+        @Override
         public List<String> getUserInludePaths() {
             return userIncludes;
         }
 
+        @Override
         public List<String> getSystemInludePaths() {
             return systemIncludes;
         }
@@ -857,16 +862,36 @@ public class SolarisLogReader {
             return includedFiles;
         }
 
+        @Override
         public Map<String, String> getUserMacros() {
             return userMacros;
         }
 
+        @Override
         public Map<String, String> getSystemMacros() {
             return systemMacros;
         }
 
+        @Override
         public ItemProperties.LanguageKind getLanguageKind() {
             return language;
+        }
+
+        @Override
+        public String getCompilerName() {
+            if (isSunCompiler) {
+                if (language ==  ItemProperties.LanguageKind.CPP) {
+                    return "CC"; // NOI18N
+                } else {
+                    return "cc"; // NOI18N
+                }
+            } else {
+                if (language ==  ItemProperties.LanguageKind.CPP) {
+                    return "g++"; // NOI18N
+                } else {
+                    return "gcc"; // NOI18N
+                }
+            }
         }
     }
 

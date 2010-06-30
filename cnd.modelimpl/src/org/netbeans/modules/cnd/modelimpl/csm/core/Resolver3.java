@@ -70,27 +70,27 @@ import org.openide.util.CharSequences;
  * @author Vladimir Kvasihn
  */
 public final class Resolver3 implements Resolver {
-    
+
     private final ProjectBase project;
     private final CsmFile file;
     private final CsmFile startFile;
     private int offset;
     private final int origOffset;
     private Resolver parentResolver;
-    
+
     private final List<CharSequence> usedNamespaces = new ArrayList<CharSequence>();
     private final Map<CharSequence, CsmNamespace> namespaceAliases = new HashMap<CharSequence, CsmNamespace>();
     private final Map<CharSequence, CsmDeclaration> usingDeclarations = new HashMap<CharSequence, CsmDeclaration>();
-    
+
     private CsmTypedef currTypedef;
     private CsmClassifier currLocalClassifier;
-    
+
     private CharSequence[] names;
     private int currNamIdx;
     private int interestedKind;
     private boolean resolveInBaseClass;
     private boolean inLocalContext = false;
-    
+
     private CharSequence currName() {
         return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequences.empty();
     }
@@ -105,24 +105,24 @@ public final class Resolver3 implements Resolver {
         }
         return containingNamespace;
     }
-    
+
     private CsmClass getContainingClass() {
         if( ! contextFound ) {
             findContext();
         }
         return containingClass;
     }
-    
+
     private void findContext() {
         contextFound = true;
         CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(0, offset);
         findContext(CsmSelect.getDeclarations(file, filter), filter);
     }
-    
+
     private Set<CsmFile> visitedFiles = new HashSet<CsmFile>();
-    
+
     //private CsmNamespace currentNamespace;
-    
+
     public Resolver3(CsmFile file, int offset, Resolver parent, CsmFile startFile) {
         this.file = file;
         this.offset = offset;
@@ -131,16 +131,16 @@ public final class Resolver3 implements Resolver {
         this.project = (ProjectBase) file.getProject();
         this.startFile = startFile;
     }
-    
+
     public Resolver3(CsmFile file, int offset, Resolver parent) {
         this(file, offset, parent, (parent == null) ? file : parent.getStartFile());
     }
-    
+
     public Resolver3(CsmOffsetable context, Resolver parent) {
         this(context.getContainingFile(), context.getStartOffset(), parent,
                 (parent == null) ? context.getContainingFile() : parent.getStartFile());
     }
-    
+
     private CsmClassifier findClassifier(CsmNamespace ns, CharSequence qualifiedNamePart) {
         CsmClassifier result = null;
         while ( ns != null  && result == null) {
@@ -156,7 +156,7 @@ public final class Resolver3 implements Resolver {
         CsmClassifier result = CsmClassifierResolver.getDefault().findClassifierUsedInFile(qualifiedName, getStartFile(), needClasses());
         return result;
     }
-    
+
     public CsmFile getStartFile() {
         return startFile;
     }
@@ -175,7 +175,7 @@ public final class Resolver3 implements Resolver {
         }
         return result;
     }
-    
+
     private CsmNamespace findNamespace(CharSequence qualifiedName) {
         CsmNamespace result = project.findNamespace(qualifiedName);
         if( result == null ) {
@@ -249,10 +249,10 @@ public final class Resolver3 implements Resolver {
                     break;
                 }
             }
-            orig = resovedClassifier;            
+            orig = resovedClassifier;
         }
         return orig;
-        
+
     }
 
     public static CsmClassifier findOtherClassifier(CsmClassifier out) {
@@ -279,9 +279,9 @@ public final class Resolver3 implements Resolver {
                     }
                 }
             }
-        }        
+        }
         return cls;
-    }         
+    }
 
     private void findContext(Iterator it, CsmFilter filter) {
         while(it.hasNext()) {
@@ -295,7 +295,7 @@ public final class Resolver3 implements Resolver {
             } else if(   decl.getKind() == CsmDeclaration.Kind.CLASS
                     || decl.getKind() == CsmDeclaration.Kind.STRUCT
                     || decl.getKind() == CsmDeclaration.Kind.UNION ) {
-                
+
                 CsmClass cls = (CsmClass) decl;
                 if( cls.getStartOffset() < this.offset && this.offset < cls.getEndOffset()  ) {
                     containingClass = cls;
@@ -317,7 +317,7 @@ public final class Resolver3 implements Resolver {
             }
         }
     }
-    
+
     private CsmFunction getFunctionDeclaration(CsmFunctionDefinition fd){
         if (fd instanceof FunctionDefinitionImpl) {
             if (isRecursionOnResolving(INFINITE_RECURSION)) {
@@ -327,7 +327,7 @@ public final class Resolver3 implements Resolver {
         }
         return fd.getDeclaration();
     }
-    
+
     public boolean isRecursionOnResolving(int maxRecursion) {
         Resolver3 parent = (Resolver3)parentResolver;
         int count = 0;
@@ -380,7 +380,7 @@ public final class Resolver3 implements Resolver {
         }
         return result;
     }
-    
+
     private void traceRecursion(){
         System.out.println("Detected recursion in resolver:"); // NOI18N
         System.out.println("\t"+this); // NOI18Nv
@@ -406,7 +406,7 @@ public final class Resolver3 implements Resolver {
         }
         if (needNamespaces()) {
             buf.append("N"); // NOI18N
-        }    
+        }
         buf.append(":"+currName()); // NOI18N
         for(int i = 0; i < names.length; i++){
             if (i == 0) {
@@ -426,13 +426,36 @@ public final class Resolver3 implements Resolver {
         return buf.toString();
     }
 
+    private static final CsmFilter NO_FILTER = CsmSelect.getFilterBuilder().createOffsetFilter(0, Integer.MAX_VALUE);
+    private static final CsmFilter NAMESPACE_FILTER = CsmSelect.getFilterBuilder().createKindFilter(
+                         CsmDeclaration.Kind.NAMESPACE_DEFINITION
+                       , CsmDeclaration.Kind.NAMESPACE_ALIAS
+                       , CsmDeclaration.Kind.USING_DECLARATION
+                       , CsmDeclaration.Kind.USING_DIRECTIVE
+                       );
+    private static final CsmFilter CLASS_FILTER = CsmSelect.getFilterBuilder().createKindFilter(
+                         CsmDeclaration.Kind.NAMESPACE_DEFINITION
+                       , CsmDeclaration.Kind.NAMESPACE_ALIAS
+                       , CsmDeclaration.Kind.USING_DECLARATION
+                       , CsmDeclaration.Kind.USING_DIRECTIVE
+                       , CsmDeclaration.Kind.TYPEDEF
+                       , CsmDeclaration.Kind.CLASS
+                       , CsmDeclaration.Kind.ENUM
+                       , CsmDeclaration.Kind.STRUCT
+                       , CsmDeclaration.Kind.UNION
+                       );
+
     private void gatherMaps(CsmFile file) {
         if( file == null || visitedFiles.contains(file) ) {
             return;
         }
         visitedFiles.add(file);
-        
-        CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(0, offset);
+        CsmFilter filter;
+        if (offset == Integer.MAX_VALUE) {
+            filter = NO_FILTER;
+        } else {
+            filter = CsmSelect.getFilterBuilder().createOffsetFilter(0, offset);
+        }
         Iterator<CsmInclude> iter = CsmSelect.getIncludes(file, filter);
         while (iter.hasNext()){
             CsmInclude inc = iter.next();
@@ -444,13 +467,20 @@ public final class Resolver3 implements Resolver {
                 offset = oldOffset;
             }
         }
+        if (offset == Integer.MAX_VALUE) {
+            if (needClassifiers()) {
+                filter = CLASS_FILTER;
+            } else {
+                filter = NAMESPACE_FILTER;
+            }
+        }
         gatherMaps(CsmSelect.getDeclarations(file, filter));
     }
-    
+
     private void gatherMaps(Iterable<? extends CsmObject> declarations) {
         gatherMaps(declarations.iterator());
     }
-    
+
     private void gatherMaps(Iterator<? extends CsmObject> it) {
         while(it.hasNext()) {
             CsmObject o = it.next();
@@ -463,7 +493,7 @@ public final class Resolver3 implements Resolver {
                 }
                 //assert o instanceof CsmScopeElement;
                 if( o instanceof CsmScopeElement ) {
-                    
+
                     // not yet in local context, but jumping into it
                     boolean oldValue = inLocalContext;
                     if (!inLocalContext && CsmKindUtilities.isFunctionDefinition(o)) {
@@ -485,7 +515,7 @@ public final class Resolver3 implements Resolver {
             }
         }
     }
-    
+
     private CsmClassifier findNestedClassifier(CsmClassifier clazz) {
         if (CsmKindUtilities.isClass(clazz)) {
             Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass)clazz,
@@ -495,13 +525,13 @@ public final class Resolver3 implements Resolver {
                 if( CharSequences.comparator().compare(currName(),member.getName())==0 ) {
                     if(CsmKindUtilities.isClassifier(member)) {
                         return (CsmClassifier) member;
-                    }            
+                    }
                 }
             }
         }
         return null;
     }
-    
+
     private void doProcessTypedefsInUpperNamespaces(CsmNamespaceDefinition nsd) {
         CsmFilter filter =  CsmSelect.getFilterBuilder().createKindFilter(
                                   CsmDeclaration.Kind.NAMESPACE_DEFINITION,
@@ -518,7 +548,7 @@ public final class Resolver3 implements Resolver {
             }
         }
     }
-    
+
     private void processTypedefsInUpperNamespaces(CsmNamespaceDefinition nsd) {
         if( CharSequences.comparator().compare(nsd.getName(),currName())==0 )  {
             currNamIdx++;
@@ -532,12 +562,12 @@ public final class Resolver3 implements Resolver {
             }
         }
     }
-    
+
     /**
      * It is quaranteed that element.getStartOffset < this.offset
      */
     private void gatherMaps(CsmScopeElement element, int end) {
-        
+
         CsmDeclaration.Kind kind = (element instanceof CsmDeclaration) ? ((CsmDeclaration) element).getKind() : null;
         if( kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
             CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) element;
@@ -632,12 +662,12 @@ public final class Resolver3 implements Resolver {
         }
         return decl;
     }
-    
-    
+
+
     public CsmObject resolve(CharSequence qualified, int interestedKind) {
         return resolve(Utils.splitQualifiedName(qualified.toString()), interestedKind);
     }
-    
+
     /**
      * Resolver class or namespace name.
      * Why class or namespace? Because in usage of kind org::vk::test
@@ -655,12 +685,12 @@ public final class Resolver3 implements Resolver {
      */
     public CsmObject resolve(CharSequence[] nameTokens, int interestedKind) {
         CsmObject result = null;
-        
+
         names = nameTokens;
         currNamIdx = 0;
         this.interestedKind = interestedKind;
         CsmNamespace containingNS = null;
-        
+
         if( nameTokens.length == 1 ) {
             if( result == null && needClassifiers()) {
                 CsmClass cls = getContainingClass();
@@ -702,7 +732,7 @@ public final class Resolver3 implements Resolver {
                         result = decl;
                     }
                 }
-                
+
                 if( result == null && needClassifiers()) {
                     for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
                         String nsp = iter.next().toString();
@@ -722,7 +752,7 @@ public final class Resolver3 implements Resolver {
                         }
                     }
                 }
-                
+
                 if( result == null && needNamespaces()) {
                     Object o = namespaceAliases.get(CharSequences.create(nameTokens[0]));
                     if( o instanceof CsmNamespace ) {
@@ -752,7 +782,7 @@ public final class Resolver3 implements Resolver {
             }
             if( result == null && needClassifiers()) {
                 containingNS = getContainingNamespace();
-                result = findClassifier(containingNS, sb.toString());                
+                result = findClassifier(containingNS, sb.toString());
             }
             if( result == null && needNamespaces()) {
                 containingNS = getContainingNamespace();
@@ -777,7 +807,7 @@ public final class Resolver3 implements Resolver {
                         }
                     }
                 }
-                
+
                 if( result == null ) {
                     for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
                         String nsp = iter.next().toString();
@@ -809,7 +839,7 @@ public final class Resolver3 implements Resolver {
                                 result = resolveInUsings(ns, sb.toString());
                             }
                         } else if( first instanceof CsmClass ) {
-                            
+
                         }
                     }
                 }
@@ -849,7 +879,7 @@ public final class Resolver3 implements Resolver {
         }
         return result;
     }
-    
+
     private CsmClassifier getTypeClassifier(CsmType type){
         if (type instanceof SafeClassifierProvider) {
             if (isRecursionOnResolving(INFINITE_RECURSION)) {
@@ -859,14 +889,14 @@ public final class Resolver3 implements Resolver {
         }
         return type.getClassifier();
     }
-    
+
     private CsmObject resolveInBaseClasses(CsmClass cls, CharSequence name) {
         resolveInBaseClass = true;
         CsmObject res = _resolveInBaseClasses(cls, name, new HashSet<CharSequence>(), 0);
         resolveInBaseClass = false;
         return res;
     }
-    
+
     private CsmObject _resolveInBaseClasses(CsmClass cls, CharSequence name, Set<CharSequence> antiLoop, int depth) {
         if (depth == 50) {
             new Exception("Too many loops in resolver!!!").printStackTrace(System.err); // NOI18N
@@ -893,7 +923,7 @@ public final class Resolver3 implements Resolver {
         }
         return null;
     }
-    
+
     private CsmClass getInheritanceClass(CsmInheritance inh){
         if (inh instanceof InheritanceImpl) {
             if (isRecursionOnResolving(INFINITE_RECURSION)) {
@@ -959,16 +989,16 @@ public final class Resolver3 implements Resolver {
         }
         return out;
     }
-    
+
     private boolean needClassifiers() {
         return ((interestedKind & CLASSIFIER) == CLASSIFIER) || needClasses();
     }
-    
+
     private boolean needNamespaces() {
         return (interestedKind & NAMESPACE) == NAMESPACE;
-    }    
+    }
 
     private boolean needClasses() {
         return (interestedKind & CLASS) == CLASS;
-    }   
+    }
 }

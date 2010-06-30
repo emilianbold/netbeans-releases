@@ -288,6 +288,17 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     if(decl instanceof ClassImplSpecialization) {
                         specialization = (CsmClassifier) decl;
                     }
+                    if (specialization == null && !proj.isArtificial()) {
+                        for(CsmProject lib : proj.getLibraries()) {
+                            if (lib instanceof ProjectBase) {
+                                decl = ((ProjectBase) lib).findDeclaration(fqn.toString());
+                                if(decl instanceof ClassImplSpecialization) {
+                                    specialization = (CsmClassifier) decl;
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     // try to find partial specialization of class
                     if (specialization == null) {
                         fqn = new StringBuilder(cls.getUniqueName());

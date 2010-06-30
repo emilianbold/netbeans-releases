@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  */
 public class ProjectSettingsValidatorKey extends ProjectNameBasedKey {
 
-    public ProjectSettingsValidatorKey(String project) {
+    public ProjectSettingsValidatorKey(CharSequence project) {
         super(project);
     }
 
@@ -62,6 +62,7 @@ public class ProjectSettingsValidatorKey extends ProjectNameBasedKey {
         super(in);
     }
 
+    @Override
     public int getSecondaryDepth() {
         return 1;
     }
@@ -76,11 +77,13 @@ public class ProjectSettingsValidatorKey extends ProjectNameBasedKey {
         return 37*KeyObjectFactory.KEY_PRJ_VALIDATOR_KEY + super.hashCode();
     }
 
+    @Override
     public int getSecondaryAt(int level) {
         assert (level == 0);
         return KeyObjectFactory.KEY_PRJ_VALIDATOR_KEY;
     }
 
+    @Override
     public PersistentFactory getPersistentFactory() {
         return ProjectSettingsValidator.getPersistentFactory();
     }

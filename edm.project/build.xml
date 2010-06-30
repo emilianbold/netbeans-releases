@@ -36,8 +36,8 @@
             </fileset>
         </copy>
         
-        <mkdir dir="${cluster}/modules/ext/edmpro"/>
-        <jar jarfile="${cluster}/modules/ext/edmpro/org-netbeans-modules-edm-project-anttask.jar" compress="false">
+        <mkdir dir="${cluster}/modules/ext"/>
+        <jar jarfile="${cluster}/modules/ext/org-netbeans-modules-edm-project-anttask.jar" compress="false">
             <fileset dir="build/antclasses"/>
         </jar>
     </target>

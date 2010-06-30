@@ -648,14 +648,24 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
                 document =
                         ((org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp)webRoot).graphManager().getXmlDocument();
                 currentVersion = SunWebApp.VERSION_3_0_0;
+            } else if (webRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_1.GlassFishWebApp) {
+                document =
+                        ((org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_1.GlassFishWebApp)webRoot).graphManager().getXmlDocument();
+                currentVersion = SunWebApp.VERSION_3_0_1;
             }
             
             //remove the doctype
             document = removeDocType(document);
             
-            if(newVersion.equals(SunWebApp.VERSION_3_0_0)){
+            if(newVersion.equals(SunWebApp.VERSION_3_0_1)){
                 //This will always be an upgrade
-                generate3_00Graph(document);
+                generate3_01Graph(document);
+            } else if(newVersion.equals(SunWebApp.VERSION_3_0_0)){
+                if(currentVersion.equals(SunWebApp.VERSION_2_5_0) || currentVersion.equals(SunWebApp.VERSION_2_4_1) || currentVersion.equals(SunWebApp.VERSION_2_4_0) ||
+                        currentVersion.equals(SunWebApp.VERSION_2_3_0))
+                    generate3_00Graph(document);
+                else
+                    downgradeWebGraph(document, newVersion, currentVersion);
             } else if(newVersion.equals(SunWebApp.VERSION_2_5_0)){
                 if(currentVersion.equals(SunWebApp.VERSION_2_4_1) || currentVersion.equals(SunWebApp.VERSION_2_4_0) ||
                         currentVersion.equals(SunWebApp.VERSION_2_3_0))
@@ -706,6 +716,13 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
         return document;
     } 
     
+    private void generate3_01Graph(Document document){
+        org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_1.GlassFishWebApp webGraph =
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_1.GlassFishWebApp.createGraph(document);
+        webGraph.changeDocType(DTDRegistry.GLASSFISH_WEBAPP_301_DTD_PUBLIC_ID, DTDRegistry.GLASSFISH_WEBAPP_301_DTD_SYSTEM_ID);
+        this.webRoot = webGraph;
+    }
+
     private void generate3_00Graph(Document document){
         org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp webGraph =
                 org.netbeans.modules.j2ee.sun.dd.impl.web.model_3_0_0.SunWebApp.createGraph(document);

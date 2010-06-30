@@ -102,7 +102,7 @@ public interface Repository {
     void debugDistribution();
 
     /**
-     * Prepare repositoty and tells the version of the persistent mechanism
+     * Prepare repository and tells the version of the persistent mechanism
      * @param verison 
      */
     void startup(int persistMechanismVersion);
@@ -118,17 +118,17 @@ public interface Repository {
      * @param unitName the unique identifier of the unit to open
      */
 
-    void openUnit(int unitId, String unitName);
+    void openUnit(int unitId, CharSequence unitName);
     /**
      * Close Repository Unit, e.g. Project for IDE
      * @param unitName the name of unit
      */
-    void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits);
+    void closeUnit(CharSequence unitName, boolean cleanRepository, Set<CharSequence> requiredUnits);
     
     /**
      * Removes repository unit from disk
      */
-    void removeUnit(String unitName);
+    void removeUnit(CharSequence unitName);
     
     /**
      * clean the disk caches of all repositories

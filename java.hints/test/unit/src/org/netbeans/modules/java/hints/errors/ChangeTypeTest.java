@@ -68,7 +68,7 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
 
     public void testIntToStringFix() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {int i = \"s\";}",
+                       "package test; public class Test { int i = \"s\";}",
                        41,
                        "Change type of i to String",
                        "package test; public class Test { String i = \"s\";}");
@@ -80,7 +80,7 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
 
     public void testStringToIntFix() throws Exception {
         performFixTest("test/Test.java",
-                "package test; public class Test {String s = 5;}",
+                "package test; public class Test { String s = 5;}",
                 44,
                 "Change type of s to int",
                 "package test; public class Test { int s = 5;}");

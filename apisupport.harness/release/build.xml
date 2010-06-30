@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
         </fail>
     </target>
 
-    <target name="-convert-old-project" unless="cluster.path.evaluated">
+    <target name="-convert-old-project" depends="-build-dir-init" unless="cluster.path.evaluated">
         <fail unless="netbeans.dest.dir" message="Either cluster.path/cluster.path.evaluated properties or netbeans.dest.dir must be set."/>
 
         <pathconvert property="old.project.update.tracking">
@@ -106,8 +106,8 @@ made subject to such option by the copyright holder.
                 </filtermapper>
             </chainedmapper>
         </pathconvert>
-        <tempfile property="old.project.clusters.duplicates.file" destdir="${basedir}/build" deleteonexit="true" prefix="duplicates"/>
-        <mkdir dir="${basedir}/build"/>
+        <tempfile property="old.project.clusters.duplicates.file" destdir="${build.dir}" deleteonexit="true" prefix="duplicates"/>
+        <mkdir dir="${build.dir}"/>
         <echo file="${old.project.clusters.duplicates.file}" message="${old.project.clusters.duplicates}"/>
 
         <pathconvert property="cluster.path.evaluated">
@@ -117,8 +117,8 @@ made subject to such option by the copyright holder.
         </pathconvert>
     </target>
 
-    <target name="common-init" depends="taskdefs,-convert-old-project">
-        <property name="netbeans.javadoc.dir" location="build/javadoc"/>
+    <target name="common-init" depends="taskdefs,-build-dir-init,-convert-old-project">
+        <property name="netbeans.javadoc.dir" location="${build.dir}/javadoc"/>
         <condition property="cluster.path.basedir" value="${suite.dir}" else="${basedir}">
             <isset property="suite.dir"/>
         </condition>
@@ -126,33 +126,36 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="basic-init" depends="projectized-common.basic-init">
+        <condition property="suite.build.dir" value="${suite.dir}/build">
+            <isset property="suite.dir"/>
+        </condition>
         <!-- Must be done even without build-init, or clean will not work. -->
-        <condition property="cluster" value="${suite.dir}/build/cluster"> <!-- #59872 -->
-            <isset property="suite.dir"/>
+        <condition property="cluster" value="${suite.build.dir}/cluster"> <!-- #59872 -->
+            <isset property="suite.build.dir"/>
         </condition>
-        <property name="cluster" location="build/cluster"/>
+        <property name="cluster" location="${build.dir}/cluster"/>
 
-        <condition property="test.dist.dir" value="${suite.dir}/build/testdist">
-            <isset property="suite.dir"/>
+        <condition property="test.dist.dir" value="${suite.build.dir}/testdist">
+            <isset property="suite.build.dir"/>
         </condition>
-        <property name="test.dist.dir" location="build/testdist"/>
-        <property name="build.classes.dir" location="build/classes"/>
+        <property name="test.dist.dir" location="${build.dir}/testdist"/>
+        <property name="build.classes.dir" location="${build.dir}/classes"/>
 
     </target>
 
     <target name="init" depends="basic-init,files-init,build-init,-javac-init"/>
 
     <target name="nbm-license-init" unless="license.file">
-        <mkdir dir="build"/>
-        <property name="license.file" location="build/no-license.txt"/>
+        <mkdir dir="${build.dir}"/>
+        <property name="license.file" location="${build.dir}/no-license.txt"/>
         <echo file="${license.file}">[NO LICENSE SPECIFIED]</echo>
     </target>
 
     <target name="build-init" depends="basic-init,nbm-license-init">
-        <condition property="public.package.jar.dir" value="${suite.dir}/build/public-package-jars">
-            <isset property="suite.dir"/>
+        <condition property="public.package.jar.dir" value="${suite.build.dir}/public-package-jars">
+            <isset property="suite.build.dir"/>
         </condition>
-        <property name="public.package.jar.dir" location="build/public-package-jars"/>
+        <property name="public.package.jar.dir" location="${build.dir}/public-package-jars"/>
         <mkdir dir="${public.package.jar.dir}"/>
         <!-- Similar to projectized.xml but does not try to set NBM homepage/distribution, nor is javahelp.excludes predefined. -->
         <parseprojectxml
@@ -204,7 +207,7 @@ made subject to such option by the copyright holder.
         <!-- Override if you want to use these: -->
         <property name="nbm.distribution" value=""/>
         <property name="nbm.homepage" value=""/>
-        <property name="build.javahelp.dir" location="build/javahelp"/>
+        <property name="build.javahelp.dir" location="${build.dir}/javahelp"/>
         <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
         <property name="javahelp.search" value="JavaHelpSearch"/>
     </target>
@@ -212,8 +215,8 @@ made subject to such option by the copyright holder.
     <target name="test-lib-init" depends="init">
         <!-- NbModuleSuite must be made to ignore disabled.modules during a test; see discussion in #136621: -->
         <delete failonerror="false">
-            <fileset dir="${suite.dir}">
-                <include name="build/cluster/config/Modules/*.xml_hidden"/>
+            <fileset dir="${suite.build.dir}">
+                <include name="cluster/config/Modules/*.xml_hidden"/>
             </fileset>
         </delete>
         <path id="test.unit.lib.cp">
@@ -302,7 +305,7 @@ made subject to such option by the copyright holder.
 
     <target name="-copy-testxmlresults">
         <copy todir="${test.xml.results.dir}" flatten="true" failonerror="false">
-            <fileset dir="build/test/" includes="*/results/TEST-*.xml"/>
+            <fileset dir="${build.dir}/test" includes="*/results/TEST-*.xml"/>
         </copy>
     </target>
 

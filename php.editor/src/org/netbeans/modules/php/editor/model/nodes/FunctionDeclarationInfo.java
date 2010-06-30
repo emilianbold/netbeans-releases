@@ -99,7 +99,7 @@ public class FunctionDeclarationInfo extends ASTNodeInfo<FunctionDeclaration> {
         return new OffsetRange(name.getStartOffset(), name.getEndOffset());
     }
 
-    public List<? extends ParameterElement> getParameters() {
+    public List<ParameterElement> getParameters() {
         List<ParameterElement> retval = new ArrayList<ParameterElement>();
         List<FormalParameter> formalParameters = getOriginalNode().getFormalParameters();
         for (FormalParameter formalParameter : formalParameters) {

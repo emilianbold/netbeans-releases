@@ -57,6 +57,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import junit.framework.Test;
 import org.openide.actions.EditAction;
@@ -69,6 +70,7 @@ import org.openide.util.lookup.Lookups;
  */
 @RandomlyFails
 public class DataLoaderInLayerTest extends NbTestCase {
+    static Logger LOG;
 
     public DataLoaderInLayerTest(String name) {
         super(name);
@@ -100,35 +102,47 @@ public class DataLoaderInLayerTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        LOG = Logger.getLogger("test." + getName());
         FileUtil.setMIMEType("simple", "text/plain");
         FileUtil.setMIMEType("ant", "text/ant+xml");
     }
     
-    private static void addRemoveLoader(DataLoader l, boolean add) throws IOException {
+    private static void addRemoveLoader(DataLoader l, boolean add) throws Exception {
         addRemoveLoader("text/plain", l, add);
     }
-    private static void addRemoveLoader(String mime, DataLoader l, boolean add) throws IOException {
+    private static void addRemoveLoader(String mime, DataLoader l, boolean add) throws Exception {
         addRemove(mime, l.getClass(), add);
     }
-    private static <F extends DataObject.Factory> void addRemove(String mime, Class<F> clazz, boolean add) throws IOException {
-        String res = "Loaders/" + mime + "/Factories/" + clazz.getSimpleName().replace('.', '-') + ".instance";
-        FileObject root = FileUtil.getConfigRoot();
-        if (add) {
-            FileObject fo = FileUtil.createData(root, res);
-            fo.setAttribute("instanceClass", clazz.getName());
-        } else {
-            FileObject fo = root.getFileObject(res);
-            if (fo != null) {
-                fo.delete();
+    private static <F extends DataObject.Factory> void addRemove(String mime, final Class<F> clazz, final boolean add) throws Exception {
+        final String res = "Loaders/" + mime + "/Factories/" + clazz.getSimpleName().replace('.', '-') + ".instance";
+        final FileObject root = FileUtil.getConfigRoot();
+        class R implements FileSystem.AtomicAction {
+            @Override
+            public void run() throws IOException {
+                if (add) {
+                    FileObject fo = FileUtil.createData(root, res);
+                    fo.setAttribute("instanceClass", clazz.getName());
+                } else {
+                    FileObject fo = root.getFileObject(res);
+                    if (fo != null) {
+                        fo.delete();
+                    }
+                }
             }
         }
-        for (;;) {
+        LOG.log(Level.INFO, "Modifying {0}", res);
+        FileUtil.runAtomicAction(new R());
+        LOG.info("Modification done");
+        for (int i = 0; i < 100; i++) {
             Object f = Lookups.forPath("Loaders/" + mime + "/Factories").lookup(clazz);
             FolderLookup.ProxyLkp.DISPATCH.waitFinished();
+            LOG.log(Level.INFO, "waiting for {0} result: {1}", new Object[]{i, f});
             if (add == (f != null)) {
                 break;
             }
+            Thread.sleep(100);
         }
+        LOG.info("OK, addRemove finished");
     }
     private static <F extends DataObject.Factory> void addRemove(String mime, F factory, boolean add) throws IOException {
         String res = "Loaders/" + mime + "/Factories/" + factory.getClass().getSimpleName().replace('.', '-') + ".instance";

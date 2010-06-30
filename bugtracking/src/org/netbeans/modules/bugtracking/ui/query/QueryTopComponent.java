@@ -232,7 +232,7 @@ public final class QueryTopComponent extends TopComponent
         return openQueries;
     }
     
-    private Query getQuery() {
+    public Query getQuery() {
         return query;
     }
 

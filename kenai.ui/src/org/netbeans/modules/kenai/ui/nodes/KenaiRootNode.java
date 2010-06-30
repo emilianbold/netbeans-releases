@@ -82,7 +82,7 @@ public class KenaiRootNode extends AbstractNode {
     
     public @Override Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new AddInstanceAction());
+        actions.add(new AddInstanceAction(true));
         return actions.toArray(new Action[actions.size()]);
     }
 

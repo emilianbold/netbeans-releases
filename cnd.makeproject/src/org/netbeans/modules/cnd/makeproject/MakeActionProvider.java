@@ -148,7 +148,6 @@ public final class MakeActionProvider implements ActionProvider {
     // Commands available from Make project
     public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
     public static final String COMMAND_BUILD_PACKAGE = "build_packages"; // NOI18N
-    public static final String COMMAND_DEBUG_LOAD_ONLY = "debug.load.only"; // NOI18N
     public static final String COMMAND_CUSTOM_ACTION = "custom.action"; // NOI18N
     private static final String[] supportedActions = {
         COMMAND_BUILD,
@@ -159,7 +158,6 @@ public final class MakeActionProvider implements ActionProvider {
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG,
         COMMAND_DEBUG_STEP_INTO,
-        COMMAND_DEBUG_LOAD_ONLY,
         COMMAND_DEBUG_SINGLE,
         COMMAND_BATCH_BUILD,
         COMMAND_BUILD_PACKAGE,
@@ -185,7 +183,6 @@ public final class MakeActionProvider implements ActionProvider {
     private static final String RUN_STEP = "run"; // NOI18N
     private static final String DEBUG_STEP = "debug"; // NOI18N
     private static final String DEBUG_STEPINTO_STEP = "debug-stepinto"; // NOI18N
-    private static final String DEBUG_LOAD_ONLY_STEP = "debug-load-only"; // NOI18N
     private static final String RUN_SINGLE_STEP = "run-single"; // NOI18N
     private static final String DEBUG_SINGLE_STEP = "debug-single"; // NOI18N
     private static final String COMPILE_SINGLE_STEP = "compile-single"; // NOI18N
@@ -470,8 +467,6 @@ public final class MakeActionProvider implements ActionProvider {
             return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG);
         } else if (targetName.equals(DEBUG_STEPINTO_STEP)) {
             return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO);
-        } else if (targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, context, ProjectActionEvent.PredefinedType.DEBUG_LOAD_ONLY);
         } else if (targetName.equals(CUSTOM_ACTION_STEP)) {
             return onCustomActionStep(actionEvents, conf, context, ProjectActionEvent.PredefinedType.CUSTOM_ACTION);
         }
@@ -761,16 +756,10 @@ public final class MakeActionProvider implements ActionProvider {
             return true;
         }
         
+        final String script = "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
+        final RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform());
+        
         String buildCommand = null;
-        String args = ""; // NOI18N
-
-        if (conf.getPackagingConfiguration().getVerbose().getValue()) {
-            args += " -x "; // NOI18N
-        }
-
-        String script = "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
-
-        RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform());
 
         if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
             HostInfo hostInfo = null;
@@ -786,17 +775,16 @@ public final class MakeActionProvider implements ActionProvider {
             if (buildCommand == null) {
                 buildCommand = "sh.exe"; // NOI18N
             }
-
-            // Bug 186289 - Windows: 'Build Package' breaks the project
-            // do error redirection. Otherwise read-out of process output hangs (?!)
-            // TODO: need more investigation
-
-            profile.setArgs(new String[] {"-c", "sh " + args + script + " 2>&1"}); // NOI18N
         } else {
             buildCommand = "bash"; // NOI18N
-            profile.setArgs(args + script);
         }
-        
+
+        if (conf.getPackagingConfiguration().getVerbose().getValue()) {
+            profile.setArgs(new String[] {"-x", script}); // NOI18N
+        } else {
+            profile.setArgs(new String[] {script});
+        }
+
         ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
         actionEvents.add(projectActionEvent);
         return true;
@@ -994,7 +982,6 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_RUN)
                 || command.equals(COMMAND_DEBUG)
                 || command.equals(COMMAND_DEBUG_STEP_INTO)
-                || command.equals(COMMAND_DEBUG_LOAD_ONLY)
                 || command.equals(COMMAND_CUSTOM_ACTION)) {
             MakeConfigurationDescriptor pd = getProjectDescriptor();
             MakeConfiguration conf = pd.getActiveConfiguration();
@@ -1051,8 +1038,6 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_DEBUG)) {
             return conf.hasDebugger() && !conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_DEBUG_STEP_INTO)) {
-            return conf.hasDebugger() && !conf.isLibraryConfiguration();
-        } else if (command.equals(COMMAND_DEBUG_LOAD_ONLY)) {
             return conf.hasDebugger() && !conf.isLibraryConfiguration();
         } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
             boolean enabled = true;
@@ -1124,7 +1109,7 @@ public final class MakeActionProvider implements ActionProvider {
         if (cs != null) {
             cmd = cs.getTool(PredefinedToolKind.MakeTool).getPath();
         } else {
-            assert false;
+            CndUtils.assertFalse(true, "Null compiler collection"); //NOI18N
             cmd = "make"; // NOI18N
         }
         //cmd = cmd + " " + MakeOptions.getInstance().getMakeOptions(); // NOI18N
@@ -1144,7 +1129,6 @@ public final class MakeActionProvider implements ActionProvider {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getHostKey());
         ArrayList<String> errs = new ArrayList<String>();
-        ArrayList<String> errsNoBTA = new ArrayList<String>();
         CompilerSet cs;
         String csname;
         File file;
@@ -1195,8 +1179,8 @@ public final class MakeActionProvider implements ActionProvider {
             if (cs == null) {
                 cs = CompilerSetManager.get(env).getDefaultCompilerSet();
             }
-            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname)); // NOI18N
-            errsNoBTA.add(errs.get(errs.size() - 1));
+            String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname);
+            errs.add(errMsg);
             runBTA = true;
         } else if (csconf.isValid()) {
             csname = csconf.getOption();
@@ -1211,70 +1195,62 @@ public final class MakeActionProvider implements ActionProvider {
                 flavor = CompilerFlavor.getUnknown(conf.getPlatformInfo().getPlatform());
             }
             cs = CompilerSetFactory.getCompilerSet(env, flavor, csname);
-            csconf.setValid();
+            String errMsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_LOCAL_COMPILER_SET", csname);
+            errs.add(errMsg);
+            runBTA = true;
         }
-
-        Tool cTool = cs.getTool(PredefinedToolKind.CCompiler);
-        Tool cppTool = cs.getTool(PredefinedToolKind.CCCompiler);
-        Tool fTool = cs.getTool(PredefinedToolKind.FortranCompiler);
-        Tool asTool = cs.getTool(PredefinedToolKind.Assembler);
-        Tool makeTool = cs.getTool(PredefinedToolKind.MakeTool);
-        Tool qmakeTool = cs.getTool(PredefinedToolKind.QMakeTool);
 
         if (cancelled.get()) {
             return false;
         }
 
-        PlatformInfo pi = conf.getPlatformInfo();
-        // Check for a valid make program
-        if (conf.getDevelopmentHost().isLocalhost()) {
-            file = new File(makeTool.getPath());
-            if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || ToolsPanelSupport.isUnsupportedMake(file.getPath())) {
-                errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingMake", csname, makeTool.getDisplayName())); // NOI18N
-                runBTA = true;
+        if (!runBTA) {
+            Tool cTool = cs.getTool(PredefinedToolKind.CCompiler);
+            Tool cppTool = cs.getTool(PredefinedToolKind.CCCompiler);
+            Tool fTool = cs.getTool(PredefinedToolKind.FortranCompiler);
+            Tool asTool = cs.getTool(PredefinedToolKind.Assembler);
+            Tool makeTool = cs.getTool(PredefinedToolKind.MakeTool);
+            Tool qmakeTool = cs.getTool(PredefinedToolKind.QMakeTool);
+
+            PlatformInfo pi = conf.getPlatformInfo();
+
+            // Check for a valid make program
+            if (conf.getDevelopmentHost().isLocalhost()) {
+                file = new File(makeTool.getPath());
+                if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || ToolsPanelSupport.isUnsupportedMake(file.getPath())) {
+                    runBTA = true;
+                }
+            } else {
+                if (!isValidExecutable(makeTool.getPath(), pi)) {
+                    runBTA = true;
+                }
             }
-        } else {
-            if (!isValidExecutable(makeTool.getPath(), pi)) {
-                errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingMake", csname, makeTool.getDisplayName())); // NOI18N
-                runBTA = true;
-            }
-        }
 
-        // Check compilers
-        if (cancelled.get()) {
-            return false;
-        }
-        if (cRequired && !exists(cTool.getPath(), pi)) {
-            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cTool.getDisplayName())); // NOI18N
-            runBTA = true;
-        }
-        if (cancelled.get()) {
-            return false;
-        }
-        if (cppRequired && !exists(cppTool.getPath(), pi)) {
-            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCppCompiler", csname, cppTool.getDisplayName())); // NOI18N
-            runBTA = true;
-        }
-        if (cancelled.get()) {
-            return false;
-        }
-        if (fRequired && !exists(fTool.getPath(), pi)) {
-            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
-            runBTA = true;
-        }
-        if (cancelled.get()) {
-            return false;
-        }
-        if (asRequired && !exists(asTool.getPath(), pi)) {
-            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
-            runBTA = true;
-        }
-        if (cancelled.get()) {
-            return false;
-        }
-        if (conf.isQmakeConfiguration() && !exists(qmakeTool.getPath(), pi)) {
-            errsNoBTA.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingQMake", csname, qmakeTool.getDisplayName())); // NOI18N
-            runBTA = true;
+            // Check compilers
+            List<Tool> tools2check = new ArrayList<Tool>();
+            if (cRequired) {
+                tools2check.add(cTool);
+            }
+            if (cppRequired) {
+                tools2check.add(cppTool);
+            }
+            if (fRequired) {
+                tools2check.add(fTool);
+            }
+            if (asRequired) {
+                tools2check.add(asTool);
+            }
+            if (conf.isQmakeConfiguration()) {
+                tools2check.add(qmakeTool);
+            }
+            for (Tool tool : tools2check) {
+                if (cancelled.get()) {
+                    return false;
+                }
+                if (!exists(tool.getPath(), pi)) {
+                    runBTA = true;
+                }
+            }
         }
 
         if (cancelled.get()) {
@@ -1321,20 +1297,6 @@ public final class MakeActionProvider implements ActionProvider {
                 } else {
                     lastValidation = false;
                 }
-            } else {
-                if (cancelled.get()) {
-                    return false;
-                }
-                // User can't change anything in BTA for remote host yet,
-                // so showing above dialog will only confuse him
-                String message = NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", // NOI18N
-                        csname, conf.getDevelopmentHost().getDisplayName(false));
-                for (String error : errsNoBTA) {
-                    message += "\n" + error; // NOI18N
-                }
-                NotifyDescriptor nd = new NotifyDescriptor.Message(message);
-                DialogDisplayer.getDefault().notify(nd);
-                lastValidation = false;
             }
         } else {
             lastValidation = true;

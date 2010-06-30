@@ -61,7 +61,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
@@ -77,7 +80,9 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
@@ -125,13 +130,19 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_MODIFIED;
+import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_PROJECT_XML;
+import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_STYLESHEET;
+import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_UNKNOWN;
 /**
  * Represents one plain J2SE project.
  * @author Jesse Glick, et al.
@@ -145,9 +156,10 @@ import org.w3c.dom.NodeList;
     privateNamespace= J2SEProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
 public final class J2SEProject implements Project {
-    
+
     private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(J2SEProject.class.getName(), 1);
 
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
@@ -165,12 +177,17 @@ public final class J2SEProject implements Project {
     private AntBuildExtender buildExtender;
 
     /**
-     * @see J2SEProject.ProjectXmlSavedHookImpl#projectXmlSaved() 
+     * @see J2SEProject.ProjectXmlSavedHookImpl#projectXmlSaved()
      */
     private final ThreadLocal<Boolean> projectPropertiesSave;
 
     public J2SEProject(AntProjectHelper helper) throws IOException {
-        this.projectPropertiesSave = new ThreadLocal<Boolean>();
+        this.projectPropertiesSave = new ThreadLocal<Boolean>() {
+            @Override
+            protected Boolean initialValue() {
+                return Boolean.FALSE;
+            }
+        };
         this.helper = helper;
         aux = helper.createAuxiliaryConfiguration();
         UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux);
@@ -182,20 +199,20 @@ public final class J2SEProject implements Project {
                         NbBundle.getMessage(J2SEProject.class, "J2SEProject.too_new", FileUtil.getFileDisplayName(helper.getProjectDirectory())));
             }
         }
-        refHelper = new ReferenceHelper(helper, aux, eval);
+        refHelper = new ReferenceHelper(helper, aux, evaluator());
         buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEExtenderImplementation(), refHelper);
-    /// TODO replace this GeneratedFilesHelper with the default one when fixing #101710
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
 
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
-        this.cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper, null, createClassPathModifierCallback(), null);
+        this.cpMod = new ClassPathModifier(this, this.updateHelper, evaluator(), refHelper, null, createClassPathModifierCallback(), null);
         final J2SEActionProvider actionProvider = new J2SEActionProvider( this, this.updateHelper );
         lookup = createLookup(aux, actionProvider);
         actionProvider.startFSListener();
     }
-    
+
     private ClassPathModifier.Callback createClassPathModifierCallback() {
         return new ClassPathModifier.Callback() {
+            @Override
             public String getClassPathProperty(SourceGroup sg, String type) {
                 assert sg != null : "SourceGroup cannot be null";  //NOI18N
                 assert type != null : "Type cannot be null";  //NOI18N
@@ -206,16 +223,18 @@ public final class J2SEProject implements Project {
                 return classPathProperty[0];
             }
 
+            @Override
             public String getElementName(String classpathProperty) {
                 return null;
             }
-        };        
+        };
     }
-    
+
     /**
      * Returns the project directory
      * @return the directory the project is located in
      */
+    @Override
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
@@ -224,7 +243,7 @@ public final class J2SEProject implements Project {
     public String toString() {
         return "J2SEProject[" + FileUtil.getFileDisplayName(getProjectDirectory()) + "]"; // NOI18N
     }
-    
+
     private PropertyEvaluator createEvaluator() {
         // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
         // Adapted from APH.getStandardPropertyEvaluator (delegates to ProjectProperties):
@@ -250,6 +269,8 @@ public final class J2SEProject implements Project {
         private final PropertyEvaluator baseEval;
         private final String prefix;
         private final AntProjectHelper helper;
+
+        @SuppressWarnings("LeakingThisInConstructor")
         public ConfigPropertyProvider(PropertyEvaluator baseEval, String prefix, AntProjectHelper helper) {
             super(computeDelegate(baseEval, prefix, helper));
             this.baseEval = baseEval;
@@ -257,6 +278,8 @@ public final class J2SEProject implements Project {
             this.helper = helper;
             baseEval.addPropertyChangeListener(this);
         }
+
+        @Override
         public void propertyChange(PropertyChangeEvent ev) {
             if (J2SEConfigurationProvider.PROP_CONFIG.equals(ev.getPropertyName())) {
                 setDelegate(computeDelegate(baseEval, prefix, helper));
@@ -287,8 +310,9 @@ public final class J2SEProject implements Project {
 
         UPDATE_PROPERTIES = PropertyUtils.fixedPropertyProvider(defs);
     }
-    
+
     public PropertyEvaluator evaluator() {
+        assert eval != null;
         return eval;
     }
 
@@ -299,11 +323,12 @@ public final class J2SEProject implements Project {
     public UpdateHelper getUpdateHelper() {
         return this.updateHelper;
     }
-    
+
+    @Override
     public Lookup getLookup() {
         return lookup;
     }
-    
+
     public AntProjectHelper getAntProjectHelper() {
         return helper;
     }
@@ -313,7 +338,6 @@ public final class J2SEProject implements Project {
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
         @SuppressWarnings("deprecation") Object cpe = new org.netbeans.modules.java.api.common.classpath.ClassPathExtender(
             cpMod, ProjectProperties.JAVAC_CLASSPATH, null);
-        J2SESources srcs = new J2SESources(this, helper, eval, getSourceRoots(), getTestSourceRoots());
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
             QuerySupport.createProjectInformation(updateHelper, this, J2SE_PROJECT_ICON),
@@ -333,8 +357,7 @@ public final class J2SEProject implements Project {
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
-            srcs,
-            srcs.getSourceGroupModifierImplementation(),
+            QuerySupport.createSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, J2SEProjectProperties.DIST_DIR)),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             new RecommendedTemplatesImpl (this.updateHelper),
@@ -350,12 +373,12 @@ public final class J2SEProject implements Project {
             encodingQuery,
             new J2SEPropertyEvaluatorImpl(evaluator()),
             QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
-            ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
+            ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, evaluator()),
             LookupMergerSupport.createSFBLookupMerger(),
-            ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
+            ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, evaluator()),
             LookupMergerSupport.createJFBLookupMerger(),
-            QuerySupport.createBinaryForSourceQueryImplementation(this.sourceRoots, this.testRoots, this.helper, this.eval), //Does not use APH to get/put properties/cfgdata
-            QuerySupport.createAnnotationProcessingQuery(this.helper, this.eval, ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS)
+            QuerySupport.createBinaryForSourceQueryImplementation(this.sourceRoots, this.testRoots, this.helper, this.evaluator()), //Does not use APH to get/put properties/cfgdata
+            QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS)
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
@@ -364,25 +387,25 @@ public final class J2SEProject implements Project {
     public ClassPathProviderImpl getClassPathProvider () {
         return this.cpProvider;
     }
-    
+
     public ClassPathModifier getProjectClassPathModifier () {
         return this.cpMod;
     }
 
     // Package private methods -------------------------------------------------
-    
+
     /**
      * Returns the source roots of this project
      * @return project's source roots
      */
-    public synchronized SourceRoots getSourceRoots() {        
+    public synchronized SourceRoots getSourceRoots() {
         if (this.sourceRoots == null) { //Local caching, no project metadata access
             this.sourceRoots = SourceRoots.create(updateHelper, evaluator(), getReferenceHelper(),
                     J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots", false, "src.{0}{1}.dir"); //NOI18N
        }
         return this.sourceRoots;
     }
-    
+
     public synchronized SourceRoots getTestSourceRoots() {
         if (this.testRoots == null) { //Local caching, no project metadata access
             this.testRoots = SourceRoots.create(updateHelper, evaluator(), getReferenceHelper(),
@@ -398,11 +421,12 @@ public final class J2SEProject implements Project {
         }
         return helper.resolveFile(testClassesDir);
     }
-    
+
     // Currently unused (but see #47230):
     /** Store configured project name. */
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            @Override
             public Void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -428,67 +452,78 @@ public final class J2SEProject implements Project {
 
     /**
      * J2SEProjectProperties helper method to notify ProjectXmlSavedHookImpl about customizer save
-     * @see J2SEProject.ProjectXmlSavedHookImpl#projectXmlSaved() 
+     * @see J2SEProject.ProjectXmlSavedHookImpl#projectXmlSaved()
      * @param value true = active
      */
     public void setProjectPropertiesSave(boolean value) {
         this.projectPropertiesSave.set(value);
     }
-    
+
     // Private innerclasses ----------------------------------------------------
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
-        
+
         ProjectXmlSavedHookImpl() {}
-        
+
         protected void projectXmlSaved() throws IOException {
             //May be called by {@link AuxiliaryConfiguration#putConfigurationFragment}
-            //which didn't affect the j2seproject 
-            if (updateHelper.isCurrent()) {
-                //Refresh build-impl.xml only for j2seproject/2
-                final Boolean projectPropertiesSave = J2SEProject.this.projectPropertiesSave.get();
-                if (projectPropertiesSave != null &&
-                    projectPropertiesSave.booleanValue() &&
-                    (genFilesHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,J2SEProject.class.getResource("resources/build-impl.xsl")) & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
-                    //When the project.xml was changed from the customizer and the build-impl.xml was modified
-                    //move build-impl.xml into the build-impl.xml~ to force regeneration of new build-impl.xml.
-                    //Never do this if it's not a customizer otherwise user modification of build-impl.xml will be deleted
-                    //when the project is opened.
-                    final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
-                    final FileObject buildImpl = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                    if (buildImpl  != null) {
-                        final String name = buildImpl.getName();
-                        final String backupext = String.format("%s~",buildImpl.getExt());   //NOI18N
-                        final FileObject oldBackup = buildImpl.getParent().getFileObject(name, backupext);
-                        if (oldBackup != null) {
-                            oldBackup.delete();
+            //which didn't affect the j2seproject
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        if (updateHelper.isCurrent()) {
+                            //Refresh build-impl.xml only for j2seproject/2
+                            final int state = genFilesHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,J2SEProject.class.getResource("resources/build-impl.xsl"));   //NOI18N
+                            final Boolean projectPropertiesSave = J2SEProject.this.projectPropertiesSave.get();
+                            if ((projectPropertiesSave.booleanValue() && (state & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) ||
+                                state == (FLAG_UNKNOWN | FLAG_MODIFIED | FLAG_OLD_PROJECT_XML | FLAG_OLD_STYLESHEET)) {  //missing genfiles.properties
+                                //When the project.xml was changed from the customizer and the build-impl.xml was modified
+                                //move build-impl.xml into the build-impl.xml~ to force regeneration of new build-impl.xml.
+                                //Never do this if it's not a customizer otherwise user modification of build-impl.xml will be deleted
+                                //when the project is opened.
+                                final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
+                                final FileObject buildImpl = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+                                if (buildImpl  != null) {
+                                    final String name = buildImpl.getName();
+                                    final String backupext = String.format("%s~",buildImpl.getExt());   //NOI18N
+                                    final FileObject oldBackup = buildImpl.getParent().getFileObject(name, backupext);
+                                    if (oldBackup != null) {
+                                        oldBackup.delete();
+                                    }
+                                    FileLock lock = buildImpl.lock();
+                                    try {
+                                        buildImpl.rename(lock, name, backupext);
+                                    } finally {
+                                        lock.releaseLock();
+                                    }
+                                }
+                            }
+                            genFilesHelper.refreshBuildScript(
+                                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                                J2SEProject.class.getResource("resources/build-impl.xsl"),
+                                false);
+                            genFilesHelper.refreshBuildScript(
+                                J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
+                                J2SEProject.class.getResource("resources/build.xsl"),
+                                false);
                         }
-                        FileLock lock = buildImpl.lock();
-                        try {
-                            buildImpl.rename(lock, name, backupext);
-                        } finally {
-                            lock.releaseLock();
-                        }
-                    }
-                }
-                genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    J2SEProject.class.getResource("resources/build-impl.xsl"),
-                    false);
-                genFilesHelper.refreshBuildScript(
-                    J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
-                    J2SEProject.class.getResource("resources/build.xsl"),
-                    false);
+                        return null;
+                    }});
+            } catch (MutexException e) {
+                final Exception inner = e.getException();
+                throw inner instanceof IOException ? (IOException) inner : new IOException(inner);
             }
-        }    
+        }
     }
-    
+
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
-        
+
         ProjectOpenedHookImpl() {}
         private static final String JAX_RPC_NAMESPACE="http://www.netbeans.org/ns/j2se-project/jax-rpc"; //NOI18N
         private static final String JAX_RPC_CLIENTS="web-service-clients"; //NOI18N
         private static final String JAX_RPC_CLIENT="web-service-client"; //NOI18N
-        
+
+        @Override
         protected void projectOpened() {
             // Check up on build scripts.
             try {
@@ -502,31 +537,33 @@ public final class J2SEProject implements Project {
                         J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
                         J2SEProject.class.getResource("resources/build.xsl"),
                         true);
-                }                
+                }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
-            
-            // register project's classpaths to GlobalPathRegistry            
+
+            // register project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
 
             //register updater of main.class
             //the updater is active only on the opened projects
-	    mainClassUpdater = new MainClassUpdater (J2SEProject.this, eval, updateHelper,
-                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], J2SEProjectProperties.MAIN_CLASS);
+	    mainClassUpdater = new MainClassUpdater (J2SEProject.this, evaluator(), updateHelper,
+                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], ProjectProperties.MAIN_CLASS);
 
             // Make it easier to run headless builds on the same machine at least.
             try {
                 getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                    @Override
                     public void run () throws IOException {
                         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                            @Override
                             public Void run() {
                                 EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                                 File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
                                 ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
-                                
+
                                 //remove jaxws.endorsed.dir property
                                 ep.remove("jaxws.endorsed.dir");
 
@@ -534,12 +571,12 @@ public final class J2SEProject implements Project {
                                 // WS should be part of auxiliary configuration
                                 Element data = helper.getPrimaryConfigurationData(true);
                                 NodeList nodes = data.getElementsByTagName(JAX_RPC_CLIENTS);
-                                if(nodes.getLength() > 0) {                        
+                                if(nodes.getLength() > 0) {
                                     Element oldJaxRpcClients = (Element) nodes.item(0);
                                     Document doc = createNewDocument();
                                     Element newJaxRpcClients = doc.createElementNS(JAX_RPC_NAMESPACE, JAX_RPC_CLIENTS);
                                     NodeList childNodes = oldJaxRpcClients.getElementsByTagName(JAX_RPC_CLIENT);
-                                    for (int i=0;i<childNodes.getLength();i++) {                            
+                                    for (int i=0;i<childNodes.getLength();i++) {
                                         Element oldJaxRpcClient = (Element) childNodes.item(i);
                                         Element newJaxRpcClient = doc.createElementNS(JAX_RPC_NAMESPACE, JAX_RPC_CLIENT);
                                         NodeList nodeProps = oldJaxRpcClient.getChildNodes();
@@ -588,29 +625,43 @@ public final class J2SEProject implements Project {
                             }
                         });
                     }
-                });            
+                });
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
-            J2SELogicalViewProvider physicalViewProvider = getLookup().lookup(J2SELogicalViewProvider.class);
-            if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
-                BrokenReferencesSupport.showAlert();
-            }
-            String prop = eval.getProperty(J2SEProjectProperties.SOURCE_ENCODING);
+            String prop = evaluator().getProperty(J2SEProjectProperties.SOURCE_ENCODING);
             if (prop != null) {
                 try {
-                    Charset c = Charset.forName(prop);
+                    Charset.forName(prop);
                 } catch (IllegalCharsetNameException e) {
                     //Broken property, log & ignore
-                    LOG.warning("Illegal charset: " + prop+ " in project: " + FileUtil.getFileDisplayName(getProjectDirectory())); //NOI18N
+                    LOG.log(Level.WARNING, "Illegal charset: {0} in project: {1}", new Object[]{prop, FileUtil.getFileDisplayName(getProjectDirectory())}); //NOI18N
                 }
                 catch (UnsupportedCharsetException e) {
                     //todo: Needs UI notification like broken references.
-                    LOG.warning("Unsupported charset: " + prop+ " in project: " + FileUtil.getFileDisplayName(getProjectDirectory())); //NOI18N
+                    LOG.log(Level.WARNING, "Unsupported charset: {0} in project: {1}", new Object[]{prop, FileUtil.getFileDisplayName(getProjectDirectory())}); //NOI18N
                 }
             }
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    final Future<Project[]> projects = OpenProjects.getDefault().openProjects();
+                    try {
+                        projects.get();
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InterruptedException ie) {
+                        Exceptions.printStackTrace(ie);
+                    }
+                    J2SELogicalViewProvider physicalViewProvider = getLookup().lookup(J2SELogicalViewProvider.class);
+                    if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
+                        BrokenReferencesSupport.showAlert();
+                    }
+                }
+            });
         }
-        
+
+        @Override
         protected void projectClosed() {
             // just do if the whole project was not deleted...
             if (getProjectDirectory().isValid()) {
@@ -619,15 +670,15 @@ public final class J2SEProject implements Project {
                     ProjectManager.getDefault().saveProject(J2SEProject.this);
                 } catch (IOException e) {
                     if (!J2SEProject.this.getProjectDirectory().canWrite()) {
-                        // #91398 - ignore, we already reported on project open. 
+                        // #91398 - ignore, we already reported on project open.
                         // not counting with someone setting the ro flag while the project is opened.
                     } else {
                         ErrorManager.getDefault().notify(e);
                     }
                 }
             }
-            
-            // unregister project's classpaths to GlobalPathRegistry            
+
+            // unregister project's classpaths to GlobalPathRegistry
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
@@ -636,15 +687,16 @@ public final class J2SEProject implements Project {
                 mainClassUpdater = null;
             }
         }
-        
+
     }
-    
+
     /**
      * Exports the main JAR as an official build product for use from other scripts.
      * The type of the artifact will be {@link AntArtifact#TYPE_JAR}.
      */
     private final class AntArtifactProviderImpl implements AntArtifactProvider {
 
+        @Override
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
                 helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", evaluator(), "jar", "clean", J2SEProjectProperties.BUILD_SCRIPT), // NOI18N
@@ -652,17 +704,17 @@ public final class J2SEProject implements Project {
         }
 
     }
-    
+
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         RecommendedTemplatesImpl (UpdateHelper helper) {
             this.helper = helper;
         }
-        
+
         private UpdateHelper helper;
-        
+
         // List of primarily supported templates
-        
-        private static final String[] APPLICATION_TYPES = new String[] { 
+
+        private static final String[] APPLICATION_TYPES = new String[] {
             "java-classes",         // NOI18N
             "java-main-class",      // NOI18N
             "java-forms",           // NOI18N
@@ -680,10 +732,10 @@ public final class J2SEProject implements Project {
             // "web-types",         // NOI18N
             "junit",                // NOI18N
             // "MIDP",              // NOI18N
-            "simple-files"          // NOI18N        
+            "simple-files"          // NOI18N
         };
-        
-        private static final String[] LIBRARY_TYPES = new String[] { 
+
+        private static final String[] LIBRARY_TYPES = new String[] {
             "java-classes",         // NOI18N
             "java-main-class",      // NOI18N
             "java-forms",           // NOI18N
@@ -704,7 +756,7 @@ public final class J2SEProject implements Project {
             // "MIDP",              // NOI18N
             "simple-files"          // NOI18N
         };
-        
+
         private static final String[] PRIVILEGED_NAMES = new String[] {
             "Templates/Classes/Class.java", // NOI18N
             "Templates/Classes/Package", // NOI18N
@@ -712,29 +764,32 @@ public final class J2SEProject implements Project {
             "Templates/GUIForms/JPanel.java", // NOI18N
             "Templates/GUIForms/JFrame.java", // NOI18N
             "Templates/Persistence/Entity.java", // NOI18N
-            "Templates/Persistence/RelatedCMP", // NOI18N                    
-            "Templates/WebServices/WebServiceClient"   // NOI18N                    
+            "Templates/Persistence/RelatedCMP", // NOI18N
+            "Templates/WebServices/WebServiceClient"   // NOI18N
         };
-        
+
+        @Override
         public String[] getRecommendedTypes() {
-            
+
             EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             // if the project has no main class, it's not really an application
-            boolean isLibrary = ep.getProperty (J2SEProjectProperties.MAIN_CLASS) == null || "".equals (ep.getProperty (J2SEProjectProperties.MAIN_CLASS)); // NOI18N
+            boolean isLibrary = ep.getProperty (ProjectProperties.MAIN_CLASS) == null || "".equals (ep.getProperty (ProjectProperties.MAIN_CLASS)); // NOI18N
             return isLibrary ? LIBRARY_TYPES : APPLICATION_TYPES;
         }
-        
+
+        @Override
         public String[] getPrivilegedTemplates() {
             return PRIVILEGED_NAMES;
         }
-        
+
     }
-    
+
     private static final class J2SEPropertyEvaluatorImpl implements J2SEPropertyEvaluator {
         private PropertyEvaluator evaluator;
         public J2SEPropertyEvaluatorImpl (PropertyEvaluator eval) {
             evaluator = eval;
         }
+        @Override
         public PropertyEvaluator evaluator() {
             return evaluator;
         }
@@ -742,6 +797,7 @@ public final class J2SEProject implements Project {
 
     private class J2SEExtenderImplementation implements AntBuildExtenderImplementation {
         //add targets here as required by the external plugins..
+        @Override
         public List<String> getExtensibleTargets() {
             String[] targets = new String[] {
                 "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-compile","-do-compile-single", "-post-jar" //NOI18N
@@ -749,12 +805,13 @@ public final class J2SEProject implements Project {
             return Arrays.asList(targets);
         }
 
+        @Override
         public Project getOwningProject() {
             return J2SEProject.this;
         }
-        
+
     }
-    
+
     private static final DocumentBuilder db;
     static {
         try {
@@ -778,6 +835,7 @@ public final class J2SEProject implements Project {
         private final AtomicBoolean cosEnabled = new AtomicBoolean();
         private final Map<FileObject, Reference<StatusImpl>> file2Status = new WeakHashMap<FileObject, Reference<StatusImpl>>();
 
+        @SuppressWarnings("LeakingThisInConstructor")
         public CoSAwareFileBuiltQueryImpl(FileBuiltQueryImplementation delegate, J2SEProject project) {
             this.delegate = delegate;
             this.project = project;
@@ -792,7 +850,8 @@ public final class J2SEProject implements Project {
 
             return r != null ? r.get() : null;
         }
-        
+
+        @Override
         public Status getStatus(FileObject file) {
             StatusImpl result = readFromCache(file);
 
@@ -812,7 +871,7 @@ public final class J2SEProject implements Project {
                 if (foisted != null) {
                     return foisted;
                 }
-                
+
                 file2Status.put(file, new WeakReference<StatusImpl>(result = new StatusImpl(cosEnabled, status)));
             }
 
@@ -826,6 +885,7 @@ public final class J2SEProject implements Project {
             return old != nue;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (!setCoSEnabledAndXor()) {
                 return ;
@@ -836,7 +896,7 @@ public final class J2SEProject implements Project {
             synchronized (this) {
                 toRefresh = new LinkedList<Reference<StatusImpl>>(file2Status.values());
             }
-            
+
             for (Reference<StatusImpl> r : toRefresh) {
                 StatusImpl s = r.get();
 
@@ -852,29 +912,34 @@ public final class J2SEProject implements Project {
             private final AtomicBoolean cosEnabled;
             private final Status delegate;
 
+            @SuppressWarnings("LeakingThisInConstructor")
             public StatusImpl(AtomicBoolean cosEnabled, Status delegate) {
                 this.cosEnabled = cosEnabled;
                 this.delegate = delegate;
                 this.delegate.addChangeListener(this);
             }
 
+            @Override
             public boolean isBuilt() {
                 return cosEnabled.get() || delegate.isBuilt();
             }
 
+            @Override
             public void addChangeListener(ChangeListener l) {
                 cs.addChangeListener(l);
             }
 
+            @Override
             public void removeChangeListener(ChangeListener l) {
                 cs.removeChangeListener(l);
             }
 
+            @Override
             public void stateChanged(ChangeEvent e) {
                 cs.fireChange();
             }
-            
+
         }
     }
-    
+
 }

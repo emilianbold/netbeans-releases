@@ -115,12 +115,16 @@ do
 		SUSPEND="n"
 		;;
         --ycpu|-ycpu)
-                echo "profile using YourKit Profiler with CPU sampling, save snapshots in ${HOME}/yjp_data/IDE"
-                PROFILE="-J-agentlib:yjpagent=sampling,monitors,noj2ee,disablej2ee,dir=${HOME}/yjp_data/IDE"
+                echo "profile using YourKit Profiler with CPU sampling, save snapshots in ${HOME}/yjp_data/CPU"
+                PROFILE="-J-agentlib:yjpagent=sampling,monitors,disablealloc,disabletracing,disablej2ee,builtinprobes=none,onexit=memory,dir=${HOME}/yjp_data/CPU"
                 ;;
         --yprofile|-yprofile)
                 echo "profile using YourKit Profiler, save snapshots in ${HOME}/yjp_data/IDE"
-                PROFILE="-J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE,noj2ee,disablestacktelemetry,disablej2ee,disableexceptiontelemetry"
+                PROFILE="-J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE,disablej2ee,noj2ee"
+		;;
+	--ypl|-ypl)
+		echo "light profile using YourKit Profiler, save snapshots in ${HOME}/yjp_data/IDE"
+                PROFILE="-J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE,telemetryperiod=250,disabletracing,disablealloc,disablej2ee,noj2ee,disablej2ee,disableexceptiontelemetry"
                 ;;
         --userdir)
 		shift

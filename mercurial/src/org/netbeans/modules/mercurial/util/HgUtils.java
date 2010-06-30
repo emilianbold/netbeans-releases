@@ -347,7 +347,7 @@ public class HgUtils {
         if (patterns == null) {
             patterns = new HashSet<Pattern>(5);
         }
-        if (patterns.size() == 0) {
+        if (patterns.isEmpty()) {
             addIgnorePatterns(patterns, file);
             ignorePatterns.put(key, patterns);
         }
@@ -709,15 +709,16 @@ public class HgUtils {
         String name = "^" + file.getAbsolutePath().substring(directory.getAbsolutePath().length()+1) + "$"; //NOI18N
         // # should be escaped, otherwise works as a comment
         // . should be escaped, otherwise works as a special char in regexp
-        return name.replace(File.separatorChar, '/').replace("#", "\\#").replace(".", "\\."); //NOI18N
+        return name.replace(File.separatorChar, '/').replace("#", "\\#").replace(".", "\\.").replace("+", "\\+"); //NOI18N
     }
 
     private static void writeIgnoreEntries(File directory, Set entries) throws IOException {
         File hgIgnore = new File(directory, FILENAME_HGIGNORE);
         FileObject fo = FileUtil.toFileObject(hgIgnore);
 
-        if (entries.size() == 0) {
+        if (entries.isEmpty()) {
             if (fo != null) fo.delete();
+            resetIgnorePatterns(directory);
             return;
         }
 
@@ -1350,6 +1351,7 @@ itor tabs #66700).
             } else {
                 final org.openide.text.CloneableEditorSupport support = ces;
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         javax.swing.JEditorPane[] panes = support.getOpenedPanes();
                         if (panes != null) {
@@ -1373,6 +1375,7 @@ itor tabs #66700).
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */
     public static class ByImportanceComparator<T> implements Comparator<FileInformation> {
+        @Override
         public int compare(FileInformation i1, FileInformation i2) {
             return getComparableStatus(i1.getStatus()) - getComparableStatus(i2.getStatus());
         }
@@ -1462,7 +1465,7 @@ itor tabs #66700).
         for (String s : new String[] {lbChangeset, lbUser, lbDate, lbSummary}) {
             if(l < s.length()) l = s.length();
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(formatlabel(lbChangeset, l));
         sb.append(log.getRevision());
         sb.append(":"); // NOI18N
@@ -1488,7 +1491,7 @@ itor tabs #66700).
     }
 
     private static String spaces(int l) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < l + 3; i++) {
             sb.append(" ");
         }
@@ -1586,11 +1589,11 @@ itor tabs #66700).
      * @param repository repository root
      * @param filesUnderRoot set of repository roots
      * @param file file to add
-     * @return true if the file or any of it's ancestors was originally in the set
+     * @return newly added root or null if the to be added file is already contained in seen roots
      */
-    public static boolean prepareRootFiles(File repository, Set<File> filesUnderRoot, File file) {
-        boolean alreadyAdded = false;
+    public static File prepareRootFiles(File repository, Set<File> filesUnderRoot, File file) {
         boolean added = false;
+        File addedRoot = null;
         for (File fileUnderRoot : filesUnderRoot) {
             // try to find a common parent for planned files
             File childCandidate = file;
@@ -1598,7 +1601,6 @@ itor tabs #66700).
             added = true;
             if (childCandidate.equals(ancestorCandidate) || ancestorCandidate.equals(repository)) {
                 // file has already been inserted or scan is planned for the whole repository root
-                alreadyAdded = true;
                 break;
             }
             if (childCandidate.equals(repository)) {
@@ -1616,7 +1618,6 @@ itor tabs #66700).
             }
             if (ancestorCandidate == fileUnderRoot) {
                 // already added
-                alreadyAdded = true;
                 break;
             } else if (!FileStatusCache.FULL_REPO_SCAN_ENABLED && ancestorCandidate != childCandidate && ancestorCandidate.equals(repository)) {
                 // common ancestor is the repo root and neither one of the candidates was originally the repo root
@@ -1630,7 +1631,7 @@ itor tabs #66700).
                 } else {
                     filesUnderRoot.remove(fileUnderRoot);
                 }
-                filesUnderRoot.add(ancestorCandidate);
+                filesUnderRoot.add(addedRoot = ancestorCandidate);
                 break;
             } else {
                 added = false;
@@ -1638,9 +1639,9 @@ itor tabs #66700).
         }
         if (!added) {
             // not added yet
-            filesUnderRoot.add(file);
+            filesUnderRoot.add(addedRoot = file);
         }
-        return alreadyAdded;
+        return addedRoot;
     }
 
     /**

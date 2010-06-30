@@ -67,10 +67,11 @@ public class PhpWhereUsedQueryPlugin extends ProgressProviderAdapter implements 
 
     public PhpWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
         this.refactoring = refactoring;
-        this.usages = refactoring.getRefactoringSource().lookup(WhereUsedSupport.class);
+        this.usages = refactoring.getRefactoringSource().lookup(WhereUsedSupport.class);        
     }
 
     public Problem prepare(final RefactoringElementsBag elementsBag) {
+        this.usages.clearResults();
         if (isFindOverridingMethods()) {
             usages.overridingMethods();
         }

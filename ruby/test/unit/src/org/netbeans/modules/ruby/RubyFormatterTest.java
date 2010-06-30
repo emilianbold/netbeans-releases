@@ -117,6 +117,11 @@ public class RubyFormatterTest extends RubyTestBase {
                 continue;
             }
 
+            if (fo.getName().equals("registry")) {
+                System.err.println("SKIPPING known bad file " + fo.getNameExt());
+                continue;
+            }
+
             if (fo.getName().equals("delegating_attributes")) {
                 System.err.println("SKIPPING known bad file " + fo.getNameExt());
                 continue;

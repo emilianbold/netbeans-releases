@@ -72,6 +72,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -93,6 +94,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -481,6 +484,25 @@ public class ProjectsRootNode extends AbstractNode {
                 setProjectFiles();
             }
         });
+        private final Lookup.Result<ProjectIconAnnotator> result = Lookup.getDefault().lookupResult(ProjectIconAnnotator.class);
+        class AnnotationListener implements LookupListener, ChangeListener {
+            private final Set<ProjectIconAnnotator> annotators = new WeakSet<ProjectIconAnnotator>();
+            void init() {
+                for (ProjectIconAnnotator annotator : result.allInstances()) {
+                    if (annotators.add(annotator)) {
+                        annotator.addChangeListener(WeakListeners.change(this, annotator));
+                    }
+                }
+            }
+            public @Override void resultChanged(LookupEvent ev) {
+                init();
+                stateChanged(null);
+            }
+            public @Override void stateChanged(ChangeEvent e) {
+                fireIconChange();
+                fireOpenedIconChange();
+            }
+        }
 
         public BadgingNode(ProjectChildren ch, ProjectChildren.Pair p, Node n, boolean addSearchInfo, boolean logicalView) {
             super(n, null, badgingLookup(n, addSearchInfo));
@@ -491,6 +513,9 @@ public class ProjectsRootNode extends AbstractNode {
             OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
             setProjectFiles();
             OpenProjectList.log(Level.FINER, "BadgingNode finished {0}", toStringForLog()); // NOI18N
+            AnnotationListener annotationListener = new AnnotationListener();
+            annotationListener.init();
+            result.addLookupListener(annotationListener);
         }
         
         private static Lookup badgingLookup(Node n, boolean addSearchInfo) {
@@ -763,29 +788,28 @@ public class ProjectsRootNode extends AbstractNode {
         }
 
         public @Override Image getIcon(int type) {
-            Image img = super.getIcon(type);
-
-            if (logicalView && files != null && files.iterator().hasNext()) {
-                try {
-                    FileObject fo = files.iterator().next();
-                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
-                } catch (FileStateInvalidException e) {
-                    LOG.log(Level.INFO, null, e);
-                }
-            }
-
-            return img;
+            return getIcon(type, false);
         }
-
         public @Override Image getOpenedIcon(int type) {
-            Image img = super.getOpenedIcon(type);
+            return getIcon(type, true);
+        }
+        private Image getIcon(int type, boolean opened) {
+            Image img = opened ? super.getOpenedIcon(type) : super.getIcon(type);
 
-            if (logicalView && files != null && files.iterator().hasNext()) {
-                try {
-                    FileObject fo = files.iterator().next();
-                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
-                } catch (FileStateInvalidException e) {
-                    LOG.log(Level.INFO, null, e);
+            if (logicalView) {
+                if (files != null && files.iterator().hasNext()) {
+                    try {
+                        FileObject fo = files.iterator().next();
+                        img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
+                    } catch (FileStateInvalidException e) {
+                        LOG.log(Level.INFO, null, e);
+                    }
+                }
+                Project p = getLookup().lookup(Project.class);
+                if (p != null) {
+                    for (ProjectIconAnnotator pa : result.allInstances()) {
+                        img = pa.annotateIcon(p, img, opened);
+                    }
                 }
             }
 

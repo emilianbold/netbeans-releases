@@ -128,7 +128,7 @@
                 <package>org.netbeans.modules.dm.virtual.db.ui.wizard</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/dm/virtual/db/axiondb.jar</runtime-relative-path>
+                <runtime-relative-path>ext/axiondb.jar</runtime-relative-path>
                 <binary-origin>external/axiondb.jar</binary-origin>
             </class-path-extension>
         </data>

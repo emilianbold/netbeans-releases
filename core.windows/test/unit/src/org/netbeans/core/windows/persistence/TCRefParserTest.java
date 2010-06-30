@@ -52,9 +52,6 @@ import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
-import org.netbeans.core.windows.persistence.TCRefConfig;
-
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
@@ -72,18 +69,11 @@ public class TCRefParserTest extends NbTestCase {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public static NbTest suite() {
         NbTestSuite suite = new NbTestSuite(TCRefParserTest.class);
         return suite;
     }
 
-    protected void setUp () throws Exception {
-    }
-    
     ////////////////////////////////
     //Testing CORRECT data
     ////////////////////////////////

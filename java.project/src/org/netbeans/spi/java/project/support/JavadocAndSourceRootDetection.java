@@ -51,8 +51,6 @@ import java.io.Reader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -61,6 +59,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.openide.filesystems.FileObject;
@@ -228,19 +227,24 @@ public class JavadocAndSourceRootDetection {
         String javaIdentifier = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; //NOI18N
         String packageStatement = "package" + whitespace + "+(" + javaIdentifier + "(?:\\." + javaIdentifier + ")*)" + whitespace + "*;"; //NOI18N
         JAVA_FILE = Pattern.compile("(?ms)" + whitespace + "*" + packageStatement + ".*", Pattern.MULTILINE | Pattern.DOTALL); //NOI18N
+        // XXX this does not take into account annotations and imports:
         PACKAGE_INFO = Pattern.compile("(?ms)(?:.*" + whitespace + ")?" + packageStatement + whitespace + "*", Pattern.MULTILINE | Pattern.DOTALL); //NOI18N
     }
 
+    @SuppressWarnings({"OS_OPEN_STREAM", "RR_NOT_CHECKED"})
     private static FileObject findJavaPackage(FileObject fo) {
         try {
+            InputStream is = fo.getInputStream();
+            try {
             // Try default encoding, probably good enough.
-            Reader r = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+            Reader r = new BufferedReader(new InputStreamReader(is));
             r.mark(2);
             char[] cbuf = new char[2];
             r.read(cbuf, 0, 2);
             if (cbuf[0] == 255 && cbuf[1] == 254) { // BOM
-                r.close();
-                r = new BufferedReader(new InputStreamReader(fo.getInputStream(), "Unicode")); //NOI18N
+                is.close();
+                is = fo.getInputStream();
+                r = new BufferedReader(new InputStreamReader(is, "Unicode")); //NOI18N
             } else {
                 r.reset();
             }
@@ -259,6 +263,9 @@ public class JavadocAndSourceRootDetection {
             } else {
                 // XXX probably not a good idea to infer the default package: return f.getParentFile();
                 return null;
+            }
+            } finally {
+                is.close();
             }
         } catch (IOException x) {
             Exceptions.printStackTrace(x);
@@ -287,7 +294,7 @@ public class JavadocAndSourceRootDetection {
      *
      * @return package or null if not found
      */
-    private static final FileObject findClassPackage (FileObject file) {
+    private static FileObject findClassPackage(FileObject file) {
         try {
             InputStream in = file.getInputStream();
             try {

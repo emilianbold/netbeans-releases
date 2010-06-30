@@ -108,8 +108,7 @@ import org.openide.util.RequestProcessor;
             if (mkDir.get() != 0) {
                 throw new IOException("Can not create directory " + remoteDir); //NOI18N
             }
-            startupImpl(env2add);
-            success = true;
+            success = startupImpl(env2add);
         } catch (RemoteException ex) {
             printErr(ex);
         } catch (InterruptedException ex) {
@@ -144,7 +143,7 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    private void startupImpl(Map<String, String> env2add) throws IOException, InterruptedException, ExecutionException, RemoteException {
+    private boolean startupImpl(Map<String, String> env2add) throws IOException, InterruptedException, ExecutionException, RemoteException {
         String remoteControllerPath;
         String ldLibraryPath;
         try {
@@ -177,7 +176,10 @@ import org.openide.util.RequestProcessor;
                 executionEnvironment, files, rcInputStreamReader,
                 rcOutputStreamWriter, err, privProjectStorageDir);
 
-        localController.init();
+        if (!localController.init()) {
+            remoteControllerProcess.destroy();
+            return false;
+        }
 
         // read port
         String line = rcInputStreamReader.readLine();
@@ -223,6 +225,8 @@ import org.openide.util.RequestProcessor;
         addRemoteEnv(env2add, "cnd.rfs.preload.trace", "RFS_PRELOAD_TRACE"); // NOI18N
 
         RemoteUtil.LOGGER.fine("Setting environment:");
+
+        return true;
     }
 
     private void addRemoteEnv(Map<String, String> env2add, String localJavaPropertyName, String remoteEnvVarName) {

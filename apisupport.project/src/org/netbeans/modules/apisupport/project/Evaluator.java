@@ -358,19 +358,9 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
 
         // 'cluster' prop. evaluation without scanned ModuleList
         String codeNameBase = project.getCodeNameBase();
-        String clusterDir = null;
         PropertyEvaluator suiteEval = null;
-        try {
-            clusterDir = ModuleList.findClusterLocation(dir, nbroot, type);
-        } catch (IOException ex) {
-            Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, ex);
-        }
         if (type == NbModuleProvider.SUITE_COMPONENT) {
             suiteEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
-            clusterDir = FileUtil.normalizeFile(new File(suiteEval.evaluate(clusterDir))).getAbsolutePath();
-        }
-        if (clusterDir != null) {
-            providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("cluster", clusterDir)));
         }
 
         if (type == NbModuleProvider.SUITE_COMPONENT) {
@@ -426,23 +416,30 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
         defaults.put("manifest.mf", "manifest.mf"); // NOI18N
         defaults.put("src.dir", "src"); // NOI18N
-        defaults.put("build.classes.dir", "build/classes"); // NOI18N
+        defaults.put("build.dir", "build"); // NOI18N
+        defaults.put("build.classes.dir", "${build.dir}/classes"); // NOI18N
         defaults.put(SingleModuleProperties.JAVAC_SOURCE, "1.4"); // NOI18N
         if (type == NbModuleProvider.NETBEANS_ORG) {
             defaults.put("test.user.dir", "${nb_all}/nbbuild/testuserdir"); // NOI18N
         } else if (type == NbModuleProvider.STANDALONE) {
-            defaults.put("test.user.dir", "build/testuserdir"); // NOI18N
+            defaults.put("test.user.dir", "${build.dir}/testuserdir"); // NOI18N
         } else {
-            defaults.put("test.user.dir", "${suite.dir}/build/testuserdir"); // NOI18N
+            defaults.put("suite.build.dir", "${suite.dir}/build"); // NOI18N
+            defaults.put("test.user.dir", "${suite.build.dir}/testuserdir"); // NOI18N
         }
         Set<String> testTypes = new HashSet<String>(Arrays.asList(NbModuleProject.COMMON_TEST_TYPES));
         // XXX would be good to add in any other types defined in project.xml
         for (String testType : testTypes) {
             defaults.put("test." + testType + ".src.dir", "test/" + testType + "/src"); // NOI18N
             defaults.put("test." + testType + ".data.dir", "test/" + testType + "/data"); // NOI18N
-            defaults.put("build.test." + testType + ".classes.dir", "build/test/" + testType + "/classes"); // NOI18N
+            defaults.put("build.test." + testType + ".classes.dir", "${build.dir}/test/" + testType + "/classes"); // NOI18N
         }
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
+        try {
+            providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("cluster", ModuleList.findClusterLocation(dir, nbroot, type)))); // NOI18N
+        } catch (IOException ex) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, ex);
+        }
         if (ml != null) {
             providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.classpath", computeModuleClasspath(ml)))); // NOI18N
             providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.run.classpath", computeRuntimeModuleClasspath(ml)))); // NOI18N
@@ -712,14 +709,14 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                 String nball = evaluator.getProperty("nb_all"); // NOI18N
                 testDistDir = nball + File.separatorChar + "nbbuild" + File.separatorChar + "build" + File.separatorChar + "testdist"; // NOI18N
             } else if ( type == NbModuleProvider.SUITE_COMPONENT) {
-                // test.dist.dir = ${suite.dir}/build/testdist
-                String suiteDir = evaluator.getProperty("suite.dir"); // NOI18N
-                testDistDir = suiteDir + File.separatorChar + "build" + File.separatorChar + "testdist"; // NOI18N
+                // test.dist.dir = ${suite.build.dir}/testdist
+                String suiteDir = evaluator.getProperty("suite.build.dir"); // NOI18N
+                testDistDir = suiteDir + File.separatorChar + "testdist"; // NOI18N
             } else {
                 // standalone module
-                // test.dist.dir = ${module.dir}/build/testdist
-                String moduleDir = evaluator.getProperty("module.dir"); // NOI18N
-                testDistDir = moduleDir + File.separatorChar + "build" + File.separatorChar + "testdist"; // NOI18N
+                // test.dist.dir = ${build.dir}/testdist
+                String moduleDir = evaluator.getProperty("build.dir"); // NOI18N
+                testDistDir = moduleDir + File.separatorChar + "testdist"; // NOI18N
             }
         }
         for (Map.Entry<String,Set<TestModuleDependency>> entry : testDependencies.entrySet()) {
