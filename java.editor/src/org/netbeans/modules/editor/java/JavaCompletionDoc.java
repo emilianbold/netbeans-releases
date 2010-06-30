@@ -45,9 +45,9 @@
 package org.netbeans.modules.editor.java;
 
 import java.net.URL;
+import java.util.concurrent.Callable;
 import javax.lang.model.element.Element;
 import javax.swing.Action;
-import com.sun.javadoc.*;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
@@ -81,8 +81,8 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         return elementJavadoc.getGotoSourceAction();
     }
 
-    public static final JavaCompletionDoc create(CompilationController controller, Element element) {
-        return new JavaCompletionDoc( ElementJavadoc.create(controller, element) );
+    public static final JavaCompletionDoc create(CompilationController controller, Element element, Callable<Boolean> callable) {
+        return new JavaCompletionDoc( ElementJavadoc.create(controller, element, callable) );
     }
     
 }
