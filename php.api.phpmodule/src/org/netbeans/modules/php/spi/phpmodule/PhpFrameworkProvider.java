@@ -47,6 +47,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
@@ -108,6 +109,17 @@ public abstract class PhpFrameworkProvider {
     }
 
     /**
+     * Returns the {@link BadgeIcon badge icon} of this PHP framework.
+     * <p>
+     * The default implementation returns {@code null}.
+     * @return the {@link BadgeIcon badge icon} for this PHP framework or {@code null}
+     * @since 1.39
+     */
+    public BadgeIcon getBadgeIcon() {
+        return null;
+    }
+
+    /**
      * Finds out if a given PHP module has already been extended with this PHP framework.
      * <p>
      * <b>This method should be as fast as possible.</b>
@@ -141,7 +153,7 @@ public abstract class PhpFrameworkProvider {
     /**
      * Creates a {@link PhpModuleCustomizerExtender PHP module customizer extender} for this framework
      * and the given PHP module.
-     *
+     * <p>
      * The default implementation returns {@code null}.
      *
      * @param  phpModule the PHP module which properties are to be extended
