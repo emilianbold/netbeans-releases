@@ -1,10 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
- *
- * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
- * Other names may be trademarks of their respective owners.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -16,9 +13,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
+ * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -37,50 +34,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.gsf.testrunner.api;
 
-import java.util.Set;
-import javax.swing.event.ChangeListener;
-
 /**
- * Handles rerunning a test execution.
  *
- * @author Erno Mononen
+ * @author answer
  */
-public interface RerunHandler {
+public enum RerunType {
+
+    ALL("All"), CUSTOM("Custom"); //NOI18N
+
+    private final String name;
+
+    private RerunType(String name) {
+        this.name = name;
+    }
 
     /**
-     * Reruns the test execution.
+     * @return the name of the rerun type.
      */
-    void rerun();
-
-    /**
-     * Reruns the provided tests.
-     * @param type the type of rerun to be executed
-     */
-    void rerun(Set<Testcase> tests);
-
-    /**
-     * @return true if re-running is enabled (i.e. it is possible to
-     * rerun the execution and it has finished).
-     * @param type the type of rerun to verify
-     */
-    boolean enabled(RerunType type);
-
-    /**
-     * Adds a listener for getting notified about the enabled state.
-     * @param listener the listener to add.
-     */
-    void addChangeListener(ChangeListener listener);
-
-    /**
-     * Removes the given listener.
-     * 
-     * @param listener the listener to remove.
-     */
-    void removeChangeListener(ChangeListener listener);
+    public String getName() {
+        return name;
+    }
 
 }
+

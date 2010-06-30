@@ -147,7 +147,14 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
                 <attr name="templateCategory" stringvalue="invisible"/>
             </file>
-            
+
+            <file name="junit-custom.xml" url="templates/junit-custom.xml">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
+                <attr name="templateCategory" stringvalue="invisible"/>
+            </file>
+
         </folder>
     </folder>
 
