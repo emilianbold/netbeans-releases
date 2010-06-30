@@ -76,7 +76,7 @@ import org.openide.util.Exceptions;
 /**
  * @author   Jan Jancura
  */
-class ObjectFieldVariable extends AbstractObjectVariable
+public class ObjectFieldVariable extends AbstractObjectVariable
 implements org.netbeans.api.debugger.jpda.Field, Refreshable {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
@@ -89,7 +89,7 @@ implements org.netbeans.api.debugger.jpda.Field, Refreshable {
     private boolean valueRetrieved = false;
     private ObjectReference value;
     
-    ObjectFieldVariable (
+    public ObjectFieldVariable (
         JPDADebuggerImpl debugger, 
         ObjectReference value, 
         //String className,
@@ -117,7 +117,7 @@ implements org.netbeans.api.debugger.jpda.Field, Refreshable {
         }
     }
 
-    ObjectFieldVariable (
+    public ObjectFieldVariable (
         JPDADebuggerImpl debugger, 
         ObjectReference value, 
         //String className,
@@ -136,7 +136,7 @@ implements org.netbeans.api.debugger.jpda.Field, Refreshable {
         this.genericSignature = genericSignature;
     }
 
-    ObjectFieldVariable (
+    public ObjectFieldVariable (
         JPDADebuggerImpl debugger,
         Field field,
         String parentID,
