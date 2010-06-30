@@ -797,8 +797,24 @@ public class CasualDiff {
     protected int diffBlock(JCBlock oldT, JCBlock newT, int[] blockBounds) {
         int localPointer = blockBounds[0];
         if (oldT.flags != newT.flags) {
-            // TODO: Missing implementation
-            // used for changing from/to static initializer
+            int sp = getOldPos(oldT);
+            copyTo(localPointer, localPointer = sp);
+            if ((oldT.flags & STATIC) == 0 && (newT.flags & STATIC) != 0) {
+                printer.print("static");
+                if (VeryPretty.getCodeStyle(workingCopy).spaceBeforeStaticInitLeftBrace()) {
+                    printer.print(" ");
+                }
+            } else if ((oldT.flags & STATIC) != 0 && (newT.flags & STATIC) == 0) {
+                tokenSequence.move(sp);
+                if (tokenSequence.moveNext() && tokenSequence.token().id() == JavaTokenId.STATIC) {
+                    localPointer = tokenSequence.offset() + tokenSequence.token().length();
+                    if (tokenSequence.moveNext() && tokenSequence.token().id() == JavaTokenId.WHITESPACE) {
+                        localPointer = tokenSequence.offset() + tokenSequence.token().length();
+                    }
+                }
+            }
+        } else {
+            copyTo(localPointer, localPointer = oldT.pos + 1);
         }
         // syntetic super() found, skip it
         if (oldT.stats.head != null && oldT.stats.head.pos == oldT.pos) {
@@ -812,12 +828,11 @@ public class CasualDiff {
                 filterHidden(newT.stats),
                 workingCopy
         );
-        copyTo(localPointer, oldT.pos + 1);
         int old = printer.indent();
         Name oldEnclosing = printer.enclClassName;
         printer.enclClassName = null;
         List<JCTree> oldstats = filterHidden(oldT.stats);
-        localPointer = diffList(oldstats, filterHidden(newT.stats), oldT.pos + 1, est, Measure.MEMBER, printer);
+        localPointer = diffList(oldstats, filterHidden(newT.stats), localPointer, est, Measure.MEMBER, printer);
         printer.enclClassName = oldEnclosing;
         if (localPointer < endPos(oldT)) {
 /*
