@@ -96,6 +96,9 @@ import org.openide.util.RequestProcessor;
  */
 public class JavaFixAllImports {
     
+    //-J-Dorg.netbeans.modules.java.editor.imports.JavaFixAllImports.invalid_import_html="<html><font color='#808080'>"
+    public static final String NOT_VALID_IMPORT_HTML = System.getProperty(JavaFixAllImports.class.getName() + ".invalid_import_html", "");
+    
     private static final String PREFS_KEY = JavaFixAllImports.class.getName();
     private static final String KEY_REMOVE_UNUSED_IMPORTS = "removeUnusedImports"; // NOI18N
     private static final JavaFixAllImports INSTANCE = new JavaFixAllImports();
@@ -332,9 +335,10 @@ public class JavaFixAllImports {
                         continue;
 
                     String fqn = e.getQualifiedName().toString();
-                    String dn = "<html><font color='#808080'><s>" + fqn;
+                    String dn = NOT_VALID_IMPORT_HTML + fqn;
 
                     data.variants[index][++i] = dn;
+                    data.icons[index][i] = ElementIcons.getElementIcon(e.getKind(), e.getModifiers());
                     int level = Utilities.getImportanceLevel(fqn);
                     if (level < minImportanceLevel) {
                         data.defaults[index] = data.variants[index][i];

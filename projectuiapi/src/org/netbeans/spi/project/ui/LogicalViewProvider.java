@@ -44,6 +44,7 @@
 
 package org.netbeans.spi.project.ui;
 
+import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.nodes.Node;
 
@@ -51,6 +52,7 @@ import org.openide.nodes.Node;
  * Ability for a {@link org.netbeans.api.project.Project} to supply
  * a logical view of itself.
  * @see org.netbeans.api.project.Project#getLookup
+ * @see ProjectIconAnnotator
  * @author Jesse Glick
  */
 public interface LogicalViewProvider {

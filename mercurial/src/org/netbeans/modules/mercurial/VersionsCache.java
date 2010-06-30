@@ -45,6 +45,8 @@
 package org.netbeans.modules.mercurial;
 
 import java.io.*;
+import org.netbeans.modules.versioning.historystore.Storage;
+import org.netbeans.modules.versioning.historystore.StorageManager;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.util.*;
 import org.netbeans.modules.versioning.util.Utils;
@@ -89,7 +91,21 @@ public class VersionsCache {
                 if (Setup.REVISION_BASE.equals(revision)) {
                     HgCommand.doCat(repository, base, tempFile, null);
                 } else {
-                    HgCommand.doCat(repository, base, tempFile, revision, null);
+                    if ("false".equals(System.getProperty("versioning.mercurial.historycache.enable", "true"))) { //NOI18N
+                        HgCommand.doCat(repository, base, tempFile, revision, null);
+                    } else {
+                        Storage cachedVersions = StorageManager.getInstance().getStorage(repository);
+                        String relativePath = HgUtils.getRelativePath(base);
+                        File cachedFile = cachedVersions.getContent(relativePath, base.getName(), revision);
+                        if (cachedFile.length() == 0) { // not yet cached
+                            HgCommand.doCat(repository, base, tempFile, revision, null);
+                            if (tempFile.length() != 0) {
+                                cachedVersions.setContent(relativePath, revision, tempFile);
+                            }
+                        } else {
+                            tempFile = cachedFile;
+                        }
+                    }
                 }
                 if (tempFile.length() == 0) {
                     tempFile.delete();
@@ -97,9 +113,7 @@ public class VersionsCache {
                 }
                 return tempFile;
             } catch (HgException e) {
-                IOException ioe = new IOException();
-                ioe.initCause(e);
-                throw ioe;
+                throw new IOException(e);
             }
         }
     }

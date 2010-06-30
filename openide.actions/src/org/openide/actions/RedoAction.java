@@ -43,22 +43,26 @@
  */
 package org.openide.actions;
 
+import javax.swing.Action;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
 import javax.swing.UIManager;
 import javax.swing.undo.CannotRedoException;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 
 
-/** Redo an edit.
+/** Redo an edit. Since version 6.18 this class
+* implements {@link ContextAwareAction}.
 *
 * @see UndoAction
 * @author   Ian Formanek, Jaroslav Tulach
 */
-public class RedoAction extends CallableSystemAction {
+public class RedoAction extends CallableSystemAction implements ContextAwareAction {
     private static String SWING_DEFAULT_LABEL = UIManager.getString("AbstractUndoableEdit.redoText"); //NOI18N
 
     @Override
@@ -111,5 +115,10 @@ public class RedoAction extends CallableSystemAction {
     @Override
     protected boolean asynchronous() {
         return false;
+    }
+
+    @Override
+    public Action createContextAwareInstance(Lookup actionContext) {
+        return new UndoRedoAction(actionContext, false, false);
     }
 }

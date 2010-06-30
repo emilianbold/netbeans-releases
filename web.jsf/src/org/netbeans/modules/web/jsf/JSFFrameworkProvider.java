@@ -275,13 +275,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     @Override
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
-        if (webModule != null) {
-            Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+        if (webModule != null && webModule.getDocumentBase() != null) {
+            FileObject docBase = webModule.getDocumentBase();
+            Project project = FileOwnerQuery.getOwner(docBase);
             Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
             if (preferences.get(PREFERRED_LANGUAGE, "").equals("")) { //NOI18N
-                ClassPath cp  = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
-                boolean faceletsPresent = cp.findResource(JSFUtils.MYFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null || //NOI18N
-                                          cp.findResource("com/sun/facelets/Facelet.class") !=null || //NOI18N
+                ClassPath cp  = ClassPath.getClassPath(docBase, ClassPath.COMPILE);
+                boolean faceletsPresent = cp.findResource("com/sun/facelets/Facelet.class") !=null || //NOI18N
                                           cp.findResource("com/sun/faces/facelets/Facelet.class") !=null; //NOI18N
                 if (faceletsPresent) {
                     preferences.put(PREFERRED_LANGUAGE, "Facelets");    //NOI18N
@@ -289,6 +289,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
             panel = new JSFConfigurationPanel(this, controller, !defaultValue, preferences);
         } else {
+            if (webModule!=null && webModule.getDocumentBase() == null) {
+                controller.getProperties().setProperty("NoDocBase", true);  //NOI18N
+            }
             panel = new JSFConfigurationPanel(this, controller, !defaultValue);
         }
         panel.setCreateExamples(createWelcome);

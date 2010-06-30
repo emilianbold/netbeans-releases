@@ -221,7 +221,7 @@ public final class JavaAntLogger extends AntLogger {
     private static final class SessionData {
         public ClassPath platformSources = null;
         public String classpath = null;
-        public Collection<FileObject> classpathSourceRoots = null;
+        public volatile Collection<FileObject> classpathSourceRoots = null;
         public String possibleExceptionText = null;
         public String lastExceptionMessage = null;
         public SessionData() {}
@@ -354,8 +354,9 @@ public final class JavaAntLogger extends AntLogger {
         if (data.classpath == null) {
             return Collections.emptySet();
         }
-        if (data.classpathSourceRoots == null) {
-            data.classpathSourceRoots = new LinkedHashSet<FileObject>();
+        Collection<FileObject> result = data.classpathSourceRoots;
+        if (result == null) {
+            result = new LinkedHashSet<FileObject>();
             StringTokenizer tok = new StringTokenizer(data.classpath, File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 String binrootS = tok.nextToken();
@@ -365,20 +366,22 @@ public final class JavaAntLogger extends AntLogger {
                     continue;
                 }
                 FileObject[] someRoots = SourceForBinaryQuery.findSourceRoots(binroot).getRoots();
-                data.classpathSourceRoots.addAll(Arrays.asList(someRoots));
+                result.addAll(Arrays.asList(someRoots));
             }
             if (data.platformSources != null) {
-                data.classpathSourceRoots.addAll(Arrays.asList(data.platformSources.getRoots()));
+                result.addAll(Arrays.asList(data.platformSources.getRoots()));
             } else {
                 // no platform found. use default one:
                 JavaPlatform plat = JavaPlatform.getDefault();
                 // in unit tests the default platform may be null:
                 if (plat != null) {
-                    data.classpathSourceRoots.addAll(Arrays.asList(plat.getSourceFolders().getRoots()));
+                    result.addAll(Arrays.asList(plat.getSourceFolders().getRoots()));
                 }
             }
+            result = Collections.unmodifiableCollection(result);
+            data.classpathSourceRoots = result;
         }
-        return data.classpathSourceRoots;
+        return result;
     }
     
     private static String guessExceptionMessage(SessionData data) {

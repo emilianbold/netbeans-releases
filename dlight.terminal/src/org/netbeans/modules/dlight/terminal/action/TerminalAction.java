@@ -130,7 +130,7 @@ abstract class TerminalAction implements ActionListener {
                             npb.addNativeProcessListener(new NativeProcessListener(io, destroyed));
 
                             final HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
-                            String shell = hostInfo.getShell();
+                            String shell = hostInfo.getLoginShell();
 //                            npb.setWorkingDirectory("${HOME}");
                             npb.setExecutable(shell);
                             NativeExecutionDescriptor descr;

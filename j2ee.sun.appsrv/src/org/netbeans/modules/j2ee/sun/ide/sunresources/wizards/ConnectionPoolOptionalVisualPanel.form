@@ -15,7 +15,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -82,11 +82,11 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="maxField" alignment="1" pref="282" max="32767" attributes="2"/>
-                      <Component id="resizeField" alignment="1" pref="282" max="32767" attributes="2"/>
-                      <Component id="idleField" alignment="1" pref="282" max="32767" attributes="2"/>
-                      <Component id="waitField" alignment="1" pref="282" max="32767" attributes="2"/>
-                      <Component id="steadyField" pref="282" max="32767" attributes="2"/>
+                      <Component id="maxField" alignment="1" pref="302" max="32767" attributes="2"/>
+                      <Component id="resizeField" alignment="1" pref="302" max="32767" attributes="2"/>
+                      <Component id="idleField" alignment="1" pref="302" max="32767" attributes="2"/>
+                      <Component id="waitField" alignment="1" pref="302" max="32767" attributes="2"/>
+                      <Component id="steadyField" pref="302" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -297,8 +297,8 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="isolationCombo" alignment="0" pref="258" max="32767" attributes="2"/>
-                      <Component id="transactionCombo" alignment="0" pref="258" max="32767" attributes="2"/>
+                      <Component id="isolationCombo" alignment="0" pref="273" max="32767" attributes="2"/>
+                      <Component id="transactionCombo" alignment="0" pref="273" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>

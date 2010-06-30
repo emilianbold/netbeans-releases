@@ -47,8 +47,8 @@ made subject to such option by the copyright holder.
 
     <target name="-init">
         <property name="run.jdkhome" location="${nbjdk.home}"/>
-        <condition property="test.user.dir" value="${suite.dir}/build/testuserdir" else="build/testuserdir">
-            <isset property="suite.dir"/>
+        <condition property="test.user.dir" value="${suite.build.dir}/testuserdir" else="${build.dir}/testuserdir">
+            <isset property="suite.build.dir"/>
         </condition>
         <property name="suite.dir" location="${basedir}"/>
         <property name="run.args.common" value='--userdir "${test.user.dir}" -J-Dnetbeans.logger.console=true -J-ea'/>
