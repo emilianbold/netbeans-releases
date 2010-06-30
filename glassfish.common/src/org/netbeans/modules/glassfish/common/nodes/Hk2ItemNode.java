@@ -57,7 +57,11 @@ import javax.swing.Action;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.modules.glassfish.common.nodes.actions.DeployDirectoryCookie;
+import org.netbeans.modules.glassfish.common.nodes.actions.DisableModulesAction;
+import org.netbeans.modules.glassfish.common.nodes.actions.DisableModulesCookie;
 import org.netbeans.modules.glassfish.common.nodes.actions.EditDetailsAction;
+import org.netbeans.modules.glassfish.common.nodes.actions.EnableModulesAction;
+import org.netbeans.modules.glassfish.common.nodes.actions.EnableModulesCookie;
 import org.netbeans.modules.glassfish.common.nodes.actions.OpenURLAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
@@ -185,7 +189,73 @@ public class Hk2ItemNode extends AbstractNode {
             });
         }
 
-//        if(decorator.canUnregister()) {
+        if(decorator.canEnable()) {
+            getCookieSet().add(new EnableModulesCookie() {
+
+                private volatile WeakReference<Future<OperationState>> status;
+
+                @Override
+                public Future<OperationState> enableModule() {
+                    Future<OperationState> result = null;
+                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+                    if(commonModule != null) {
+                        CommandRunner mgr = new CommandRunner(true, commonModule.getCommandFactory(), commonModule.getInstanceProperties());
+                        result = mgr.enable(name);
+                        status = new WeakReference<Future<OperationState>>(result);
+                    }
+                    return result;
+                }
+
+                @Override
+                public boolean isRunning() {
+                    WeakReference<Future<OperationState>> localref = status;
+                    if(localref == null) {
+                        return false;
+                    }
+                    Future<OperationState> cmd = localref.get();
+                    if(cmd == null || cmd.isDone()) {
+                        return false;
+                    }
+                    return true;
+                }
+
+            });
+        }
+
+        if(decorator.canDisable()) {
+            getCookieSet().add(new DisableModulesCookie() {
+
+                private volatile WeakReference<Future<OperationState>> status;
+
+                @Override
+                public Future<OperationState> disableModule() {
+                    Future<OperationState> result = null;
+                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+                    if(commonModule != null) {
+                        CommandRunner mgr = new CommandRunner(true, commonModule.getCommandFactory(), commonModule.getInstanceProperties());
+                        result = mgr.disable(name);
+                        status = new WeakReference<Future<OperationState>>(result);
+                    }
+                    return result;
+                }
+
+                @Override
+                public boolean isRunning() {
+                    WeakReference<Future<OperationState>> localref = status;
+                    if(localref == null) {
+                        return false;
+                    }
+                    Future<OperationState> cmd = localref.get();
+                    if(cmd == null || cmd.isDone()) {
+                        return false;
+                    }
+                    return true;
+                }
+
+            });
+        }
+
+        //        if(decorator.canUnregister()) {
 //            getCookieSet().add(new UnregisterResourceCookie() {
 //
 //                private volatile WeakReference<Future<OperationState>> status;
@@ -256,7 +326,11 @@ public class Hk2ItemNode extends AbstractNode {
         Image image = null;
         Image badge = decorator.getIconBadge();
         if(badge != null) {
-            image = badgeFolder(badge, false);
+            if (null == decorator.getIcon(type)) {
+                image = badgeFolder(badge, false);
+            } else {
+                image = badgeIcon(badge,decorator.getIcon(type));
+            }
         } else {
             image = decorator.getIcon(type);
         }
@@ -291,6 +365,14 @@ public class Hk2ItemNode extends AbstractNode {
             actions.add(SystemAction.get(UndeployModuleAction.class));
         }
     
+        if(decorator.canEnable()) {
+            actions.add(SystemAction.get(EnableModulesAction.class));
+        }
+
+        if(decorator.canDisable()) {
+            actions.add(SystemAction.get(DisableModulesAction.class));
+        }
+
         if(decorator.canUnregister()) {
             actions.add(SystemAction.get(UnregisterResourceAction.class));
         }
@@ -332,6 +414,17 @@ public class Hk2ItemNode extends AbstractNode {
     }
     
     /**
+     * Applies a badge to an icon.
+     *
+     * @param badge badge image for folder
+     * @param icon the image to be badged
+     * @return an image of the badged folder
+     */
+    public static Image badgeIcon(Image badge, Image icon) {
+        return ImageUtilities.mergeImages(icon, badge, 7, 7);
+    }
+
+    /**
      * Retrieves the IDE's standard folder node, so we can access the default
      * open/closed folder icons.
      * 
@@ -357,6 +450,8 @@ public class Hk2ItemNode extends AbstractNode {
     
     public static final Decorator J2EE_APPLICATION = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
+        @Override public boolean canEnable() { return true; }
+        @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return true; }
     };
     

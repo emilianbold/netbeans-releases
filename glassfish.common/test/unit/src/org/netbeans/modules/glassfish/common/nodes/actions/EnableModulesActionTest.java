@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,46 +34,72 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.spi;
+package org.netbeans.modules.glassfish.common.nodes.actions;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author Peter Williams
+ * @author vkraemer
  */
-public class AppDesc {
-    
-    private final String name;
-    private final String path;
-    private final String contextRoot;
-    private final boolean enabled;
-    
-    public AppDesc(final String name, final String path, final String contextRoot, boolean enabled) {
-        this.name = name;
-        this.path = path;
-        this.contextRoot = contextRoot;
-        this.enabled = enabled;
+public class EnableModulesActionTest {
+
+    public EnableModulesActionTest() {
     }
 
-    public String getName() {
-        return name;
-    }
-    
-    public String getPath() {
-        return path;
-    }
-    
-    public String getContextRoot() {
-        return contextRoot;
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
 
-    public boolean getEnabled() {
-        return enabled;
+    @AfterClass
+    public static void tearDownClass() throws Exception {
     }
-    
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    /**
+     * Test of noDups method, of class EnableModulesAction.
+     */
+    @Test
+    public void testGetDup() {
+        System.out.println("getDup");
+        List<String> targets = null;
+        String expResult = null;
+        String result = EnableModulesAction.getDup(targets);
+        assertEquals(expResult, result);
+        targets = new ArrayList<String>();
+        targets.add("A");
+        result = EnableModulesAction.getDup(targets);
+        assertEquals(expResult, result);
+        targets.add("B");
+        result = EnableModulesAction.getDup(targets);
+        assertEquals(expResult, result);
+        targets.add("C:1");
+        result = EnableModulesAction.getDup(targets);
+        assertEquals(expResult, result);
+        expResult = "C";
+        targets.add("C");
+        result = EnableModulesAction.getDup(targets);
+        assertEquals(expResult, result);
+    }
+
 }
