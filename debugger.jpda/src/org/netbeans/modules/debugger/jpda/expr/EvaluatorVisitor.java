@@ -3916,7 +3916,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         public UnsuitableArgumentsException() {}
     }
 
-    private static abstract class ArtificialMirror implements Mirror {
+    static abstract class ArtificialMirror implements Mirror {
 
         public VirtualMachine virtualMachine() {
             return null;
