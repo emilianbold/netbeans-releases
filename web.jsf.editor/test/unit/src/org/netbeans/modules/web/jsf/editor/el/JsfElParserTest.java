@@ -223,7 +223,7 @@ public class JsfElParserTest extends TestBase {
         for (int i = 0; i < level; i++) {
             indent.append(" ");
         }
-        System.out.println(indent.toString() + node + ", image: " + node.getImage() + ", class: " + node.getClass().getSimpleName());
+        System.out.println(indent.toString() + node + ", offset: start - " + node.startOffset()  + " end - " + node.endOffset() + ", image: " + node.getImage() + ", class: " + node.getClass().getSimpleName());
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             Node child = node.jjtGetChild(i);
             printTree(child, ++level);

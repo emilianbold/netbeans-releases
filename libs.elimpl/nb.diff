@@ -1,0 +1,1006 @@
+Index: src/main/java/com/sun/el/parser/SimpleNode.java
+===================================================================
+--- src/main/java/com/sun/el/parser/SimpleNode.java	(revision 200)
++++ src/main/java/com/sun/el/parser/SimpleNode.java	(working copy)
+@@ -58,6 +58,9 @@
+ 
+     protected String image;
+ 
++    protected Token firstToken;
++    protected Token lastToken;
++
+     public SimpleNode(int i) {
+         id = i;
+     }
+@@ -95,6 +98,53 @@
+         return (children == null) ? 0 : children.length;
+     }
+ 
++    public Token jjtGetFirstToken() {
++        return firstToken;
++    }
++
++    public void jjtSetFirstToken(Token token) {
++        this.firstToken = token;
++    }
++
++    public Token jjtGetLastToken() {
++        return lastToken;
++    }
++
++    public void jjtSetLastToken(Token token) {
++        this.lastToken = token;
++    }
++
++    public int startOffset() {
++        return jjtGetFirstToken().offset;
++    }
++
++    public int endOffset() {
++        //why this happens???
++        if (jjtGetLastToken().image == null) {
++            System.err.println("ERROR: lastToken image is null! : " + jjtGetLastToken());
++            return jjtGetLastToken().offset;
++        } else {
++            //#181357 - At the end of the tokens sequence there is the EOF token (kind==0) with
++            //zero lenght but WRONG start offset - it points at the previous offset (real file end - 1).
++            //so tokens of simple code may look like:
++            //Token( 0; 'h1')
++            //Token( 2; ' ')
++            //Token( 3; '{')
++            //Token( 4; ' ')
++            //Token( 5; '}')
++            //Token( 5; '') <-- here the (EOF) token should apparently have offset set to 6.
++            //
++            //sometimes there are even two EOF tokens at the end of the sequence with the same wrong offset!
++            //
++            //why this happens is a mystery to me, maybe caused by some changes to the default javacc
++            //lexing, but I am not sure so I'll workaround it here.
++            if(jjtGetLastToken().kind == ELParserConstants.EOF) {
++                return jjtGetLastToken().offset + 1;
++            } else {
++                return jjtGetLastToken().offset + jjtGetLastToken().image.length();
++            }
++        }
++    }
+     /*
+      * You can override these two methods in subclasses of SimpleNode to
+      * customize the way the node appears when the tree is dumped. If your
+Index: src/main/java/com/sun/el/parser/ELParser.java
+===================================================================
+--- src/main/java/com/sun/el/parser/ELParser.java	(revision 200)
++++ src/main/java/com/sun/el/parser/ELParser.java	(working copy)
+@@ -3,10 +3,13 @@
+ import java.io.StringReader;
+ import javax.el.ELException;
+ public class ELParser/*@bgen(jjtree)*/implements ELParserTreeConstants, ELParserConstants {/*@bgen(jjtree)*/
+-  protected JJTELParserState jjtree = new JJTELParserState();public static Node parse(String ref) throws ELException
++  protected JJTELParserState jjtree = new JJTELParserState();
++    public static Node parse(String ref) throws ELException
+     {
+         try {
+-                return (new ELParser(new StringReader(ref))).CompositeExpression();
++            ELParser parser = new ELParser(new StringReader(ref));
++            parser.token_source = new PatchedELParserTokenManager(parser.jj_input_stream);
++            return parser.CompositeExpression();
+         } catch (ParseException pe) {
+                 throw new ELException(pe.getMessage());
+         }
+@@ -22,6 +25,7 @@
+   AstCompositeExpression jjtn000 = new AstCompositeExpression(JJTCOMPOSITEEXPRESSION);
+   boolean jjtc000 = true;
+   jjtree.openNodeScope(jjtn000);
++  jjtn000.jjtSetFirstToken(getToken(1));
+     try {
+       label_1:
+       while (true) {
+@@ -54,6 +58,7 @@
+       jj_consume_token(0);
+                                                                                     jjtree.closeNodeScope(jjtn000, true);
+                                                                                     jjtc000 = false;
++                                                                                    jjtn000.jjtSetLastToken(getToken(0));
+                                                                                     {if (true) return jjtn000;}
+     } catch (Throwable jjte000) {
+           if (jjtc000) {
+@@ -72,6 +77,7 @@
+     } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
++            jjtn000.jjtSetLastToken(getToken(0));
+           }
+     }
+     throw new Error("Missing return statement in function");
+@@ -85,15 +91,18 @@
+                                                /*@bgen(jjtree) LiteralExpression */
+                                                 AstLiteralExpression jjtn000 = new AstLiteralExpression(JJTLITERALEXPRESSION);
+                                                 boolean jjtc000 = true;
+-                                                jjtree.openNodeScope(jjtn000);Token t = null;
++                                                jjtree.openNodeScope(jjtn000);
++                                                jjtn000.jjtSetFirstToken(getToken(1));Token t = null;
+     try {
+       t = jj_consume_token(LITERAL_EXPRESSION);
+                                  jjtree.closeNodeScope(jjtn000, true);
+                                  jjtc000 = false;
++                                 jjtn000.jjtSetLastToken(getToken(0));
+                                  jjtn000.setImage(t.image);
+     } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
++            jjtn000.jjtSetLastToken(getToken(0));
+           }
+     }
+   }
+@@ -107,6 +116,7 @@
+   AstDeferredExpression jjtn000 = new AstDeferredExpression(JJTDEFERREDEXPRESSION);
+   boolean jjtc000 = true;
+   jjtree.openNodeScope(jjtn000);
++  jjtn000.jjtSetFirstToken(getToken(1));
+     try {
+       jj_consume_token(START_DEFERRED_EXPRESSION);
+       Expression();
+@@ -128,6 +138,7 @@
+     } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
++            jjtn000.jjtSetLastToken(getToken(0));
+           }
+     }
+   }
+@@ -141,6 +152,7 @@
+   AstDynamicExpression jjtn000 = new AstDynamicExpression(JJTDYNAMICEXPRESSION);
+   boolean jjtc000 = true;
+   jjtree.openNodeScope(jjtn000);
++  jjtn000.jjtSetFirstToken(getToken(1));
+     try {
+       jj_consume_token(START_DYNAMIC_EXPRESSION);
+       Expression();
+@@ -162,6 +174,7 @@
+     } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
++            jjtn000.jjtSetLastToken(getToken(0));
+           }
+     }
+   }
+@@ -196,6 +209,7 @@
+                                                 AstChoice jjtn001 = new AstChoice(JJTCHOICE);
+                                                 boolean jjtc001 = true;
+                                                 jjtree.openNodeScope(jjtn001);
++                                                jjtn001.jjtSetFirstToken(getToken(1));
+       try {
+         Choice();
+       } catch (Throwable jjte001) {
+@@ -215,6 +229,7 @@
+       } finally {
+                                                 if (jjtc001) {
+                                                   jjtree.closeNodeScope(jjtn001,  3);
++                                                  jjtn001.jjtSetLastToken(getToken(0));
+                                                 }
+       }
+     }
+@@ -252,6 +267,7 @@
+                                AstOr jjtn001 = new AstOr(JJTOR);
+                                boolean jjtc001 = true;
+                                jjtree.openNodeScope(jjtn001);
++                               jjtn001.jjtSetFirstToken(getToken(1));
+       try {
+         And();
+       } catch (Throwable jjte001) {
+@@ -271,6 +287,7 @@
+       } finally {
+                                if (jjtc001) {
+                                  jjtree.closeNodeScope(jjtn001,  2);
++                                 jjtn001.jjtSetLastToken(getToken(0));
+                                }
+       }
+     }
+@@ -308,6 +325,7 @@
+                                       AstAnd jjtn001 = new AstAnd(JJTAND);
+                                       boolean jjtc001 = true;
+                                       jjtree.openNodeScope(jjtn001);
++                                      jjtn001.jjtSetFirstToken(getToken(1));
+       try {
+         Equality();
+       } catch (Throwable jjte001) {
+@@ -327,6 +345,7 @@
+       } finally {
+                                       if (jjtc001) {
+                                         jjtree.closeNodeScope(jjtn001,  2);
++                                        jjtn001.jjtSetLastToken(getToken(0));
+                                       }
+       }
+     }
+@@ -369,6 +388,7 @@
+                                  AstEqual jjtn001 = new AstEqual(JJTEQUAL);
+                                  boolean jjtc001 = true;
+                                  jjtree.openNodeScope(jjtn001);
++                                 jjtn001.jjtSetFirstToken(getToken(1));
+         try {
+           Compare();
+         } catch (Throwable jjte001) {
+@@ -388,6 +408,7 @@
+         } finally {
+                                  if (jjtc001) {
+                                    jjtree.closeNodeScope(jjtn001,  2);
++                                   jjtn001.jjtSetLastToken(getToken(0));
+                                  }
+         }
+         break;
+@@ -408,6 +429,7 @@
+                                  AstNotEqual jjtn002 = new AstNotEqual(JJTNOTEQUAL);
+                                  boolean jjtc002 = true;
+                                  jjtree.openNodeScope(jjtn002);
++                                 jjtn002.jjtSetFirstToken(getToken(1));
+         try {
+           Compare();
+         } catch (Throwable jjte002) {
+@@ -427,6 +449,7 @@
+         } finally {
+                                  if (jjtc002) {
+                                    jjtree.closeNodeScope(jjtn002,  2);
++                                   jjtn002.jjtSetLastToken(getToken(0));
+                                  }
+         }
+         break;
+@@ -479,6 +502,7 @@
+                                  AstLessThan jjtn001 = new AstLessThan(JJTLESSTHAN);
+                                  boolean jjtc001 = true;
+                                  jjtree.openNodeScope(jjtn001);
++                                 jjtn001.jjtSetFirstToken(getToken(1));
+         try {
+           Math();
+         } catch (Throwable jjte001) {
+@@ -498,6 +522,7 @@
+         } finally {
+                                  if (jjtc001) {
+                                    jjtree.closeNodeScope(jjtn001,  2);
++                                   jjtn001.jjtSetLastToken(getToken(0));
+                                  }
+         }
+         break;
+@@ -518,6 +543,7 @@
+                                  AstGreaterThan jjtn002 = new AstGreaterThan(JJTGREATERTHAN);
+                                  boolean jjtc002 = true;
+                                  jjtree.openNodeScope(jjtn002);
++                                 jjtn002.jjtSetFirstToken(getToken(1));
+         try {
+           Math();
+         } catch (Throwable jjte002) {
+@@ -537,6 +563,7 @@
+         } finally {
+                                  if (jjtc002) {
+                                    jjtree.closeNodeScope(jjtn002,  2);
++                                   jjtn002.jjtSetLastToken(getToken(0));
+                                  }
+         }
+         break;
+@@ -557,6 +584,7 @@
+                                  AstLessThanEqual jjtn003 = new AstLessThanEqual(JJTLESSTHANEQUAL);
+                                  boolean jjtc003 = true;
+                                  jjtree.openNodeScope(jjtn003);
++                                 jjtn003.jjtSetFirstToken(getToken(1));
+         try {
+           Math();
+         } catch (Throwable jjte003) {
+@@ -576,6 +604,7 @@
+         } finally {
+                                  if (jjtc003) {
+                                    jjtree.closeNodeScope(jjtn003,  2);
++                                   jjtn003.jjtSetLastToken(getToken(0));
+                                  }
+         }
+         break;
+@@ -596,6 +625,7 @@
+                                  AstGreaterThanEqual jjtn004 = new AstGreaterThanEqual(JJTGREATERTHANEQUAL);
+                                  boolean jjtc004 = true;
+                                  jjtree.openNodeScope(jjtn004);
++                                 jjtn004.jjtSetFirstToken(getToken(1));
+         try {
+           Math();
+         } catch (Throwable jjte004) {
+@@ -615,6 +645,7 @@
+         } finally {
+                                  if (jjtc004) {
+                                    jjtree.closeNodeScope(jjtn004,  2);
++                                   jjtn004.jjtSetLastToken(getToken(0));
+                                  }
+         }
+         break;
+@@ -649,6 +680,7 @@
+                           AstPlus jjtn001 = new AstPlus(JJTPLUS);
+                           boolean jjtc001 = true;
+                           jjtree.openNodeScope(jjtn001);
++                          jjtn001.jjtSetFirstToken(getToken(1));
+         try {
+           Multiplication();
+         } catch (Throwable jjte001) {
+@@ -668,6 +700,7 @@
+         } finally {
+                           if (jjtc001) {
+                             jjtree.closeNodeScope(jjtn001,  2);
++                            jjtn001.jjtSetLastToken(getToken(0));
+                           }
+         }
+         break;
+@@ -676,6 +709,7 @@
+                            AstMinus jjtn002 = new AstMinus(JJTMINUS);
+                            boolean jjtc002 = true;
+                            jjtree.openNodeScope(jjtn002);
++                           jjtn002.jjtSetFirstToken(getToken(1));
+         try {
+           Multiplication();
+         } catch (Throwable jjte002) {
+@@ -695,6 +729,7 @@
+         } finally {
+                            if (jjtc002) {
+                              jjtree.closeNodeScope(jjtn002,  2);
++                             jjtn002.jjtSetLastToken(getToken(0));
+                            }
+         }
+         break;
+@@ -732,6 +767,7 @@
+                           AstMult jjtn001 = new AstMult(JJTMULT);
+                           boolean jjtc001 = true;
+                           jjtree.openNodeScope(jjtn001);
++                          jjtn001.jjtSetFirstToken(getToken(1));
+         try {
+           Unary();
+         } catch (Throwable jjte001) {
+@@ -751,6 +787,7 @@
+         } finally {
+                           if (jjtc001) {
+                             jjtree.closeNodeScope(jjtn001,  2);
++                            jjtn001.jjtSetLastToken(getToken(0));
+                           }
+         }
+         break;
+@@ -771,6 +808,7 @@
+                                    AstDiv jjtn002 = new AstDiv(JJTDIV);
+                                    boolean jjtc002 = true;
+                                    jjtree.openNodeScope(jjtn002);
++                                   jjtn002.jjtSetFirstToken(getToken(1));
+         try {
+           Unary();
+         } catch (Throwable jjte002) {
+@@ -790,6 +828,7 @@
+         } finally {
+                                    if (jjtc002) {
+                                      jjtree.closeNodeScope(jjtn002,  2);
++                                     jjtn002.jjtSetLastToken(getToken(0));
+                                    }
+         }
+         break;
+@@ -810,6 +849,7 @@
+                                    AstMod jjtn003 = new AstMod(JJTMOD);
+                                    boolean jjtc003 = true;
+                                    jjtree.openNodeScope(jjtn003);
++                                   jjtn003.jjtSetFirstToken(getToken(1));
+         try {
+           Unary();
+         } catch (Throwable jjte003) {
+@@ -829,6 +869,7 @@
+         } finally {
+                                    if (jjtc003) {
+                                      jjtree.closeNodeScope(jjtn003,  2);
++                                     jjtn003.jjtSetLastToken(getToken(0));
+                                    }
+         }
+         break;
+@@ -851,6 +892,7 @@
+                           AstNegative jjtn001 = new AstNegative(JJTNEGATIVE);
+                           boolean jjtc001 = true;
+                           jjtree.openNodeScope(jjtn001);
++                          jjtn001.jjtSetFirstToken(getToken(1));
+       try {
+         Unary();
+       } catch (Throwable jjte001) {
+@@ -870,6 +912,7 @@
+       } finally {
+                           if (jjtc001) {
+                             jjtree.closeNodeScope(jjtn001, true);
++                            jjtn001.jjtSetLastToken(getToken(0));
+                           }
+       }
+       break;
+@@ -890,6 +933,7 @@
+                                   AstNot jjtn002 = new AstNot(JJTNOT);
+                                   boolean jjtc002 = true;
+                                   jjtree.openNodeScope(jjtn002);
++                                  jjtn002.jjtSetFirstToken(getToken(1));
+       try {
+         Unary();
+       } catch (Throwable jjte002) {
+@@ -909,6 +953,7 @@
+       } finally {
+                                   if (jjtc002) {
+                                     jjtree.closeNodeScope(jjtn002, true);
++                                    jjtn002.jjtSetLastToken(getToken(0));
+                                   }
+       }
+       break;
+@@ -917,6 +962,7 @@
+                           AstEmpty jjtn003 = new AstEmpty(JJTEMPTY);
+                           boolean jjtc003 = true;
+                           jjtree.openNodeScope(jjtn003);
++                          jjtn003.jjtSetFirstToken(getToken(1));
+       try {
+         Unary();
+       } catch (Throwable jjte003) {
+@@ -936,6 +982,7 @@
+       } finally {
+                           if (jjtc003) {
+                             jjtree.closeNodeScope(jjtn003, true);
++                            jjtn003.jjtSetLastToken(getToken(0));
+                           }
+       }
+       break;
+@@ -964,6 +1011,7 @@
+           AstValue jjtn001 = new AstValue(JJTVALUE);
+           boolean jjtc001 = true;
+           jjtree.openNodeScope(jjtn001);
++          jjtn001.jjtSetFirstToken(getToken(1));
+     try {
+       ValuePrefix();
+       label_9:
+@@ -996,6 +1044,7 @@
+     } finally {
+           if (jjtc001) {
+             jjtree.closeNodeScope(jjtn001, jjtree.nodeArity() > 1);
++            jjtn001.jjtSetLastToken(getToken(0));
+           }
+     }
+   }
+@@ -1068,15 +1117,18 @@
+                                          /*@bgen(jjtree) PropertySuffix */
+                                           AstPropertySuffix jjtn000 = new AstPropertySuffix(JJTPROPERTYSUFFIX);
+                                           boolean jjtc000 = true;
+-                                          jjtree.openNodeScope(jjtn000);Token t = null;
++                                          jjtree.openNodeScope(jjtn000);
++                                          jjtn000.jjtSetFirstToken(getToken(1));Token t = null;
+     try {
+       t = jj_consume_token(IDENTIFIER);
+                          jjtree.closeNodeScope(jjtn000, true);
+                          jjtc000 = false;
++                         jjtn000.jjtSetLastToken(getToken(0));
+                          jjtn000.setImage(t.image);
+     } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
++            jjtn000.jjtSetLastToken(getToken(0));
+           }
+     }
+   }
+@@ -1089,7 +1141,8 @@
+                                      /*@bgen(jjtree) MethodSuffix */
+                                       AstMethodSuffix jjtn000 = new AstMethodSuffix(JJTMETHODSUFFIX);
+                                       boolean jjtc000 = true;
+-                                      jjtree.openNodeScope(jjtn000);Token t = null;
++                                      jjtree.openNodeScope(jjtn000);
++                                      jjtn000.jjtSetFirstToken(getToken(1));Token t = null;
+     try {
+       t = jj_consume_token(IDENTIFIER);
+                          jjtn000.setImage(t.image);
+@@ -1144,6 +1197,7 @@
+     } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
++            jjtn000.jjtSetLastToken(getToken(0));
+           }
+     }
+   }
+@@ -1157,6 +1211,7 @@
+   AstBracketSuffix jjtn000 = new AstBracketSuffix(JJTBRACKETSUFFIX);
+   boolean jjtc000 = true;
+   jjtree.openNodeScope(jjtn000);
++  jjtn000.jjtSetFirstToken(getToken(1));
+     try {
+       jj_consume_token(LBRACK);
+       Expression();
+@@ -1178,6 +1233,7 @@
+     } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
++            jjtn000.jjtSetLastToken(getToken(0));
+           }
+     }
+   }
+@@ -1219,15 +1275,18 @@
+                                  /*@bgen(jjtree) Identifier */
+                                   AstIdentifier jjtn000 = new AstIdentifier(JJTIDENTIFIER);
+                                   boolean jjtc000 = true;
+-                                  jjtree.openNodeScope(jjtn000);Token t = null;
++                                  jjtree.openNodeScope(jjtn000);
++                                  jjtn000.jjtSetFirstToken(getToken(1));Token t = null;
+     try {
+       t = jj_consume_token(IDENTIFIER);
+                          jjtree.closeNodeScope(jjtn000, true);
+                          jjtc000 = false;
++                         jjtn000.jjtSetLastToken(getToken(0));
+                          jjtn000.setImage(t.image);
+     } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
++            jjtn000.jjtSetLastToken(getToken(0));
+           }
+     }
+   }
+@@ -1240,7 +1299,8 @@
+  /*@bgen(jjtree) Function */
+         AstFunction jjtn000 = new AstFunction(JJTFUNCTION);
+         boolean jjtc000 = true;
+-        jjtree.openNodeScope(jjtn000);Token t0 = null;
++        jjtree.openNodeScope(jjtn000);
++        jjtn000.jjtSetFirstToken(getToken(1));Token t0 = null;
+         Token t1 = null;
+     try {
+       t0 = jj_consume_token(IDENTIFIER);
+@@ -1310,6 +1370,7 @@
+     } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
++            jjtn000.jjtSetLastToken(getToken(0));
+           }
+     }
+   }
+@@ -1353,11 +1414,13 @@
+           AstTrue jjtn001 = new AstTrue(JJTTRUE);
+           boolean jjtc001 = true;
+           jjtree.openNodeScope(jjtn001);
++          jjtn001.jjtSetFirstToken(getToken(1));
+       try {
+         jj_consume_token(TRUE);
+       } finally {
+           if (jjtc001) {
+             jjtree.closeNodeScope(jjtn001, true);
++            jjtn001.jjtSetLastToken(getToken(0));
+           }
+       }
+       break;
+@@ -1365,11 +1428,13 @@
+             AstFalse jjtn002 = new AstFalse(JJTFALSE);
+             boolean jjtc002 = true;
+             jjtree.openNodeScope(jjtn002);
++            jjtn002.jjtSetFirstToken(getToken(1));
+       try {
+         jj_consume_token(FALSE);
+       } finally {
+             if (jjtc002) {
+               jjtree.closeNodeScope(jjtn002, true);
++              jjtn002.jjtSetLastToken(getToken(0));
+             }
+       }
+       break;
+@@ -1388,15 +1453,18 @@
+                                        /*@bgen(jjtree) FloatingPoint */
+                                         AstFloatingPoint jjtn000 = new AstFloatingPoint(JJTFLOATINGPOINT);
+                                         boolean jjtc000 = true;
+-                                        jjtree.openNodeScope(jjtn000);Token t = null;
++                                        jjtree.openNodeScope(jjtn000);
++                                        jjtn000.jjtSetFirstToken(getToken(1));Token t = null;
+     try {
+       t = jj_consume_token(FLOATING_POINT_LITERAL);
+                                      jjtree.closeNodeScope(jjtn000, true);
+                                      jjtc000 = false;
++                                     jjtn000.jjtSetLastToken(getToken(0));
+                                      jjtn000.setImage(t.image);
+     } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
++            jjtn000.jjtSetLastToken(getToken(0));
+           }
+     }
+   }
+@@ -1409,15 +1477,18 @@
+                            /*@bgen(jjtree) Integer */
+                             AstInteger jjtn000 = new AstInteger(JJTINTEGER);
+                             boolean jjtc000 = true;
+-                            jjtree.openNodeScope(jjtn000);Token t = null;
++                            jjtree.openNodeScope(jjtn000);
++                            jjtn000.jjtSetFirstToken(getToken(1));Token t = null;
+     try {
+       t = jj_consume_token(INTEGER_LITERAL);
+                               jjtree.closeNodeScope(jjtn000, true);
+                               jjtc000 = false;
++                              jjtn000.jjtSetLastToken(getToken(0));
+                               jjtn000.setImage(t.image);
+     } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
++            jjtn000.jjtSetLastToken(getToken(0));
+           }
+     }
+   }
+@@ -1430,15 +1501,18 @@
+                          /*@bgen(jjtree) String */
+                           AstString jjtn000 = new AstString(JJTSTRING);
+                           boolean jjtc000 = true;
+-                          jjtree.openNodeScope(jjtn000);Token t = null;
++                          jjtree.openNodeScope(jjtn000);
++                          jjtn000.jjtSetFirstToken(getToken(1));Token t = null;
+     try {
+       t = jj_consume_token(STRING_LITERAL);
+                              jjtree.closeNodeScope(jjtn000, true);
+                              jjtc000 = false;
++                             jjtn000.jjtSetLastToken(getToken(0));
+                              jjtn000.setImage(t.image);
+     } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
++            jjtn000.jjtSetLastToken(getToken(0));
+           }
+     }
+   }
+@@ -1452,11 +1526,13 @@
+   AstNull jjtn000 = new AstNull(JJTNULL);
+   boolean jjtc000 = true;
+   jjtree.openNodeScope(jjtn000);
++  jjtn000.jjtSetFirstToken(getToken(1));
+     try {
+       jj_consume_token(NULL);
+     } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
++            jjtn000.jjtSetLastToken(getToken(0));
+           }
+     }
+   }
+@@ -1482,21 +1558,6 @@
+     finally { jj_save(2, xla); }
+   }
+ 
+-  private boolean jj_3R_73() {
+-    if (jj_scan_token(IDENTIFIER)) return true;
+-    return false;
+-  }
+-
+-  private boolean jj_3R_48() {
+-    Token xsp;
+-    xsp = jj_scanpos;
+-    if (jj_scan_token(51)) {
+-    jj_scanpos = xsp;
+-    if (jj_scan_token(52)) return true;
+-    }
+-    return false;
+-  }
+-
+   private boolean jj_3R_17() {
+     if (jj_3R_19()) return true;
+     return false;
+@@ -2007,6 +2068,21 @@
+     return false;
+   }
+ 
++  private boolean jj_3R_73() {
++    if (jj_scan_token(IDENTIFIER)) return true;
++    return false;
++  }
++
++  private boolean jj_3R_48() {
++    Token xsp;
++    xsp = jj_scanpos;
++    if (jj_scan_token(51)) {
++    jj_scanpos = xsp;
++    if (jj_scan_token(52)) return true;
++    }
++    return false;
++  }
++
+   /** Generated Token Manager. */
+   public ELParserTokenManager token_source;
+   SimpleCharStream jj_input_stream;
+@@ -2184,7 +2260,7 @@
+       return (jj_ntk = jj_nt.kind);
+   }
+ 
+-  private java.util.List jj_expentries = new java.util.ArrayList();
++  private java.util.List<int[]> jj_expentries = new java.util.ArrayList<int[]>();
+   private int[] jj_expentry;
+   private int jj_kind = -1;
+   private int[] jj_lasttokens = new int[100];
+@@ -2199,7 +2275,7 @@
+       for (int i = 0; i < jj_endpos; i++) {
+         jj_expentry[i] = jj_lasttokens[i];
+       }
+-      jj_entries_loop: for (java.util.Iterator it = jj_expentries.iterator(); it.hasNext();) {
++      jj_entries_loop: for (java.util.Iterator<?> it = jj_expentries.iterator(); it.hasNext();) {
+         int[] oldentry = (int[])(it.next());
+         if (oldentry.length == jj_expentry.length) {
+           for (int i = 0; i < jj_expentry.length; i++) {
+@@ -2247,7 +2323,7 @@
+     jj_add_error_token(0, 0);
+     int[][] exptokseq = new int[jj_expentries.size()][];
+     for (int i = 0; i < jj_expentries.size(); i++) {
+-      exptokseq[i] = (int[])jj_expentries.get(i);
++      exptokseq[i] = jj_expentries.get(i);
+     }
+     return new ParseException(token, exptokseq, tokenImage);
+   }
+Index: src/main/java/com/sun/el/parser/Node.java
+===================================================================
+--- src/main/java/com/sun/el/parser/Node.java	(revision 200)
++++ src/main/java/com/sun/el/parser/Node.java	(working copy)
+@@ -78,6 +78,14 @@
+   
+   public String getImage();
+   
++  public Token jjtGetFirstToken();
++  public void jjtSetFirstToken(Token token);
++  public Token jjtGetLastToken();
++  public void jjtSetLastToken(Token token);
++
++  public int startOffset();
++  public int endOffset();
++
+   public Object getValue(EvaluationContext ctx) throws ELException;
+   public void setValue(EvaluationContext ctx, Object value) throws ELException;
+   public Class getType(EvaluationContext ctx) throws ELException;
+Index: src/main/java/com/sun/el/parser/JJTELParserState.java
+===================================================================
+--- src/main/java/com/sun/el/parser/JJTELParserState.java	(revision 200)
++++ src/main/java/com/sun/el/parser/JJTELParserState.java	(working copy)
+@@ -1,17 +1,17 @@
+-/* Generated By:JavaCC: Do not edit this line. JJTELParserState.java Version 4.1 */
++/* Generated By:JavaCC: Do not edit this line. JJTELParserState.java Version 5.0 */
+ package com.sun.el.parser;
+ 
+ public class JJTELParserState {
+-  private java.util.List nodes;
+-  private java.util.List marks;
++  private java.util.List<Node> nodes;
++  private java.util.List<Integer> marks;
+ 
+   private int sp;        // number of nodes on stack
+   private int mk;        // current mark
+   private boolean node_created;
+ 
+   public JJTELParserState() {
+-    nodes = new java.util.ArrayList();
+-    marks = new java.util.ArrayList();
++    nodes = new java.util.ArrayList<Node>();
++    marks = new java.util.ArrayList<Integer>();
+     sp = 0;
+     mk = 0;
+   }
+@@ -35,7 +35,7 @@
+   /* Returns the root node of the AST.  It only makes sense to call
+      this after a successful parse. */
+   public Node rootNode() {
+-    return (Node)nodes.get(0);
++    return nodes.get(0);
+   }
+ 
+   /* Pushes a node on to the stack. */
+@@ -48,14 +48,14 @@
+      stack.  */
+   public Node popNode() {
+     if (--sp < mk) {
+-      mk = ((Integer)marks.remove(marks.size()-1)).intValue();
++      mk = marks.remove(marks.size()-1);
+     }
+-    return (Node)nodes.remove(nodes.size()-1);
++    return nodes.remove(nodes.size()-1);
+   }
+ 
+   /* Returns the node currently on the top of the stack. */
+   public Node peekNode() {
+-    return (Node)nodes.get(nodes.size()-1);
++    return nodes.get(nodes.size()-1);
+   }
+ 
+   /* Returns the number of children on the stack in the current node
+@@ -69,12 +69,12 @@
+     while (sp > mk) {
+       popNode();
+     }
+-    mk = ((Integer)marks.remove(marks.size()-1)).intValue();
++    mk = marks.remove(marks.size()-1);
+   }
+ 
+ 
+   public void openNodeScope(Node n) {
+-    marks.add(new Integer(mk));
++    marks.add(mk);
+     mk = sp;
+     n.jjtOpen();
+   }
+@@ -85,7 +85,7 @@
+      made the children of the definite node.  Then the definite node
+      is pushed on to the stack. */
+   public void closeNodeScope(Node n, int num) {
+-    mk = ((Integer)marks.remove(marks.size()-1)).intValue();
++    mk = marks.remove(marks.size()-1);
+     while (num-- > 0) {
+       Node c = popNode();
+       c.jjtSetParent(n);
+@@ -105,7 +105,7 @@
+   public void closeNodeScope(Node n, boolean condition) {
+     if (condition) {
+       int a = nodeArity();
+-      mk = ((Integer)marks.remove(marks.size()-1)).intValue();
++      mk = marks.remove(marks.size()-1);
+       while (a-- > 0) {
+         Node c = popNode();
+         c.jjtSetParent(n);
+@@ -115,9 +115,9 @@
+       pushNode(n);
+       node_created = true;
+     } else {
+-      mk = ((Integer)marks.remove(marks.size()-1)).intValue();
++      mk = marks.remove(marks.size()-1);
+       node_created = false;
+     }
+   }
+ }
+-/* JavaCC - OriginalChecksum=b21930229de2c9537bb1d8ee850abff9 (do not edit this line) */
++/* JavaCC - OriginalChecksum=a169ec9bf66edaa6db0c5550b112beee (do not edit this line) */
+Index: src/main/java/com/sun/el/parser/SimpleCharStream.java
+===================================================================
+--- src/main/java/com/sun/el/parser/SimpleCharStream.java	(revision 200)
++++ src/main/java/com/sun/el/parser/SimpleCharStream.java	(working copy)
+@@ -18,10 +18,13 @@
+   public int bufpos = -1;
+   protected int bufline[];
+   protected int bufcolumn[];
++  private int bufoffset[];
+ 
+   protected int column = 0;
+   protected int line = 1;
+ 
++  private int offset = -1;
++
+   protected boolean prevCharIsCR = false;
+   protected boolean prevCharIsLF = false;
+ 
+@@ -41,6 +44,7 @@
+      char[] newbuffer = new char[bufsize + 2048];
+      int newbufline[] = new int[bufsize + 2048];
+      int newbufcolumn[] = new int[bufsize + 2048];
++     int newbufoffset[] = new int[bufsize + 2048];
+ 
+      try
+      {
+@@ -59,6 +63,10 @@
+            System.arraycopy(bufcolumn, 0, newbufcolumn, bufsize - tokenBegin, bufpos);
+            bufcolumn = newbufcolumn;
+ 
++           System.arraycopy(bufoffset, tokenBegin, newbufoffset, 0, bufsize - tokenBegin);
++           System.arraycopy(bufoffset, 0, newbufoffset, bufsize - tokenBegin, bufpos);
++           bufoffset = newbufoffset;
++
+            maxNextCharInd = (bufpos += (bufsize - tokenBegin));
+         }
+         else
+@@ -72,6 +80,9 @@
+            System.arraycopy(bufcolumn, tokenBegin, newbufcolumn, 0, bufsize - tokenBegin);
+            bufcolumn = newbufcolumn;
+ 
++           System.arraycopy(bufoffset, tokenBegin, newbufoffset, 0, bufsize - tokenBegin);
++           bufoffset = newbufoffset;
++
+            maxNextCharInd = (bufpos -= tokenBegin);
+         }
+      }
+@@ -143,6 +154,7 @@
+ 
+   protected void UpdateLineColumn(char c)
+   {
++     offset++;
+      column++;
+ 
+      if (prevCharIsLF)
+@@ -179,6 +191,7 @@
+ 
+      bufline[bufpos] = line;
+      bufcolumn[bufpos] = column;
++     bufoffset[bufpos] = offset;
+   }
+ 
+ /** Read a character. */
+@@ -241,6 +254,10 @@
+      return bufline[tokenBegin];
+   }
+ 
++  public int offset() {
++      return bufoffset[tokenBegin];
++  }
++
+ /** Backup a number of characters. */
+   public void backup(int amount) {
+ 
+@@ -256,11 +273,13 @@
+     inputStream = dstream;
+     line = startline;
+     column = startcolumn - 1;
++    offset = -1;
+ 
+     available = bufsize = buffersize;
+     buffer = new char[buffersize];
+     bufline = new int[buffersize];
+     bufcolumn = new int[buffersize];
++    bufoffset = new int[buffersize];
+   }
+ 
+   /** Constructor. */
+@@ -418,6 +437,7 @@
+      buffer = null;
+      bufline = null;
+      bufcolumn = null;
++     bufoffset = null;
+   }
+ 
+   /**
+Index: src/main/java/com/sun/el/parser/Token.java
+===================================================================
+--- src/main/java/com/sun/el/parser/Token.java	(revision 200)
++++ src/main/java/com/sun/el/parser/Token.java	(working copy)
+@@ -43,6 +43,11 @@
+ 
+ public class Token implements Serializable {
+ 
++   /**
++   * The offset for this token; needed by NetBeans.
++   */
++   public int offset;
++
+   /**
+    * An integer that describes the kind of this token.  This numbering
+    * system is determined by JavaCCParser, and a table of these numbers is
+Index: src/main/java/com/sun/el/parser/ELParser.jjt
+===================================================================
+--- src/main/java/com/sun/el/parser/ELParser.jjt	(revision 200)
++++ src/main/java/com/sun/el/parser/ELParser.jjt	(working copy)
+@@ -6,6 +6,7 @@
+ /* == Option Declaration == */
+ options
+ {
++        TRACK_TOKENS = true;
+ 	STATIC=false;
+ 	NODE_PREFIX="Ast";
+ 	VISITOR_EXCEPTION="javax.el.ELException";
+@@ -24,12 +25,15 @@
+ import javax.el.ELException;
+ public class ELParser
+ {
++
+     public static Node parse(String ref) throws ELException
+     {
+         try {
+-        	return (new ELParser(new StringReader(ref))).CompositeExpression();
++            ELParser parser = new ELParser(new StringReader(ref));
++            parser.token_source = new PatchedELParserTokenManager(parser.jj_input_stream);
++            return parser.CompositeExpression();
+         } catch (ParseException pe) {
+-           	throw new ELException(pe.getMessage());
++                throw new ELException(pe.getMessage());
+         }
+     }
+ }
+Index: src/main/java/com/sun/el/parser/ELParserTreeConstants.java
+===================================================================
+--- src/main/java/com/sun/el/parser/ELParserTreeConstants.java	(revision 200)
++++ src/main/java/com/sun/el/parser/ELParserTreeConstants.java	(working copy)
+@@ -1,4 +1,4 @@
+-/* Generated By:JavaCC: Do not edit this line. ELParserTreeConstants.java Version 4.1 */
++/* Generated By:JavaCC: Do not edit this line. ELParserTreeConstants.java Version 5.0 */
+ package com.sun.el.parser;
+ 
+ public interface ELParserTreeConstants
+@@ -76,4 +76,4 @@
+     "Null",
+   };
+ }
+-/* JavaCC - OriginalChecksum=4ec78d20f3fffeaaa55e440f598a17e3 (do not edit this line) */
++/* JavaCC - OriginalChecksum=8ad1291777d0da86f1dd28e0bc5ebeef (do not edit this line) */
+Index: build.xml
+===================================================================
+--- build.xml	(revision 200)
++++ build.xml	(working copy)
+@@ -2,7 +2,7 @@
+ 
+ <project name="el-impl" default="generate" basedir=".">
+ 
+-    <property name="javacc.home" value="/z/tools/javacc-4.1/"/>
++    <property name="javacc.home" value="/home/erno/java/javacc-5.0/"/>
+     <property name="dir" value="src/main/java/com/sun/el/parser"/>
+ 
+     <target name="generate" description="Generate java files">
