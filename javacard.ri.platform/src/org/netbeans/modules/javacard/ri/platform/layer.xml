@@ -79,6 +79,7 @@
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="application/javacard"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/ri/platform/ri.png"/>
+                        <attr name="position" intvalue="1034"/>
                     </file>
                 </folder>
             </folder>
@@ -89,6 +90,7 @@
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="application/x-javacardserver"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/ri/platform/loader/card.png"/>
+                        <attr name="position" intvalue="1022"/>
                     </file>
                 </folder>
                 <folder name="Actions">

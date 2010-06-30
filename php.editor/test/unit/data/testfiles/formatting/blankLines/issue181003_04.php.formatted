@@ -7,4 +7,5 @@ abstract class GenericObject {
 interface GenericInterface {
     public abstract function toString();
 }
+
 ?>

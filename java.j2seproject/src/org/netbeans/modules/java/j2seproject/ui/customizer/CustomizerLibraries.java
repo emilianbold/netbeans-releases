@@ -62,6 +62,7 @@ import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -82,9 +83,11 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     
     private final J2SEProjectProperties uiProperties;
     private boolean isSharable;
+    private final ProjectCustomizer.Category category;
     
-    CustomizerLibraries( J2SEProjectProperties uiProps, CustomizerProviderImpl.SubCategoryProvider subcat ) {
-        this.uiProperties = uiProps;        
+    CustomizerLibraries(J2SEProjectProperties uiProps, CustomizerProviderImpl.SubCategoryProvider subcat, ProjectCustomizer.Category category) {
+        this.uiProperties = uiProps;
+        this.category = category;
         initComponents();        
         
         this.putClientProperty( "HelpID", "J2SE_CustomizerGeneral" ); // NOI18N
@@ -281,10 +284,11 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         }
         
         if ( broken ) {
-            jLabelErrorMessage.setText( NbBundle.getMessage( CustomizerLibraries.class, "LBL_CustomizeLibraries_Libraries_Error" ) ); // NOI18N            
+            category.setErrorMessage(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Libraries_Error"));
+            // do not call category.setValid(false) as this would prevent OK from being clicked, even if the error existed before
         }
         else {
-            jLabelErrorMessage.setText( " " ); // NOI18N
+            category.setErrorMessage(null);
         }
         J2SELogicalViewProvider viewProvider = uiProperties.getProject().getLookup().lookup(J2SELogicalViewProvider.class);
         //Update the state of project's node if needed
@@ -403,7 +407,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jButtonMoveUpRT = new javax.swing.JButton();
         jButtonMoveDownRT = new javax.swing.JButton();
         jCheckBoxBuildSubprojects = new javax.swing.JCheckBox();
-        jLabelErrorMessage = new javax.swing.JLabel();
         sharedLibrariesLabel = new javax.swing.JLabel();
         librariesLocation = new javax.swing.JTextField();
         librariesBrowse = new javax.swing.JButton();
@@ -984,9 +987,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxBuildSubprojects, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Build_Subprojects")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelErrorMessage, " ");
-        jLabelErrorMessage.setOpaque(true);
-
         sharedLibrariesLabel.setLabelFor(librariesLocation);
         org.openide.awt.Mnemonics.setLocalizedText(sharedLibrariesLabel, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeGeneral_SharedLibraries")); // NOI18N
 
@@ -999,44 +999,41 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sharedLibrariesLabel)
-                    .add(jLabelTarget))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
-                    .add(jComboBoxTarget, 0, 317, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(librariesBrowse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jButton1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-            .add(jLabelErrorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
-            .add(jCheckBoxBuildSubprojects, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
-            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(sharedLibrariesLabel)
+                    .addComponent(jLabelTarget))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(librariesLocation, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
+                    .addComponent(jComboBoxTarget, 0, 317, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(librariesBrowse, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .addComponent(jCheckBoxBuildSubprojects, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabelTarget)
-                    .add(jButton1)
-                    .add(jComboBoxTarget, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(sharedLibrariesLabel)
-                    .add(librariesBrowse)
-                    .add(librariesLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 323, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jCheckBoxBuildSubprojects)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabelErrorMessage))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelTarget)
+                    .addComponent(jButton1)
+                    .addComponent(jComboBoxTarget, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sharedLibrariesLabel)
+                    .addComponent(librariesBrowse)
+                    .addComponent(librariesLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCheckBoxBuildSubprojects))
         );
 
         jLabelTarget.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerGeneral_jLabelTarget")); // NOI18N
@@ -1135,7 +1132,6 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     private javax.swing.JCheckBox jCheckBoxBuildSubprojects;
     private javax.swing.JComboBox jComboBoxTarget;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabelErrorMessage;
     private javax.swing.JLabel jLabelTarget;
     private javax.swing.JList jListCpC;
     private javax.swing.JList jListCpCT;

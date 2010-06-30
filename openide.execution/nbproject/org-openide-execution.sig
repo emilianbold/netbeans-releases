@@ -1,11 +1,11 @@
 #Signature file v4.1
-#Version 1.16
+#Version 1.18
 
 CLSS public abstract interface java.io.Serializable
 
 CLSS public abstract java.lang.ClassLoader
-cons protected ClassLoader()
-cons protected ClassLoader(java.lang.ClassLoader)
+cons protected init()
+cons protected init(java.lang.ClassLoader)
 meth protected final java.lang.Class<?> defineClass(byte[],int,int)
  anno 0 java.lang.Deprecated()
 meth protected final java.lang.Class<?> defineClass(java.lang.String,byte[],int,int)
@@ -37,7 +37,7 @@ meth public void setClassAssertionStatus(java.lang.String,boolean)
 meth public void setDefaultAssertionStatus(boolean)
 meth public void setPackageAssertionStatus(java.lang.String,boolean)
 supr java.lang.Object
-hfds classAssertionStatus,classes,defaultAssertionStatus,defaultDomain,domains,initialized,loadedLibraryNames,nativeLibraries,nativeLibraryContext,nocerts,package2certs,packageAssertionStatus,packages,parent,scl,sclSet,sys_paths,systemNativeLibraries,usr_paths
+hfds bootstrapClassPath,classAssertionStatus,classes,defaultAssertionStatus,defaultDomain,domains,loadedLibraryNames,nativeLibraries,nativeLibraryContext,nocerts,package2certs,packageAssertionStatus,packages,parent,scl,sclSet,sys_paths,systemNativeLibraries,usr_paths
 hcls NativeLibrary
 
 CLSS public abstract interface !annotation java.lang.Deprecated
@@ -46,7 +46,7 @@ CLSS public abstract interface !annotation java.lang.Deprecated
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -89,9 +89,9 @@ intf java.lang.annotation.Annotation
 meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public java.net.URLClassLoader
-cons public URLClassLoader(java.net.URL[])
-cons public URLClassLoader(java.net.URL[],java.lang.ClassLoader)
-cons public URLClassLoader(java.net.URL[],java.lang.ClassLoader,java.net.URLStreamHandlerFactory)
+cons public init(java.net.URL[])
+cons public init(java.net.URL[],java.lang.ClassLoader)
+cons public init(java.net.URL[],java.lang.ClassLoader,java.net.URLStreamHandlerFactory)
 meth protected java.lang.Class<?> findClass(java.lang.String) throws java.lang.ClassNotFoundException
 meth protected java.lang.Package definePackage(java.lang.String,java.util.jar.Manifest,java.net.URL)
 meth protected java.security.PermissionCollection getPermissions(java.security.CodeSource)
@@ -105,8 +105,8 @@ supr java.security.SecureClassLoader
 hfds acc,ucp
 
 CLSS public java.security.SecureClassLoader
-cons protected SecureClassLoader()
-cons protected SecureClassLoader(java.lang.ClassLoader)
+cons protected init()
+cons protected init(java.lang.ClassLoader)
 meth protected final java.lang.Class<?> defineClass(java.lang.String,byte[],int,int,java.security.CodeSource)
 meth protected final java.lang.Class<?> defineClass(java.lang.String,java.nio.ByteBuffer,java.security.CodeSource)
 meth protected java.security.PermissionCollection getPermissions(java.security.CodeSource)
@@ -115,7 +115,7 @@ hfds debug,initialized,pdcache
 
 CLSS public abstract org.openide.ServiceType
  anno 0 java.lang.Deprecated()
-cons public ServiceType()
+cons public init()
 fld public final static java.lang.String PROP_NAME = "name"
 innr public abstract static Registry
 innr public final static Handle
@@ -136,7 +136,7 @@ supr java.lang.Object
 hfds err,name,serialVersionUID,supp
 
 CLSS public abstract org.openide.execution.ExecutionEngine
-cons public ExecutionEngine()
+cons public init()
 meth protected abstract java.security.PermissionCollection createPermissions(java.security.CodeSource,org.openide.windows.InputOutput)
 meth protected abstract org.openide.execution.NbClassPath createLibraryPath()
 meth public abstract org.openide.execution.ExecutorTask execute(java.lang.String,java.lang.Runnable,org.openide.windows.InputOutput)
@@ -145,18 +145,18 @@ supr java.lang.Object
 hcls Trivial
 
 CLSS public abstract org.openide.execution.ExecutorTask
-cons protected ExecutorTask(java.lang.Runnable)
+cons protected init(java.lang.Runnable)
 meth public abstract int result()
 meth public abstract org.openide.windows.InputOutput getInputOutput()
 meth public abstract void stop()
 supr org.openide.util.Task
 
 CLSS public org.openide.execution.NbClassLoader
-cons public NbClassLoader()
-cons public NbClassLoader(org.openide.filesystems.FileObject[],java.lang.ClassLoader,org.openide.windows.InputOutput) throws org.openide.filesystems.FileStateInvalidException
-cons public NbClassLoader(org.openide.filesystems.FileSystem[])
-cons public NbClassLoader(org.openide.filesystems.FileSystem[],java.lang.ClassLoader)
-cons public NbClassLoader(org.openide.windows.InputOutput)
+cons public init()
+cons public init(org.openide.filesystems.FileObject[],java.lang.ClassLoader,org.openide.windows.InputOutput) throws org.openide.filesystems.FileStateInvalidException
+cons public init(org.openide.filesystems.FileSystem[])
+cons public init(org.openide.filesystems.FileSystem[],java.lang.ClassLoader)
+cons public init(org.openide.windows.InputOutput)
 fld protected org.openide.windows.InputOutput inout
 meth protected final java.security.PermissionCollection getPermissions(java.security.CodeSource)
 meth protected java.lang.Class findClass(java.lang.String) throws java.lang.ClassNotFoundException
@@ -166,9 +166,9 @@ supr java.net.URLClassLoader
 hfds defaultPermissions,f,fast,permissionCollections
 
 CLSS public final org.openide.execution.NbClassPath
-cons public NbClassPath(java.io.File[])
-cons public NbClassPath(java.lang.String)
-cons public NbClassPath(java.lang.String[])
+cons public init(java.io.File[])
+cons public init(java.lang.String)
+cons public init(java.lang.String[])
 intf java.io.Serializable
 meth public boolean equals(java.lang.Object)
 meth public java.lang.Exception[] getExceptions()
@@ -183,8 +183,8 @@ supr java.lang.Object
 hfds classpath,items,serialVersionUID
 
 CLSS public final org.openide.execution.NbProcessDescriptor
-cons public NbProcessDescriptor(java.lang.String,java.lang.String)
-cons public NbProcessDescriptor(java.lang.String,java.lang.String,java.lang.String)
+cons public init(java.lang.String,java.lang.String)
+cons public init(java.lang.String,java.lang.String,java.lang.String)
 intf java.io.Serializable
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
@@ -200,7 +200,7 @@ supr java.lang.Object
 hfds arguments,execLog,info,processName,serialVersionUID
 
 CLSS public abstract org.openide.execution.ScriptType
-cons public ScriptType()
+cons public init()
 innr public static Context
 meth public abstract boolean acceptFileObject(org.openide.filesystems.FileObject)
 meth public abstract java.lang.Object eval(java.io.Reader,org.openide.execution.ScriptType$Context) throws java.lang.reflect.InvocationTargetException
@@ -220,13 +220,14 @@ supr org.openide.ServiceType
 hfds serialVersionUID
 
 CLSS public static org.openide.execution.ScriptType$Context
-cons public Context()
+ outer org.openide.execution.ScriptType
+cons public init()
 supr java.lang.Object
 
 CLSS public final org.openide.util.HelpCtx
-cons public HelpCtx(java.lang.Class)
-cons public HelpCtx(java.lang.String)
-cons public HelpCtx(java.net.URL)
+cons public init(java.lang.Class)
+cons public init(java.lang.String)
+cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
 innr public abstract interface static Provider
@@ -242,11 +243,12 @@ supr java.lang.Object
 hfds err,helpCtx,helpID
 
 CLSS public abstract interface static org.openide.util.HelpCtx$Provider
+ outer org.openide.util.HelpCtx
 meth public abstract org.openide.util.HelpCtx getHelpCtx()
 
 CLSS public org.openide.util.Task
-cons protected Task()
-cons public Task(java.lang.Runnable)
+cons protected init()
+cons public init(java.lang.Runnable)
 fld public final static org.openide.util.Task EMPTY
 intf java.lang.Runnable
 meth protected final void notifyFinished()

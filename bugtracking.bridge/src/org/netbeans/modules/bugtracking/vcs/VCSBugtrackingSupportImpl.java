@@ -70,7 +70,7 @@ public class VCSBugtrackingSupportImpl extends VCSBugtrackingAccessor {
             return;
         }
         if(repo == null) {
-            LOG.warning("No issue tracker available for the given vcs url " + url);         // NOI18N
+            LOG.log(Level.WARNING, "No issue tracker available for the given vcs url {0}", url);         // NOI18N
             return;
         }
         BugtrackingOwnerSupport.getInstance().setFirmAssociations(files, repo);

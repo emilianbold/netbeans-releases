@@ -126,6 +126,13 @@ public final class ConfigManager {
         changeSupport.removeChangeListener(listener);
     }
 
+    // configs are reseted to their original state (discards changes in memory)
+    public synchronized void reset() {
+        configs.clear();
+        configErrors.clear();
+        configs.putAll(configProvider.getConfigs());
+    }
+
     public synchronized boolean exists(String name) {
         return configs.keySet().contains(name) && configs.get(name) != null;
     }

@@ -43,8 +43,10 @@ package org.netbeans.modules.php.editor.elements;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
@@ -52,6 +54,9 @@ import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
+import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.openide.util.Parameters;
 
 /**
@@ -60,6 +65,7 @@ import org.openide.util.Parameters;
 public final class ConstantElementImpl extends FullyQualifiedElementImpl implements ConstantElement {
 
     public static final String IDX_FIELD = PHPIndexer.FIELD_CONST;
+
     private final String value;
     private ConstantElementImpl(
             final QualifiedName qualifiedName,
@@ -97,6 +103,21 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
             retval = new ConstantElementImpl(signParser.getQualifiedName(),signParser.getValue(),
                     signParser.getOffset(), indexResult.getUrl().toString(),
                     indexScopeQuery);
+        }
+        return retval;
+    }
+
+    public static Set<ConstantElement> fromNode(final NamespaceElement namespace, final ConstantDeclaration node, final ElementQuery.File fileQuery) {
+        Parameters.notNull("node", node);
+        Parameters.notNull("fileQuery", fileQuery);
+        final List<? extends ConstantDeclarationInfo> constants = ConstantDeclarationInfo.create(node);
+        final Set<ConstantElement> retval = new HashSet<ConstantElement>();
+        for (ConstantDeclarationInfo info : constants) {
+            final QualifiedName fullyQualifiedName = namespace != null
+                    ? namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
+            retval.add(new ConstantElementImpl(
+                    fullyQualifiedName.append(info.getName()),
+                    info.getValue(), info.getRange().getStart(), fileQuery.getURL().toExternalForm(), fileQuery));
         }
         return retval;
     }

@@ -186,11 +186,11 @@ public class Utils {
     }
 
     public static String sanitizeName(String name) {
-        if (null == name || name.matches("[\\p{L}\\p{N}_][\\p{L}\\p{N}\\-_./;#]*")) {
+        if (null == name || name.matches("[\\p{L}\\p{N}_][\\p{L}\\p{N}\\-_./;#:]*")) {
             return name;
         }
         // the string is bad...
-        return "_" + name.replaceAll("[^\\p{L}\\p{N}\\-_./;#]", "_");
+        return "_" + name.replaceAll("[^\\p{L}\\p{N}\\-_./;#:]", "_");
     }
 
     /**

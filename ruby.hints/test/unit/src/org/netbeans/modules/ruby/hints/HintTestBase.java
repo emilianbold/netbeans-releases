@@ -61,7 +61,7 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class HintTestBase extends RubyTestBase {
 
-    private static final String RAILS_VERSION = "2.3.4"; //NOI18N
+    private static final String RAILS_VERSION = "2.3.8"; //NOI18N
 
     public HintTestBase(String testName) {
         super(testName);

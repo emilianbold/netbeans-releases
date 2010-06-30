@@ -56,6 +56,10 @@ import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
+import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.openide.util.Parameters;
 
 /**
@@ -107,12 +111,23 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
         return retval;
     }
 
+    public static FunctionElement fromNode(final NamespaceElement namespace, final FunctionDeclaration node, final ElementQuery.File fileQuery) {
+        Parameters.notNull("node", node);
+        Parameters.notNull("fileQuery", fileQuery);
+        FunctionDeclarationInfo info = FunctionDeclarationInfo.create(node);
+        final QualifiedName fullyQualifiedName = namespace != null ?
+            namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
+        return new FunctionElementImpl(
+                fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
+                fileQuery.getURL().toExternalForm(), fileQuery, info.getParameters(), 
+                TypeResolverImpl.parseTypes(VariousUtils.getReturnTypeFromPHPDoc(fileQuery.getResult().getProgram(), node)));
+    }
+
     private static boolean matchesQuery(final NameKind query, FunctionSignatureParser signParser) {
         Parameters.notNull("NameKind query: can't be null", query);
         return (query instanceof NameKind.Empty) ||
                 query.matchesName(FunctionElement.KIND, signParser.getQualifiedName());
     }
-
 
     @Override
     public PhpElementKind getPhpElementKind() {

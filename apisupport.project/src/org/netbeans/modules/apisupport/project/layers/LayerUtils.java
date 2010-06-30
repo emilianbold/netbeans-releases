@@ -68,8 +68,12 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
@@ -116,6 +120,25 @@ public class LayerUtils {
      * Suffix of hidden files.
      */
     public static final String HIDDEN = "_hidden"; //NOI18N
+    
+    /**
+     * Find a resource path for a project.
+     * @param project a module project
+     * @return a classpath where resources can be found
+     */
+    public static ClassPath findResourceCP(Project project) {
+        Sources s = ProjectUtils.getSources(project);
+        List<FileObject> roots = new ArrayList<FileObject>();
+        for (String type : new String[] {JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_TYPE_RESOURCES}) {
+            for (SourceGroup group : s.getSourceGroups(type)) {
+                roots.add(group.getRootFolder());
+            }
+        }
+        if (roots.isEmpty()) {
+            LOG.log(Level.WARNING, "no resource path for {0}", project);
+        }
+        return ClassPathSupport.createClassPath(roots.toArray(new FileObject[roots.size()]));
+    }
     
     /**
      * Translates nbres: into nbrescurr: for internal use.
@@ -457,8 +480,7 @@ public class LayerUtils {
                         getPlatformJarsForStandaloneProject(p);
                 NbPlatform plaf = getPlatformForProject(p);
                 Collection<FileSystem> platformLayers = getCachedLayers(plaf != null? plaf.getDestDir() : null, jars);
-                ClassPath cp = createLayerClasspath(Collections.singleton(p), jars);
-                return mergeFilesystems(projectLayer, platformLayers, cp);
+                return mergeFilesystems(projectLayer, platformLayers);
             } else if (type == NbModuleProvider.SUITE_COMPONENT) {
                 SuiteProject suite = SuiteUtils.findSuite(p);
                 if (suite == null) {
@@ -479,8 +501,7 @@ public class LayerUtils {
                 NbPlatform plaf = suite.getPlatform(true);
                 Set<File> jars = getPlatformJarsForSuiteComponentProject(suite);
                 readOnlyLayers.addAll(getCachedLayers(plaf != null ? plaf.getDestDir() : null, jars));
-                ClassPath cp = createLayerClasspath(modules, jars);
-                return mergeFilesystems(projectLayer, readOnlyLayers, cp);
+                return mergeFilesystems(projectLayer, readOnlyLayers);
             } else if (type == NbModuleProvider.NETBEANS_ORG) {
                 //it's safe to cast to NbModuleProject here.
                 NbModuleProject nbprj = p.getLookup().lookup(NbModuleProject.class);
@@ -518,8 +539,7 @@ public class LayerUtils {
                 } catch (PropertyVetoException ex) {
                     assert false : ex;
                 }
-                ClassPath cp = createLayerClasspath(projects, Collections.<File>emptySet());
-                return mergeFilesystems(projectLayer, Collections.singletonList((FileSystem) xfs), cp);
+                return mergeFilesystems(projectLayer, Collections.singletonList((FileSystem) xfs));
             } else {
                 throw new AssertionError(type);
             }
@@ -625,47 +645,10 @@ public class LayerUtils {
     }
     
     /**
-     * Creates a classpath representing the source roots and platform binary JARs for a project/suite.
-     */
-    static ClassPath createLayerClasspath(Set<? extends Project> moduleProjects, Set<File> platformJars) throws IOException {
-        List<URL> roots = new ArrayList<URL>();
-        for (Project p : moduleProjects) {
-            NbModuleProvider mod = p.getLookup().lookup(NbModuleProvider.class);
-            FileObject src = mod.getSourceDirectory();
-            if (src != null) {
-                roots.add(src.getURL());
-            }
-        }
-        for (File jar  : platformJars) {
-            roots.add(FileUtil.getArchiveRoot(jar.toURI().toURL()));
-            File locale = new File(jar.getParentFile(), "locale"); // NOI18N
-            if (locale.isDirectory()) {
-                String n = jar.getName();
-                int x = n.lastIndexOf('.');
-                if (x == -1) {
-                    x = n.length();
-                }
-                String base = n.substring(0, x);
-                String ext = n.substring(x);
-                String[] variants = locale.list();
-                if (variants != null) {
-                    for (int i = 0; i < variants.length; i++) {
-                        if (variants[i].startsWith(base) && variants[i].endsWith(ext) && variants[i].charAt(x) == '_') {
-                            roots.add(FileUtil.getArchiveRoot(new File(locale, variants[i]).toURI().toURL()));
-                        }
-                    }
-                }
-            }
-        }
-        // XXX in principle, could add CP extensions from modules... but probably not necessary
-        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
-    }
-
-    /**
      * Create a merged filesystem from one writable layer (may be null) and some read-only layers.
      * You should also pass a classpath that can be used to look up resource bundles and icons.
      */
-    private static FileSystem mergeFilesystems(FileSystem writableLayer, Collection<FileSystem> readOnlyLayers, final ClassPath cp) {
+    private static FileSystem mergeFilesystems(FileSystem writableLayer, Collection<FileSystem> readOnlyLayers) {
         if (writableLayer == null) {
             writableLayer = new XMLFileSystem();
         }
@@ -675,7 +658,7 @@ public class LayerUtils {
         for (int i = 1; it.hasNext(); i++) {
             layers[i] = it.next();
         }
-        return new LayerFileSystem(layers, cp);
+        return new LayerFileSystem(layers);
     }
     
 }

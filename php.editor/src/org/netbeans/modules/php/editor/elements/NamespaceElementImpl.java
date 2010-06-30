@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.elements;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
@@ -51,6 +52,8 @@ import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.openide.util.Parameters;
 
 /**
@@ -92,6 +95,15 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
                 indexScopeQuery);
         }
         return retval;
+    }
+
+    public static NamespaceElement fromNode(final NamespaceDeclaration node, final ElementQuery.File fileQuery) {
+        Parameters.notNull("node", node);
+        Parameters.notNull("fileQuery", fileQuery);
+        NamespaceDeclarationInfo info = NamespaceDeclarationInfo.create(node);
+        return new NamespaceElementImpl(
+                info.getQualifiedName(), info.getRange().getStart(),
+                fileQuery.getURL().toExternalForm(), fileQuery);
     }
 
     private static boolean matchesQuery(final NameKind query, NamespaceSignatureParser signParser) {

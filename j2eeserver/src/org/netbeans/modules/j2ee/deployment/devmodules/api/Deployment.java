@@ -166,6 +166,7 @@ public final class Deployment {
                 server.getServerInstance().start(progress);
             }
 
+            DeploymentHelper.deployServerLibraries(jmp);
             DeploymentHelper.deployDatasources(jmp);
             DeploymentHelper.deployMessageDestinations(jmp);
 

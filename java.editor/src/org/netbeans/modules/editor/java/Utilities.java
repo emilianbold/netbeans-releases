@@ -391,11 +391,19 @@ public final class Utilities {
         }
     }
     
-    public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
-        return getTypeName(type, fqn, false);
+    @Deprecated public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
+        return getTypeName(null, type, fqn, false);
     }
     
-    public static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
+    @Deprecated public static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
+        return getTypeName(null, type, fqn, varArg);
+    }
+    
+    public static CharSequence getTypeName(CompilationInfo info, TypeMirror type, boolean fqn) {
+        return getTypeName(info, type, fqn, false);
+    }
+    
+    public static CharSequence getTypeName(CompilationInfo info, TypeMirror type, boolean fqn, boolean varArg) {
 	if (type == null)
             return ""; //NOI18N
         return new TypeNameVisitor(varArg).visit(type, fqn);

@@ -84,6 +84,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.processing.Processor;
 import javax.swing.event.ChangeEvent;
 import  javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -668,6 +669,12 @@ public class JavacParser extends Parser {
         options.add(validatedSourceLevel.name);
         boolean aptEnabled = aptUtils != null && (backgroundCompilation ? aptUtils.aptEnabledOnScan() : aptUtils.aptEnabledInEditor())
                 && !ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE).entries().isEmpty();
+        Collection<? extends Processor> processors = null;
+        if (aptEnabled) {
+            processors = aptUtils.resolveProcessors(backgroundCompilation);
+            if (processors.isEmpty())
+                aptEnabled = false;
+        }
         if (aptEnabled) {
             for (Map.Entry<? extends String, ? extends String> entry : aptUtils.processorOptions().entrySet()) {
                 StringBuilder sb = new StringBuilder();
@@ -680,7 +687,6 @@ public class JavacParser extends Parser {
         } else {
             options.add("-proc:none"); // NOI18N, Disable annotation processors
         }
-        options.add("-XDfindDiamond"); //XXX: should be part of options
 
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
@@ -692,7 +698,7 @@ public class JavacParser extends Parser {
                     ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
                     diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
             if (aptEnabled) {
-                task.setProcessors(aptUtils.resolveProcessors());
+                task.setProcessors(processors);
             }
             Context context = task.getContext();
             JavadocClassReader.preRegister(context, !backgroundCompilation);

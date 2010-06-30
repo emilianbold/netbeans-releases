@@ -314,13 +314,16 @@ public final class UIUtils {
     static JLabel createUserWidget(final KenaiUserUI u) {
         final JLabel result = new JLabel(u.getUserName());
         result.setIcon(u.getIcon());
-        final String name = u.getKenaiUser().getFirstName() + " " + u.getKenaiUser().getLastName(); // NOI18N
+        String firstName = u.getKenaiUser().getFirstName();
+        final String name = (firstName==null)?"":firstName + " " + u.getKenaiUser().getLastName(); // NOI18N
         result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
         u.user.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
                 if (KenaiUser.PROP_PRESENCE.equals(evt.getPropertyName())) {
                     result.firePropertyChange(KenaiUser.PROP_PRESENCE, (Boolean) evt.getOldValue(), (Boolean) evt.getNewValue());
+                    String firstName = u.getKenaiUser().getFirstName();
+                    String name = (firstName==null)?"":firstName + " " + u.getKenaiUser().getLastName(); // NOI18N
                     result.setToolTipText(NbBundle.getMessage(UserNode.class, u.getKenaiUser().isOnline()?"LBL_ONLINE_MEMBER_TOOLTIP": "LBL_OFFLINE_MEMBER_TOOLTIP", u.getUserName(), name));
                     result.repaint();
                 }

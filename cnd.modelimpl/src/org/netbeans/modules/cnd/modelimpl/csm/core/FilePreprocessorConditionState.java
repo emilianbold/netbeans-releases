@@ -218,6 +218,7 @@ public final class FilePreprocessorConditionState {
     }
 
     public static final class Builder implements APTParseFileWalker.EvalCallback {
+
         private final SortedSet<int[]> blocks = new TreeSet<int[]>(COMPARATOR);
         private final CharSequence name;
         public Builder(CharSequence name) {
@@ -296,14 +297,10 @@ public final class FilePreprocessorConditionState {
                 offsets[index++] = deadInterval[0];
                 offsets[index++] = deadInterval[1];
             }
-            FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(this.name, offsets);
-            if (CndUtils.isDebugMode()) {
-                checkConsistency(pcState);
-            }
-            return pcState;
+            return build(this.name, offsets);
         }
 
-        private void checkConsistency(FilePreprocessorConditionState pcState) {
+        private static void checkConsistency(FilePreprocessorConditionState pcState) {
             // check consistency for ordering and absence of intersections
             for (int i = 0; i < pcState.offsets.length; i++) {
                 if (i + 1 < pcState.offsets.length) {
@@ -340,5 +337,20 @@ public final class FilePreprocessorConditionState {
                 return segment1[0] - segment2[0];
             }
         };
+
+        static FilePreprocessorConditionState build(CharSequence name, int[] offsets) {
+            // TODO: copy offsets?
+            FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(name, offsets);
+            if (CndUtils.isDebugMode()) {
+                checkConsistency(pcState);
+            }
+            return pcState;
+        }
+
+        static int[] getDeadBlocks(FilePreprocessorConditionState pcState) {
+            // TODO: copy offsets?
+            return pcState.offsets;
+        }
+
     }
 }

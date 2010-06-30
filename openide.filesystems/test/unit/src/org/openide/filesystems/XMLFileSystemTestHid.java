@@ -535,6 +535,36 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertEquals("Still no calls to other attributes of the map", 0, cnt);
     }
 
+    public void testMapsForDifferentXMLFSAreNotEqualWithoutCallsToAttributes() throws Exception {
+        File f = writeFile("layer.xml",
+            "<filesystem>\n" +
+              "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='map' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".map'/>" +
+                "  <attr name='instanceCreate' methodvalue='" + XMLFileSystemTestHid.class.getName() + ".counter'/>" +
+                "</file>\n" +
+              "</folder>\n" +
+            "</filesystem>\n"
+        );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        XMLFileSystem realXMLFS = new XMLFileSystem(f.toURI().toURL());
+        FileObject realfo = realXMLFS.findResource("TestModule/sample.txt");
+        assertNotNull(realfo);
+
+
+        cnt = 0;
+
+        Map m1 = (Map)realfo.getAttribute("map");
+        Map m2 = (Map)fo.getAttribute("map");
+
+        assertFalse("But they are not equal", m1.equals(m2));
+        assertEquals("No calls to other attributes of the map", 0, cnt);
+    }
+
     static Map map(Map m) {
         return m;
     }

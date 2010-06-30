@@ -553,8 +553,8 @@ public final class PlatformUiSupport {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                 boolean cellHasFocus) {
             String name;
-            if (value == null) {
-                name = ""; //NOI18N
+            if (value == null || " ".equals(value)) { // NOI18N
+                name = " "; //NOI18N
             } else {
                 assert value instanceof PlatformKey : "Wrong model";
                 PlatformKey key = (PlatformKey) value;
@@ -758,8 +758,8 @@ public final class PlatformUiSupport {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                 boolean cellHasFocus) {
             String message;
-            if (value == null) {
-                message = "";   //NOI18N
+            if (value == null || " ".equals(value)) { // NOI18N
+                message = " ";   //NOI18N
             } else {
                 assert value instanceof SourceLevelKey;
                 SourceLevelKey key = (SourceLevelKey) value;

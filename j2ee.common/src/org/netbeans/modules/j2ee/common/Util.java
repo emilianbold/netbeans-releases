@@ -63,6 +63,7 @@ import java.util.jar.JarFile;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -75,6 +76,7 @@ import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.w3c.dom.Element;
@@ -298,7 +300,20 @@ public class Util {
             if (j2eeModuleProvider != null) {
                 J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
                 if (j2eePlatform != null) {
-                    return j2eePlatform.getClasspathEntries();
+                    File[] platformClasspath = j2eePlatform.getClasspathEntries();
+                    File[] libraryClasspath = null;
+                    try {
+                        libraryClasspath = j2eePlatform.getClasspathEntries(j2eeModuleProvider.getConfigSupport().getLibraries());
+                    } catch (ConfigurationException ex) {
+                        // noop
+                    }
+                    if (libraryClasspath == null) {
+                        return platformClasspath;
+                    }
+                    File[] result = new File[platformClasspath.length + libraryClasspath.length];
+                    System.arraycopy(platformClasspath, 0, result, 0, platformClasspath.length);
+                    System.arraycopy(libraryClasspath, 0, result, platformClasspath.length, libraryClasspath.length);
+                    return result;
                 }
             }
         }

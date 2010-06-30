@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.29
+#Version 1.32
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -7,7 +7,7 @@ CLSS public abstract interface !annotation java.lang.Deprecated
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -71,7 +71,7 @@ supr java.lang.Object
 hcls Extensible
 
 CLSS public final org.netbeans.api.java.project.runner.JavaRunner
-cons public JavaRunner()
+cons public init()
 fld public final static java.lang.String PROP_APPLICATION_ARGS = "application.args"
 fld public final static java.lang.String PROP_CLASSNAME = "classname"
 fld public final static java.lang.String PROP_EXECUTE_CLASSPATH = "execute.classpath"
@@ -104,7 +104,7 @@ meth public abstract boolean addLibrary(org.netbeans.api.project.libraries.Libra
  anno 0 java.lang.Deprecated()
 
 CLSS public abstract org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation
-cons protected ProjectClassPathModifierImplementation()
+cons protected init()
 meth protected abstract boolean addAntArtifacts(org.netbeans.api.project.ant.AntArtifact[],java.net.URI[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
 meth protected abstract boolean addLibraries(org.netbeans.api.project.libraries.Library[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
 meth protected abstract boolean addRoots(java.net.URL[],org.netbeans.api.project.SourceGroup,java.lang.String) throws java.io.IOException
@@ -130,12 +130,15 @@ meth public abstract boolean isSupported(java.lang.String,java.util.Map<java.lan
 meth public abstract org.openide.execution.ExecutorTask execute(java.lang.String,java.util.Map<java.lang.String,?>) throws java.io.IOException
 
 CLSS public org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport
-cons public ExtraSourceJavadocSupport()
+cons public init()
 meth public static org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation createExtraJavadocQueryImplementation(org.netbeans.api.project.Project,org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
 meth public static org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation createExtraSourceQueryImplementation(org.netbeans.api.project.Project,org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
 supr java.lang.Object
 
 CLSS public org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection
+meth public static java.util.Set<? extends org.openide.filesystems.FileObject> findSourceRoots(org.openide.filesystems.FileObject,java.util.concurrent.atomic.AtomicBoolean)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
 meth public static org.openide.filesystems.FileObject findJavadocRoot(org.openide.filesystems.FileObject)
 meth public static org.openide.filesystems.FileObject findPackageRoot(org.openide.filesystems.FileObject)
 meth public static org.openide.filesystems.FileObject findSourceRoot(org.openide.filesystems.FileObject)
@@ -143,7 +146,7 @@ supr java.lang.Object
 hfds HOW_MANY_DIRS_TO_TRAVERSE_DEEP,JAVA_FILE,LOG,PACKAGE_INFO
 
 CLSS public final org.netbeans.spi.java.project.support.LookupMergerSupport
-cons public LookupMergerSupport()
+cons public init()
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.java.classpath.ClassPathProvider> createClassPathProviderMerger(org.netbeans.spi.java.classpath.ClassPathProvider)
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation> createJFBLookupMerger()
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation> createSFBLookupMerger()
@@ -159,13 +162,14 @@ hfds BROKEN_ALERT_TIMEOUT,brokenAlertLastTime,brokenAlertShown
 hcls MainWindowListener
 
 CLSS public final org.netbeans.spi.java.project.support.ui.EditJarSupport
-cons public EditJarSupport()
+cons public init()
 innr public final static Item
 meth public static org.netbeans.spi.java.project.support.ui.EditJarSupport$Item showEditDialog(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.java.project.support.ui.EditJarSupport$Item)
 supr java.lang.Object
 
 CLSS public final static org.netbeans.spi.java.project.support.ui.EditJarSupport$Item
-cons public Item()
+ outer org.netbeans.spi.java.project.support.ui.EditJarSupport
+cons public init()
 meth public java.lang.String getJarFile()
 meth public java.lang.String getJavadocFile()
 meth public java.lang.String getSourceFile()
@@ -176,7 +180,7 @@ supr java.lang.Object
 hfds jarFile,javadocFile,sourceFile
 
 CLSS public org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer
-cons public IncludeExcludeVisualizer()
+cons public init()
 meth public java.lang.String getExcludePattern()
 meth public java.lang.String getIncludePattern()
 meth public javax.swing.JComponent getVisualizerPanel()
@@ -201,7 +205,7 @@ supr java.lang.Object
 hcls PackageItem,PackageListCellRenderer,RootNode
 
 CLSS public final org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils
-cons public SharableLibrariesUtils()
+cons public init()
 fld public final static java.lang.String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties"
 meth public static boolean isLastProjectSharable()
 meth public static boolean showMakeSharableWizard(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,java.util.List<java.lang.String>,java.util.List<java.lang.String>)

@@ -610,6 +610,11 @@ private.properties:
 
     build.compiler.deprecation=false
 
+build.dir - "build", location of all module build products not placed into
+${suite.build.dir}. May be overridden on a suitewide basis if placed in
+platform.properties, e.g.: build.dir=${suite.build.dir}/${ant.project.name}
+[since 6.10]
+
 build.test.unit.classes.dir - "build/test/unit/classes", where unit tests are
 compiled to.
 
@@ -973,7 +978,7 @@ jnlp.indirect.jars [since 6.0] - optional pattern of JARs in the cluster to load
   entry META-INF/clusterpath/$path where $path is the ('/'-separated) path
   within the cluster where the JAR would be found in a normal installation.
 
-jnlp.indirect.files [since 7.0M1] - optional pattern of files in the cluster to
+jnlp.indirect.files [since 6.7 M1] - optional pattern of files in the cluster to
   load in JNLP mode. The module may load these files using InstalledFileLocator
   using the same path in regular as in JNLP mode. Note that the physical path on
   disk to the resulting file will not necessarily contain the directory prefix
@@ -1138,6 +1143,10 @@ overrides.
 
 branding.token - optional token defining an application branding.
 
+suite.build.dir - "build", location of suitewide build products including the
+cluster. If overridden, should be placed in platform.properties, e.g.:
+suite.build.dir=${suite.dir}/build [since 6.10]
+
 enabled.clusters - comma-separated list of cluster names in the target platform
 (e.g. "platform") which should be included in the application. Should be stored
 in platform.properties, not project.properties. Available since 5.0u1. Since 6.5,
@@ -1214,11 +1223,12 @@ When property 'continue.after.failing.tests' is set to 'false', this target fail
 immediately after tests in some module fail and does not continue testing the rest
 of the suite (this was the default up to version 6.7).
 
-test-generate-html - similar to the module-level target of the same name, only this 
-executes and reports on all unit and functional tests for all suite modules. [since 7.0]
+test-generate-html - similar to the module-level target of the same name, only
+this executes and reports on all unit and functional tests for all suite
+modules. [since 6.10]
 
-test-view-html - tests all modules in the suite, then opens the browser to display 
-the report generated from the results of those tests. [since 7.0]
+test-view-html - tests all modules in the suite, then opens the browser to
+display the report generated from the results of those tests. [since 6.10]
 
 testuserdir-delete - deletes just the testing user directory (if not currently in use).
 

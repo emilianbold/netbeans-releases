@@ -49,6 +49,6 @@ package org.netbeans.modules.cnd.discovery.api;
 public interface Progress {
     void start();
     void start(int length);
-    void increment();
+    void increment(String message);
     void done();
 }

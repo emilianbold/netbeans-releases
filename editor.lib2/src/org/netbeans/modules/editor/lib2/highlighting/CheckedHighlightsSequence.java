@@ -128,6 +128,16 @@ public final class CheckedHighlightsSequence implements HighlightsSequence {
                 }
 
                 retry = hasNext = originalSeq.moveNext();
+            } else if (originalSeq.getAttributes() == null) {
+                // this highlight has no attributes
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, containerDebugId
+                        + " supplied highlight " + CompoundHighlightsContainer.dumpHighlight(originalSeq, null) //NOI18N
+                        + ", which has null attributes <" + startOffset + ", " + endOffset + ">." //NOI18N
+                        + " Highlight skipped."); //NOI18N
+                }
+
+                retry = hasNext = originalSeq.moveNext();
             } else {
                 // highlight appears ok
                 retry = false;

@@ -60,8 +60,8 @@ public class Hk2ApplicationNode extends Hk2ItemNode {
     public Hk2ApplicationNode(final Lookup lookup, final AppDesc app, final Decorator decorator) {
         super(Children.LEAF, lookup, app.getName(), decorator);
         setDisplayName(app.getName());
-        setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "</html>");
-
+        setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "<br>enabled: " + app.getEnabled() + "</html>");
+        
         // !PW FIXME should method of retrieving context root be controlled by decorator?
         if(decorator.canShowBrowser()) {
             getCookieSet().add(new OpenURLActionCookie() {

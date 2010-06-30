@@ -135,12 +135,25 @@ final class ActionFilterNode extends FilterNode {
         this.mode = mode;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         Action[] result = initActions();        
         return result;
     }
 
+    @Override
+    public String getShortDescription() {
+        final DataObject dobj = getLookup().lookup(DataObject.class);
+        FileObject pf;
+        if (dobj != null && (pf = dobj.getPrimaryFile()) != null) {
+            return FileUtil.getFileDisplayName(pf);
 
+        } else {
+            return super.getShortDescription();
+        }
+    }
+
+    @Override
     public Action getPreferredAction() {
         if (mode == MODE_FILE) {
             Action[] actions = initActions();
@@ -203,6 +216,7 @@ final class ActionFilterNode extends FilterNode {
             this.cpRoot = cpRooot;
         }
 
+        @Override
         protected Node[] createNodes(Node n) {
             switch (mode) {
                 case MODE_ROOT:
@@ -238,6 +252,7 @@ final class ActionFilterNode extends FilterNode {
             this.resource = resource;
         }
 
+        @Override
         public boolean hasJavadoc() {
             try {
                 return resource != null && JavadocForBinaryQuery.findJavadoc(cpRoot.getURL()).getRoots().length>0;
@@ -246,6 +261,7 @@ final class ActionFilterNode extends FilterNode {
             }
         }
 
+        @Override
         public void showJavadoc() {
             try {
                 String relativeName = FileUtil.getRelativePath(cpRoot,resource);
@@ -292,12 +308,14 @@ final class ActionFilterNode extends FilterNode {
        }
 
 
+        @Override
        public boolean canRemove () {
             //Allow to remove only entries from PROJECT_PROPERTIES, same behaviour as the project customizer
             EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             return props.getProperty (classPathId) != null;
         }
 
+        @Override
        public Project remove() {        
            // The caller has write access to ProjectManager
            // and ensures the project will be saved.           

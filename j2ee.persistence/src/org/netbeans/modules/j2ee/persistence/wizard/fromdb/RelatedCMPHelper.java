@@ -301,8 +301,23 @@ public class RelatedCMPHelper {
         String pkgName = getPackageName();
 
         for (Table table : selectedTables.getTables()) {
-            genTables.addTable(table.getCatalog(), table.getSchema(), table.getName(), rootFolder, pkgName, 
-                    selectedTables.getClassName(table), selectedTables.getUpdateType(table), table.getUniqueConstraints());
+            String pkg = pkgName;
+            UpdateType ut = selectedTables.getUpdateType(table);
+            if( ut == UpdateType.UPDATE){
+                String fqn = persistenceGen.getFQClassName(table.getName());
+                if(fqn != null){
+                    int ind = fqn.lastIndexOf(".");
+                    if(ind>-1){
+                        pkg = fqn.substring(0, ind);
+                    } else {
+                        pkg = "";
+                    }
+                } else {
+                    assert false:"Entity for " + table.getName() + " isn't resolved";
+                }
+            }
+            genTables.addTable(table.getCatalog(), table.getSchema(), table.getName(), rootFolder, pkg, 
+                    selectedTables.getClassName(table), ut, table.getUniqueConstraints());
         }
 
         // add the (possibly related) disabled tables, so that the relationships are created correctly

@@ -46,9 +46,12 @@ package org.netbeans.modules.editor.lib;
 
 import java.io.PrintStream;
 import java.util.logging.Level;
+import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.undo.UndoManager;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.junit.NbTestCase;
@@ -76,7 +79,19 @@ public class TrailingWhitespaceRemoveTest extends NbTestCase {
         return Level.INFO;
     }
 
-    public void testTrailingWhitespaceRemove() throws Exception {
+    public void testTrailingWhitespaceRemove_modifiedLines() throws Exception {
+        checkTrailingWhitespaceRemove("modified-lines", "abc a\nd\n ef\n\n123 \n567 \nghi\n");
+    }
+
+    public void testTrailingWhitespaceRemove_always() throws Exception {
+        checkTrailingWhitespaceRemove("always", "abc a\nd\n ef\n\n123\n567\nghi\n");
+    }
+
+    public void testTrailingWhitespaceRemove_never() throws Exception {
+        checkTrailingWhitespaceRemove("never", "abc a \nd \n ef\n\n123 \n567 \nghi\n ");
+    }
+
+    private void checkTrailingWhitespaceRemove(String policy, String result) throws Exception {
         RandomTestContainer container = DocumentTesting.initContainer(null);
         container.setName(this.getName());
 //        container.putProperty(RandomTestContainer.LOG_OP, Boolean.TRUE);
@@ -101,26 +116,32 @@ public class TrailingWhitespaceRemoveTest extends NbTestCase {
         container.putProperty(RandomText.class, randomText);
         
         // Do a fixed scenario
-        DocumentTesting.insert(container.context(), 0, "abc\ndef\n\nghi");
+        DocumentTesting.insert(container.context(), 0, "abc\ndef\n\n123 \n567 \nghi");
+        // force TrailingWhitespaceRemove recreation
+        TrailingWhitespaceRemove twr = (TrailingWhitespaceRemove) doc.getProperty(TrailingWhitespaceRemove.class);
+        if (twr != null) {
+            BeforeSaveTasks.get(doc).removeTask(twr);
+            doc.putProperty(TrailingWhitespaceRemove.class, null);
+        }
         TrailingWhitespaceRemove.install(doc);
         DocumentTesting.insert(container.context(), 3, " a ");
         //  000000000011111111111222222222
         //  012345678901234567890123456789
-        // "abc a ndefnnghi"
+        // "abc a ndefnn123 n567 nghi"
         DocumentTesting.insert(container.context(), 8, " \n ");
         //  000000000011111111111222222222
         //  012345678901234567890123456789
-        // "abc a nd n efnnghi"
-        DocumentTesting.insert(container.context(), 18, "\n ");
+        // "abc a nd n efnn123 n567 nghi"
+        DocumentTesting.insert(container.context(), 28, "\n ");
         //  000000000011111111111222222222
         //  012345678901234567890123456789
-        // "abc a nd n efnnghin "
-        removeTrailingWhitespace(container.context());
+        // "abc a nd n efnn123 n567 nghin "
+        removeTrailingWhitespace(container.context(), policy);
         // Should be
         //  000000000011111111111222222222
         //  012345678901234567890123456789
-        // "abc andn efnnghin"
-        assertEquals("abc a\nd\n ef\n\nghi\n", doc.getText(0, doc.getLength()));
+        // "abc andn efnn123 n567 nghin"
+        assertEquals(result, doc.getText(0, doc.getLength()));
         
 
         RandomTestContainer.Round round = container.addRound();
@@ -178,8 +199,10 @@ public class TrailingWhitespaceRemoveTest extends NbTestCase {
         return sb;
     }
     
-    public static void removeTrailingWhitespace(Context context) {
+    public static void removeTrailingWhitespace(Context context, String policy) {
         Document doc = context.getInstance(Document.class);
+        Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
+        prefs.put(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, policy);
         TrailingWhitespaceRemove tws = (TrailingWhitespaceRemove) doc.getProperty(TrailingWhitespaceRemove.class);
         assertNotNull(tws);
         Runnable beforeSaveRunnable = (Runnable) doc.getProperty("beforeSaveRunnable");

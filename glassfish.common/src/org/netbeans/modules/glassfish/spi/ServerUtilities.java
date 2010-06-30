@@ -95,6 +95,11 @@ public final class ServerUtilities {
         return null == gip ? null : new ServerUtilities(gip);
     }
 
+    public static ServerUtilities getEe6WCUtilities() {
+        GlassfishInstanceProvider gip = GlassfishInstanceProvider.getEe6WC();
+        return null == gip ? null : new ServerUtilities(gip);
+    }
+    
     /**
      * Returns the ServerInstance object for the server with the specified URI.
      * 

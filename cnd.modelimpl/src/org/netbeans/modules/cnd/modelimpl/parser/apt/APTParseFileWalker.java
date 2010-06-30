@@ -60,9 +60,9 @@ import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
-import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
@@ -167,7 +167,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     }
 
     @Override
-    protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, APTMacroMap.State postIncludeState) throws IOException {
+    protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, PostIncludeData postIncludeState) throws IOException {
         try {
             return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), postIncludeState, mode, isTriggerParsingActivity());
         } catch (NullPointerException ex) {

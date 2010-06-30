@@ -73,5 +73,5 @@ public interface FilesAccessStrategy {
     /** Remove the record */
     void remove(Key id) throws IOException;
 
-    void closeUnit(String unitName) throws IOException;
+    void closeUnit(CharSequence unitName) throws IOException;
 }
