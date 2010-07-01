@@ -37,53 +37,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.ui.actions;
+package org.netbeans.modules.php.api.phpmodule;
 
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.project.PhpModuleImpl;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.spi.actions.RunCommandAction;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.openide.util.NbBundle;
+import java.awt.Image;
+import java.net.URL;
+import javax.swing.ImageIcon;
+import org.openide.util.Parameters;
 
 /**
+ * Badge icon (8x8) which provides an {@link Image} as well as {@link URL}
+ * of the icon.
  * @author Tomas Mysik
+ * @since 1.39
  */
-public final class RunFrameworkCommandAction extends RunCommandAction {
-    private static final long serialVersionUID = -22735302227232842L;
-    private static final RunFrameworkCommandAction INSTANCE = new RunFrameworkCommandAction();
+public final class BadgeIcon {
+    private final Image image;
+    private final URL url;
 
-    private RunFrameworkCommandAction() {
-    }
+    /**
+     * Creates a new badge icon. Image has to have 8x8 dimensions.
+     * @param image image of icon
+     * @param url URL of icon
+     * @thows IllegalArgumentException if the width or height is not 8 pixels (under assertions only)
+     */
+    public BadgeIcon(Image image, URL url) {
+        Parameters.notNull("image", image); // NOI18N
+        Parameters.notNull("url", url); // NOI18N
 
-    public static RunFrameworkCommandAction getInstance() {
-        return INSTANCE;
-    }
-
-    @Override
-    public void actionPerformed(final PhpModule phpModule) {
-        if (phpModule instanceof PhpModuleImpl) {
-            PhpProject project = ((PhpModuleImpl) phpModule).getPhpProject();
-            // XXX more precise would be to collect all Run Command actions and if > 1 then show a dialog which framework should be run
-            for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
-                PhpModuleActionsExtender actionsExtender = frameworkProvider.getActionsExtender(phpModule);
-                if (actionsExtender != null) {
-                    RunCommandAction runCommandAction = actionsExtender.getRunCommandAction();
-                    if (runCommandAction != null) {
-                        runCommandAction.actionPerformed(phpModule);
-                        return;
-                    }
-                }
+        boolean assertions = false;
+        assert assertions = true;
+        if (assertions) {
+            ImageIcon imageIcon = new ImageIcon(image);
+            if (imageIcon.getIconWidth() != 8) {
+                throw new IllegalArgumentException("The width of an image must be 8 px");
+            }
+            if (imageIcon.getIconHeight() != 8) {
+                throw new IllegalArgumentException("The height of an image must be 8 px");
             }
         }
+
+        this.image = image;
+        this.url = url;
     }
 
-    @Override
-    protected String getFullName() {
-        return NbBundle.getMessage(RunFrameworkCommandAction.class, "LBL_RunFrameworkCommand");
+    /**
+     * Returns the image of the badge icon.
+     * @return the image of the badge icon
+     */
+    public Image getImage() {
+        return image;
+    }
+
+    /**
+     * Returns the URL of the badge icon.
+     * @return the URL of the badge icon
+     */
+    public URL getUrl() {
+        return url;
     }
 }
