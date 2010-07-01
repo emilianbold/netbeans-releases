@@ -165,6 +165,9 @@ public class TreeEvaluator {
             mirror = EditorContextBridge.parseExpression(expression.getExpression(), url, line,
                                                          new EvaluatorVisitor(expression), evaluationContext,
                                                          evaluationContext.getDebugger().getEngineContext().getContext());
+            if (mirror instanceof EvaluatorVisitor.ArtificialMirror) {
+                mirror = ((EvaluatorVisitor.ArtificialMirror) mirror).getVMMirror();
+            }
             if (mirror instanceof Value || mirror == null) {
                 return (Value) mirror;
             } else {
