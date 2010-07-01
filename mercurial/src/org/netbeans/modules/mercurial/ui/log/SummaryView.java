@@ -323,7 +323,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     missingFile = true;
                 }
                 if(oneRevisionMultiselected && i > 0 && 
-                   drev[0].getLogInfoHeader().getLog().getRevision().equals(drev[i].getLogInfoHeader().getLog().getRevision())) 
+                   drev[0].getLogInfoHeader().getLog().getRevisionNumber().equals(drev[i].getLogInfoHeader().getLog().getRevisionNumber())) 
                 {
                     oneRevisionMultiselected = false;
                 }                
@@ -333,7 +333,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }                
             container = drev[0].getLogInfoHeader();
         }
-        long revision = Long.parseLong(container.getLog().getRevision());
+        long revision = Long.parseLong(container.getLog().getRevisionNumber());
 
         final boolean revertToEnabled = !missingFile && !revisionSelected && oneRevisionMultiselected;
         final boolean backoutChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0); // drev.length == 0 => the whole revision was selected
@@ -479,7 +479,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     revertFiles.add(event.getFile());
                 }
                 RevertModificationsAction.performRevert(
-                        root, revision.getLog().getRevision(), revertFiles, doBackup, progress.getLogger());
+                        root, revision.getLog().getRevisionNumber(), revertFiles, doBackup, progress.getLogger());
                 revertFiles.clear();
             }
         }
@@ -510,7 +510,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 if(revEvents != null && !revEvents.isEmpty()){
                     // Assuming all files in a given repository reverting to same revision
                     RevertModificationsAction.performRevert(
-                        root, revEvents.get(0).getLogInfoHeader().getLog().getRevision(), revertFiles, doBackup, progress.getLogger());
+                        root, revEvents.get(0).getLogInfoHeader().getLog().getRevisionNumber(), revertFiles, doBackup, progress.getLogger());
                 }
             }                       
         }
@@ -522,7 +522,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (o instanceof RepositoryRevision.Event) {
             try {
                 final RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
-                HgUtils.openInRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getRevision(), showAnnotations);
+                HgUtils.openInRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getHgRevision(), showAnnotations);
             } catch (IOException ex) {
                 // Ignore if file not available in cache
             }
@@ -704,7 +704,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
 
                     // add revision
-                    sd.insertString(0, container.getLog().getRevision() +
+                    sd.insertString(0, container.getLog().getRevisionNumber() +
                             " (" + container.getLog().getCSetShortID() + ")", null); // NOI18N
                     sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
 

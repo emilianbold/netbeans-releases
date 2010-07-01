@@ -67,6 +67,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.Lookup;
@@ -467,7 +468,7 @@ public class Mercurial {
         // but may not have happened yet.
 
         try {
-            File original = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
+            File original = VersionsCache.getInstance().getFileRevision(workingCopy, HgRevision.BASE);
             if (original == null) return;
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
             original.delete();

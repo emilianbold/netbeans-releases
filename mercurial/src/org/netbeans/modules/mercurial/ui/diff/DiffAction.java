@@ -54,6 +54,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -113,7 +114,7 @@ public class DiffAction extends ContextAction {
         tc.requestActive();
     }
 
-    public static void diff(File file, String rev1, String rev2) {
+    public static void diff(File file, HgRevision rev1, HgRevision rev2) {
         MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2, false); // spawns background DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N

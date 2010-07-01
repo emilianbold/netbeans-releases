@@ -61,6 +61,7 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.diff.DiffStreamSource;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -89,12 +90,11 @@ final class DiffResultsViewForLine extends DiffResultsView {
     @Override
     protected void showRevisionDiff(RepositoryRevision.Event rev, boolean showLastDifference) {
         if (rev.getFile() == null) return;
-        String revision2 = rev.getLogInfoHeader().getLog().getRevision();
-        showDiff(rev, null, revision2, showLastDifference);
+        showDiff(rev, null, rev.getLogInfoHeader().getLog().getHgRevision(), showLastDifference);
     }
 
     @Override
-    protected HgProgressSupport createShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
+    protected HgProgressSupport createShowDiffTask(RepositoryRevision.Event header, HgRevision revision1, HgRevision revision2, boolean showLastDifference) {
         if (revision1 == null) {
             return new ShowDiffTask(header, revision2, showLastDifference);
         } else {
@@ -125,16 +125,16 @@ final class DiffResultsViewForLine extends DiffResultsView {
 
     private class ShowDiffTask extends HgProgressSupport {
         private final RepositoryRevision.Event header;
-        private final String revision;
+        private final HgRevision revision;
 
-        public ShowDiffTask(RepositoryRevision.Event header, String revision, boolean showLastDifference) {
+        public ShowDiffTask(RepositoryRevision.Event header, HgRevision revision, boolean showLastDifference) {
             this.header = header;
             this.revision = revision;
         }
 
         public void perform () {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
-            final DiffStreamSource leftSource = new DiffStreamSource(header.getFile(), revision, revision);
+            final DiffStreamSource leftSource = new DiffStreamSource(header.getFile(), revision, revision.getRevisionNumber());
             final LocalFileDiffStreamSource rightSource = new LocalFileDiffStreamSource(header.getFile(), true);
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled

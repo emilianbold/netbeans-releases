@@ -83,7 +83,7 @@ class RevisionNode extends AbstractNode {
         this.container = container;
         this.event = null;
         this.path = null;
-        setName(container.getLog().getRevision() +
+        setName(container.getLog().getRevisionNumber() +
                 NbBundle.getMessage(RevisionNode.class, "LBL_NumberOfChangedPaths", container.getLog().getChangedPaths().length));
         initProperties();
     }
@@ -214,7 +214,7 @@ class RevisionNode extends AbstractNode {
 
         public RollbackToAction() {
             putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", // NOI18N
-                    event.getLogInfoHeader().getLog().getRevision()));
+                    event.getLogInfoHeader().getLog().getRevisionNumber()));
         }
 
         public void actionPerformed(ActionEvent e) {

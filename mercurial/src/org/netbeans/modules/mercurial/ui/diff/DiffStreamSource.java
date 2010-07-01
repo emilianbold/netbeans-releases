@@ -52,6 +52,8 @@ import org.netbeans.modules.versioning.util.Utils;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
@@ -68,7 +70,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class DiffStreamSource extends StreamSource {
 
     private final File      baseFile;
-    private final String    revision;
+    private final HgRevision    revision;
     private final String    title;
     private String          mimeType;
     private Boolean         start;
@@ -86,7 +88,7 @@ public class DiffStreamSource extends StreamSource {
      * @param revision file revision, may be null if the revision does not exist (ie for new files)
      * @param title title to use in diff panel
      */ 
-    public DiffStreamSource(File baseFile, String revision, String title) {
+    public DiffStreamSource(File baseFile, HgRevision revision, String title) {
         this.baseFile = baseFile;
         this.revision = revision;
         this.title = title;
@@ -149,7 +151,7 @@ public class DiffStreamSource extends StreamSource {
 
     @Override
     public boolean isEditable() {
-        return Setup.REVISION_CURRENT.equals(revision) && isPrimary() && canWriteBaseFile;
+        return HgRevision.CURRENT.equals(revision) && isPrimary() && canWriteBaseFile;
     }
 
     private boolean isPrimary() {
