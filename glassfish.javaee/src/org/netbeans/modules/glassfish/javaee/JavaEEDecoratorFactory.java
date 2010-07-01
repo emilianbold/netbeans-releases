@@ -99,8 +99,6 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
             "org/netbeans/modules/glassfish/javaee/resources/appclient.gif"; // NOI18N
     private static final String JAVAMAIL_ICON =
             "org/netbeans/modules/glassfish/javaee/resources/javamail.gif"; // NOI18N
-    private static final String DISABLED_BADGE =
-            "org/netbeans/modules/glassfish/javaee/resources/disabled-badge.gif"; // NOI18N
     
     public static final Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
@@ -155,7 +153,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EAR_ARCHIVE); }
-        @Override public Image getIconBadge() {return ImageUtilities.loadImage(DISABLED_BADGE); }
+        @Override public Image getIconBadge() {return Decorator.DISABLED_BADGE; }
     };
 
     public static final Decorator DISABLED_WEB_APPLICATION = new Decorator() {
@@ -164,7 +162,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return true; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.WAR_ARCHIVE); }
-        @Override public Image getIconBadge() {return ImageUtilities.loadImage(DISABLED_BADGE); }
+        @Override public Image getIconBadge() {return Decorator.DISABLED_BADGE; }
     };
 
     public static final Decorator DISABLED_EJB_JAR = new Decorator() {
@@ -173,7 +171,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.EJB_ARCHIVE); }
-        @Override public Image getIconBadge() {return ImageUtilities.loadImage(DISABLED_BADGE); }
+        @Override public Image getIconBadge() {return Decorator.DISABLED_BADGE; }
     };
 
     public static final Decorator DISABLED_APPCLIENT = new Decorator() {
@@ -182,7 +180,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(APPCLIENT_ICON); }
-        @Override public Image getIconBadge() {return ImageUtilities.loadImage(DISABLED_BADGE); }
+        @Override public Image getIconBadge() {return Decorator.DISABLED_BADGE; }
     };
 
     public static final Decorator DISABLED_CONNECTOR = new Decorator() {
@@ -191,7 +189,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         @Override public boolean canDisable() { return true; }
         @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return ImageUtilities.loadImage(CONNECTOR_ICON); }
-        @Override public Image getIconBadge() {return ImageUtilities.loadImage(DISABLED_BADGE); }
+        @Override public Image getIconBadge() {return Decorator.DISABLED_BADGE; }
     };
 
     public static final Decorator JDBC_FOLDER = new Decorator() {

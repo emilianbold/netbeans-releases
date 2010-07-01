@@ -43,6 +43,7 @@
 package org.netbeans.modules.glassfish.spi;
 
 import java.awt.Image;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -52,6 +53,8 @@ public abstract class Decorator {
 
     public static final String DISABLED = "disabled ";
 
+    public static final Image DISABLED_BADGE =
+            ImageUtilities.loadImage("org/netbeans/modules/glassfish/common/resources/disabled-badge.gif"); // NOI18N
     /**
      * Returns the badge to be used to decorate the default icon for this node.
      * 
