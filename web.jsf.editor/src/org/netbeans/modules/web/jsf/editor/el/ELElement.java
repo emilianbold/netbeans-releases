@@ -12,26 +12,32 @@ import org.netbeans.modules.csl.api.OffsetRange;
 public final class ELElement {
 
     private final Node node;
+    private final OffsetRange offset;
     private final ELException error;
     private final String expression;
 
-    private ELElement(Node node, ELException error, String expression) {
+    private ELElement(Node node, OffsetRange offset, ELException error, String expression) {
         assert node == null || error == null;
         this.node = node;
+        this.offset = offset;
         this.error = error;
         this.expression = expression;
     }
 
-    static ELElement valid(Node node, String expression) {
-        return new ELElement(node, null, expression);
+    static ELElement valid(Node node, OffsetRange offset, String expression) {
+        return new ELElement(node, offset, null, expression);
     }
 
-    static ELElement error(ELException error, String expression) {
-        return new ELElement(null, error, expression);
+    static ELElement error(ELException error, OffsetRange offset, String expression) {
+        return new ELElement(null, offset, error, expression);
     }
 
     public Node getNode() {
         return node;
+    }
+
+    public OffsetRange getOffset() {
+        return offset;
     }
 
     public boolean isValid() {
@@ -48,7 +54,7 @@ public final class ELElement {
 
     @Override
     public String toString() {
-        return "ELElement{expression=" + expression + " node=" + node + " offset=" + node.startOffset() + "-" + node.endOffset() + " error=" + error + '}';
+        return "ELElement{expression=" + expression + " node=" + node + " offset=" + offset + " error=" + error + '}';
     }
 
 }

@@ -117,7 +117,7 @@ public class JsfElParserTest extends TestBase {
 
     @Test
     public void testParseImmediate2() {
-        String expr = "#{sessionScope.cart.total}";
+        String expr = "{sessionScope.cart.total}";
         Node result = JsfElParser.parse(expr);
         assertNotNull(result);
         print(expr, result);
