@@ -221,7 +221,7 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         assertEquals("Open hook called", 1, tf.opened);
 
         assertEquals("Project info changed", 1, change);
-        assertEquals("One listener attached", 1, tf.listenerCount);
+        tf.assertListeners("One listener attached");
         assertEquals("Info delegates", "x", info.getName());
         assertEquals("Info delegates2", "y", info.getDisplayName());
         assertEquals("Info delegates icon", null, info.getIcon());
