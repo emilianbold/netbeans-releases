@@ -99,6 +99,10 @@ public final class ProjectPropertiesSupport {
         project.addWeakIgnoredFilesListener(listener);
     }
 
+    public static boolean addWeakPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+        return project.addPropertyChangeListener(listener);
+    }
+
     public static FileObject getProjectDirectory(PhpProject project) {
         return project.getProjectDirectory();
     }

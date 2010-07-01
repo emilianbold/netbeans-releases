@@ -37,50 +37,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.gsf.testrunner.api;
+package org.netbeans.modules.php.api.phpmodule;
 
-import java.util.Set;
-import javax.swing.event.ChangeListener;
+import java.awt.Image;
+import java.net.URL;
+import javax.swing.ImageIcon;
+import org.openide.util.Parameters;
 
 /**
- * Handles rerunning a test execution.
- *
- * @author Erno Mononen
+ * Badge icon (8x8) which provides an {@link Image} as well as {@link URL}
+ * of the icon.
+ * @author Tomas Mysik
+ * @since 1.39
  */
-public interface RerunHandler {
+public final class BadgeIcon {
+    private final Image image;
+    private final URL url;
 
     /**
-     * Reruns the test execution.
+     * Creates a new badge icon. Image has to have 8x8 dimensions.
+     * @param image image of icon
+     * @param url URL of icon
+     * @thows IllegalArgumentException if the width or height is not 8 pixels (under assertions only)
      */
-    void rerun();
+    public BadgeIcon(Image image, URL url) {
+        Parameters.notNull("image", image); // NOI18N
+        Parameters.notNull("url", url); // NOI18N
+
+        boolean assertions = false;
+        assert assertions = true;
+        if (assertions) {
+            ImageIcon imageIcon = new ImageIcon(image);
+            if (imageIcon.getIconWidth() != 8) {
+                throw new IllegalArgumentException("The width of an image must be 8 px");
+            }
+            if (imageIcon.getIconHeight() != 8) {
+                throw new IllegalArgumentException("The height of an image must be 8 px");
+            }
+        }
+
+        this.image = image;
+        this.url = url;
+    }
 
     /**
-     * Reruns the provided tests.
-     * @param type the type of rerun to be executed
+     * Returns the image of the badge icon.
+     * @return the image of the badge icon
      */
-    void rerun(Set<Testcase> tests);
+    public Image getImage() {
+        return image;
+    }
 
     /**
-     * @return true if re-running is enabled (i.e. it is possible to
-     * rerun the execution and it has finished).
-     * @param type the type of rerun to verify
+     * Returns the URL of the badge icon.
+     * @return the URL of the badge icon
      */
-    boolean enabled(RerunType type);
-
-    /**
-     * Adds a listener for getting notified about the enabled state.
-     * @param listener the listener to add.
-     */
-    void addChangeListener(ChangeListener listener);
-
-    /**
-     * Removes the given listener.
-     * 
-     * @param listener the listener to remove.
-     */
-    void removeChangeListener(ChangeListener listener);
-
+    public URL getUrl() {
+        return url;
+    }
 }

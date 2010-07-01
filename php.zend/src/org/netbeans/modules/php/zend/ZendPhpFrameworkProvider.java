@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.zend;
 
 import java.io.File;
+import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
@@ -53,13 +54,17 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.zend.commands.ZendCommandSupport;
 import org.netbeans.modules.php.zend.editor.ZendEditorExtender;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
 public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
+    private static final String ICON_PATH = "org/netbeans/modules/php/zend/ui/resources/zend_badge_8.png"; // NOI18N
     private static final ZendPhpFrameworkProvider INSTANCE = new ZendPhpFrameworkProvider();
+
+    private final BadgeIcon badgeIcon;
 
     @PhpFrameworkProvider.Registration(position=200)
     public static ZendPhpFrameworkProvider getInstance() {
@@ -68,6 +73,14 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
 
     private ZendPhpFrameworkProvider() {
         super(NbBundle.getMessage(ZendPhpFrameworkProvider.class, "LBL_FrameworkName"), NbBundle.getMessage(ZendPhpFrameworkProvider.class, "LBL_FrameworkDescription"));
+        badgeIcon = new BadgeIcon(
+                ImageUtilities.loadImage(ICON_PATH),
+                ZendPhpFrameworkProvider.class.getResource("/" + ICON_PATH)); // NOI18N
+    }
+
+    @Override
+    public BadgeIcon getBadgeIcon() {
+        return badgeIcon;
     }
 
     @Override

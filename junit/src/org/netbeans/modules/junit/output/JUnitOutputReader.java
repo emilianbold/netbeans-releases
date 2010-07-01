@@ -81,6 +81,7 @@ import org.netbeans.modules.junit.output.antutils.AntProject;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 import static java.util.logging.Level.FINER;
 import static org.netbeans.modules.junit.output.RegexpUtils.ADD_ERROR_PREFIX;
@@ -159,10 +160,12 @@ final class JUnitOutputReader {
             FileObject fileObj = FileUtil.toFileObject(antScript);
             this.project = FileOwnerQuery.getOwner(fileObj);
         }
-
         String className = props.getProperty("classname", "");      //NOI18N
         String methodName = props.getProperty("methodname");        //NOI18N
-        String sName = methodName != null ? className + "." + methodName : className;
+        String sName = JUnitExecutionManager.JUNIT_CUSTOM_FILENAME.equals(FileUtil.toFileObject(antScript).getName()) ?
+                    NbBundle.getMessage(JUnitOutputReader.class, "LBL_RerunFailedTests") :      //NOI18N
+                    methodName != null ?
+                        className + "." + methodName : className;
 
         this.testSession = new JUnitTestSession(sName, this.project, sessionType, new JUnitTestRunnerNodeFactory()); //NOI18N
         testSession.setRerunHandler(new JUnitExecutionManager(session, testSession, props));
