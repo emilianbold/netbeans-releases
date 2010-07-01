@@ -1265,6 +1265,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 ? out.col : out.leftMargin + cs.getContinuationIndentSize());
 	print(cs.spaceWithinMethodCallParens() && tree.args.nonEmpty() ? " )" : ")");
 	if (tree.def != null) {
+            printNewClassBody(tree);
 	}
     }
     
