@@ -132,7 +132,7 @@ public class ExportDiffAction extends ContextAction {
         final File root = repoRev.getRepositoryRoot();
         if ((root == null) || root.getPath().equals(""))                //NOI18N
             return;
-        final String revStr = repoRev.getLog().getRevision();
+        final String revStr = repoRev.getLog().getRevisionNumber();
         ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, null, fileToDiff) {
             public void writeDiffFile (final File toFile) {
                 saveFolderToPrefs(toFile);
@@ -157,7 +157,7 @@ public class ExportDiffAction extends ContextAction {
             return;
         ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, roots) {
             public void writeDiffFile (final File toFile) {
-                final String revStr = repoRev.getLog().getRevision();
+                final String revStr = repoRev.getLog().getRevisionNumber();
                 saveFolderToPrefs(toFile);
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport support = new HgProgressSupport() {

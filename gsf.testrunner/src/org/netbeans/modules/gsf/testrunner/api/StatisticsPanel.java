@@ -50,6 +50,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -76,6 +77,7 @@ final class StatisticsPanel extends JPanel implements ItemListener {
      * Rerun button for running (all) tests again.
      */
     private JButton rerunButton;
+    private JButton rerunFailedButton;
 
     private JButton nextFailure;
 
@@ -90,6 +92,13 @@ final class StatisticsPanel extends JPanel implements ItemListener {
 
     //default pressed value for the Show Failures Only button
     private static boolean showFailuresOnly = false;
+
+    private static final Icon rerunIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/rerun.png", true);
+    private static final Icon rerunFailedIcon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(
+                            ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/rerun.png"), //NOI18N
+                            ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/error-badge.gif"), //NOI18N
+                            8, 8));
+
     /**
      */
     public StatisticsPanel(final ResultDisplayHandler displayHandler) {
@@ -107,11 +116,12 @@ final class StatisticsPanel extends JPanel implements ItemListener {
      */
     private JComponent createToolbar() {
         createFilterButton();
-        createRerunButton();
+        createRerunButtons();
         createNextPrevFailureButtons();
 
         JToolBar toolbar = new JToolBar(SwingConstants.VERTICAL);
         toolbar.add(rerunButton);
+        toolbar.add(rerunFailedButton);
         toolbar.add(new JToolBar.Separator());
         toolbar.add(btnFilter);
         toolbar.add(previousFailure);
@@ -124,31 +134,45 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         return toolbar;
     }
     
-    private void createRerunButton() {
-        rerunButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/rerun.png", true));
+    private void createRerunButtons() {
+        rerunButton = new JButton(rerunIcon);
+        rerunButton.setEnabled(false);
         rerunButton.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(getClass(), "ACSN_RerunButton"));  //NOI18N
+        rerunButton.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.rerunButton.tooltip"));
+
+        rerunFailedButton = new JButton(rerunFailedIcon);
+        rerunFailedButton.setEnabled(false);
+        rerunFailedButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(getClass(), "ACSN_RerunFailedButton"));  //NOI18N
+        rerunFailedButton.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.rerunFailedButton.tooltip"));
 
         final RerunHandler rerunHandler = displayHandler.getSession().getRerunHandler();
         if (rerunHandler != null) {
             rerunButton.addActionListener(new ActionListener() {
-
                 public void actionPerformed(ActionEvent e) {
                     rerunHandler.rerun();
                 }
             });
-            rerunHandler.addChangeListener(new ChangeListener() {
-
-                public void stateChanged(ChangeEvent e) {
-                    rerunButton.setEnabled(rerunHandler.enabled());
+            rerunFailedButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    rerunHandler.rerun(treePanel.getFailedTests());
                 }
             });
-            rerunButton.setEnabled(rerunHandler.enabled());
+            rerunHandler.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    updateButtons();
+                }
+            });
+            updateButtons();
         }
-
-        rerunButton.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.rerunButton.tooltip"));
     }
-    
+
+    private void updateButtons(){
+        RerunHandler rerunHandler = displayHandler.getSession().getRerunHandler();
+        rerunButton.setEnabled(rerunHandler.enabled(RerunType.ALL));
+        rerunFailedButton.setEnabled(rerunHandler.enabled(RerunType.CUSTOM));
+    }
     /**
      */
     private void createFilterButton() {
@@ -234,7 +258,7 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         btnFilter.setEnabled(
             treePanel.getSuccessDisplayedLevel() != RootNode.ALL_PASSED_ABSENT);
     }
-    
+
     /**
      * Displays a message about a running suite.
      *

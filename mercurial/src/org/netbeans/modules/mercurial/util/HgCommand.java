@@ -87,6 +87,7 @@ import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 import org.netbeans.modules.mercurial.ui.repository.UserCredentialsSupport;
@@ -1651,15 +1652,15 @@ public class HgCommand {
      * @return void
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static String getCommonAncestor(String rootURL, String rev1, String rev2, OutputLogger logger) throws HgException {
-        String res = getCommonAncestor(rootURL, rev1, rev2, false, logger);
+    public static HgRevision getCommonAncestor(String rootURL, String rev1, String rev2, OutputLogger logger) throws HgException {
+        HgRevision res = getCommonAncestor(rootURL, rev1, rev2, false, logger);
         if( res == null){
             res = getCommonAncestor(rootURL, rev1, rev2, true, logger);
         }
         return res;
     }
 
-    private static String getCommonAncestor(String rootURL, String rev1, String rev2, boolean bUseIndex, OutputLogger logger) throws HgException {
+    private static HgRevision getCommonAncestor(String rootURL, String rev1, String rev2, boolean bUseIndex, OutputLogger logger) throws HgException {
         if (rootURL == null ) return null;
         List<String> command = new ArrayList<String>();
 
@@ -1679,14 +1680,15 @@ public class HgCommand {
         if (!list.isEmpty()){
             String splits[] = list.get(0).split(":"); // NOI18N
             String tmp = splits != null && splits.length >= 1 ? splits[0]: null;
+            String tmpId = splits != null && splits.length >= 2 ? splits[1]: null;
             int tmpRev = -1;
             try{
                 tmpRev = Integer.parseInt(tmp);
             }catch(NumberFormatException ex){
                 // Ignore
             }
-            return tmpRev > -1? tmp: null;
-        }else{
+            return tmpRev > -1 ? new HgRevision(tmpId, tmp): null;
+        } else {
             return null;
         }
     }
@@ -2291,61 +2293,59 @@ public class HgCommand {
 
     /**
      * Returns parent revision of the given revision
-     * @param repositoryUrl cannot be null
+     * @param repository cannot be null
      * @param file if not null, parent revision limited on this file will be returned
      * @param revision if null, parent of the WC is returned
-     * @return parent revision, -1 if has no parent and null if error occurs
+     * @return parent revision, HgLogMessage.Empty if has no parent and null if error occurs
      * @throws HgException
      */
-    public static String getParent (String repositoryUrl, File file, String revision) throws HgException {
-        if (repositoryUrl == null ) return null;
+    public static HgRevision getParent (File repository, File file, String revision) throws HgException {
+        if (repository == null ) return null;
 
-        String parentRevision = "-1";                                   //NOI18N
-        String[] revisions = getParents(repositoryUrl, file, revision);
-        if (revisions != null) {
-            if (revisions.length > 1) {
-                String rev1 = revisions[0].trim();
-                String rev2 = revisions[1].trim();
-                parentRevision = HgCommand.getCommonAncestor(repositoryUrl, rev1, rev2, OutputLogger.getLogger(null));
-            }
-            else if (revisions.length == 1 && revisions[0].trim().length() > 0) {
-                parentRevision = revisions[0].trim();
-            } else {
-                parentRevision = null;
-            }
+        HgRevision parentRevision = HgRevision.EMPTY;
+        List<HgLogMessage> revisions = getParents(repository, file, revision);
+        if (revisions.size() > 1) {
+            String rev1 = revisions.get(0).getRevisionNumber();
+            String rev2 = revisions.get(1).getRevisionNumber();
+            parentRevision = HgCommand.getCommonAncestor(repository.getAbsolutePath(), rev1, rev2, OutputLogger.getLogger(null));
+        } else if (revisions.size() == 1) {
+            parentRevision = revisions.get(0).getHgRevision();
         }
         return parentRevision;
     }
 
     /**
      * Returns parent revisions of the given file
-     * @param repositoryUrl cannot be null
+     * @param repository cannot be null
      * @param file revisions of this file will be returned
      * @param revision if not null, returns parents of this revision limited on the file
      * @return parent revisions
      * @throws HgException
      */
-    public static String[] getParents (String repositoryUrl, File file, String revision) throws HgException {
-        if (repositoryUrl == null ) return null;
+    public static List<HgLogMessage> getParents (File repository, File file, String revision) throws HgException {
+        if (repository == null ) return null;
         List<String> command = new ArrayList<String>();
         command.add(getHgCommand());
         command.add(HG_PARENT_CMD);
         command.add(HG_OPT_REPOSITORY);
-        command.add(repositoryUrl);
+        command.add(repository.getAbsolutePath());
         if (revision != null) {
             command.add(HG_FLAG_REV_CMD);
             command.add(revision);
         }
-        command.add("--template={rev}\t");                              //NOI18N
+        command.add(HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD);
 
         List<String> list = null;
         if (file != null) command.add(file.getAbsolutePath());
         list = exec(command);
-        String[] revisions = null;
-        if (!list.isEmpty() && !isErrorAbort(list.get(0))) {
-            revisions = list.get(0).split("\t");               //NOI18N
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), OutputLogger.getLogger(null));
+            } else if (isErrorAbort(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), OutputLogger.getLogger(null));
+            }
         }
-        return revisions;
+        return processLogMessages(repository, file == null ? Collections.<File>emptyList() : Collections.singletonList(file), list, new LinkedList<HgLogMessage>());
     }
 
 
