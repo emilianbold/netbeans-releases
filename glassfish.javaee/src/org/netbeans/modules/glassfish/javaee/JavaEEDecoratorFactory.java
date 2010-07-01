@@ -160,7 +160,7 @@ public class JavaEEDecoratorFactory implements DecoratorFactory {
         @Override public boolean canUndeploy() { return true; }
         @Override public boolean canEnable() { return true; }
         @Override public boolean canDisable() { return true; }
-        @Override public boolean canShowBrowser() { return true; }
+        @Override public boolean canShowBrowser() { return false; }
         @Override public Image getIcon(int type) { return UISupport.getIcon(ServerIcon.WAR_ARCHIVE); }
         @Override public Image getIconBadge() {return Decorator.DISABLED_BADGE; }
     };
