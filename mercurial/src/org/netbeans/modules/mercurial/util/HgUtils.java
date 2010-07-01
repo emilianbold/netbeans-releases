@@ -106,6 +106,7 @@ import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -1321,7 +1322,7 @@ itor tabs #66700).
         return remotePath;
     }
 
-    public static void openInRevision (final File originalFile, final String revision, boolean showAnnotations) throws IOException {
+    public static void openInRevision (final File originalFile, final HgRevision revision, boolean showAnnotations) throws IOException {
         File file = org.netbeans.modules.mercurial.VersionsCache.getInstance().getFileRevision(originalFile, revision);
 
         if (file == null) { // can be null if the file does not exist or is empty in the given revision
@@ -1343,7 +1344,7 @@ itor tabs #66700).
         if (ec == null && oc != null) {
             oc.open();
         } else {
-            ces = org.netbeans.modules.versioning.util.Utils.openFile(fo, revision);
+            ces = org.netbeans.modules.versioning.util.Utils.openFile(fo, revision.getRevisionNumber());
         }
         if (showAnnotations) {
             if (ces == null) {
@@ -1355,7 +1356,7 @@ itor tabs #66700).
                     public void run() {
                         javax.swing.JEditorPane[] panes = support.getOpenedPanes();
                         if (panes != null) {
-                            org.netbeans.modules.mercurial.ui.annotate.AnnotateAction.showAnnotations(panes[0], originalFile, revision);
+                            org.netbeans.modules.mercurial.ui.annotate.AnnotateAction.showAnnotations(panes[0], originalFile, revision.getRevisionNumber());
                         }
                     }
                 });
@@ -1467,7 +1468,7 @@ itor tabs #66700).
         }
         StringBuilder sb = new StringBuilder();
         sb.append(formatlabel(lbChangeset, l));
-        sb.append(log.getRevision());
+        sb.append(log.getRevisionNumber());
         sb.append(":"); // NOI18N
         sb.append(log.getCSetShortID());
         sb.append('\n'); // NOI18N
