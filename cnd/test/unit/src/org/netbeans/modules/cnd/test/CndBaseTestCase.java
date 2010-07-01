@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.cplusplus.HKit;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
+import org.netbeans.modules.cnd.asm.core.editor.AsmEditorKit;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
@@ -123,6 +124,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     private MimePath mimePath2;
     private MimePath mimePath3;
     private MimePath mimePath4;
+    private MimePath mimePath5;
 
     // it's like what org.netbeans.junit.NbModuleSuite does,
     // but reusing NbModuleSuite will cause too massive changes in existing CND tests
@@ -226,6 +228,11 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         assertNotNull(lookup);
         kit = lookup.lookup(EditorKit.class);
         assertTrue(kit instanceof  FKit);
+
+        lookup = MimeLookup.getLookup(MimePath.parse(MIMENames.ASM_MIME_TYPE));
+        assertNotNull(lookup);
+        kit = lookup.lookup(EditorKit.class);
+        assertTrue(kit instanceof AsmEditorKit);
     }
 
     protected void setUpMime() {
@@ -237,6 +244,8 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         MockMimeLookup.setInstances(mimePath3, new CKit());
         mimePath4 = MimePath.parse(MIMENames.FORTRAN_MIME_TYPE);
         MockMimeLookup.setInstances(mimePath4, new FKit());
+        mimePath5 = MimePath.parse(MIMENames.ASM_MIME_TYPE);
+        MockMimeLookup.setInstances(mimePath5, new AsmEditorKit());
     }
 
     protected List<Class<?>> getServices(){
