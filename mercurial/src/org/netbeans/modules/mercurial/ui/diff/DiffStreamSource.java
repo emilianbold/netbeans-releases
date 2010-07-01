@@ -52,6 +52,7 @@ import org.netbeans.modules.versioning.util.Utils;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
@@ -68,7 +69,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class DiffStreamSource extends StreamSource {
 
     private final File      baseFile;
-    private final String    revision;
+    private final HgRevision    revision;
     private final String    title;
     private String          mimeType;
     private Boolean         start;
@@ -86,7 +87,7 @@ public class DiffStreamSource extends StreamSource {
      * @param revision file revision, may be null if the revision does not exist (ie for new files)
      * @param title title to use in diff panel
      */ 
-    public DiffStreamSource(File baseFile, String revision, String title) {
+    public DiffStreamSource(File baseFile, HgRevision revision, String title) {
         this.baseFile = baseFile;
         this.revision = revision;
         this.title = title;
@@ -101,6 +102,7 @@ public class DiffStreamSource extends StreamSource {
         this.start = true;
     }
 
+    @Override
     public String getName() {
         if (baseFile != null) {
             return baseFile.getName();
@@ -109,10 +111,12 @@ public class DiffStreamSource extends StreamSource {
         }
     }
 
+    @Override
     public String getTitle() {
         return title;
     }
 
+    @Override
     public synchronized String getMIMEType() {
         if (baseFile.isDirectory()) {
             // http://www.rfc-editor.org/rfc/rfc2425.txt
@@ -127,6 +131,7 @@ public class DiffStreamSource extends StreamSource {
         return mimeType;
     }
 
+    @Override
     public synchronized Reader createReader() throws IOException {
         if (baseFile.isDirectory()) {
             // XXX return directory listing?
@@ -143,13 +148,14 @@ public class DiffStreamSource extends StreamSource {
         }
     }
 
+    @Override
     public Writer createWriter(Difference[] conflicts) throws IOException {
         throw new IOException("Operation not supported"); // NOI18N
     }
 
     @Override
     public boolean isEditable() {
-        return Setup.REVISION_CURRENT.equals(revision) && isPrimary() && canWriteBaseFile;
+        return HgRevision.CURRENT.equals(revision) && isPrimary() && canWriteBaseFile;
     }
 
     private boolean isPrimary() {
@@ -225,10 +231,7 @@ public class DiffStreamSource extends StreamSource {
                 mimeType = Mercurial.getInstance().getMimeType(remoteFile);
             }
         } catch (Exception e) {
-            // TODO detect interrupted IO (exception subclass), i.e. user cancel
-            IOException failure = new IOException("Can not load remote file for " + baseFile); // NOI18N
-            failure.initCause(e);
-            throw failure;
+            throw new IOException("Can not load remote file for " + baseFile, e);
         }
         FileObject fo = FileUtil.toFileObject(baseFile);
         canWriteBaseFile = fo != null && fo.canWrite();

@@ -152,7 +152,7 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
     }
 
     protected String getRevisionLabel (RepositoryRevision rev) {
-        return new StringBuilder(rev.getLog().getRevision()).append(" (").append(rev.getLog().getCSetShortID()).append(")").toString(); //NOI18N
+        return new StringBuilder(rev.getLog().getRevisionNumber()).append(" (").append(rev.getLog().getCSetShortID()).append(")").toString(); //NOI18N
     }
 
     protected void setInitMessageInfoFetcher (MessageInfoFetcher fetcher) {
@@ -326,10 +326,10 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
         OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
         MessageInfoFetcher fetcher = getMessageInfoFetcher();
         messages = fetcher.getMessageInfo(repository, roots == null ? null : new HashSet<File>(Arrays.asList(roots)), fetchRevisionLimit, logger);
-        String parentRevision = "";
+        HgLogMessage.HgRevision parentRevision = null;
         if (messages.length > 0) {
             try {
-                parentRevision = HgCommand.getParent(repository.getAbsolutePath(), null, null);
+                parentRevision = HgCommand.getParent(repository, null, null);
             } catch (HgException ex) {
                 Mercurial.LOG.log(Level.FINE, null, ex);
             }
@@ -345,8 +345,8 @@ private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {/
             size = messages.length;
             int i = 0 ;
             while(i < size){
-                StringBuilder sb = new StringBuilder().append(messages[i].getRevision()).append(" (").append(messages[i].getCSetShortID()); //NOI18N
-                if (parentRevision != null && parentRevision.equals(messages[i].getRevision())) {
+                StringBuilder sb = new StringBuilder().append(messages[i].getRevisionNumber()).append(" (").append(messages[i].getCSetShortID()); //NOI18N
+                if (parentRevision != null && parentRevision.getRevisionNumber().equals(messages[i].getRevisionNumber())) {
                     sb.append(" - ").append(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_ChangesetPickerPanel.currentHead")); //NOI18N
                 }
                 sb.append(")"); //NOI18N

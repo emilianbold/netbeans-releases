@@ -87,17 +87,17 @@ final class PhpDocPanel extends JPanel {
 
         initComponents();
 
-        dirTextField.setText(PhpDocPreferences.getPhpDocDir(phpModule, false));
+        targetTextField.setText(PhpDocPreferences.getPhpDocTarget(phpModule, false));
         titleTextField.setText(PhpDocPreferences.getPhpDocTitle(phpModule));
 
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
-        dirTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        targetTextField.getDocument().addDocumentListener(defaultDocumentListener);
         titleTextField.getDocument().addDocumentListener(defaultDocumentListener);
         validateData();
     }
 
-    private String getPhpDocDir() {
-        return dirTextField.getText().trim();
+    private String getPhpDocTarget() {
+        return targetTextField.getText().trim();
     }
 
     private String getPhpDocTitle() {
@@ -106,9 +106,9 @@ final class PhpDocPanel extends JPanel {
 
     void validateData() {
         // errors
-        String phpDocDir = getPhpDocDir();
-        if (StringUtils.hasText(phpDocDir)) {
-            String error = FileUtils.validateDirectory(getPhpDocDir());
+        String phpDocTarget = getPhpDocTarget();
+        if (StringUtils.hasText(phpDocTarget)) {
+            String error = FileUtils.validateDirectory(getPhpDocTarget());
             if (error != null) {
                 category.setErrorMessage(error);
                 category.setValid(false);
@@ -123,7 +123,7 @@ final class PhpDocPanel extends JPanel {
 
         // warnings
         String warning = null;
-        if (!StringUtils.hasText(phpDocDir)) {
+        if (!StringUtils.hasText(phpDocTarget)) {
             warning = NbBundle.getMessage(PhpDocPanel.class, "MSG_NbWillAskForDir");
         }
 
@@ -132,9 +132,9 @@ final class PhpDocPanel extends JPanel {
     }
 
     void storeData() {
-        String phpDocDir = getPhpDocDir();
-        if (StringUtils.hasText(phpDocDir)) {
-            PhpDocPreferences.setPhpDocDir(phpModule, phpDocDir);
+        String phpDocTarget = getPhpDocTarget();
+        if (StringUtils.hasText(phpDocTarget)) {
+            PhpDocPreferences.setPhpDocTarget(phpModule, phpDocTarget);
         }
         PhpDocPreferences.setPhpDocTitle(phpModule, getPhpDocTitle());
     }
@@ -148,19 +148,19 @@ final class PhpDocPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        dirLabel = new JLabel();
-        dirTextField = new JTextField();
-        dirButton = new JButton();
+        targetLabel = new JLabel();
+        targetTextField = new JTextField();
+        targetButton = new JButton();
         titleLabel = new JLabel();
         titleTextField = new JTextField();
 
-        dirLabel.setLabelFor(dirTextField);
+        targetLabel.setLabelFor(targetTextField);
 
-        Mnemonics.setLocalizedText(dirLabel, NbBundle.getMessage(PhpDocPanel.class, "PhpDocPanel.dirLabel.text"));
-        Mnemonics.setLocalizedText(dirButton, NbBundle.getMessage(PhpDocPanel.class, "PhpDocPanel.dirButton.text"));
-        dirButton.addActionListener(new ActionListener() {
+        Mnemonics.setLocalizedText(targetLabel, NbBundle.getMessage(PhpDocPanel.class, "PhpDocPanel.targetLabel.text"));
+        Mnemonics.setLocalizedText(targetButton, NbBundle.getMessage(PhpDocPanel.class, "PhpDocPanel.targetButton.text"));
+        targetButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                dirButtonActionPerformed(evt);
+                targetButtonActionPerformed(evt);
             }
         });
 
@@ -173,23 +173,23 @@ final class PhpDocPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(dirLabel)
+                    .addComponent(targetLabel)
                     .addComponent(titleLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(dirTextField, GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)
+                        .addComponent(targetTextField, GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(dirButton))
-                    .addComponent(titleTextField, GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)))
+                        .addComponent(targetButton))
+                    .addComponent(titleTextField, GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(dirLabel)
-                    .addComponent(dirTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(dirButton))
+                    .addComponent(targetLabel)
+                    .addComponent(targetTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(targetButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(titleLabel)
@@ -198,24 +198,24 @@ final class PhpDocPanel extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void dirButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_dirButtonActionPerformed
-        File phpDocDir = new FileChooserBuilder(PhpDocumentorProvider.class.getName() + PhpDocumentorProvider.PHPDOC_LAST_FOLDER_SUFFIX + phpModule.getName())
+    private void targetButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_targetButtonActionPerformed
+        File phpDocTarget = new FileChooserBuilder(PhpDocumentorProvider.class.getName() + PhpDocumentorProvider.PHPDOC_LAST_FOLDER_SUFFIX + phpModule.getName())
                 .setTitle(NbBundle.getMessage(PhpDocPanel.class, "LBL_SelectDocFolder"))
                 .setDirectoriesOnly(true)
                 .setFileHiding(true)
                 .setDefaultWorkingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()))
                 .showOpenDialog();
-        if (phpDocDir != null) {
-            phpDocDir = FileUtil.normalizeFile(phpDocDir);
-            dirTextField.setText(phpDocDir.getAbsolutePath());
+        if (phpDocTarget != null) {
+            phpDocTarget = FileUtil.normalizeFile(phpDocTarget);
+            targetTextField.setText(phpDocTarget.getAbsolutePath());
         }
-    }//GEN-LAST:event_dirButtonActionPerformed
+    }//GEN-LAST:event_targetButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JButton dirButton;
-    private JLabel dirLabel;
-    private JTextField dirTextField;
+    private JButton targetButton;
+    private JLabel targetLabel;
+    private JTextField targetTextField;
     private JLabel titleLabel;
     private JTextField titleTextField;
     // End of variables declaration//GEN-END:variables

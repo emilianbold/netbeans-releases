@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,50 +34,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.wizard.tree;
+package org.netbeans.modules.php.api.phpmodule;
 
-import java.text.MessageFormat;
-import javax.swing.tree.DefaultMutableTreeNode;
-import org.netbeans.modules.cnd.discovery.api.ItemProperties;
-import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel;
-import org.openide.util.NbBundle;
+import java.awt.Image;
+import java.net.URL;
+import javax.swing.ImageIcon;
+import org.openide.util.Parameters;
 
 /**
- *
- * @author Alexander Simon
+ * Badge icon (8x8) which provides an {@link Image} as well as {@link URL}
+ * of the icon.
+ * @author Tomas Mysik
+ * @since 1.39
  */
-public class ProjectConfigurationNode extends DefaultMutableTreeNode {
-    private ProjectConfigurationImpl project;
-    private int count;
-    
-    public ProjectConfigurationNode(ProjectConfigurationImpl project) {
-        super(project);
-        this.project = project;
-        count = project.getFiles().size();
-        add(new FolderConfigurationNode((FolderConfigurationImpl) project.getRoot()));
-    }
-    
-    @Override
-    public String toString() {
-        if (getProject().getLanguageKind() == ItemProperties.LanguageKind.C){
-            return getString("ConfigurationLanguageC",""+count);  // NOI18N
-        } else if (getProject().getLanguageKind() == ItemProperties.LanguageKind.CPP){
-            return getString("ConfigurationLanguageCPP",""+count);  // NOI18N
-        } else if (getProject().getLanguageKind() == ItemProperties.LanguageKind.Fortran){
-            return getString("ConfigurationLanguageFortran",""+count);  // NOI18N
+public final class BadgeIcon {
+    private final Image image;
+    private final URL url;
+
+    /**
+     * Creates a new badge icon. Image has to have 8x8 dimensions.
+     * @param image image of icon
+     * @param url URL of icon
+     * @thows IllegalArgumentException if the width or height is not 8 pixels (under assertions only)
+     */
+    public BadgeIcon(Image image, URL url) {
+        Parameters.notNull("image", image); // NOI18N
+        Parameters.notNull("url", url); // NOI18N
+
+        boolean assertions = false;
+        assert assertions = true;
+        if (assertions) {
+            ImageIcon imageIcon = new ImageIcon(image);
+            if (imageIcon.getIconWidth() != 8) {
+                throw new IllegalArgumentException("The width of an image must be 8 px");
+            }
+            if (imageIcon.getIconHeight() != 8) {
+                throw new IllegalArgumentException("The height of an image must be 8 px");
+            }
         }
-         return getString("ConfigurationLanguageUnknown",""+count);  // NOI18N
-    }
-    
-    public ProjectConfigurationImpl getProject() {
-        return project;
+
+        this.image = image;
+        this.url = url;
     }
 
-    private String getString(String key, String files) {
-        String message = NbBundle.getBundle(SelectConfigurationPanel.class).getString(key);
-        return MessageFormat.format(message, new Object[]{files});
-        
+    /**
+     * Returns the image of the badge icon.
+     * @return the image of the badge icon
+     */
+    public Image getImage() {
+        return image;
+    }
+
+    /**
+     * Returns the URL of the badge icon.
+     * @return the URL of the badge icon
+     */
+    public URL getUrl() {
+        return url;
     }
 }

@@ -369,7 +369,7 @@ public class LogReader {
     }
 
     /*package-local*/ enum CompilerType {
-        CPP, C, UNKNOWN;
+        CPP, C, FORTRAN, UNKNOWN;
     };
 
     /*package-local*/ static class LineInfo {
@@ -393,6 +393,19 @@ public class LogReader {
     private static final String INVOKE_GNU_Cpp4 = "c++.exe "; //NOI18N
     private static final String INVOKE_SUN_Cpp  = "CC "; //NOI18N
     private static final String INVOKE_MSVC_Cpp = "cl "; //NOI18N
+
+// Gnu: gfortran,g95,g90,g77
+    private static final String INVOKE_GNU_Fortran1 = "gfortran "; //NOI18N
+    private static final String INVOKE_GNU_Fortran2 = "gfortran.exe "; //NOI18N
+    private static final String INVOKE_GNU_Fortran3 = "g95.exe "; //NOI18N
+    private static final String INVOKE_GNU_Fortran4 = "g90.exe "; //NOI18N
+    private static final String INVOKE_GNU_Fortran5 = "g77.exe "; //NOI18N
+// common for gnu and sun
+    private static final String INVOKE_GNU_Fortran6 = "g95 "; //NOI18N
+    private static final String INVOKE_GNU_Fortran7 = "g90 "; //NOI18N
+    private static final String INVOKE_GNU_Fortran8 = "g77 "; //NOI18N
+// Sun: ffortran,f95,f90,f77
+    private static final String INVOKE_SUN_Fortran = "ffortran "; //NOI18N
     private static final String MAKE_DELIMITER  = ";"; //NOI18N
 
     private static int[] foundCompiler(String line, String ... patterns){
@@ -444,6 +457,24 @@ public class LogReader {
                 end = res[1];
                 li.compilerType = CompilerType.CPP;
                 li.compiler = "CC"; // NOI18N
+            }
+        }
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            int[] res = foundCompiler(line, INVOKE_GNU_Fortran1,INVOKE_GNU_Fortran2,INVOKE_GNU_Fortran3,INVOKE_GNU_Fortran4,INVOKE_GNU_Fortran5);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
+                li.compilerType = CompilerType.FORTRAN;
+                li.compiler = "gfortran"; // NOI18N
+            }
+        }
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            int[] res = foundCompiler(line, INVOKE_SUN_Fortran,INVOKE_GNU_Fortran6,INVOKE_GNU_Fortran7,INVOKE_GNU_Fortran8);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
+                li.compilerType = CompilerType.FORTRAN;
+                li.compiler = "ffortran"; // NOI18N
             }
         }
         if (li.compilerType == CompilerType.UNKNOWN) {
@@ -507,7 +538,15 @@ public class LogReader {
 
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP, li.compiler); // NOI18N
+           ItemProperties.LanguageKind lang = ItemProperties.LanguageKind.Unknown;
+           if (li.compilerType == CompilerType.CPP) {
+               lang = ItemProperties.LanguageKind.CPP;
+           } else if (li.compilerType == CompilerType.C) {
+               lang = ItemProperties.LanguageKind.C;
+           } else if (li.compilerType == CompilerType.FORTRAN) {
+               lang = ItemProperties.LanguageKind.C;
+           }
+           gatherLine(li.compileLine, line.startsWith("+"), lang, li.compiler); // NOI18N
            return true;
        }
        return false;
@@ -598,7 +637,7 @@ public class LogReader {
         }
     }
 
-    private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP, String compiler) {
+    private boolean gatherLine(String line, boolean isScriptOutput, ItemProperties.LanguageKind lang, String compiler) {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
         String what = DiscoveryUtils.gatherCompilerLine(line, true/*isScriptOutput*/, userIncludes, userMacros,null);
@@ -631,14 +670,14 @@ public class LogReader {
         File f = new File(file);
         if (f.exists() && f.isFile()) {
             if (TRACE) {System.err.println("**** Gotcha: " + file);}
-            result.add(new CommandLineSource(isCPP, compiler, workingDir, what, userIncludesCached, userMacrosCached));
+            result.add(new CommandLineSource(lang, compiler, workingDir, what, userIncludesCached, userMacrosCached));
             return true;
         }
         if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
             f = new File(guessWorkingDir+"/"+what);  //NOI18N
             if (f.exists() && f.isFile()) {
                 if (TRACE) {System.err.println("**** Gotcha guess: " + file);}
-                result.add(new CommandLineSource(isCPP, compiler, guessWorkingDir, what, userIncludesCached, userMacrosCached));
+                result.add(new CommandLineSource(lang, compiler, guessWorkingDir, what, userIncludesCached, userMacrosCached));
                 return true;
             }
         }
@@ -651,7 +690,7 @@ public class LogReader {
                     if (TRACE) {System.err.println("** And there is no such file under root");}
                 } else {
                     if (areThereOnlyOne) {
-                        result.add(new CommandLineSource(isCPP, compiler, out[0], what, userIncludes, userMacros));
+                        result.add(new CommandLineSource(lang, compiler, out[0], what, userIncludes, userMacros));
                         if (TRACE) {System.err.println("** Gotcha: " + out[0] + File.separator + what);}
                         // kinda adventure but it works
                         setGuessWorkingDir(out[0]);
@@ -682,13 +721,9 @@ public class LogReader {
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
 
-        private CommandLineSource(boolean isCPP, String compiler, String compilePath, String sourcePath,
+        private CommandLineSource(ItemProperties.LanguageKind lang, String compiler, String compilePath, String sourcePath,
                 List<String> userIncludes, Map<String, String> userMacros) {
-            if (isCPP) {
-                language = ItemProperties.LanguageKind.CPP;
-            } else {
-                language = ItemProperties.LanguageKind.C;
-            }
+            language = lang;
             this.compiler = compiler;
             this.compilePath =compilePath;
             sourceName = sourcePath;

@@ -116,6 +116,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
 import org.openidex.search.FileObjectFilter;
 import org.openidex.search.SearchInfo;
@@ -168,6 +169,7 @@ public final class PhpProject implements Project {
     // @GuardedBy(ProjectManager.mutex())
     volatile Set<BasePathSupport.Item> ignoredFolders;
     final Object ignoredFoldersLock = new Object();
+    // changes in ignored files - special case because of PhpVisibilityQuery
     final ChangeSupport ignoredFoldersChangeSupport = new ChangeSupport(this);
 
     // frameworks
@@ -176,6 +178,11 @@ public final class PhpProject implements Project {
     List<PhpFrameworkProvider> frameworks;
     private final FileChangeListener sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
     private final LookupListener frameworksListener = new FrameworksListener();
+
+    // project's property changes
+    public static final String PROP_FRAMEWORKS = "frameworks"; // NOI18N
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
 
     public PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -212,6 +219,16 @@ public final class PhpProject implements Project {
 
         VisibilityQuery visibilityQuery = VisibilityQuery.getDefault();
         visibilityQuery.addChangeListener(WeakListeners.change(listener, visibilityQuery));
+    }
+
+    // add as a weak listener, only once
+    boolean addPropertyChangeListener(PropertyChangeListener listener) {
+        if (!propertyChangeListeners.add(listener)) {
+            // already added
+            return false;
+        }
+        propertyChangeSupport.addPropertyChangeListener(WeakListeners.propertyChange(listener, propertyChangeSupport));
+        return true;
     }
 
     public FileObjectFilter getFileObjectFilter() {
@@ -558,6 +575,7 @@ public final class PhpProject implements Project {
         synchronized (frameworksLock) {
             frameworks = null;
         }
+        propertyChangeSupport.firePropertyChange(PROP_FRAMEWORKS, null, null);
     }
 
     public String getName() {
