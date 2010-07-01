@@ -46,6 +46,7 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodTree;
@@ -88,6 +89,8 @@ public class ArraysTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ArraysTest("testDuplicateMethodWithArrReturn2"));
 //        suite.addTest(new ArraysTest("test120768"));
 //        suite.addTest(new ArraysTest("testRewriteType"));
+//        suite.addTest(new ArraysTest("test162485a"));
+//        suite.addTest(new ArraysTest("test162485b"));
         return suite;
     }
 
@@ -307,6 +310,80 @@ public class ArraysTest extends GeneratorTestMDRCompat {
                 VariableTree var = (VariableTree) clazz.getMembers().get(1);
                 NewArrayTree nat = (NewArrayTree) var.getInitializer();
                 workingCopy.rewrite(nat.getDimensions().get(0), make.Identifier("WHAT_A_F"));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test162485a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    Object test = new int[2];\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    Object test = {{1}};\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) clazz.getMembers().get(1);
+                NewArrayTree nat = (NewArrayTree) var.getInitializer();
+                NewArrayTree dim2 = make.NewArray(null, Collections.<ExpressionTree>emptyList(), Collections.singletonList(make.Literal(Integer.valueOf(1))));
+                NewArrayTree newTree = make.NewArray(null, Collections.<ExpressionTree>emptyList(), Collections.<ExpressionTree>singletonList(dim2));
+                workingCopy.rewrite(nat, newTree);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test162485b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    Object test = new int[] {};\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    Object test = {{1}};\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) clazz.getMembers().get(1);
+                NewArrayTree nat = (NewArrayTree) var.getInitializer();
+                NewArrayTree dim2 = make.NewArray(null, Collections.<ExpressionTree>emptyList(), Collections.singletonList(make.Literal(Integer.valueOf(1))));
+                NewArrayTree newTree = make.NewArray(null, Collections.<ExpressionTree>emptyList(), Collections.<ExpressionTree>singletonList(dim2));
+                workingCopy.rewrite(nat, newTree);
             }
 
         };
