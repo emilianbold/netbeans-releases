@@ -242,7 +242,8 @@ public class ConfigurationXMLReader extends XMLDocReader {
                     List<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
                     for (Folder f : firstLevelFolders) {
                         if (f.isDiskFolder()) {
-                            f.refreshDiskFolder(false);
+                            // need to set modified descriptor for store new/deleted items in the folder
+                            f.refreshDiskFolder(true);
                             f.attachListeners();
                         }
                     }

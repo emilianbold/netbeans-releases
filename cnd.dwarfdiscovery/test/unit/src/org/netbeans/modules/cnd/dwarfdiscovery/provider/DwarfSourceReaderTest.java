@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
@@ -774,12 +775,12 @@ public class DwarfSourceReaderTest extends NbTestCase {
                         public String getWorkingFolder() { return null; }
                     }){
                         @Override
-                        public Map<String, String> getSystemMacroDefinitions(boolean isCPP) {
+                        public Map<String, String> getSystemMacroDefinitions(ItemProperties.LanguageKind lang) {
                             return ignore;
                         }
 
                         @Override
-                        public List<String> getSystemIncludePaths(boolean isCPP) {
+                        public List<String> getSystemIncludePaths(ItemProperties.LanguageKind lang) {
                             return systemPath;
                         }
 
@@ -827,7 +828,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
                         }
 
                     };
-                    DwarfSource source = new DwarfSource(cu, false, settings, grepBase);
+                    DwarfSource source = new DwarfSource(cu, ItemProperties.LanguageKind.C, settings, grepBase);
                     source.process(cu);
                     return source;
                 }
