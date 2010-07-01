@@ -131,9 +131,9 @@ NodeActionsProviderFilter, TableModel, Constants {
         private PreferenceChangeListener prefListener;
 
         private ModelListener modelListener;
-        private Model modelEventSource;
+        private DebuggingTreeModel modelEventSource;
     
-        Children(JPDADebugger debugger, ModelListener modelListener, Model modelEventSource) {
+        Children(JPDADebugger debugger, ModelListener modelListener, DebuggingTreeModel modelEventSource) {
             this.debugger = debugger;
             this.modelListener = modelListener;
             this.modelEventSource = modelEventSource;
@@ -251,8 +251,8 @@ NodeActionsProviderFilter, TableModel, Constants {
                 return model.getChildren (((Monitor) o).variable, from, to);
             }
             if (o instanceof CallStackFrame) {
+                CallStackFrame frame = (CallStackFrame) o;
                 if (preferences.getBoolean(SHOW_MONITORS, false)) {
-                    CallStackFrame frame = (CallStackFrame) o;
                     List<MonitorInfo> monitors = frame.getOwnedMonitors();
                     int n = monitors.size();
                     if (n > 0) {
@@ -267,7 +267,7 @@ NodeActionsProviderFilter, TableModel, Constants {
                     }
                 } else {
                     synchronized (framesAskedForMonitors) {
-                        framesAskedForMonitors.add((CallStackFrame) o);
+                        framesAskedForMonitors.add(frame);
                     }
                 }
             }
@@ -344,10 +344,10 @@ NodeActionsProviderFilter, TableModel, Constants {
             return model.isLeaf (o);
         }
 
-        void setModelListener (ModelListener l, Model modelEventSource) {
+        /*void setModelListener (ModelListener l, DebuggingTreeModel modelEventSource) {
             modelListener = l;
             this.modelEventSource = modelEventSource;
-        }
+        }*/
 
         private void fireModelChange(ModelEvent me) {
             modelListener.modelChanged(me);
@@ -363,16 +363,22 @@ NodeActionsProviderFilter, TableModel, Constants {
                         threads = new ArrayList(threadsAskedForMonitors);
                     }
                     for (JPDAThread t : threads) {
-                        fireModelChange(new ModelEvent.NodeChanged(modelEventSource,
-                                        t, ModelEvent.NodeChanged.CHILDREN_MASK));
+                        modelEventSource.refreshCache(t);
                     }
                     List<CallStackFrame> frames;
                     synchronized (framesAskedForMonitors) {
                         frames = new ArrayList(framesAskedForMonitors);
                     }
                     for (CallStackFrame frame : frames) {
+                        modelEventSource.refreshCache(frame);
+                    }
+                    for (CallStackFrame frame : frames) {
                         fireModelChange(new ModelEvent.NodeChanged(modelEventSource,
                                         frame, ModelEvent.NodeChanged.CHILDREN_MASK));
+                    }
+                    for (JPDAThread t : threads) {
+                        fireModelChange(new ModelEvent.NodeChanged(modelEventSource,
+                                        t, ModelEvent.NodeChanged.CHILDREN_MASK));
                     }
                 }
             }
