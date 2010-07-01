@@ -80,6 +80,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class JUnitExecutionManager implements RerunHandler{
     public static final String JUNIT_CUSTOM_FILENAME = "junit-custom";      //NOI18N
+    public static final String JUNIT_CUSTOM_TARGET = "test-custom";      //NOI18N
 
     private File scriptFile = null;
     private String[] targets = null;
@@ -138,9 +139,17 @@ public class JUnitExecutionManager implements RerunHandler{
     }
 
     public void rerun() {
-        Project project = testSession.getProject();
-        ActionProvider actionProvider = project.getLookup().lookup(ActionProvider.class);
-        actionProvider.invokeAction(targets[0], lookup);
+        if (scriptFile.getName().equals(JUNIT_CUSTOM_FILENAME + ".xml")){   //NOI18N
+            try {
+                runAnt(FileUtil.toFileObject(scriptFile), targets, properties);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            Project project = testSession.getProject();
+            ActionProvider actionProvider = project.getLookup().lookup(ActionProvider.class);
+            actionProvider.invokeAction(targets[0], lookup);
+        }
     }
 
     public void rerun(Set<Testcase> tests) {
@@ -170,16 +179,14 @@ public class JUnitExecutionManager implements RerunHandler{
             }
             params.put("tests", testStr); //NOI18N                     
 
-            DataObject junitCustomFO = templateDO.createFromTemplate(targetDF, JUNIT_CUSTOM_FILENAME, params);
-
-            AntTargetExecutor.Env execenv = new AntTargetExecutor.Env();
-            Properties props = execenv.getProperties();
+            DataObject junitCustomDO = templateDO.createFromTemplate(targetDF, JUNIT_CUSTOM_FILENAME, params);
+            Properties props = new Properties();
             props.put("work.dir", testSession.getProject().getProjectDirectory().getPath());    //NOI18N
             ClassPath cp = ClassPath.getClassPath(someTestFO, ClassPath.EXECUTE);
             props.put("classpath", cp != null ? cp.toString(ClassPath.PathConversionMode.FAIL) : "");//NOI18N
             props.put("platform.java", JavaPlatform.getDefault().findTool("java").getPath());//NOI18N
-            execenv.setProperties(props);
-            AntTargetExecutor.createTargetExecutor(execenv).execute(AntScriptUtils.antProjectCookieFor(junitCustomFO.getPrimaryFile()), null);
+
+            runAnt(junitCustomDO.getPrimaryFile(), new String[]{JUNIT_CUSTOM_TARGET}, props);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IllegalArgumentException ex) {
@@ -187,11 +194,21 @@ public class JUnitExecutionManager implements RerunHandler{
         }
     }
 
+    private static void runAnt(FileObject antScript, String[] antTargets, Properties antProps) throws IOException{
+            AntTargetExecutor.Env execenv = new AntTargetExecutor.Env();
+            Properties props = execenv.getProperties();
+            props.putAll(antProps);
+            execenv.setProperties(props);
+            AntTargetExecutor.createTargetExecutor(execenv).execute(AntScriptUtils.antProjectCookieFor(antScript), antTargets);
+    }
+
     public boolean enabled(RerunType type) {
         if ((scriptFile == null) || (targets == null) || (targets.length == 0)){
             return false;
         }
-
+        if (scriptFile.getName().equals(JUNIT_CUSTOM_FILENAME + ".xml")){   //NOI18N
+            return true;
+        }
         Project project = testSession.getProject();
         ActionProvider actionProvider = project.getLookup().lookup(ActionProvider.class);
         if (actionProvider != null){
