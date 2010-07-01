@@ -797,8 +797,24 @@ public class CasualDiff {
     protected int diffBlock(JCBlock oldT, JCBlock newT, int[] blockBounds) {
         int localPointer = blockBounds[0];
         if (oldT.flags != newT.flags) {
-            // TODO: Missing implementation
-            // used for changing from/to static initializer
+            int sp = getOldPos(oldT);
+            copyTo(localPointer, localPointer = sp);
+            if ((oldT.flags & STATIC) == 0 && (newT.flags & STATIC) != 0) {
+                printer.print("static");
+                if (VeryPretty.getCodeStyle(workingCopy).spaceBeforeStaticInitLeftBrace()) {
+                    printer.print(" ");
+                }
+            } else if ((oldT.flags & STATIC) != 0 && (newT.flags & STATIC) == 0) {
+                tokenSequence.move(sp);
+                if (tokenSequence.moveNext() && tokenSequence.token().id() == JavaTokenId.STATIC) {
+                    localPointer = tokenSequence.offset() + tokenSequence.token().length();
+                    if (tokenSequence.moveNext() && tokenSequence.token().id() == JavaTokenId.WHITESPACE) {
+                        localPointer = tokenSequence.offset() + tokenSequence.token().length();
+                    }
+                }
+            }
+        } else {
+            copyTo(localPointer, localPointer = oldT.pos + 1);
         }
         // syntetic super() found, skip it
         if (oldT.stats.head != null && oldT.stats.head.pos == oldT.pos) {
@@ -812,12 +828,11 @@ public class CasualDiff {
                 filterHidden(newT.stats),
                 workingCopy
         );
-        copyTo(localPointer, oldT.pos + 1);
         int old = printer.indent();
         Name oldEnclosing = printer.enclClassName;
         printer.enclClassName = null;
         List<JCTree> oldstats = filterHidden(oldT.stats);
-        localPointer = diffList(oldstats, filterHidden(newT.stats), oldT.pos + 1, est, Measure.MEMBER, printer);
+        localPointer = diffList(oldstats, filterHidden(newT.stats), localPointer, est, Measure.MEMBER, printer);
         printer.enclClassName = oldEnclosing;
         if (localPointer < endPos(oldT)) {
 /*
@@ -1181,10 +1196,26 @@ public class CasualDiff {
 
     protected int diffReturn(JCReturn oldT, JCReturn newT, int[] bounds) {
         int localPointer = bounds[0];
-        if (oldT.expr != null && newT.expr != null) {
-            int[] exprBounds = getBounds(oldT.expr);
-            copyTo(bounds[0], exprBounds[0]);
-            localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
+        if (oldT.expr != newT.expr) {
+            if (oldT.expr == null) {
+                tokenSequence.move(endPos(oldT));
+                tokenSequence.movePrevious();
+                copyTo(localPointer, localPointer = tokenSequence.offset());
+                if (tokenSequence.token().id() == JavaTokenId.SEMICOLON) {
+                    tokenSequence.movePrevious();
+                }
+                if (tokenSequence.token().id() != JavaTokenId.WHITESPACE) {
+                    printer.print(" ");
+                }
+                printer.print(newT.expr);
+            } else if (newT.expr == null) {
+                copyTo(localPointer, localPointer = getOldPos(oldT) + "return".length());
+                localPointer = endPos(oldT.expr);
+            } else {
+                int[] exprBounds = getBounds(oldT.expr);
+                copyTo(bounds[0], exprBounds[0]);
+                localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
+            }
         }
         copyTo(localPointer, bounds[1]);
 
