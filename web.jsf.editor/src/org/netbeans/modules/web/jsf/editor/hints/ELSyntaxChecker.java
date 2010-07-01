@@ -47,6 +47,7 @@ import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.editor.el.JsfElParser;
@@ -75,10 +76,11 @@ final class ELSyntaxChecker extends HintsProvider {
             if (each.isValid()) {
                 continue;
             }
+            OffsetRange offset = new OffsetRange(each.getNode().startOffset(), each.getNode().endOffset());
             Hint hint = new Hint(HintsProvider.DEFAULT_ERROR_RULE,
                     each.getError().getLocalizedMessage(),
                     parserResult.getFileObject(),
-                    each.getOffset(),
+                    offset,
                     Collections.<HintFix>emptyList(),
                     HintsProvider.DEFAULT_ERROR_HINT_PRIORITY);
             result.add(hint);

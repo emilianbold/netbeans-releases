@@ -142,12 +142,11 @@ public final class JsfElParser {
                 String expression = topLevel.token().text().toString();
                 int startOffset = topLevel.offset();
                 int endOffset = startOffset + expression.length();
-                OffsetRange range = new OffsetRange(startOffset, endOffset);
                 try {
                     Node node = parse(expression);
-                    result.add(ELElement.valid(node, range, expression));
+                    result.add(ELElement.valid(node, expression));
                 } catch (ELException ex) {
-                    result.add(ELElement.error(ex, range, expression));
+                    result.add(ELElement.error(ex, expression));
                 }
             }
         }
@@ -190,9 +189,9 @@ public final class JsfElParser {
                 OffsetRange range = new OffsetRange(startOffset, endOffset);
                 try {
                     Node result = parse(expression);
-                    return ELElement.valid(result, range, expression);
+                    return ELElement.valid(result, expression);
                 } catch (ELException ex) {
-                    return ELElement.error(ex, range, expression);
+                    return ELElement.error(ex, expression);
                 }
             } else {
                 //not el, scan next embedded token sequence
