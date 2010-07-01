@@ -94,6 +94,10 @@ class EclipseLinkProvider extends Provider {
         return Persistence.VERSION_2_0.equals(getVersion()) ? "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor" : super.getAnnotationProcessor();
     }
 
+    public String getAnnotationSubPackageProperty() {
+        return "eclipselink.canonicalmodel.subpackage";//NOI18N
+    }
+    
     @Override
     public String getTableGenerationPropertyName() {
         return "eclipselink.ddl-generation";
