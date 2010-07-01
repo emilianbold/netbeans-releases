@@ -46,28 +46,28 @@ import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 
 public final class PhpDocPreferences {
-    private static final String PHPDOC_DIR = "phpdoc.dir"; // NOI18N
-    private static final String PHPDOC_TITLE = "phpdoc.title"; // NOI18N
+    private static final String PHPDOC_TARGET = "target"; // NOI18N
+    private static final String PHPDOC_TITLE = "title"; // NOI18N
 
     private PhpDocPreferences() {
     }
 
-    public static String getPhpDocDir(PhpModule phpModule, boolean showPanel) {
+    public static String getPhpDocTarget(PhpModule phpModule, boolean showPanel) {
         Preferences preferences = getPreferences(phpModule);
-        String phpDocDir = preferences.get(PHPDOC_DIR, null);
-        if (phpDocDir == null && showPanel) {
-            phpDocDir = BrowseFolderPanel.open(phpModule);
-            if (phpDocDir == null) {
+        String phpDocTarget = preferences.get(PHPDOC_TARGET, null);
+        if (phpDocTarget == null && showPanel) {
+            phpDocTarget = BrowseFolderPanel.open(phpModule);
+            if (phpDocTarget == null) {
                 // cancelled
                 return null;
             }
-            setPhpDocDir(phpModule, phpDocDir);
+            setPhpDocTarget(phpModule, phpDocTarget);
         }
-        return phpDocDir;
+        return phpDocTarget;
     }
 
-    public static void setPhpDocDir(PhpModule phpModule, String phpDocDir) {
-        getPreferences(phpModule).put(PHPDOC_DIR, phpDocDir);
+    public static void setPhpDocTarget(PhpModule phpModule, String phpDocTarget) {
+        getPreferences(phpModule).put(PHPDOC_TARGET, phpDocTarget);
     }
 
     public static String getPhpDocTitle(PhpModule phpModule) {

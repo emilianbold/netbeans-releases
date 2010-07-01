@@ -83,7 +83,7 @@ public final class BrowseFolderPanel extends JPanel {
 
         initComponents();
 
-        docFolderTextField.getDocument().addDocumentListener(new DocumentListener() {
+        targetFolderTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 processUpdate();
@@ -97,7 +97,7 @@ public final class BrowseFolderPanel extends JPanel {
                 processUpdate();
             }
             private void processUpdate() {
-                validateDocFolder();
+                validateFolder();
             }
         });
     }
@@ -122,10 +122,10 @@ public final class BrowseFolderPanel extends JPanel {
     }
 
     private String getDocFolder() {
-        return docFolderTextField.getText().trim();
+        return targetFolderTextField.getText().trim();
     }
 
-    void validateDocFolder() {
+    void validateFolder() {
         assert notificationLineSupport != null;
 
         String docFolder = getDocFolder();
@@ -148,17 +148,17 @@ public final class BrowseFolderPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        docFolderLabel = new JLabel();
-        docFolderTextField = new JTextField();
-        browseDocFolderButton = new JButton();
+        targetFolderLabel = new JLabel();
+        targetFolderTextField = new JTextField();
+        browseTargetFolderButton = new JButton();
 
-        docFolderLabel.setLabelFor(docFolderTextField);
+        targetFolderLabel.setLabelFor(targetFolderTextField);
 
-        Mnemonics.setLocalizedText(docFolderLabel, NbBundle.getMessage(BrowseFolderPanel.class, "BrowseFolderPanel.docFolderLabel.text"));
-        Mnemonics.setLocalizedText(browseDocFolderButton, NbBundle.getMessage(BrowseFolderPanel.class, "BrowseFolderPanel.browseDocFolderButton.text"));
-        browseDocFolderButton.addActionListener(new ActionListener() {
+        Mnemonics.setLocalizedText(targetFolderLabel, NbBundle.getMessage(BrowseFolderPanel.class, "BrowseFolderPanel.targetFolderLabel.text"));
+        Mnemonics.setLocalizedText(browseTargetFolderButton, NbBundle.getMessage(BrowseFolderPanel.class, "BrowseFolderPanel.browseTargetFolderButton.text"));
+        browseTargetFolderButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                browseDocFolderButtonActionPerformed(evt);
+                browseTargetFolderButtonActionPerformed(evt);
             }
         });
 
@@ -168,11 +168,11 @@ public final class BrowseFolderPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(docFolderLabel)
+                .addComponent(targetFolderLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(docFolderTextField, GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                .addComponent(targetFolderTextField, GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(browseDocFolderButton)
+                .addComponent(browseTargetFolderButton)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -180,30 +180,30 @@ public final class BrowseFolderPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(docFolderLabel)
-                    .addComponent(docFolderTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(browseDocFolderButton)))
+                    .addComponent(targetFolderLabel)
+                    .addComponent(targetFolderTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(browseTargetFolderButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void browseDocFolderButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseDocFolderButtonActionPerformed
-        File phpDocDir = new FileChooserBuilder(PhpDocumentorProvider.class.getName() + PhpDocumentorProvider.PHPDOC_LAST_FOLDER_SUFFIX + phpModule.getName())
+    private void browseTargetFolderButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseTargetFolderButtonActionPerformed
+        File phpDocTarget = new FileChooserBuilder(PhpDocumentorProvider.class.getName() + PhpDocumentorProvider.PHPDOC_LAST_FOLDER_SUFFIX + phpModule.getName())
                 .setTitle(info)
                 .setDirectoriesOnly(true)
                 .setFileHiding(true)
                 .setDefaultWorkingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()))
                 .showOpenDialog();
-        if (phpDocDir != null) {
-            phpDocDir = FileUtil.normalizeFile(phpDocDir);
-            docFolderTextField.setText(phpDocDir.getAbsolutePath());
+        if (phpDocTarget != null) {
+            phpDocTarget = FileUtil.normalizeFile(phpDocTarget);
+            targetFolderTextField.setText(phpDocTarget.getAbsolutePath());
         }
-    }//GEN-LAST:event_browseDocFolderButtonActionPerformed
+    }//GEN-LAST:event_browseTargetFolderButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JButton browseDocFolderButton;
-    private JLabel docFolderLabel;
-    private JTextField docFolderTextField;
+    private JButton browseTargetFolderButton;
+    private JLabel targetFolderLabel;
+    private JTextField targetFolderTextField;
     // End of variables declaration//GEN-END:variables
 
 }

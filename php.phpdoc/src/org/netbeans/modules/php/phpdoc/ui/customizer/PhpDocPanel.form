@@ -18,17 +18,17 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="dirLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="targetLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="titleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="dirTextField" pref="224" max="32767" attributes="0"/>
+                      <Component id="targetTextField" pref="173" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="dirButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="targetButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="titleTextField" pref="332" max="32767" attributes="0"/>
+                  <Component id="titleTextField" pref="281" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -37,9 +37,9 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="dirLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="dirTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="dirButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="targetLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="targetTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="targetButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -52,26 +52,26 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="dirLabel">
+    <Component class="javax.swing.JLabel" name="targetLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="dirTextField"/>
+          <ComponentRef name="targetTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/phpdoc/ui/customizer/Bundle.properties" key="PhpDocPanel.dirLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/phpdoc/ui/customizer/Bundle.properties" key="PhpDocPanel.targetLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="dirTextField">
+    <Component class="javax.swing.JTextField" name="targetTextField">
     </Component>
-    <Component class="javax.swing.JButton" name="dirButton">
+    <Component class="javax.swing.JButton" name="targetButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/phpdoc/ui/customizer/Bundle.properties" key="PhpDocPanel.dirButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/phpdoc/ui/customizer/Bundle.properties" key="PhpDocPanel.targetButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="dirButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="targetButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="titleLabel">
