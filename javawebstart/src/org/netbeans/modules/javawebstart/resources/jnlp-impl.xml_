@@ -270,6 +270,15 @@ made subject to such option by the copyright holder.
         <condition property="user.codebase">
             <equals arg1="${jnlp.codebase.type}" arg2="user" trim="true"/>
         </condition>
+        <condition property="no.codebase">
+            <equals arg1="${jnlp.codebase.type}" arg2="no.codebase" trim="true"/>
+        </condition>
+        <condition property="local.codebase+no.codebase">
+            <or>
+                <istrue value="${local.codebase}"/>
+                <istrue value="${no.codebase}"/>
+            </or>
+        </condition>
     </target>
     
     <target name="-init-non-user-codebase" if="non.user.codebase">
@@ -387,8 +396,8 @@ made subject to such option by the copyright holder.
         </exec>
     </target>
     
-    <target name="-verify-codebase" depends="-codebase-props-check" unless="local.codebase">
-        <fail message="Project cannot be run with non-local codebase. Open project properties dialog and set Web Start Codebase to Local Execution."/>
+    <target name="-verify-codebase" depends="-codebase-props-check" unless="local.codebase+no.codebase">
+        <fail message="Project cannot be run with non-local codebase. Open project properties dialog and set Web Start Codebase to Local Execution or No Codebase Execution."/>
     </target>
     
     <target name="-verify-jnlp-enabled" depends="-test-jnlp-enabled" unless="is.jnlp.enabled">
