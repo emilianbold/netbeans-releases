@@ -1311,18 +1311,23 @@ public class CasualDiff {
         }
         localPointer = diffParameterList(oldT.args, newT.args, null, localPointer, Measure.ARGUMENT);
         // let diffClassDef() method notified that anonymous class is printed.
-        if (oldT.def != null) {
-            if (newT.def != null) {
+        if (oldT.def != newT.def) {
+            if (oldT.def != null && newT.def != null) {
                 copyTo(localPointer, getOldPos(oldT.def));
                 anonClass = true;
                 localPointer = diffTree(oldT.def, newT.def, getBounds(oldT.def));
                 anonClass = false;
-            } else {
+            } else if (newT.def == null) {
                 if (endPos(oldT.args) > localPointer) {
                     copyTo(localPointer, endPos(oldT.args));
                 }
                 printer.print(")");
                 localPointer = endPos(oldT.def);
+            } else {
+                tokenSequence.move(endPos(oldT));
+                tokenSequence.movePrevious();
+                copyTo(localPointer, localPointer = tokenSequence.token().id() == JavaTokenId.SEMICOLON ? tokenSequence.offset() : endPos(oldT));
+                printer.printNewClassBody(newT);
             }
         }
         copyTo(localPointer, bounds[1]);

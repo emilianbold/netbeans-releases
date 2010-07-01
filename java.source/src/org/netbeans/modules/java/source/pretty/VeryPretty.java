@@ -1265,11 +1265,14 @@ public final class VeryPretty extends JCTree.Visitor {
                 ? out.col : out.leftMargin + cs.getContinuationIndentSize());
 	print(cs.spaceWithinMethodCallParens() && tree.args.nonEmpty() ? " )" : ")");
 	if (tree.def != null) {
-	    Name enclClassNamePrev = enclClassName;
-	    enclClassName = tree.def.name;
-	    printBlock(null, tree.def.defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace(), true);
-	    enclClassName = enclClassNamePrev;
 	}
+    }
+    
+    public void printNewClassBody(JCNewClass tree) {
+        Name enclClassNamePrev = enclClassName;
+        enclClassName = tree.def.name;
+        printBlock(null, tree.def.defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace(), true);
+        enclClassName = enclClassNamePrev;
     }
 
     @Override
