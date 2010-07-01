@@ -50,8 +50,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.Status;
-import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
@@ -127,7 +125,10 @@ public class TestMethodNode extends AbstractNode {
                                       timeKeys[status],testcase.getName(),
                                       new Float(testcase.getTimeMillis()/1000f)));
     }
-    
+
+    Testcase getTestCase(){
+        return testcase;
+    }
     /**
      */
     @Override
