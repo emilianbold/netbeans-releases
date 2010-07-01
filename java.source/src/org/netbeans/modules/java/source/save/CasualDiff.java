@@ -1324,9 +1324,7 @@ public class CasualDiff {
                 printer.print(")");
                 localPointer = endPos(oldT.def);
             } else {
-                tokenSequence.move(endPos(oldT));
-                tokenSequence.movePrevious();
-                copyTo(localPointer, localPointer = tokenSequence.token().id() == JavaTokenId.SEMICOLON ? tokenSequence.offset() : endPos(oldT));
+                copyTo(localPointer, localPointer = endPos(oldT));
                 printer.printNewClassBody(newT);
             }
         }
