@@ -49,6 +49,8 @@ import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.VMDisconnectedException;
 import java.awt.Color;
 import java.awt.datatransfer.Transferable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,6 +66,8 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.DeadlockDetector;
+import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
 import org.netbeans.api.debugger.jpda.Field;
 
 import org.netbeans.api.debugger.jpda.JPDAClassType;
@@ -127,6 +131,8 @@ NodeActionsProviderFilter, TableModel, Constants {
         private JPDADebugger debugger;
         private final Set<JPDAThread> threadsAskedForMonitors = new WeakSet<JPDAThread>();
         private final Set<CallStackFrame> framesAskedForMonitors = new WeakSet<CallStackFrame>();
+        private final DeadlockDetector deadlockDetector;
+        private boolean isDeadlock;
         private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
         private PreferenceChangeListener prefListener;
 
@@ -139,6 +145,8 @@ NodeActionsProviderFilter, TableModel, Constants {
             this.modelEventSource = modelEventSource;
             prefListener = new MonitorPreferenceChangeListener();
             preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
+            deadlockDetector = debugger.getThreadsCollector().getDeadlockDetector();
+            deadlockDetector.addPropertyChangeListener(new DeadlockListener());
         }
 
         public Object[] getChildren (
@@ -152,7 +160,7 @@ NodeActionsProviderFilter, TableModel, Constants {
                 synchronized (threadsAskedForMonitors) {
                     threadsAskedForMonitors.add(t);
                 }
-                if (preferences.getBoolean(SHOW_MONITORS, false)) {
+                if (preferences.getBoolean(SHOW_MONITORS, false) || isDeadlock) {
                     try {
                         ObjectVariable contended = t.getContendedMonitor ();
                         ObjectVariable[] owned;
@@ -252,7 +260,7 @@ NodeActionsProviderFilter, TableModel, Constants {
             }
             if (o instanceof CallStackFrame) {
                 CallStackFrame frame = (CallStackFrame) o;
-                if (preferences.getBoolean(SHOW_MONITORS, false)) {
+                if (preferences.getBoolean(SHOW_MONITORS, false) || isDeadlock) {
                     List<MonitorInfo> monitors = frame.getOwnedMonitors();
                     int n = monitors.size();
                     if (n > 0) {
@@ -333,7 +341,7 @@ NodeActionsProviderFilter, TableModel, Constants {
             if (o instanceof ObjectVariable)
                 return true;
             if (o instanceof CallStackFrame) {
-                if (preferences.getBoolean(SHOW_MONITORS, false)) {
+                if (preferences.getBoolean(SHOW_MONITORS, false) || isDeadlock) {
                     return false;
                 } else {
                     synchronized (framesAskedForMonitors) {
@@ -358,6 +366,7 @@ NodeActionsProviderFilter, TableModel, Constants {
             public void preferenceChange(PreferenceChangeEvent evt) {
                 String key = evt.getKey();
                 if (SHOW_MONITORS.equals(key)) {
+                    isDeadlock = false;
                     List<JPDAThread> threads;
                     synchronized (threadsAskedForMonitors) {
                         threads = new ArrayList(threadsAskedForMonitors);
@@ -381,6 +390,15 @@ NodeActionsProviderFilter, TableModel, Constants {
                                         t, ModelEvent.NodeChanged.CHILDREN_MASK));
                     }
                 }
+            }
+
+        }
+
+        private class DeadlockListener implements PropertyChangeListener {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                Set<Deadlock> deadlocks = deadlockDetector.getDeadlocks();
+                isDeadlock = deadlocks.size() > 0;
             }
 
         }
