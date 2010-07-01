@@ -240,10 +240,12 @@ public final class Setup extends AbstractDiffSetup {
         return view;
     }
 
+    @Override
     public StreamSource getFirstSource() {
         return firstSource;
     }
 
+    @Override
     public StreamSource getSecondSource() {
         return secondSource;
     }

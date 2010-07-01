@@ -62,10 +62,8 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
@@ -185,6 +183,7 @@ public class Mercurial {
         gotVersion = false;
         RequestProcessor rp = getRequestProcessor();
         Runnable init = new Runnable() {
+            @Override
             public void run() {
                 HgKenaiAccessor.getInstance().registerVCSNoficationListener();
                 synchronized(this) {

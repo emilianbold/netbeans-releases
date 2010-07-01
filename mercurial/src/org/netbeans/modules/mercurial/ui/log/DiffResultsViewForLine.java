@@ -132,6 +132,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
             this.revision = revision;
         }
 
+        @Override
         public void perform () {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
             final DiffStreamSource leftSource = new DiffStreamSource(header.getFile(), revision, revision.getRevisionNumber());
@@ -153,6 +154,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
             if (currentTask != this) return;
 
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (isCanceled()) {
@@ -287,18 +289,22 @@ final class DiffResultsViewForLine extends DiffResultsView {
             }
         }
 
+        @Override
         public String getName() {
             return file.getName();
         }
 
+        @Override
         public String getTitle() {
             return fileObject != null ? FileUtil.getFileDisplayName(fileObject) : file.getAbsolutePath();
         }
 
+        @Override
         public String getMIMEType() {
             return mimeType = fileObject != null && fileObject.isValid() ? Mercurial.getInstance().getMimeType(file) : null;
         }
 
+        @Override
         public Reader createReader() throws IOException {
             if (mimeType == null || !mimeType.startsWith("text/")) {
                 return null;
@@ -307,6 +313,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
             }
         }
 
+        @Override
         public Writer createWriter(Difference[] conflicts) throws IOException {
             return null;
         }

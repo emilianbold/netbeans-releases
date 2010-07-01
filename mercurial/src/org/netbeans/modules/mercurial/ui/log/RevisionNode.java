@@ -59,8 +59,6 @@ import java.awt.event.ActionEvent;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.text.DateFormat;
-import java.util.*;
-import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 
 /**
  * Visible in the Search History Diff view.
@@ -108,10 +106,12 @@ class RevisionNode extends AbstractNode {
         return event;
     }
 
+    @Override
     public String getShortDescription() {
         return path;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         if (context) return null;
         // TODO: reuse action code from SummaryView
@@ -144,6 +144,7 @@ class RevisionNode extends AbstractNode {
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public String toString() {
             try {
                 return getValue().toString();
@@ -153,6 +154,7 @@ class RevisionNode extends AbstractNode {
             }
         }
 
+        @Override
         public PropertyEditor getPropertyEditor() {
             try {
                 return new RevisionPropertyEditor((String) getValue());
@@ -169,6 +171,7 @@ class RevisionNode extends AbstractNode {
             super(COLUMN_NAME_USERNAME, String.class, COLUMN_NAME_USERNAME, COLUMN_NAME_USERNAME);
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
                 return container.getLog().getAuthor();
@@ -185,6 +188,7 @@ class RevisionNode extends AbstractNode {
             super(COLUMN_NAME_DATE, String.class, COLUMN_NAME_DATE, COLUMN_NAME_DATE);
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
                 return DateFormat.getDateTimeInstance().format(container.getLog().getDate());
@@ -201,6 +205,7 @@ class RevisionNode extends AbstractNode {
             super(COLUMN_NAME_MESSAGE, String.class, COLUMN_NAME_MESSAGE, COLUMN_NAME_MESSAGE);
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
                 return container.getLog().getMessage();
@@ -217,6 +222,7 @@ class RevisionNode extends AbstractNode {
                     event.getLogInfoHeader().getLog().getRevisionNumber()));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             SummaryView.revertModifications(event);
         }
@@ -224,6 +230,7 @@ class RevisionNode extends AbstractNode {
 
     private static class BackoutAction extends NodeAction {
 
+        @Override
         protected void performAction(Node[] activatedNodes) {
             RepositoryRevision.Event event = null;
             RepositoryRevision repoRev = null;
@@ -248,14 +255,17 @@ class RevisionNode extends AbstractNode {
             SummaryView.backout(event);
         }
 
+        @Override
         protected boolean enable(Node[] activatedNodes) {
             return true;
         }
 
+        @Override
         public String getName() {
             return NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange"); // NOI18N
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(BackoutAction.class);
         }
@@ -273,6 +283,7 @@ class RevisionNode extends AbstractNode {
             setValue(value);
         }
 
+        @Override
         public void paintValue(Graphics gfx, Rectangle box) {
             renderer.setForeground(gfx.getColor());
             renderer.setText((String) getValue());
@@ -280,6 +291,7 @@ class RevisionNode extends AbstractNode {
             renderer.paint(gfx);
         }
 
+        @Override
         public boolean isPaintable() {
             return true;
         }

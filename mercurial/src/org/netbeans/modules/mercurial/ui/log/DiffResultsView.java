@@ -100,11 +100,13 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         setBottomComponent(new NoContentPanel(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions"))); // NOI18N
     }
 
+    @Override
     public void ancestorAdded(AncestorEvent event) {
         ExplorerManager em = ExplorerManager.find(treeView);
         em.addPropertyChangeListener(this);
         if (!dividerSet) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     dividerSet = true;
                     diffView.setDividerLocation(0.33);
@@ -113,15 +115,18 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         }
     }
 
+    @Override
     public void ancestorMoved(AncestorEvent event) {
     }
 
+    @Override
     public void ancestorRemoved(AncestorEvent event) {
         ExplorerManager em = ExplorerManager.find(treeView);
         em.removePropertyChangeListener(this);
         cancelBackgroundTasks();
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             final Node [] nodes = (Node[]) evt.getNewValue();
@@ -139,6 +144,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
             // invoked asynchronously becase treeView.getSelection() may not be ready yet
             Runnable runnable = new Runnable() {
+                @Override
                 public void run() {
                     RepositoryRevision container1 = nodes[0].getLookup().lookup(RepositoryRevision.class);
                     RepositoryRevision.Event r1 = nodes[0].getLookup().lookup(RepositoryRevision.Event.class);
@@ -183,6 +189,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         }
     }
 
+    @Override
     public Collection getSetups() {
         Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
         if (nodes.length == 0) {
@@ -202,6 +209,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         return parent.getSetups(revisions.toArray(new RepositoryRevision[revisions.size()]), events.toArray(new RepositoryRevision.Event[events.size()]));
     }
 
+    @Override
     public String getSetupDisplayName() {
         return null;
     }
@@ -370,6 +378,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             this.showLastDifference = showLastDifference;
         }
 
+        @Override
         public void perform () {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
             if (revision1 == null) {
@@ -397,6 +406,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             if (currentTask != this) return;
 
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (isCanceled()) {
@@ -409,6 +419,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                             setBottomComponent(currentDiff.getJComponent());
                             if (!setLocation(view)) {
                                 view.addPropertyChangeListener(new PropertyChangeListener() {
+                                    @Override
                                     public void propertyChange(PropertyChangeEvent evt) {
                                         view.removePropertyChangeListener(this);
                                         setLocation(view);

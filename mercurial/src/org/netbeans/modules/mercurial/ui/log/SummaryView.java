@@ -125,6 +125,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         resultsList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction");
         resultsList.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(resultsList));
             }
@@ -151,20 +152,24 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
     }
 
+    @Override
     public void componentResized(ComponentEvent e) {
         int [] selection = resultsList.getSelectedIndices();
         resultsList.setModel(new SummaryListModel());
         resultsList.setSelectedIndices(selection);
     }
 
+    @Override
     public void componentHidden(ComponentEvent e) {
         // not interested
     }
 
+    @Override
     public void componentMoved(ComponentEvent e) {
         // not interested
     }
 
+    @Override
     public void componentShown(ComponentEvent e) {
         // not interested
     }
@@ -182,6 +187,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         return newResults;
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         int idx = resultsList.locationToIndex(e.getPoint());
         if (idx == -1) return;
@@ -203,29 +209,35 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
     }
     
+    @Override
     public void mouseEntered(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         if (!master.isIncomingSearch() && e.isPopupTrigger()) {
             onPopup(e);
         }
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         if (!master.isIncomingSearch() && e.isPopupTrigger()) {
             onPopup(e);
         }
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         int idx = resultsList.locationToIndex(e.getPoint());
         if (idx == -1) return;
@@ -253,6 +265,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         linkerSupport.mouseMoved(p, resultsList, idx);
     }
 
+    @Override
     public Collection getSetups() {
         Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
         if (nodes.length == 0) {
@@ -274,6 +287,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         return master.getSetups(revisions.toArray(new RepositoryRevision[revisions.size()]), events.toArray(new RepositoryRevision.Event[events.size()]));
     }
 
+    @Override
     public String getSetupDisplayName() {
         return null;
     }
@@ -346,6 +360,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 {
                     setEnabled(diffToPrevEnabled);
                 }
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     diffPrevious(selection[0]);
                 }
@@ -359,6 +374,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     setEnabled(backoutChangeEnabled);
                 }
 
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     backout(selection[0]);
                 }
@@ -368,6 +384,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 {                    
                     setEnabled(revertToEnabled);
                 }
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     revertModifications(selection);
                 }                
@@ -377,8 +394,10 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 {
                     setEnabled(viewEnabled);
                 }
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                        @Override
                         public void run() {
                             view(selection[0], false);
                         }
@@ -389,8 +408,10 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 {
                     setEnabled(annotationsEnabled);
                 }
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                        @Override
                         public void run() {
                             view(selection[0], true);
                         }
@@ -401,6 +422,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 {
                     setEnabled(viewEnabled);
                 }
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     exportFileDiff(selection[0]);
                 }
@@ -459,6 +481,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
+            @Override
             public void perform() {
                 revertImpl(revisions, events, this);
             }
@@ -561,10 +584,12 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
     private class SummaryListModel extends AbstractListModel {
 
+        @Override
         public int getSize() {
             return dispResults.size();
         }
 
+        @Override
         public Object getElementAt(int index) {
             return dispResults.get(index);
         }
@@ -666,6 +691,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                      Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));
             }
 
+            @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 renderContainer(list, (RepositoryRevision) value, index, isSelected);
                 return this;

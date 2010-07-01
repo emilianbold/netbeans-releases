@@ -70,11 +70,12 @@ public class DiffAction extends ContextAction {
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.isEmpty())
             return false;
         return true;
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Diff"; // NOI18N
     }

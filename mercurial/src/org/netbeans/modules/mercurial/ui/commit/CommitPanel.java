@@ -327,9 +327,11 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(HgModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             Runnable inAWT = new Runnable() {
+                @Override
                 public void run() {
                     commitTable.dataChanged();
                     listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
@@ -344,6 +346,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
+    @Override
     public void tableChanged(TableModelEvent e) {
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }

@@ -47,7 +47,6 @@ package org.netbeans.modules.mercurial;
 import java.io.*;
 import org.netbeans.modules.versioning.historystore.Storage;
 import org.netbeans.modules.versioning.historystore.StorageManager;
-import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.util.*;
 import org.netbeans.modules.versioning.util.Utils;

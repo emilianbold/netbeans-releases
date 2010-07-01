@@ -52,7 +52,6 @@ import org.netbeans.modules.versioning.util.Utils;
 
 import java.io.*;
 import java.util.*;
-import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 
 import org.openide.util.*;
@@ -103,6 +102,7 @@ public class DiffStreamSource extends StreamSource {
         this.start = true;
     }
 
+    @Override
     public String getName() {
         if (baseFile != null) {
             return baseFile.getName();
@@ -111,10 +111,12 @@ public class DiffStreamSource extends StreamSource {
         }
     }
 
+    @Override
     public String getTitle() {
         return title;
     }
 
+    @Override
     public synchronized String getMIMEType() {
         if (baseFile.isDirectory()) {
             // http://www.rfc-editor.org/rfc/rfc2425.txt
@@ -129,6 +131,7 @@ public class DiffStreamSource extends StreamSource {
         return mimeType;
     }
 
+    @Override
     public synchronized Reader createReader() throws IOException {
         if (baseFile.isDirectory()) {
             // XXX return directory listing?
@@ -145,6 +148,7 @@ public class DiffStreamSource extends StreamSource {
         }
     }
 
+    @Override
     public Writer createWriter(Difference[] conflicts) throws IOException {
         throw new IOException("Operation not supported"); // NOI18N
     }
@@ -227,10 +231,7 @@ public class DiffStreamSource extends StreamSource {
                 mimeType = Mercurial.getInstance().getMimeType(remoteFile);
             }
         } catch (Exception e) {
-            // TODO detect interrupted IO (exception subclass), i.e. user cancel
-            IOException failure = new IOException("Can not load remote file for " + baseFile); // NOI18N
-            failure.initCause(e);
-            throw failure;
+            throw new IOException("Can not load remote file for " + baseFile, e);
         }
         FileObject fo = FileUtil.toFileObject(baseFile);
         canWriteBaseFile = fo != null && fo.canWrite();
