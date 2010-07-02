@@ -60,14 +60,15 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.spi.project.ui.support.NodeFactory;
-import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
@@ -212,12 +213,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                     // XXX non-existing files are simply ignored
                     if (fileObject != null) {
                         try {
-                            list.add(new Nodes.FileNode(DataObject.find(fileObject), project) {
-                                @Override
-                                public String getDisplayName() {
-                                    return fileObject.getNameExt();
-                                }
-                            });
+                            list.add(new FileNode(DataObject.find(fileObject), project));
                         } catch (DataObjectNotFoundException ex) {
                             LOGGER.log(Level.WARNING, ex.getMessage(), ex);
                         }
@@ -225,6 +221,25 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 }
             }
             return list;
+        }
+    }
+
+    private static class FileNode extends FilterNode {
+
+        public FileNode(DataObject dataObject, PhpProject project) {
+            super(dataObject.getNodeDelegate(), getChildren(dataObject, project));
+        }
+
+        private static org.openide.nodes.Children getChildren(DataObject dobj, PhpProject project) {
+            if (dobj instanceof DataFolder) {
+                return new Nodes.DummyChildren(dobj.getNodeDelegate(), new PhpSourcesFilter(project)) {
+                    @Override
+                    protected Node copyNode(Node originalNode) {
+                        return originalNode.cloneNode();
+                    }
+                };
+            }
+            return Children.LEAF;
         }
     }
 }

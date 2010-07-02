@@ -149,7 +149,7 @@ public final class Nodes {
         }
     }
 
-    private static class DummyChildren extends FilterNode.Children {
+    public static class DummyChildren extends FilterNode.Children {
         private final DataFilter filter;
 
         DummyChildren(final Node originalNode, DataFilter filter) {
