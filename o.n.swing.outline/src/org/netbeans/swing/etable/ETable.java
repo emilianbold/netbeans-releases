@@ -1314,7 +1314,8 @@ public class ETable extends JTable {
         
         String s = MessageFormat.format(text, new Object[] { columnName, value});
         JMenuItem res = new JMenuItem(s);
-        res.addActionListener(new EqualsQuickFilter(column, value, equals));
+        int modelColumn = convertColumnIndexToModel(column);
+        res.addActionListener(new EqualsQuickFilter(modelColumn, value, equals));
         return res;
     }
     
@@ -1372,7 +1373,8 @@ public class ETable extends JTable {
         
         String s = MessageFormat.format(text, new Object[] { columnName, value});
         JMenuItem res = new JMenuItem(s);
-        res.addActionListener(new CompareQuickFilter(column, value, greater, equalsCounts));
+        int modelColumn = convertColumnIndexToModel(column);
+        res.addActionListener(new CompareQuickFilter(modelColumn, value, greater, equalsCounts));
         return res;
     }
     
