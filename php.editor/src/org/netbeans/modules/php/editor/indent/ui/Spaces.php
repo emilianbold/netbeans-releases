@@ -8,7 +8,7 @@ class Example {
         } elseif ($a == $b) {
             echo $a." is equal to ".$b[0];
         } else {
-            echo $this->property;
+            $result = getText($this->property1, $this->property2) ;
         }
 	$result = $a < $b ? $a : $b;
     }
