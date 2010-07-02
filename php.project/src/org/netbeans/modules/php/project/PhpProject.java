@@ -180,6 +180,7 @@ public final class PhpProject implements Project {
 
     // project's property changes
     public static final String PROP_FRAMEWORKS = "frameworks"; // NOI18N
+    public static final String PROP_CONFIG_FILES = "configFiles"; // NOI18N
     final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
 
@@ -221,13 +222,21 @@ public final class PhpProject implements Project {
     }
 
     // add as a weak listener, only once
-    boolean addPropertyChangeListener(PropertyChangeListener listener) {
+    boolean addWeakPropertyChangeListener(PropertyChangeListener listener) {
         if (!propertyChangeListeners.add(listener)) {
             // already added
             return false;
         }
-        propertyChangeSupport.addPropertyChangeListener(WeakListeners.propertyChange(listener, propertyChangeSupport));
+        addPropertyChangeListener(WeakListeners.propertyChange(listener, propertyChangeSupport));
         return true;
+    }
+
+    void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
     public FileObjectFilter getFileObjectFilter() {
@@ -570,11 +579,22 @@ public final class PhpProject implements Project {
         }
     }
 
+    public boolean hasConfigFiles() {
+        final PhpModule phpModule = getPhpModule();
+        for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
+            if (frameworkProvider.getConfigurationFiles(phpModule).length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void resetFrameworks() {
         synchronized (frameworksLock) {
             frameworks = null;
         }
         propertyChangeSupport.firePropertyChange(PROP_FRAMEWORKS, null, null);
+        propertyChangeSupport.firePropertyChange(PROP_CONFIG_FILES, null, null);
     }
 
     public String getName() {
