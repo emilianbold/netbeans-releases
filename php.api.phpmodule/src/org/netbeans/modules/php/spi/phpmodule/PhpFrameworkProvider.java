@@ -130,7 +130,7 @@ public abstract class PhpFrameworkProvider {
     public abstract boolean isInPhpModule(PhpModule phpModule);
 
     /**
-     * Returns the configuration files belonging to this framework.
+     * Returns the configuration files (no directories allowed!) belonging to this framework.
      * <p>
      * These files are displayed under <tt>Important Files</tt> node in <tt>Projects</tt> view.
      *
