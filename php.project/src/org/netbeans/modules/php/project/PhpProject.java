@@ -116,6 +116,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
 import org.openidex.search.FileObjectFilter;
 import org.openidex.search.SearchInfo;
@@ -168,6 +169,7 @@ public final class PhpProject implements Project {
     // @GuardedBy(ProjectManager.mutex())
     volatile Set<BasePathSupport.Item> ignoredFolders;
     final Object ignoredFoldersLock = new Object();
+    // changes in ignored files - special case because of PhpVisibilityQuery
     final ChangeSupport ignoredFoldersChangeSupport = new ChangeSupport(this);
 
     // frameworks
@@ -176,6 +178,11 @@ public final class PhpProject implements Project {
     List<PhpFrameworkProvider> frameworks;
     private final FileChangeListener sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
     private final LookupListener frameworksListener = new FrameworksListener();
+
+    // project's property changes
+    public static final String PROP_FRAMEWORKS = "frameworks"; // NOI18N
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
 
     public PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -212,6 +219,16 @@ public final class PhpProject implements Project {
 
         VisibilityQuery visibilityQuery = VisibilityQuery.getDefault();
         visibilityQuery.addChangeListener(WeakListeners.change(listener, visibilityQuery));
+    }
+
+    // add as a weak listener, only once
+    boolean addPropertyChangeListener(PropertyChangeListener listener) {
+        if (!propertyChangeListeners.add(listener)) {
+            // already added
+            return false;
+        }
+        propertyChangeSupport.addPropertyChangeListener(WeakListeners.propertyChange(listener, propertyChangeSupport));
+        return true;
     }
 
     public FileObjectFilter getFileObjectFilter() {
@@ -503,7 +520,7 @@ public final class PhpProject implements Project {
             }
             File file = new File(item.getFilePath());
             if (!file.isAbsolute()) {
-                file = PropertyUtils.resolveFile(projectDir, item.getFilePath());
+                file = helper.resolveFile(item.getFilePath());
             }
             ignored.add(file);
         }
@@ -558,6 +575,7 @@ public final class PhpProject implements Project {
         synchronized (frameworksLock) {
             frameworks = null;
         }
+        propertyChangeSupport.firePropertyChange(PROP_FRAMEWORKS, null, null);
     }
 
     public String getName() {
@@ -748,7 +766,6 @@ public final class PhpProject implements Project {
                 PhpCoverageProvider.notifyProjectOpened(PhpProject.this);
             }
 
-            getCopySupport().projectOpened();
 
             // #164073 - for the first time, let's do it not in AWT thread
             PhpUnit.validateVersion(CommandUtils.getPhpUnit(false));
@@ -760,30 +777,39 @@ public final class PhpProject implements Project {
                 frameworkProvider.phpModuleOpened(phpModule);
             }
 
+            // #187060 - exception in projectOpened => project IS NOT opened (so move it at the end of the hook)
+            getCopySupport().projectOpened();
+
             // log usage
             PhpProjectUtils.logUsage(PhpProject.class, "USG_PROJECT_OPEN_PHP", Arrays.asList(PhpProjectUtils.getFrameworksForUsage(frameworkProviders))); // NOI18N
         }
 
         @Override
         protected void projectClosed() {
-            assert sourcesDirectory != null;
-            sourcesDirectory.removeFileChangeListener(sourceDirectoryFileChangeListener);
-            LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", sourcesDirectory);
-            PhpFrameworks.removeFrameworksListener(frameworksListener);
+            try {
+                assert sourcesDirectory != null;
+                sourcesDirectory.removeFileChangeListener(sourceDirectoryFileChangeListener);
+                LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", sourcesDirectory);
+                PhpFrameworks.removeFrameworksListener(frameworksListener);
 
-            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
-            GlobalPathRegistry.getDefault().unregister(PhpSourcePath.BOOT_CP, cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP));
-            GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
+                ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
+                ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
+                GlobalPathRegistry.getDefault().unregister(PhpSourcePath.BOOT_CP, bootClassPaths);
+                GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
+                for (ClassPath classPath : bootClassPaths) {
+                    IncludePathClassPathProvider.removeProjectIncludePath(classPath);
+                }
 
-            getCopySupport().projectClosed();
-
-            // frameworks
-            PhpModule phpModule = getPhpModule();
-            assert phpModule != null;
-            for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
-                frameworkProvider.phpModuleClosed(phpModule);
+                // frameworks
+                PhpModule phpModule = getPhpModule();
+                assert phpModule != null;
+                for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
+                    frameworkProvider.phpModuleClosed(phpModule);
+                }
+            } finally {
+                // #187060 - exception in projectClosed => project IS closed (so do it in finally block)
+                getCopySupport().projectClosed();
             }
-
         }
     }
 

@@ -57,6 +57,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -291,8 +292,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             return typeArgs;
         
         Types typeUtils = javac.getTypes();
-        List<TypeMirror> result = new ArrayList<TypeMirror>(typeArgs.size());
-
+        Set<TypeMirror> used = Collections.newSetFromMap(new IdentityHashMap<TypeMirror, Boolean>());
         // do not check fields since static fields cannot use type parameter of the enclosing class
         
         // check methods
@@ -300,11 +300,11 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             ElementHandle<ExecutableElement> handle = methodIter.next();
             ExecutableElement elm = handle.resolve(javac);
             
-            RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, elm.getReturnType());
+            RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, elm.getReturnType());
             
             for (Iterator<? extends VariableElement> paramIter = elm.getParameters().iterator(); paramIter.hasNext() && !typeArgs.isEmpty();) {
                 VariableElement param = paramIter.next();
-                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, param.asType());
+                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, param.asType());
             }
         }
         
@@ -312,10 +312,10 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         for (Iterator<TypeMirrorHandle<TypeMirror>> it = refactoring.getImplements().iterator(); it.hasNext() && !typeArgs.isEmpty();) {
             TypeMirrorHandle<TypeMirror> handle = it.next();
             TypeMirror implemetz = handle.resolve(javac);
-            RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, implemetz);
+            RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, implemetz);
         }
 
-        return result;
+        return RetoucheUtils.filterTypes(typeArgs, used);
     }
 
     // --- REFACTORING ELEMENTS ------------------------------------------------

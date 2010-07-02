@@ -113,7 +113,7 @@ public abstract class GlassfishConfiguration implements
 
 
     protected GlassfishConfiguration(J2eeModule module) throws ConfigurationException {
-        this(module, J2eeModuleHelper.getJ2eeModuleHelper(module.getType()));
+        this(module, J2eeModuleHelper.getSunDDModuleHelper(module.getType()));
     }
 
     protected GlassfishConfiguration(J2eeModule module, J2eeModuleHelper moduleHelper) throws ConfigurationException {
@@ -300,7 +300,8 @@ public abstract class GlassfishConfiguration implements
         "J2EE",
         "JavaEEPlusSIP",
         "gfv3",
-        "gfv3ee6"
+        "gfv3ee6",
+        "gfv3ee6wc"
     };
 
     protected ASDDVersion getTargetAppServerVersion() {
@@ -386,7 +387,7 @@ public abstract class GlassfishConfiguration implements
 
     public org.netbeans.modules.j2ee.dd.api.common.RootInterface getStandardRootDD() {
         org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = null;
-        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getType());
+        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getSunDDModuleHelper(module.getType());
         if(j2eeModuleHelper != null) {
             stdRootDD = j2eeModuleHelper.getStandardRootDD(module);
         }
@@ -395,7 +396,7 @@ public abstract class GlassfishConfiguration implements
 
     public org.netbeans.modules.j2ee.dd.api.webservices.Webservices getWebServicesRootDD() {
         org.netbeans.modules.j2ee.dd.api.webservices.Webservices wsRootDD = null;
-        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getType());
+        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getSunDDModuleHelper(module.getType());
         if(j2eeModuleHelper != null) {
             wsRootDD = j2eeModuleHelper.getWebServicesRootDD(module);
         }

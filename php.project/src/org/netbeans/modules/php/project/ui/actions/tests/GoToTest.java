@@ -42,24 +42,29 @@
 
 package org.netbeans.modules.php.project.ui.actions.tests;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.gototest.TestLocator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Support for PHP Unit.
@@ -68,6 +73,7 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.gototest.TestLocator.class)
 public class GoToTest implements TestLocator {
     private static final Logger LOGGER = Logger.getLogger(GoToTest.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(GoToTest.class.getName(), 2);
 
     public GoToTest() {
     }
@@ -79,17 +85,26 @@ public class GoToTest implements TestLocator {
 
     @Override
     public boolean asynchronous() {
-        return false;
+        return true;
     }
 
     @Override
-    public void findOpposite(FileObject fo, int caretOffset, LocationListener callback) {
-        throw new UnsupportedOperationException("GotoTest is synchronous");
+    public void findOpposite(final FileObject fo, final int caretOffset, final LocationListener callback) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                callback.foundLocation(fo, findOpposite0(fo));
+            }
+        });
     }
 
     @Override
     public LocationResult findOpposite(FileObject fo, int caretOffset) {
-        PhpProject project = findPhpProject(fo);
+        throw new UnsupportedOperationException("Go To Test is asynchronous");
+    }
+
+    private LocationResult findOpposite0(FileObject fo) {
+        PhpProject project = PhpProjectUtils.getPhpProject(fo);
         if (project == null) {
             // XXX what to do now??
             LOGGER.log(Level.INFO, "PHP project was not found for file {0}", fo);
@@ -106,15 +121,14 @@ public class GoToTest implements TestLocator {
 
     @Override
     public FileType getFileType(FileObject fo) {
-        PhpProject project = findPhpProject(fo);
+        PhpProject project = PhpProjectUtils.getPhpProject(fo);
         if (project == null) {
             LOGGER.log(Level.INFO, "PHP project was not found for file {0}", fo);
             return FileType.NEITHER;
         }
 
         if (CommandUtils.isUnderTests(project, fo, false)) {
-            String name = fo.getNameExt();
-            if (!name.equals(PhpUnit.TEST_FILE_SUFFIX) && name.endsWith(PhpUnit.TEST_FILE_SUFFIX)) {
+            if (PhpUnit.isTestOrSuiteFile(fo.getNameExt())) {
                 return FileType.TEST;
             }
         } else if (CommandUtils.isUnderSources(project, fo)) {
@@ -124,66 +138,85 @@ public class GoToTest implements TestLocator {
     }
 
     private LocationResult findSource(PhpProject project, FileObject testFo) {
-        FileObject sources = getSources(project);
-        assert sources != null : "Project sources must be found";
-        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
-        assert editorSupport != null : "Editor support must exist";
-        Collection<PhpClass> classes = editorSupport.getClasses(testFo);
-        for (PhpClass phpClass : classes) {
-            String clsFQName = phpClass.getFullyQualifiedName();
-            if (clsFQName.endsWith(PhpUnit.TEST_CLASS_SUFFIX)) {
-                int lastIndexOf = phpClass.getName().lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
-                assert lastIndexOf != -1;
-                String srcClassName = phpClass.getName().substring(0, lastIndexOf);
-                lastIndexOf = clsFQName.lastIndexOf(PhpUnit.TEST_CLASS_SUFFIX);
-                String srcClassFQName = clsFQName.substring(0, lastIndexOf);
-                Collection<FileObject> files = editorSupport.filesForClass(sources, new PhpClass(srcClassName, srcClassFQName, -1));
-                for (FileObject fileObject : files) {
-                    if (FileUtils.isPhpFile(fileObject)
-                            && FileUtil.isParentOf(sources, fileObject)) {
-                        return new LocationResult(fileObject, -1);
-                    }
-                }
-            }
-        }
-        return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_SrcNotFound", testFo.getNameExt()));
+        return findFile(project, testFo, false);
     }
 
     public static LocationResult findTest(PhpProject project, FileObject srcFo) {
-        FileObject tests = getTests(project);
-        if (tests != null) {
-            EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
-            assert editorSupport != null : "Editor support must exist";
-            Collection<PhpClass> classes = editorSupport.getClasses(srcFo);
-            for (PhpClass phpClass : classes) {
-                String testClsName = phpClass.getName() + PhpUnit.TEST_CLASS_SUFFIX;
-                String testClsFQName = phpClass.getFullyQualifiedName() + PhpUnit.TEST_CLASS_SUFFIX;
-                Collection<FileObject> files = editorSupport.filesForClass(tests, new PhpClass(testClsName, testClsFQName, -1));
-                for (FileObject fileObject : files) {
+        return findFile(project, srcFo, true);
+    }
+
+    private static LocationResult findFile(PhpProject project, FileObject file, boolean searchTest) {
+        final FileObject sourceRoot = searchTest ? getTests(project) : getSources(project);
+        if (sourceRoot == null) {
+            return null;
+        }
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        assert editorSupport != null : "Editor support must exist";
+
+        Set<Pair<FileObject, Integer>> phpFiles = new TreeSet<Pair<FileObject, Integer>>(new Comparator<Pair<FileObject, Integer>>() {
+            @Override
+            public int compare(Pair<FileObject, Integer> o1, Pair<FileObject, Integer> o2) {
+                return o1.first.getPath().compareTo(o2.first.getPath());
+            }
+        });
+        for (PhpClass phpClass : editorSupport.getClasses(file)) {
+            //        name,   FQ name
+            List<Pair<String, String>> classes = new ArrayList<Pair<String, String>>();
+            if (searchTest) {
+                // FooTest
+                classes.add(Pair.of(PhpUnit.makeTestClass(phpClass.getName()), PhpUnit.makeTestClass(phpClass.getFullyQualifiedName())));
+                // FooSuite
+                classes.add(Pair.of(PhpUnit.makeSuiteClass(phpClass.getName()), PhpUnit.makeSuiteClass(phpClass.getFullyQualifiedName())));
+            } else {
+                if (!PhpUnit.isTestOrSuiteClass(phpClass.getName())) {
+                    continue;
+                }
+                classes.add(Pair.of(PhpUnit.getTestedClass(phpClass.getName()), PhpUnit.getTestedClass(phpClass.getFullyQualifiedName())));
+            }
+
+            for (Pair<String, String> namePair : classes) {
+                Collection<Pair<FileObject, Integer>> files = editorSupport.filesForClass(sourceRoot, new PhpClass(namePair.first, namePair.second, -1));
+                for (Pair<FileObject, Integer> pair : files) {
+                    FileObject fileObject = pair.first;
                     if (FileUtils.isPhpFile(fileObject)
-                            && FileUtil.isParentOf(tests, fileObject)) {
-                        return new LocationResult(fileObject, -1);
+                            && FileUtil.isParentOf(sourceRoot, fileObject)) {
+                        phpFiles.add(pair);
                     }
                 }
             }
         }
-        return new LocationResult(NbBundle.getMessage(GoToTest.class, "MSG_TestNotFound", srcFo.getNameExt()));
-    }
-
-    private PhpProject findPhpProject(FileObject fo) {
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project == null
-                || !PhpProjectUtils.isPhpProject(project)) {
-            return null;
+        if (phpFiles.isEmpty()) {
+            return new LocationResult(NbBundle.getMessage(GoToTest.class, searchTest ? "MSG_TestNotFound" : "MSG_SrcNotFound", file.getNameExt()));
         }
-        return (PhpProject) project;
+        if (phpFiles.size() == 1) {
+            Pair<FileObject, Integer> source = phpFiles.iterator().next();
+            return new LocationResult(source.first, source.second);
+        }
+        List<FileObject> files = new ArrayList<FileObject>(phpFiles.size());
+        for (Pair<FileObject, Integer> pair : phpFiles) {
+            files.add(pair.first);
+        }
+        FileObject selected = SelectFilePanel.open(sourceRoot, files);
+        if (selected != null) {
+            int offset = -1;
+            for (Pair<FileObject, Integer> pair : phpFiles) {
+                if (selected.equals(pair.first)) {
+                    offset = pair.second;
+                    break;
+                }
+            }
+            return new LocationResult(selected, offset);
+        }
+        return null;
     }
 
-    public static FileObject getSources(PhpProject project) {
-        return ProjectPropertiesSupport.getSourcesDirectory(project);
+    private static FileObject getSources(PhpProject project) {
+        FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
+        assert sources != null : "Project sources must be found for " + project;
+        return sources;
     }
 
-    public static FileObject getTests(PhpProject project) {
+    private static FileObject getTests(PhpProject project) {
         return ProjectPropertiesSupport.getTestDirectory(project, false);
     }
 }

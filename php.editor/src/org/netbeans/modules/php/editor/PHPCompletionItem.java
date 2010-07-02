@@ -86,6 +86,7 @@ import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.options.CodeCompletionPanel.CodeCompletionType;
@@ -260,7 +261,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                             LinkedList<String> segments = ifq.getFullyQualifiedName().getSegments();
                             QualifiedName fqna = QualifiedName.create(false, segments);
                             if (!namespaceScope.isDefaultNamespace() || !fqna.getKind().isUnqualified()) {
-                                QualifiedName suffix = QualifiedName.getPreferredName(fqna, namespaceScope);
+                                QualifiedName suffix = VariousUtils.getPreferredName(fqna, namespaceScope);
                                 if (suffix != null) {
                                     template.append(suffix.toString());
                                     break;
@@ -521,17 +522,28 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
 
-    static class FieldItem extends PHPCompletionItem {
-        public static FieldItem getItem(FieldElement field, CompletionRequest request) {
-            return new FieldItem(field, request);
+    static class BasicFieldItem extends PHPCompletionItem {
+        private String typeName;
+        public static BasicFieldItem getItem(PhpElement field, String type, CompletionRequest request) {
+            return new BasicFieldItem(field, type, request);
         }
 
-        private FieldItem(FieldElement field, CompletionRequest request) {
+        private BasicFieldItem(PhpElement field, String typeName, CompletionRequest request) {
             super(field, request);
+            this.typeName = typeName;
         }
 
-        FieldElement getField() {
-            return (FieldElement) getElement();
+        @Override
+        public String getInsertPrefix() {
+            Completion.get().showToolTip();
+            return getName();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            //TODO: variable just because originally VARIABLE was returned and thus all tests fail
+            //return ElementKind.FIELD;
+            return ElementKind.VARIABLE;
         }
 
         @Override
@@ -543,8 +555,41 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             formatter.name(getKind(), true);
             formatter.appendText(getName());
             formatter.name(getKind(), false);
-
             return formatter.getText();
+        }
+
+        @Override
+        public String getName() {
+            final String name = getElement().getName();
+            return name.startsWith("$") ? name.substring(1) : name;
+        }
+
+        /**
+         * @return the typeName
+         */
+        protected String getTypeName() {
+            return typeName;
+        }
+
+
+    }
+    static class FieldItem extends BasicFieldItem {
+        public static FieldItem getItem(FieldElement field, CompletionRequest request) {
+            return new FieldItem(field, request);
+        }
+
+        private FieldItem(FieldElement field, CompletionRequest request) {
+            super(field, null, request);
+        }
+
+        FieldElement getField() {
+            return (FieldElement) getElement();
+        }
+
+        @Override
+        public String getName() {
+            final FieldElement field = getField();
+            return field.getName(field.isStatic());
         }
 
         protected String getTypeName() {
@@ -560,25 +605,6 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 }
             }
             return typeName;
-        }
-
-        @Override
-        public ElementKind getKind() {
-            //TODO: variable just because originally VARIABLE was returned and thus all tests fail
-            //return ElementKind.FIELD;
-            return ElementKind.VARIABLE;
-        }
-
-        @Override
-        public String getName() {
-            final FieldElement field = getField();
-            return field.getName(field.isStatic());
-        }
-
-        @Override
-        public String getInsertPrefix() {
-            Completion.get().showToolTip();
-            return getName();
         }
     }
 
@@ -966,7 +992,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         NamespaceElement ifq = getNamespaceElement();
                         LinkedList<String> segments = ifq.getFullyQualifiedName().getSegments();
                         QualifiedName fqna = QualifiedName.create(false, segments);
-                        Collection<QualifiedName> relativeUses = QualifiedName.getRelativesToUses(namespaceScope, fqna);
+                        Collection<QualifiedName> relativeUses = VariousUtils.getRelativesToUses(namespaceScope, fqna);
                         for (QualifiedName qualifiedName : relativeUses) {
                             if (qualifiedName.getSegments().size() == 1) {
                                 isSmart = true;
@@ -974,7 +1000,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                             }
                         }
                         if (!isSmart) {
-                            relativeUses = QualifiedName.getRelativesToNamespace(namespaceScope, fqna);
+                            relativeUses = VariousUtils.getRelativesToNamespace(namespaceScope, fqna);
                             for (QualifiedName qualifiedName : relativeUses) {
                                 if (qualifiedName.getSegments().size() == 1) {
                                     isSmart = true;

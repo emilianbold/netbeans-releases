@@ -100,7 +100,8 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase {
         FileObject pfo = cp.getRoots()[0];
         URL u = URLMapper.findURL(pfo, URLMapper.EXTERNAL);
         URL urls[] = JavadocForBinaryQuery.findJavadoc(u).getRoots();
-        assertEquals(0, urls.length);
+        assertEquals(1, urls.length);
+        assertTrue(urls[0].toString(), urls[0].toString().startsWith("http://java.sun.com/"));
 
         List<URL> l = new ArrayList<URL>();
         File javadocFile = getBaseDir();

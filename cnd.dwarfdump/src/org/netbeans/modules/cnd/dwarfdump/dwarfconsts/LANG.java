@@ -65,23 +65,18 @@ public enum LANG {
     DW_LANG_C99(0x000c, "C 99"), // NOI18N
     DW_LANG_Ada95(0x000d, "Ada"), // NOI18N
     DW_LANG_Fortran95(0x000e, "Fortran 95"), // NOI18N
+    DW_LANG_PLI(0x000f, "PL/I"), // NOI18N
+    DW_LANG_ObjC(0x0010, "Objective-C"), // NOI18N
+    DW_LANG_ObjC_plus_plus(0x0011, "Objective-C++"), // NOI18N
+    DW_LANG_UPC(0x0012, "Unified Parallel C"), // NOI18N
+    DW_LANG_D(0x0013, "D"), // NOI18N
     DW_LANG_lo_user(0x8000, null), // NOI18N
     DW_LANG_SUN_Assembler(0x9001, "Assembler"), // NOI18N
     DW_LANG_hi_user(0xffff, null); // NOI18N
     
 /* What about dwarf 3.0 ?
-See http://dwarf.freestandards.org/Dwarf3Std.php
-Convenient definitions in http://www.arcknowledge.com/gmane.comp.compilers.llvm.cvs/2005-12/msg00423.html
--  DW_LANG_Java = 0x000b,
--  DW_LANG_C99 = 0x000c,
--  DW_LANG_Ada95 = 0x000d,
--  DW_LANG_Fortran95 = 0x000e,
--  DW_LANG_PLI = 0x000f,
--  DW_LANG_ObjC = 0x0010,
--  DW_LANG_ObjC_plus_plus = 0x0011,
--  DW_LANG_UPC = 0x0012,
--  DW_LANG_D = 0x0013,
- */    
+    See http://dwarf.freestandards.org/Dwarf3Std.php
+*/    
     
     private final int value;
     private final String name;

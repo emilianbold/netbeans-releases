@@ -165,19 +165,24 @@ public final class PhpProjectUtils {
         return fileObjects;
     }
 
-    // XXX see AssertionError at HtmlIndenter.java:68
-    // NbReaderProvider.setupReaders(); cannot be called because of deps
     /**
      * Reformat the file.
      * @param file file to reformat.
      */
     public static void reformatFile(final File file) throws IOException {
-        FileObject testFileObject = FileUtil.toFileObject(file);
-        assert testFileObject != null : "No fileobject for " + file;
+        FileObject fileObject = FileUtil.toFileObject(file);
+        assert fileObject != null : "No fileobject for " + file;
 
-        final DataObject dataObject = DataObject.find(testFileObject);
+        reformatFile(DataObject.find(fileObject));
+    }
+
+    // XXX see AssertionError at HtmlIndenter.java:68
+    // NbReaderProvider.setupReaders(); cannot be called because of deps
+    public static void reformatFile(final DataObject dataObject) throws IOException {
+        assert dataObject != null;
+
         EditorCookie ec = dataObject.getCookie(EditorCookie.class);
-        assert ec != null : "No editorcookie for " + testFileObject;
+        assert ec != null : "No editorcookie for " + dataObject;
 
         Document doc = ec.openDocument();
         assert doc instanceof BaseDocument;
@@ -194,7 +199,7 @@ public final class PhpProjectUtils {
                     try {
                         reformat.reformat(0, baseDoc.getLength());
                     } catch (BadLocationException ex) {
-                        LOGGER.log(Level.INFO, "Cannot reformat file " + file, ex);
+                        LOGGER.log(Level.INFO, "Cannot reformat file " + dataObject.getName(), ex);
                     }
                 }
             });
@@ -203,9 +208,40 @@ public final class PhpProjectUtils {
         }
 
         // save
+        saveFile(dataObject);
+    }
+
+    /**
+     * Save a file.
+     * @param dataObject file to save
+     */
+    public static void saveFile(DataObject dataObject) {
+        assert dataObject != null;
+
         SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
         if (saveCookie != null) {
-            saveCookie.save();
+            try {
+                saveCookie.save();
+            } catch (IOException ioe) {
+                LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
+            }
+        }
+    }
+
+    /**
+     * Save a file.
+     * @param fileObject file to save
+     */
+    public static void saveFile(FileObject fileObject) {
+        assert fileObject != null;
+
+        try {
+            DataObject dobj = DataObject.find(fileObject);
+            if (dobj != null) {
+                saveFile(dobj);
+            }
+        } catch (DataObjectNotFoundException donfe) {
+            LOGGER.log(Level.SEVERE, donfe.getLocalizedMessage(), donfe);
         }
     }
 

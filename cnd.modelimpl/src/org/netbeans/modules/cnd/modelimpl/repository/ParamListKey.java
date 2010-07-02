@@ -63,6 +63,7 @@ import org.openide.util.CharSequences;
         super(aStream);
     }
 
+    @Override
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
     }

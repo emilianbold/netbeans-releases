@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    
+
     <!-- GlassFish V3 common server module support -->
     <folder name="Servers">
         <folder name="GlassFish">
@@ -58,7 +58,7 @@
                     </folder>
                 </folder>
             </folder>
-            
+
             <folder name="gfv3ee6">
                 <file name="Descriptor" url="nbdepee6.xml"/>
                 <!-- -->
@@ -94,28 +94,79 @@
                     <folder name="WAR">
                         <file name="WEB-INF\sun-web.xml"/>
                     </folder>
-					<folder name="EJB">
-						<file name="META-INF\sun-ejb-jar.xml"/>
-						<file name="META-INF\sun-cmp-mappings.xml"/>
-					</folder>
-					<folder name="EAR">
-						<file name="META-INF\sun-application.xml"/>
-					</folder>
-					<folder name="RAR">
-						<file name="META-INF\sun-ra.xml"/>
-					</folder>
+                    <folder name="EJB">
+                        <file name="META-INF\sun-ejb-jar.xml"/>
+                        <file name="META-INF\sun-cmp-mappings.xml"/>
+                    </folder>
+                    <folder name="EAR">
+                        <file name="META-INF\sun-application.xml"/>
+                    </folder>
+                    <folder name="RAR">
+                        <file name="META-INF\sun-ra.xml"/>
+                    </folder>
 
-					<folder name="CAR">
-						<file name="META-INF\sun-application-client.xml"/>
-					</folder>
+                    <folder name="CAR">
+                        <file name="META-INF\sun-application-client.xml"/>
+                    </folder>
                 </folder>
             </folder>
-            
+
+            <folder name="gfv3ee6wc">
+                <file name="Descriptor" url="nbdepee6wc.xml"/>
+                <!-- -->
+                <file name="Factory.instance">
+                    <attr name="urlPattern" stringvalue="^\[.*deployer:gfv3ee6wc:.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory.createEe6WC"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
+                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                </file>
+                <file name="J2eePlatformFactory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory.createEe6WC"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2JavaEEPlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
+                </file>
+                <file name="OptionalFactory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory.createEe6WC"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
+                </file>
+                <file name="ModuleConfigFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Three1ModuleConfigFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Three1ModuleConfigFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
+                </file>
+                <file name="J2eeVerifierSupport.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
+                </file>
+                <!-- -->
+                <folder name="DeploymentFileNames">
+                    <folder name="WAR">
+                        <file name="WEB-INF\glassfish-web.xml"/>
+                    </folder>
+                    <folder name="EJB">
+                        <file name="META-INF\glassfish-ejb-jar.xml"/>
+                        <file name="META-INF\glassfish-cmp-mappings.xml"/>
+                    </folder>
+                    <folder name="EAR">
+                        <file name="META-INF\glassfish-application.xml"/>
+                    </folder>
+                    <folder name="RAR">
+                        <file name="META-INF\sun-ra.xml"/>
+                    </folder>
+
+                    <folder name="CAR">
+                        <file name="META-INF\glassfish-application-client.xml"/>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
     </folder>
 
     <folder name="Plugins">
-      <!-- Register XML module catalog plugin -->
+        <!-- Register XML module catalog plugin -->
         <folder name="XML">
             <folder name="UserCatalogs">
                 <file name="org-netbeans-modules-glassfish-javaee-RunTimeDDCatalog.instance">
@@ -138,6 +189,20 @@
                 </file>
             </folder> <!-- GrammarQueryManagers -->
         </folder>
-     </folder>
-    
+    </folder>
+
+    <folder name="Templates">
+        <folder name="WebLogicResources">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.glassfish.javaee.templates.Bundle"/>
+            <attr name="position" intvalue="1850"/>
+            <file name="weblogicDD">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/glassfish/javaee/resources/ConfigFile.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.glassfish.javaee.templates.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.glassfish.javaee.templates.WebLogicDDWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="j2ee-types,ear-types,sunresource-types,deployment-descriptor,web-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/glassfish/javaee/templates/weblogicDD.html"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

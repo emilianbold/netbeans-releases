@@ -46,7 +46,7 @@ package org.netbeans.api.project;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
-import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ProjectIconAnnotator;
 
 /**
  * General information about a project.
@@ -94,6 +94,7 @@ public interface ProjectInformation {
      * Gets icon for given project.
      * Usually determined by the project type.
      * @return icon of the project.
+     * @see ProjectIconAnnotator
      */
     Icon getIcon();
     

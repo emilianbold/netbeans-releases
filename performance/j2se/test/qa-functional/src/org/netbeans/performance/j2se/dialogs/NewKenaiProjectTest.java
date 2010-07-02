@@ -85,8 +85,8 @@ public class NewKenaiProjectTest extends PerformanceTestCase {
 
     @Override
     public void initialize() {
-        menu = "Team|Kenai|New Kenai Project";
-        loginDialog = Bundle.getStringTrimmed("org.netbeans.modules.kenai.ui.Bundle", "NewKenaiProjectAction.dialogTitle");
+        menu = "Team|Team Server|New Team Project";
+        loginDialog = "New Team Project";
     }
     
     public void prepare(){

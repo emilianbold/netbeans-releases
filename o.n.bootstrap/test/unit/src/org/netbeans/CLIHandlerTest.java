@@ -46,6 +46,7 @@ package org.netbeans;
 
 import java.io.*;
 import java.util.logging.Level;
+import org.netbeans.CLIHandler.Status;
 import org.netbeans.junit.*;
 import java.util.*;
 import java.util.logging.Logger;
@@ -417,6 +418,38 @@ public class CLIHandlerTest extends NbTestCase {
         assertEquals("CLI evaluation failed with return code of h1", 1, res.getExitCode());
         assertEquals("First one executed", 1, h1.cnt);
         assertEquals("Not the second one", 0, h2.cnt);
+    }
+
+    public void testCannotWrite() throws Exception {
+        File tmp = new File(System.getProperty("netbeans.user"));
+        tmp.setReadOnly();
+        try {
+            CLIHandler.Args args = new CLIHandler.Args(new String[0], nullInput, nullOutput, nullOutput, System.getProperty("user.dir"));
+            Status res = CLIHandler.initialize(args, null, Collections.<CLIHandler>emptyList(), false, false, null);
+
+            assertEquals("CLI evaluation failed with return code of h1", CLIHandler.Status.CANNOT_WRITE, res.getExitCode());
+        } finally {
+            tmp.setWritable(true);
+            for (File f : tmp.listFiles()) {
+                f.delete();
+            }
+            assertTrue("Clean up", tmp.delete());
+        }
+    }
+    public void testCannotWriteLockFile() throws Exception {
+        File tmp = new File(System.getProperty("netbeans.user"));
+        File f = new File(tmp, "lock");
+        f.createNewFile();
+        f.setReadOnly();
+        try {
+            CLIHandler.Args args = new CLIHandler.Args(new String[0], nullInput, nullOutput, nullOutput, System.getProperty("user.dir"));
+            Status res = CLIHandler.initialize(args, null, Collections.<CLIHandler>emptyList(), false, false, null);
+
+            assertEquals("CLI evaluation failed with return code of h1", CLIHandler.Status.CANNOT_WRITE, res.getExitCode());
+        } finally {
+            f.setWritable(true);
+            assertTrue("Clean up", f.delete());
+        }
     }
     
     public void testWhenInvokedTwiceParamsGoToTheFirstHandler() throws Exception {

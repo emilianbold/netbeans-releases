@@ -331,14 +331,25 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
                 document =
                         ((org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient)appClientRoot).graphManager().getXmlDocument();
                 currentVersion = SunApplicationClient.VERSION_6_0_0;
+            } else if (appClientRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient) {
+                document =
+                        ((org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient)appClientRoot).graphManager().getXmlDocument();
+                currentVersion = SunApplicationClient.VERSION_6_0_1;
             }
             
             //remove the doctype
             document = removeDocType(document);
             
+            if(newVersion.equals(SunApplicationClient.VERSION_6_0_1)){
+                //This will always be an upgrade
+                generate6_01Graph(document);
+            }
             if(newVersion.equals(SunApplicationClient.VERSION_6_0_0)){
                 //This will always be an upgrade
-                generate6_00Graph(document);
+                if(currentVersion.equals(SunApplicationClient.VERSION_5_0_0) || currentVersion.equals(SunApplicationClient.VERSION_1_4_1) || currentVersion.equals(SunApplicationClient.VERSION_1_4_0) || currentVersion.equals(SunApplicationClient.VERSION_1_3_0))
+                    generate6_00Graph(document);
+                else
+                    downgradeClientJarGraph(document, newVersion, currentVersion);
             }
             if(newVersion.equals(SunApplicationClient.VERSION_5_0_0)){
                 if(currentVersion.equals(SunApplicationClient.VERSION_1_4_1) || currentVersion.equals(SunApplicationClient.VERSION_1_4_0) || currentVersion.equals(SunApplicationClient.VERSION_1_3_0))
@@ -377,6 +388,13 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
             }
     }
     
+    private void generate6_01Graph(Document document){
+        org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient appClientGraph =
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient.createGraph(document);
+        appClientGraph.changeDocType(DTDRegistry.GLASSFISH_APPCLIENT_601_DTD_PUBLIC_ID, DTDRegistry.GLASSFISH_APPCLIENT_601_DTD_SYSTEM_ID);
+        this.appClientRoot = appClientGraph;
+    }
+
     private void generate6_00Graph(Document document){
         org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient appClientGraph =
                 org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient.createGraph(document);
@@ -430,6 +448,12 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
         }else if (appClientRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient) {
             document =
                     ((org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient)appClientRoot).graphManager().getXmlDocument();
+        } else if (appClientRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient) {
+            document =
+                    ((org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient)appClientRoot).graphManager().getXmlDocument();
+        } else if (appClientRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient) {
+            document =
+                    ((org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_1.GlassFishApplicationClient)appClientRoot).graphManager().getXmlDocument();
         }
         return document;
     }

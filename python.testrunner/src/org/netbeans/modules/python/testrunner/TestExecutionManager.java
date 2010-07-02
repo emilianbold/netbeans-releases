@@ -43,6 +43,7 @@
 package org.netbeans.modules.python.testrunner;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -54,8 +55,10 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
+import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 //import org.netbeans.modules.python.testrunner.ui.Manager;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.python.api.PythonExecution;
 import org.netbeans.modules.python.testrunner.ui.TestHandlerFactory;
 import org.netbeans.modules.python.testrunner.ui.TestRunnerInputProcessorFactory;
@@ -189,8 +192,9 @@ public final class TestExecutionManager implements RerunHandler {
      * @return true if the current execution has finished, 
      * false otherwise.
      */
-    public synchronized boolean enabled() {
-        return finished || (result != null && result.isDone());
+    @Override
+    public boolean enabled(RerunType type) {
+        return RerunType.ALL.equals(type) && (finished || (result != null && result.isDone()));
     }
     
     private void setFinished(boolean finished) {
@@ -201,7 +205,7 @@ public final class TestExecutionManager implements RerunHandler {
      * Re-runs the last run test execution.
      */
     public synchronized void rerun() {
-        assert enabled();
+        assert enabled(RerunType.ALL);
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Re-running: " + execution);
         }
@@ -209,6 +213,11 @@ public final class TestExecutionManager implements RerunHandler {
         setFinished(false);
         LifecycleManager.getDefault().saveAll();
         runExecution();
+    }
+
+    @Override
+    public void rerun(Set<Testcase> tests) {
+        //not implemented yet
     }
 
     public void addChangeListener(ChangeListener listener) {

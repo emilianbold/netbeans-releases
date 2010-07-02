@@ -100,6 +100,8 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String INCLUDE_PATH = "include.path"; // NOI18N
     public static final String GLOBAL_INCLUDE_PATH = "php.global.include.path"; // NOI18N
     public static final String ARGS = "script.arguments"; // NOI18N
+    public static final String PHP_ARGS = "php.arguments"; // NOI18N
+    public static final String WORK_DIR = "work.dir"; // NOI18N
     public static final String INTERPRETER = "interpreter"; // NOI18N
     public static final String RUN_AS = "run.as"; // NOI18N
     public static final String REMOTE_CONNECTION = "remote.connection"; // NOI18N
@@ -127,6 +129,8 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         URL,
         INDEX_FILE,
         ARGS,
+        PHP_ARGS,
+        WORK_DIR,
         INTERPRETER,
         RUN_AS,
         REMOTE_CONNECTION,

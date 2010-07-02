@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
+import org.netbeans.modules.versioning.util.UndoRedoSupport;
 import java.awt.Component;
 import java.awt.Container;
 import org.netbeans.modules.subversion.SvnModuleConfig;
@@ -84,7 +85,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicTreeUI;
@@ -144,6 +144,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private SvnHookContext hookContext;
     private JTabbedPane tabbedPane;
     private HashMap<File, MultiDiffPanel> displayedDiffs = new HashMap<File, MultiDiffPanel>();
+    private UndoRedoSupport um;
 
     /** Creates new form CommitPanel */
     public CommitPanel() {
@@ -174,7 +175,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
-
+        initCollapsibleSections();
         TemplateSelector ts = new TemplateSelector(SvnModuleConfig.getDefault().getPreferences());
         if (ts.isAutofill()) {
             messageTextArea.setText(ts.getTemplate());
@@ -189,13 +190,17 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             messageTextArea.setText(lastCommitMessage);
         }
         messageTextArea.selectAll();
-        initCollapsibleSections();
+        um = UndoRedoSupport.register(messageTextArea);
     }
 
     @Override
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
         SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        if (um != null) {
+            um.unregister();
+            um = null;
+        }
         super.removeNotify();
     }
 

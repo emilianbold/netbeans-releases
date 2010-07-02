@@ -67,7 +67,6 @@ import org.openide.util.NbPreferences;
  * @author Peter Williams
  */
 public class AddServerLocationVisualPanel extends javax.swing.JPanel implements Retriever.Updater {
-    private String nameOfBits;
 
     public static enum DownloadState { AVAILABLE, DOWNLOADING, COMPLETED };
 
@@ -93,18 +92,25 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         
         hk2HomeTextField.setText(getPreviousValue());            
         hk2HomeTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 homeFolderChanged();
             }
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 homeFolderChanged();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 homeFolderChanged();
             }                    
         });
         setDownloadState(DownloadState.AVAILABLE);
         updateMessageText("");
+        if (null == wizardIterator.getDirect()) {
+            agreeCheckBox.setEnabled(false);
+            agreeCheckBox.setToolTipText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "TIP_No_file_to_download"));
+        }
     }
     
     private String getPreviousValue() {
@@ -220,8 +226,10 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
     // ------------------------------------------------------------------------
     // Updater implementation
     // ------------------------------------------------------------------------
+    @Override
     public void updateMessageText(final String msg) {
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 if (msg.trim().startsWith("<html>")) {
                     downloadStatusLabel.setText(msg);
@@ -233,11 +241,13 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         });
     }
     
+    @Override
     public void updateStatusText(final String status) {
         statusText = status;
         fireChangeEvent();
     }
 
+    @Override
     public void clearCancelState() {
         setDownloadState(retriever.getDownloadState() == Retriever.STATUS_COMPLETE ? 
             DownloadState.COMPLETED : DownloadState.AVAILABLE);
@@ -247,6 +257,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
     // ------------------------------------------------------------------------
     private void updateButton() {
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 DownloadState state = AddServerLocationVisualPanel.this.downloadState;
                 boolean licenseAccepted = agreeCheckBox.isSelected();
@@ -283,6 +294,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
             this.nameOfBits = nameOfBits;
         }
         
+        @Override
         public boolean accept(File f) {
             if(!f.exists() || !f.canRead() || !f.isDirectory()) {
                 return false;
@@ -291,6 +303,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
             }
         }
         
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_DirType", nameOfBits);
         }
@@ -353,43 +366,42 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
         downloadStatusLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         downloadStatusLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(hk2HomeLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(downloadButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(agreeCheckBox)
-                        .add(2, 2, 2)
-                        .add(readlicenseButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(hk2HomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseButton))
-                    .add(downloadStatusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(hk2HomeLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(downloadButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(agreeCheckBox)
+                        .addGap(2, 2, 2)
+                        .addComponent(readlicenseButton))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(hk2HomeTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseButton))
+                    .addComponent(downloadStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(hk2HomeLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(hk2HomeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(browseButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(downloadButton)
-                    .add(agreeCheckBox)
-                    .add(readlicenseButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(downloadStatusLabel)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(hk2HomeLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(hk2HomeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(browseButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(downloadButton)
+                    .addComponent(agreeCheckBox)
+                    .addComponent(readlicenseButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(downloadStatusLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

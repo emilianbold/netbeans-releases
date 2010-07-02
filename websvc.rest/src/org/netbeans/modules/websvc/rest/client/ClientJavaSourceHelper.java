@@ -47,6 +47,7 @@ package org.netbeans.modules.websvc.rest.client;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -496,7 +497,7 @@ public class ClientJavaSourceHelper {
                 if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType())) {
                     final FileObject ddFo = security.getDeploymentDescriptor();
                     if (ddFo != null) {
-                        final String packageName = ((IdentifierTree)copy.getCompilationUnit().getPackageName()).getName().toString();
+                        final String packageName = copy.getCompilationUnit().getPackageName().toString();
                         final String className = (outerClassName==null ? "" : outerClassName+"$")+ //NOI18N
                                 classTree.getSimpleName().toString();
                         RequestProcessor.getDefault().post(new Runnable() {
@@ -523,7 +524,7 @@ public class ClientJavaSourceHelper {
                     if (Wadl2JavaHelper.PROJEC_TYPE_WEB.equals(security.getProjectType())) {
                         final FileObject ddFo = security.getDeploymentDescriptor();
                         if (ddFo != null) {
-                            final String packageName = ((IdentifierTree)copy.getCompilationUnit().getPackageName()).getName().toString();
+                            final String packageName = copy.getCompilationUnit().getPackageName().toString();
                             final String className = (outerClassName==null ? "" : outerClassName+"$")+ //NOI18N
                                     classTree.getSimpleName().toString();
                             RequestProcessor.getDefault().post(new Runnable() {

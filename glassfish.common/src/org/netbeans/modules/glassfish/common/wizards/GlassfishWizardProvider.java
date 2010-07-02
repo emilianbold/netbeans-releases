@@ -63,6 +63,10 @@ public class GlassfishWizardProvider implements ServerWizardProvider {
         return get(GlassfishInstanceProvider.getEe6());
     }
 
+    public static ServerWizardProvider createEe6WC() {
+        return get(GlassfishInstanceProvider.getEe6WC());
+    }
+
     private static ServerWizardProvider get(GlassfishInstanceProvider gip) {
         ServerWizardProvider retVal = null;
         if (null != gip)
@@ -80,10 +84,12 @@ public class GlassfishWizardProvider implements ServerWizardProvider {
     // ------------------------------------------------------------------------
     // ServerWizardProvider interface implementation
     // ------------------------------------------------------------------------
+    @Override
     public String getDisplayName() {
         return gip.getDisplayName();
     }
 
+    @Override
     public InstantiatingIterator getInstantiatingIterator() {
         return new ServerWizardIterator(gip);
     }

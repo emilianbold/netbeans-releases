@@ -45,7 +45,9 @@
 package org.netbeans.modules.mercurial;
 
 import java.io.*;
-import org.netbeans.modules.mercurial.ui.diff.Setup;
+import org.netbeans.modules.versioning.historystore.Storage;
+import org.netbeans.modules.versioning.historystore.StorageManager;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.util.*;
 import org.netbeans.modules.versioning.util.Utils;
 
@@ -76,20 +78,36 @@ public class VersionsCache {
      *
      * @return null if the file does not exist in given revision
      */
-    public File getFileRevision(File base, String revision) throws IOException {
-        if(revision.equals("-1")) return null; // NOI18N
+    public File getFileRevision(File base, HgRevision revision) throws IOException {
+        String revisionNumber = revision.getRevisionNumber();
+        if("-1".equals(revisionNumber)) return null; // NOI18N
         
         File repository = Mercurial.getInstance().getRepositoryRoot(base);
-        if (Setup.REVISION_CURRENT.equals(revision)) {
+        if (HgRevision.CURRENT.equals(revision)) {
             return base;
         } else {
             try {
                 File tempFile = new File(Utils.getTempFolder(), "nb-hg-" + base.getName()); //NOI18N
                 tempFile.deleteOnExit();
-                if (Setup.REVISION_BASE.equals(revision)) {
+                if (HgRevision.BASE.equals(revision)) {
                     HgCommand.doCat(repository, base, tempFile, null);
                 } else {
-                    HgCommand.doCat(repository, base, tempFile, revision, null);
+                    if ("false".equals(System.getProperty("versioning.mercurial.historycache.enable", "true"))) { //NOI18N
+                        HgCommand.doCat(repository, base, tempFile, revisionNumber, null);
+                    } else {
+                        String changesetId = revision.getChangesetId();
+                        Storage cachedVersions = StorageManager.getInstance().getStorage(repository);
+                        String relativePath = HgUtils.getRelativePath(base);
+                        File cachedFile = cachedVersions.getContent(relativePath, base.getName(), changesetId);
+                        if (cachedFile.length() == 0) { // not yet cached
+                            HgCommand.doCat(repository, base, tempFile, changesetId, null);
+                            if (tempFile.length() != 0) {
+                                cachedVersions.setContent(relativePath, changesetId, tempFile);
+                            }
+                        } else {
+                            tempFile = cachedFile;
+                        }
+                    }
                 }
                 if (tempFile.length() == 0) {
                     tempFile.delete();
@@ -97,10 +115,17 @@ public class VersionsCache {
                 }
                 return tempFile;
             } catch (HgException e) {
-                IOException ioe = new IOException();
-                ioe.initCause(e);
-                throw ioe;
+                throw new IOException(e);
             }
         }
+    }
+
+    private static boolean isLong (String revision) {
+        boolean isLong = false;
+        try {
+            Long.parseLong(revision);
+            isLong = true;
+        } catch (NumberFormatException ex) { }
+        return isLong;
     }
 }

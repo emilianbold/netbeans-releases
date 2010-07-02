@@ -90,7 +90,15 @@ public class FoldingToolTip extends JPanel {
         setBorder(new LineBorder(foreColor));
         setOpaque(true);
     }
-    
+
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension prefSize = editorUI.getComponent().getPreferredSize();
+        int viewHeight = (int) view.getPreferredSpan(View.Y_AXIS);
+        prefSize.height = viewHeight + (BORDER_WIDTH << 1);
+        prefSize.width += editorUI.getSideBarWidth() + (BORDER_WIDTH << 1);
+        return prefSize;
+    }
 
     public @Override void setSize(Dimension d){
         setSize(d.width, d.height);

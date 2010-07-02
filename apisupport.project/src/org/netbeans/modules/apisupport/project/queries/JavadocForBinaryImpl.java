@@ -106,6 +106,7 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
             if (type == NbModuleProvider.NETBEANS_ORG) {
                 dir = project.getNbrootFile(NB_ALL_INFIX + cnbdashes);
             } else {
+                // XXX should evaluate and use ${build.dir}/javadoc instead
                 dir = new File(project.getProjectDirectoryFile(), EXT_INFIX + cnbdashes);
             }
             if (dir != null) { // #118491

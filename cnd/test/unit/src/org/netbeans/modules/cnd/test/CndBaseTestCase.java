@@ -69,9 +69,9 @@ import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.cplusplus.HKit;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -87,7 +87,7 @@ import org.openide.util.Lookup;
  * -- if absent => configure it using the following url as example
  *    http://www.netbeans.org/updates/beta/55_{$netbeans.autoupdate.version}_{$netbeans.autoupdate.regnum}.xml?{$netbeans.hash.code}
  * - press Next
- * - in Libraries subfoler found NB JUnit module
+ * - in Libraries subfolder found NB JUnit module
  * - Add it and install
  * - close target IDE and reload development IDE to update the information of
  *         available modules in target's platform
@@ -99,7 +99,7 @@ import org.openide.util.Lookup;
 
 /**
  * base class to isolate using of NbJUnit library
- * ${xtest.data} vallue is usually ${module}/test/unit/data folder
+ * ${xtest.data} value is usually ${module}/test/unit/data folder
  * @author Vladimir Voskresensky
  */
 public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
@@ -123,6 +123,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     private MimePath mimePath2;
     private MimePath mimePath3;
     private MimePath mimePath4;
+    private MimePath mimePath5;
 
     // it's like what org.netbeans.junit.NbModuleSuite does,
     // but reusing NbModuleSuite will cause too massive changes in existing CND tests
@@ -226,6 +227,11 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         assertNotNull(lookup);
         kit = lookup.lookup(EditorKit.class);
         assertTrue(kit instanceof  FKit);
+
+        lookup = MimeLookup.getLookup(MimePath.parse(MIMENames.ASM_MIME_TYPE));
+        assertNotNull(lookup);
+        kit = lookup.lookup(EditorKit.class);
+        //assertTrue(kit instanceof AsmEditorKit);
     }
 
     protected void setUpMime() {
@@ -237,6 +243,15 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         MockMimeLookup.setInstances(mimePath3, new CKit());
         mimePath4 = MimePath.parse(MIMENames.FORTRAN_MIME_TYPE);
         MockMimeLookup.setInstances(mimePath4, new FKit());
+        mimePath5 = MimePath.parse(MIMENames.ASM_MIME_TYPE);
+        // TODO: add needed dependency in all dependant test cases to use real asm editor kit
+        //MockMimeLookup.setInstances(mimePath5, new AsmEditorKit());
+        MockMimeLookup.setInstances(mimePath5, new AsmStub());
+    }
+
+    private static final class AsmStub extends NbEditorKit {
+        private AsmStub(){
+        }
     }
 
     protected List<Class<?>> getServices(){

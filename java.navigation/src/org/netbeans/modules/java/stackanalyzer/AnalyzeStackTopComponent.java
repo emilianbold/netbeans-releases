@@ -160,8 +160,8 @@ final class AnalyzeStackTopComponent extends TopComponent {
                     if (lastLine == null) {
                         lastLine = currentLine;
                     } else {
-                        if (lastLine.equals("at")) { // NOI18N
-                            lastLine = "at ";        // NOI18N
+                        if (lastLine.endsWith("at")) { // NOI18N
+                            lastLine += " ";        // NOI18N
                         }
                         String together = lastLine + currentLine;
                         if (StackLineAnalyser.matches(together)) {

@@ -61,6 +61,11 @@ public final class UiUtils {
      * SFS path where all the PHP options can be found.
      */
     public static final String OPTIONS_PATH = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; // NOI18N
+    /**
+     * SFS path where all the PHP customizer panels can be found.
+     * @since 1.38
+     */
+    public static final String CUSTOMIZER_PATH = "org-netbeans-modules-php-project"; // NOI18N
 
     private UiUtils() {
     }

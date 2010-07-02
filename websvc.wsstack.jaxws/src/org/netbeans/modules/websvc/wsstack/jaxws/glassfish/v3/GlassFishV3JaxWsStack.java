@@ -119,7 +119,7 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
                 if (isEjb) {
                     return serviceName+"/"+portName; //NOI18N
                 } else {
-                    return applicationRoot+"/"+serviceName; //NOI18N
+                    return (applicationRoot.length()>0 ? applicationRoot+"/" : "")+serviceName; //NOI18N
                 }
             }
 
@@ -127,8 +127,8 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
                 return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl"; //NOI18N
             }
 
-            public String getTesterPageUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?Tester"; //NOI18N
+            public String getTesterPageUri(String host, String port, String applicationRoot, String serviceName, String portName, boolean isEjb) {
+                return "http://"+host+":"+port+"/"+getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?Tester"; //NOI18N
             }
             
         };

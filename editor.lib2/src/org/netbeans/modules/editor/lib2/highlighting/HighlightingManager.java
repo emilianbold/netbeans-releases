@@ -188,13 +188,29 @@ public final class HighlightingManager {
 
         public @Override void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName() == null || PROP_DOCUMENT.equals(evt.getPropertyName())) {
-                rebuildAll();
+                Document doc = pane.getDocument();
+                if (doc != null) {
+                    doc.render(new Runnable() {
+                        @Override
+                        public void run() {
+                            rebuildAll();
+                        }
+                    });
+                }
             }
 
             if (PROP_HL_INCLUDES.equals(evt.getPropertyName()) || PROP_HL_EXCLUDES.equals(evt.getPropertyName())) {
-                synchronized (this) {
-                    paneFilter = new RegExpFilter(pane.getClientProperty(PROP_HL_INCLUDES), pane.getClientProperty(PROP_HL_EXCLUDES));
-                    rebuildAllContainers(pane.getDocument());
+                Document doc = pane.getDocument();
+                if (doc != null) {
+                    doc.render(new Runnable() {
+                        @Override
+                        public void run() {
+                            synchronized (this) {
+                                paneFilter = new RegExpFilter(pane.getClientProperty(PROP_HL_INCLUDES), pane.getClientProperty(PROP_HL_EXCLUDES));
+                                rebuildAllContainers(pane.getDocument());
+                            }
+                        }
+                    });
                 }
             }
         }

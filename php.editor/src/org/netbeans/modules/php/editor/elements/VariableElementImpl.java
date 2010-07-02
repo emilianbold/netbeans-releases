@@ -45,6 +45,7 @@ package org.netbeans.modules.php.editor.elements;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.php.editor.api.FileElementQuery;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.csl.api.OffsetRange;
 import  org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -59,6 +60,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.openide.util.Parameters;
 
 
@@ -69,6 +71,7 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
     public static final String DOLLAR_PREFIX = "$";//NOI18N
     public static final String REFERENCE_PREFIX = "&";//NOI18N
     public static final String IDX_FIELD = PHPIndexer.FIELD_VAR;
+
     private final Set<TypeResolver> instanceTypes;
     protected VariableElementImpl(
             final String variableName,
@@ -131,6 +134,14 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
                     indexScopeQuery, signParser.getTypes());
         }
         return retval;
+    }
+
+    public static VariableElement fromNode(final Variable node, Set<TypeResolver> typeResolvers, final FileElementQuery fileQuery) {
+        Parameters.notNull("node", node);
+        Parameters.notNull("fileQuery", fileQuery);
+        ASTNodeInfo<Variable> info = ASTNodeInfo.create(node);
+        return new VariableElementImpl(info.getName(), info.getRange().getStart(),
+                fileQuery.getURL().toExternalForm(), fileQuery, typeResolvers);
     }
 
     private static boolean matchesQuery(final NameKind query, VariableSignatureParser signParser) {

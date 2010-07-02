@@ -66,5 +66,4 @@
             <fileset dir="${src.dir}" excludes="${jar-excludes}"/>
         </copy>
     </target>
-
 </project>

@@ -250,9 +250,16 @@ public class SQLSyntax extends Syntax {
                     if (Character.isWhitespace(actChar)) {
                         // only in MySQL # starts line comment
                         state = ISI_LINE_COMMENT;
+                        if (actChar == '\n') {
+                            return SQLTokenContext.LINE_COMMENT;
+                        }
                     } else {
                         // otherwise it can be identifier (issue 172904)
-                        state = ISI_IDENTIFIER;
+                        if (offset > 1) {
+                            state = ISI_IDENTIFIER;
+                        } else {
+                            state = ISI_LINE_COMMENT;
+                        }
                     }
                     break;
 

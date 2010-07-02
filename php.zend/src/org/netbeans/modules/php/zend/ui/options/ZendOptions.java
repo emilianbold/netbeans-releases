@@ -96,7 +96,7 @@ public final class ZendOptions {
         String zend = getPreferences().get(ZEND, null);
         if (zend == null && !zendSearched) {
             zendSearched = true;
-            List<String> scripts = FileUtils.findFileOnUsersPath(ZendScript.SCRIPT_NAME);
+            List<String> scripts = FileUtils.findFileOnUsersPath(ZendScript.SCRIPT_NAME, ZendScript.SCRIPT_NAME_LONG);
             if (!scripts.isEmpty()) {
                 zend = scripts.get(0);
                 setZend(zend);

@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManagerTest;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -106,6 +107,7 @@ public class SlowRefreshTest extends NbTestCase {
 
             @Override
             public void fileChanged(FileEvent fe) {
+                assertFalse("Event shall not be delivered in idle mode", FileChangedManagerTest.isIdleIO());
                 LOG.info("file change " + fe.getFile());
                 cnt++;
                 event = fe;
