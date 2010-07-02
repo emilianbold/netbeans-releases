@@ -86,6 +86,7 @@ public interface ItemProperties {
     public enum LanguageKind {
         Unknown,
         C,
-        CPP
+        CPP,
+        Fortran
     }
 }

@@ -60,10 +60,10 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
@@ -306,7 +306,7 @@ public class ProjectBridge {
         return resultSet;
     }
     
-    public void setupProject(List<String> includes, List<String> macros, boolean isCPP){
+    public void setupProject(List<String> includes, List<String> macros, ItemProperties.LanguageKind lang){
         MakeConfiguration extConf = makeConfigurationDescriptor.getActiveConfiguration();
         if (extConf != null) {
             for(int i = 0; i < includes.size(); i++) {
@@ -315,37 +315,40 @@ public class ProjectBridge {
             for(int i = 0; i < macros.size(); i++) {
                 macros.set(i, getString(macros.get(i)));
             }
-            if (isCPP) {
+            if (lang == ItemProperties.LanguageKind.CPP) {
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includes);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setDirty(true);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setDirty(true);
-            } else {
+            } else if (lang == ItemProperties.LanguageKind.C) {
                 extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includes);
                 extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
                 extConf.getCCompilerConfiguration().getIncludeDirectories().setDirty(true);
                 extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setDirty(true);
+            } else if (lang == ItemProperties.LanguageKind.Fortran) {
+                // not supported includes and macros
             }
         }
         makeConfigurationDescriptor.setModified();
     }
 
-    public CCCCompilerConfiguration getFolderConfiguration(boolean isCPP, Folder folder) {
+    public CCCCompilerConfiguration getFolderConfiguration(ItemProperties.LanguageKind lang, Folder folder) {
         MakeConfiguration makeConfiguration = folder.getConfigurationDescriptor().getActiveConfiguration();
         //FolderConfiguration folderConfiguration = (FolderConfiguration)makeConfiguration.getAuxObject(folder.getId());
         FolderConfiguration folderConfiguration = folder.getFolderConfiguration(makeConfiguration);
         if (folderConfiguration == null) {
             return null;
         }
-        if (isCPP) {
+        if (lang == ItemProperties.LanguageKind.CPP) {
             return folderConfiguration.getCCCompilerConfiguration();
-        } else {
+        } else if (lang == ItemProperties.LanguageKind.C) {
             return folderConfiguration.getCCompilerConfiguration();
         }
+        return null;
     }
 
-    public void setupFolder(List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, boolean isCPP, Folder folder) {
-        CCCCompilerConfiguration cccc = getFolderConfiguration(isCPP, folder);
+    public void setupFolder(List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, ItemProperties.LanguageKind lang, Folder folder) {
+        CCCCompilerConfiguration cccc = getFolderConfiguration(lang, folder);
         if (cccc == null) {
             return;
         }
@@ -385,19 +388,23 @@ public class ProjectBridge {
         }
     }
 
-    public void setSourceTool(Item item, boolean isCPP){
+    public void setSourceTool(Item item, ItemProperties.LanguageKind lang){
         MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null) {
             return;
         }
-        if (isCPP) {
+        if (lang == ItemProperties.LanguageKind.CPP) {
             if (itemConfiguration.getTool() != PredefinedToolKind.CCCompiler) {
                 itemConfiguration.setTool(PredefinedToolKind.CCCompiler);
             }
-        } else {
+        } else if (lang == ItemProperties.LanguageKind.C) {
             if (itemConfiguration.getTool() != PredefinedToolKind.CCompiler) {
                 itemConfiguration.setTool(PredefinedToolKind.CCompiler);
+            }
+        } else if (lang == ItemProperties.LanguageKind.Fortran) {
+            if (itemConfiguration.getTool() != PredefinedToolKind.FortranCompiler) {
+                itemConfiguration.setTool(PredefinedToolKind.FortranCompiler);
             }
         }
     }

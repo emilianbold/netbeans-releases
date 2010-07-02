@@ -61,6 +61,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -81,6 +85,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.RequestProcessor;
 
 /**
  * Utilities to assist with retrieval of Javadoc text.
@@ -88,6 +93,7 @@ import org.openide.filesystems.URLMapper;
 public class JavadocHelper {
 
     private static final Logger LOG = Logger.getLogger(JavadocHelper.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(JavadocHelper.class.getName(),1);
     
     private JavadocHelper() {}
     
@@ -185,16 +191,17 @@ public class JavadocHelper {
     }
     
     private static final Map<Element,TextStream> cachedJavadoc = new WeakHashMap<Element,TextStream>();
-
+    
     /**
      * Richer version of {@link SourceUtils#getJavadoc}.
-     * Finds {@link URL} of a javadoc page for given element when available. This method 
+     * Finds {@link URL} of a javadoc page for given element when available. This method
      * uses {@link JavadocForBinaryQuery} to find the javadoc page for the give element.
      * For {@link PackageElement} it returns the package-summary.html for given package.
      * @param element to find the Javadoc for
+     * @param cancel a Callable to signal cancel request
      * @return the javadoc page or null when the javadoc is not available.
      */
-    public static TextStream getJavadoc(Element element) {
+    public static TextStream getJavadoc(Element element, final Callable<Boolean> cancel) {
         synchronized (cachedJavadoc) {
             TextStream result = cachedJavadoc.get(element);
             if (result != null) {
@@ -202,19 +209,22 @@ public class JavadocHelper {
                 return result;
             }
         }
-        TextStream result = doGetJavadoc(element);
+        TextStream result = doGetJavadoc(element, cancel);
         synchronized (cachedJavadoc) {
             cachedJavadoc.put(element, result);
         }
         return result;
     }
 
+    public static TextStream getJavadoc(Element element) {
+        return getJavadoc(element, null);
+    }
+
     @org.netbeans.api.annotations.common.SuppressWarnings(value="DMI_COLLECTION_OF_URLS"/*,justification="URLs have never host part"*/)
-    private static TextStream doGetJavadoc(final Element element) {
+    private static TextStream doGetJavadoc(final Element element, final Callable<Boolean> cancel) {
         if (element == null) {
             throw new IllegalArgumentException("Cannot pass null as an argument of the SourceUtils.getJavadoc"); // NOI18N
         }
-
         ClassSymbol clsSym = null;
         String pkgName;
         String pageName;
@@ -258,25 +268,59 @@ public class JavadocHelper {
         if (clsSym.completer != null) {
             clsSym.complete();
         }
+        if (clsSym.classfile != null) {
+            try {
+                final URL classFile = clsSym.classfile.toUri().toURL();
+                final String pkgNameF = pkgName;
+                final String pageNameF = pageName;
+                final CharSequence fragment = buildFragment ? getFragment(element) : null;
+                final Future<TextStream> future = RP.submit(new Callable<TextStream>() {
+                    @Override
+                    public TextStream call() throws Exception {
+                        return findJavadoc(classFile, pkgNameF, pageNameF, fragment);
+                    }
+                });
+                do {
+                    if (cancel != null && cancel.call()) {
+                        break;
+                    }
+                    try {
+                        return future.get(100, TimeUnit.MILLISECONDS);
+                    } catch (TimeoutException timeOut) {
+                        //Retry
+                    }
+                } while (true);
+            } catch (Exception e) {
+                LOG.log(Level.INFO, null, e);
+            }
+        }
+        return null;
+    }
+
+    private static final String PACKAGE_SUMMARY = "package-summary"; // NOI18N
+
+    private static TextStream findJavadoc(
+            final URL classFile,
+            final String pkgName,
+            final String pageName,
+            final CharSequence fragment) {
 
         URL sourceRoot = null;
         Set<URL> binaries = new HashSet<URL>();
         try {
-            if (clsSym.classfile != null) {
-                FileObject fo = URLMapper.findFileObject(clsSym.classfile.toUri().toURL());
-                StringTokenizer tk = new StringTokenizer(pkgName, "/"); // NOI18N
-                for (int i = 0; fo != null && i <= tk.countTokens(); i++) {
-                    fo = fo.getParent();
-                }
-                if (fo != null) {
-                    URL url = fo.getURL();
-                    sourceRoot = JavaIndex.getSourceRootForClassFolder(url);
-                    if (sourceRoot == null) {
-                        binaries.add(url);
-                    } else {
-                        // sourceRoot may be a class root in reality
-                        binaries.add(sourceRoot);
-                    }
+            FileObject fo = URLMapper.findFileObject(classFile);
+            StringTokenizer tk = new StringTokenizer(pkgName, "/"); // NOI18N
+            for (int i = 0; fo != null && i <= tk.countTokens(); i++) {
+                fo = fo.getParent();
+            }
+            if (fo != null) {
+                URL url = fo.getURL();
+                sourceRoot = JavaIndex.getSourceRootForClassFolder(url);
+                if (sourceRoot == null) {
+                    binaries.add(url);
+                } else {
+                    // sourceRoot may be a class root in reality
+                    binaries.add(sourceRoot);
                 }
             }
             if (sourceRoot != null) {
@@ -303,8 +347,8 @@ public class JavadocHelper {
                         out:
                         for (URL e : roots) {
                             FileObject[] res = SourceForBinaryQuery.findSourceRoots(e).getRoots();
-                            for (FileObject fo : res) {
-                                if (sourceRoots.contains(fo)) {
+                            for (FileObject r : res) {
+                                if (sourceRoots.contains(r)) {
                                     binaries.add(e);
                                     continue out;
                                 }
@@ -313,7 +357,7 @@ public class JavadocHelper {
                     }
                 }
             }
-            CharSequence fragment = buildFragment ? getFragment(element) : null;
+
             for (URL binary : binaries) {
                 JavadocForBinaryQuery.Result javadocResult = JavadocForBinaryQuery.findJavadoc(binary);
                 URL[] result = javadocResult.getRoots();
@@ -366,8 +410,6 @@ public class JavadocHelper {
         }
         return null;
     }
-
-    private static final String PACKAGE_SUMMARY = "package-summary"; // NOI18N
     
     /**
      * {@code ElementJavadoc} currently will check every class in an API set if you keep on using code completion.
