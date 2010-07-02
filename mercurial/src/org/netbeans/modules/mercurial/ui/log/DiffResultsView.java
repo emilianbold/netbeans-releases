@@ -214,20 +214,25 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         return null;
     }
 
-    protected void showDiffError(String s) {
-        setBottomComponent(new NoContentPanel(s));
+    protected void showDiffError (final String s) {
+        Runnable inAWT = new Runnable() {
+            @Override
+            public void run() {
+                setBottomComponent(new NoContentPanel(s));
+            }
+        };
+        if (EventQueue.isDispatchThread()) {
+            inAWT.run();
+        } else {
+            EventQueue.invokeLater(inAWT);
+        }
     }
 
     protected void setBottomComponent(Component component) {
-        final int dl = diffView.getDividerLocation();
+        assert EventQueue.isDispatchThread();
+        int dl = diffView.getDividerLocation();
         diffView.setBottomComponent(component);
         diffView.setDividerLocation(dl);
-        EventQueue.invokeLater(new Runnable () {
-            @Override
-            public void run() {
-                diffView.setDividerLocation(dl);
-            }
-        });
     }
 
     protected HgProgressSupport createShowDiffTask(RepositoryRevision.Event header, HgRevision revision1, HgRevision revision2, boolean showLastDifference) {
@@ -417,27 +422,23 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                         if (currentTask == ShowDiffTask.this) {
                             currentDiff = view;
                             setBottomComponent(currentDiff.getJComponent());
+                            final int dl = diffView.getDividerLocation();
                             if (!setLocation(view)) {
                                 view.addPropertyChangeListener(new PropertyChangeListener() {
                                     @Override
                                     public void propertyChange(PropertyChangeEvent evt) {
                                         view.removePropertyChangeListener(this);
                                         setLocation(view);
-                                        Runnable inAWT = new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                parent.refreshComponents(false);
-                                            }
-                                        };
-                                        if (EventQueue.isDispatchThread()) {
-                                            inAWT.run();
-                                        } else {
-                                            EventQueue.invokeLater(inAWT);
-                                        }
                                     }
                                 });
                             }
                             parent.refreshComponents(false);
+                            EventQueue.invokeLater(new Runnable () {
+                                @Override
+                                public void run() {
+                                    diffView.setDividerLocation(dl);
+                                }
+                            });
                         }
                     } catch (IOException e) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
