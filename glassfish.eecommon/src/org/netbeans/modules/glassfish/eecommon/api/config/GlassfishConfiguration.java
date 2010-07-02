@@ -126,6 +126,10 @@ public abstract class GlassfishConfiguration implements
             throw new ConfigurationException("Unsupported module type: " + module.getType());
         }
 
+        if (null == primarySunDD) {
+            throw new ConfigurationException("No primarySunDD for module type: " + module.getType());
+        }
+
         try {
 
             if (null == primarySunDD.getParentFile()) {
@@ -197,8 +201,9 @@ public abstract class GlassfishConfiguration implements
 
         GlassfishConfiguration storedCfg = getConfiguration(primarySunDD);
         if (storedCfg != this) {
-            Logger.getLogger("glassfish-eecommon").log(Level.INFO, "Stored DeploymentConfiguration ("
-                    + storedCfg + ") instance not the one being disposed of (" + this + ").");
+            Logger.getLogger("glassfish-eecommon").log(Level.INFO, 
+                    "Stored DeploymentConfiguration ({0}) instance not the one being disposed of ({1}).",
+                    new Object[]{storedCfg, this});
         }
 
         if (storedCfg != null) {
@@ -367,7 +372,7 @@ public abstract class GlassfishConfiguration implements
     // of unsupported features (e.g. CMP, etc.)
     // ------------------------------------------------------------------------
 
-    protected void createDefaultSunDD(File sunDDFile) throws IOException {
+    private void createDefaultSunDD(File sunDDFile) throws IOException {
         FileObject sunDDTemplate = Utils.getSunDDFromProjectsModuleVersion(module, sunDDFile.getName()); //FileUtil.getConfigFile(resource);
         if (sunDDTemplate != null) {
             FileObject configFolder = FileUtil.createFolder(sunDDFile.getParentFile());
@@ -385,7 +390,7 @@ public abstract class GlassfishConfiguration implements
         return J2EEBaseVersion.getVersion(module.getType(), module.getModuleVersion());
     }
 
-    public org.netbeans.modules.j2ee.dd.api.common.RootInterface getStandardRootDD() {
+    private org.netbeans.modules.j2ee.dd.api.common.RootInterface getStandardRootDD() {
         org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = null;
         J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getSunDDModuleHelper(module.getType());
         if(j2eeModuleHelper != null) {
@@ -394,7 +399,7 @@ public abstract class GlassfishConfiguration implements
         return stdRootDD;
     }
 
-    public org.netbeans.modules.j2ee.dd.api.webservices.Webservices getWebServicesRootDD() {
+    private org.netbeans.modules.j2ee.dd.api.webservices.Webservices getWebServicesRootDD() {
         org.netbeans.modules.j2ee.dd.api.webservices.Webservices wsRootDD = null;
         J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getSunDDModuleHelper(module.getType());
         if(j2eeModuleHelper != null) {
@@ -600,7 +605,8 @@ public abstract class GlassfishConfiguration implements
             }
         } else {
             Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
-                    "GlassfishConfiguration.getContextRoot() invoked on incorrect module type: " + module.getType());
+                    "GlassfishConfiguration.getContextRoot() invoked on incorrect module type: {0}",
+                    module.getType());
         }
         return contextRoot;
     }
@@ -639,7 +645,8 @@ public abstract class GlassfishConfiguration implements
                 });
             } else {
                 Logger.getLogger("glassfish-eecommon").log(Level.WARNING,
-                        "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: " + module.getType());
+                        "GlassfishConfiguration.setContextRoot() invoked on incorrect module type: {0}",
+                        module.getType());
             }
         } catch (IOException ex) {
             throw new ConfigurationException("",ex);
@@ -1383,7 +1390,7 @@ public abstract class GlassfishConfiguration implements
             getWebServicesRootDD() : getStandardRootDD());
     }
 
-    protected void addDescriptorListener(org.netbeans.modules.j2ee.dd.api.common.RootInterface rootDD) {
+    private void addDescriptorListener(org.netbeans.modules.j2ee.dd.api.common.RootInterface rootDD) {
         if(rootDD != null) {
             descriptorListener.addListener(rootDD);
         }
