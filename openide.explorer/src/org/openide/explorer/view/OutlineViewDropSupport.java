@@ -192,7 +192,9 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         } else {
             dropNode = getNodeForDrop(p);
         }
-        log("doDragOver dropNode == " + dropNode); // NOI18N
+        if (LOGABLE) {
+            log("doDragOver dropNode == " + dropNode); // NOI18N
+        }
 
         // if I haven't any node for drop then reject drop
         if (dropNode == null) {
@@ -224,7 +226,9 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
                 // exclude expanded folder
                 TreePath tp = view.getOutline().getLayoutCache().getPathForRow(
                         view.getOutline().convertRowIndexToModel(row));
-                log("tp == " + tp); //NOI18N
+                if (LOGABLE) {
+                    log("tp == " + tp); //NOI18N
+                }
                 if (!view.getOutline().getLayoutCache().isExpanded(tp)) {
                     log("tree path is not expanded"); // NOI18N
                     // point bellow node
@@ -288,7 +292,9 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
                     DELAY_TIME_FOR_EXPAND,
                     new ActionListener() {
                         final public void actionPerformed(ActionEvent e) {
-                            log("should expand " + path); // NOI18N
+                            if (LOGABLE) {
+                                log("should expand " + path); // NOI18N
+                            }
                             view.getOutline().expandPath(path);
                         }
                     }
@@ -581,7 +587,9 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
     // XXX canditate for more general support
     private boolean canDrop(Node n, int dropAction, Transferable dndEventTransferable) {
-        log("canDrop " + n); // NOI18N
+        if (LOGABLE) {
+            log("canDrop " + n); // NOI18N
+        }
         if (n == null) {
             return false;
         }
@@ -608,7 +616,9 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         Transferable trans = ExplorerDnDManager.getDefault().getDraggedTransferable(
                 (DnDConstants.ACTION_MOVE & dropAction) != 0
             );
-        log("transferable == " + trans); // NOI18N
+        if (LOGABLE) {
+            log("transferable == " + trans); // NOI18N
+        }
         if (trans == null) {
             trans = dndEventTransferable;
             if( null == trans ) {
@@ -633,7 +643,9 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
 
             // find node for the drop perform
             Node dropNode = getNodeForDrop(dtde.getLocation());
-            log("drop dropNode == " + dropNode);
+            if (LOGABLE) {
+                log("drop dropNode == " + dropNode);
+            }
 
             // #64469: Can't drop into empty explorer area
             if (dropNode == null) {
@@ -699,12 +711,16 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
                     );
 
                 for (int i = 0; i < ptCut.length; i++) {
-                    log(ptCut[i].getName()+", "+System.identityHashCode(ptCut[i]));
+                    if (LOGABLE) {
+                        log(ptCut[i].getName()+", "+System.identityHashCode(ptCut[i]));
+                    }
                     setPasteTypes.add(ptCut[i]);
                 }
 
                 for (int i = 0; i < ptCopy.length; i++) {
-                    log(ptCopy[i].getName()+", "+System.identityHashCode(ptCopy[i]));
+                    if (LOGABLE) {
+                        log(ptCopy[i].getName()+", "+System.identityHashCode(ptCopy[i]));
+                    }
                     setPasteTypes.add(ptCopy[i]);
                 }
 
