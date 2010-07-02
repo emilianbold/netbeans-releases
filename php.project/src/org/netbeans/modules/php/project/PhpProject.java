@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.php.project;
 
+import java.awt.Image;
 import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider;
 import java.beans.PropertyChangeEvent;
@@ -68,6 +69,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -137,9 +139,6 @@ import org.w3c.dom.Text;
     privateNamespace=PhpProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
 public final class PhpProject implements Project {
-
-    private static final Icon PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/php/project/ui/resources/phpProject.png", false); // NOI18N
-
     static final Logger LOGGER = Logger.getLogger(PhpProject.class.getName());
 
     final AntProjectHelper helper;
@@ -181,7 +180,7 @@ public final class PhpProject implements Project {
 
     // project's property changes
     public static final String PROP_FRAMEWORKS = "frameworks"; // NOI18N
-    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
 
     public PhpProject(AntProjectHelper helper) {
@@ -695,7 +694,18 @@ public final class PhpProject implements Project {
     }
 
     private final class Info implements ProjectInformation {
+        private static final String TOOLTIP = "<img src=\"%s\">&nbsp;%s"; // NOI18N
+
         private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+        public Info() {
+            PhpProject.this.propertyChangeSupport.addPropertyChangeListener(PhpProject.PROP_FRAMEWORKS, new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    firePropertyChange(ProjectInformation.PROP_ICON);
+                }
+            });
+        }
 
         @Override
         public void addPropertyChangeListener(PropertyChangeListener  listener) {
@@ -709,7 +719,7 @@ public final class PhpProject implements Project {
 
         @Override
         public Icon getIcon() {
-            return PROJECT_ICON;
+            return ImageUtilities.image2Icon(annotateImage(ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png"))); // NOI18N
         }
 
         @Override
@@ -729,6 +739,22 @@ public final class PhpProject implements Project {
 
         void firePropertyChange(String prop) {
             propertyChangeSupport.firePropertyChange(prop , null, null);
+        }
+
+        private Image annotateImage(Image image) {
+            Image badged = image;
+            boolean first = true;
+            for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
+                BadgeIcon badgeIcon = frameworkProvider.getBadgeIcon();
+                if (badgeIcon != null) {
+                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, badgeIcon.getUrl(), frameworkProvider.getName()));
+                    if (first) {
+                        badged = ImageUtilities.mergeImages(badged, badgeIcon.getImage(), 15, 0);
+                        first = false;
+                    }
+                }
+            }
+            return badged;
         }
     }
 
