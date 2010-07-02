@@ -58,6 +58,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
@@ -75,6 +76,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
@@ -203,11 +205,11 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
     }
 
-    private static class ImportantFilesChildFactory extends Children.Keys<FileObject> {
+    private static class ImportantFilesChildFactory extends Children.Keys<Pair<PhpFrameworkProvider, FileObject>> {
         private final PhpProject project;
         private final FileChangeListener fileChangeListener = new ImportantFilesListener();
         // @GuardedBy(this)
-        final List<FileObject> files = new LinkedList<FileObject>();
+        final List<Pair<PhpFrameworkProvider, FileObject>> files = new LinkedList<Pair<PhpFrameworkProvider, FileObject>>();
 
         public ImportantFilesChildFactory(PhpProject project) {
             this.project = project;
@@ -224,22 +226,22 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         protected void removeNotify() {
             removeListeners();
             files.clear();
-            setKeys(Collections.<FileObject>emptyList());
+            setKeys(Collections.<Pair<PhpFrameworkProvider, FileObject>>emptyList());
             super.removeNotify();
         }
 
         @Override
-        protected Node[] createNodes(FileObject key) {
+        protected Node[] createNodes(Pair<PhpFrameworkProvider, FileObject> key) {
             try {
-                return new Node[] {DataObject.find(key).getNodeDelegate()};
+                return new Node[] {new ImportantFileNode(key)};
             } catch (DataObjectNotFoundException ex) {
                 LOGGER.log(Level.WARNING, ex.getMessage(), ex);
             }
             return new Node[0];
         }
 
-        synchronized List<FileObject> getFiles() {
-            List<FileObject> list = new ArrayList<FileObject>(files);
+        synchronized List<Pair<PhpFrameworkProvider, FileObject>> getFiles() {
+            List<Pair<PhpFrameworkProvider, FileObject>> list = new LinkedList<Pair<PhpFrameworkProvider, FileObject>>(files);
             if (!list.isEmpty()) {
                 return list;
             }
@@ -259,7 +261,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                             continue;
                         }
                         if (phpVisibilityQuery.isVisible(fileObject)) {
-                            files.add(fileObject);
+                            files.add(Pair.of(frameworkProvider, fileObject));
                         } else {
                             LOGGER.log(Level.INFO, "File {0} ignored (not visible)", fileObject.getPath());
                         }
@@ -268,17 +270,17 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             }
 
             assert !files.isEmpty();
-            return new ArrayList<FileObject>(files);
+            return new ArrayList<Pair<PhpFrameworkProvider, FileObject>>(files);
         }
 
         private Set<FileObject> getParents() {
             return getParents(getFiles());
         }
 
-        private Set<FileObject> getParents(List<FileObject> files) {
+        private Set<FileObject> getParents(List<Pair<PhpFrameworkProvider, FileObject>> files) {
             Set<FileObject> parents = new HashSet<FileObject>();
-            for (FileObject fileObject : files) {
-                parents.add(fileObject.getParent());
+            for (Pair<PhpFrameworkProvider, FileObject> pair : files) {
+                parents.add(pair.second.getParent());
             }
             return parents;
         }
@@ -304,9 +306,9 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
 
         void fileChange() {
-            final List<FileObject> oldFiles = getFiles();
+            final List<Pair<PhpFrameworkProvider, FileObject>> oldFiles = getFiles();
             files.clear();
-            final List<FileObject> newFiles = getFiles();
+            final List<Pair<PhpFrameworkProvider, FileObject>> newFiles = getFiles();
             if (!oldFiles.equals(newFiles)) {
                 removeListeners(getParents(oldFiles));
                 attachListeners();
@@ -337,5 +339,19 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 ImportantFilesChildFactory.this.fileChange();
             }
         };
+    }
+
+    private static final class ImportantFileNode extends FilterNode {
+        private final Pair<PhpFrameworkProvider, FileObject> pair;
+
+        public ImportantFileNode(Pair<PhpFrameworkProvider, FileObject> pair) throws DataObjectNotFoundException {
+            super(DataObject.find(pair.second).getNodeDelegate());
+            this.pair = pair;
+        }
+
+        @Override
+        public String getShortDescription() {
+            return pair.first.getName();
+        }
     }
 }
