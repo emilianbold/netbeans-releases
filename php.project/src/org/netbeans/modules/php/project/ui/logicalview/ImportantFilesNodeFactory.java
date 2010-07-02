@@ -46,9 +46,12 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -57,18 +60,21 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
@@ -193,53 +199,123 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
 
         private static Children createChildren(PhpProject project) {
-            return Children.create(new ImportantFilesChildFactory(project), false);
+            return new ImportantFilesChildFactory(project);
         }
     }
 
-    private static class ImportantFilesChildFactory extends Nodes.FileChildFactory {
+    private static class ImportantFilesChildFactory extends Children.Keys<FileObject> {
+        private final PhpProject project;
+        private final FileChangeListener fileChangeListener = new ImportantFilesListener();
+        // @GuardedBy(this)
+        final List<FileObject> files = new LinkedList<FileObject>();
 
         public ImportantFilesChildFactory(PhpProject project) {
-            super(project);
+            this.project = project;
         }
 
         @Override
-        protected List<Node> getNodes() {
-            List<Node> list = new LinkedList<Node>();
+        protected void addNotify() {
+            super.addNotify();
+            setKeys(getFiles());
+            attachListeners();
+        }
+
+        @Override
+        protected void removeNotify() {
+            removeListeners();
+            files.clear();
+            setKeys(Collections.<FileObject>emptyList());
+            super.removeNotify();
+        }
+
+        @Override
+        protected Node[] createNodes(FileObject key) {
+            try {
+                return new Node[] {DataObject.find(key).getNodeDelegate()};
+            } catch (DataObjectNotFoundException ex) {
+                LOGGER.log(Level.WARNING, ex.getMessage(), ex);
+            }
+            return new Node[0];
+        }
+
+        synchronized List<FileObject> getFiles() {
+            List<FileObject> list = new ArrayList<FileObject>(files);
+            if (!list.isEmpty()) {
+                return list;
+            }
+            assert files.isEmpty() : project.getName() + ": " + files;
+
             final PhpModule phpModule = project.getPhpModule();
+            final PhpVisibilityQuery phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
             for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
                 for (File file : frameworkProvider.getConfigurationFiles(phpModule)) {
                     final FileObject fileObject = FileUtil.toFileObject(file);
                     // XXX non-existing files are simply ignored
                     if (fileObject != null) {
-                        try {
-                            list.add(new FileNode(DataObject.find(fileObject), project));
-                        } catch (DataObjectNotFoundException ex) {
-                            LOGGER.log(Level.WARNING, ex.getMessage(), ex);
+                        if (fileObject.isFolder()) {
+                            throw new IllegalStateException("No folders allowed among configuration files ["
+                                    + fileObject.getNameExt() + " for " + frameworkProvider.getName() + "]");
+                        }
+                        if (phpVisibilityQuery.isVisible(fileObject)) {
+                            files.add(fileObject);
                         }
                     }
                 }
             }
-            return list;
-        }
-    }
 
-    private static class FileNode extends FilterNode {
-
-        public FileNode(DataObject dataObject, PhpProject project) {
-            super(dataObject.getNodeDelegate(), getChildren(dataObject, project));
+            assert !files.isEmpty();
+            return new ArrayList<FileObject>(files);
         }
 
-        private static org.openide.nodes.Children getChildren(DataObject dobj, PhpProject project) {
-            if (dobj instanceof DataFolder) {
-                return new Nodes.DummyChildren(dobj.getNodeDelegate(), new PhpSourcesFilter(project)) {
-                    @Override
-                    protected Node copyNode(Node originalNode) {
-                        return originalNode.cloneNode();
-                    }
-                };
+        private Set<FileObject> getParents() {
+            Set<FileObject> parents = new HashSet<FileObject>();
+            for (FileObject fileObject : getFiles()) {
+                parents.add(fileObject.getParent());
             }
-            return Children.LEAF;
+            return parents;
         }
+
+        void attachListeners() {
+            for (FileObject parent : getParents()) {
+                parent.addFileChangeListener(fileChangeListener);
+            }
+        }
+
+        void removeListeners() {
+            for (FileObject parent : getParents()) {
+                parent.removeFileChangeListener(fileChangeListener);
+            }
+        }
+
+        void fileChange() {
+            // avoid deadlocks
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    removeListeners();
+                    files.clear();
+                    setKeys(getFiles());
+                    attachListeners();
+                }
+            });
+        }
+
+        private class ImportantFilesListener extends FileChangeAdapter {
+            @Override
+            public void fileRenamed(FileRenameEvent fe) {
+                fileChange();
+            }
+            @Override
+            public void fileDataCreated(FileEvent fe) {
+                fileChange();
+            }
+            @Override
+            public void fileDeleted(FileEvent fe) {
+                fileChange();
+            }
+            private void fileChange() {
+                ImportantFilesChildFactory.this.fileChange();
+            }
+        };
     }
 }
