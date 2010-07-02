@@ -131,6 +131,8 @@ public abstract class PhpFrameworkProvider {
 
     /**
      * Returns the configuration files belonging to this framework.
+     * <p>
+     * These files are displayed under <tt>Important Files</tt> node in <tt>Projects</tt> view.
      *
      * @param  phpModule the PHP module for which the configuration files are returned; never <code>null</code>.
      * @return an array containing the configuration files; can be empty but never <code>null</code>.
