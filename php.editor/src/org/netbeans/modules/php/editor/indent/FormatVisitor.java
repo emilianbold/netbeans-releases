@@ -217,6 +217,16 @@ public class FormatVisitor extends DefaultVisitor {
 		// when the array is on the beginning of the line, indent items in normal way
 		delta = options.indentArrayItems;
 	    }
+            if (path.get(1) instanceof FunctionInvocation && ((FunctionInvocation)path.get(1)).getParameters().size() == 1) {
+                int hindex = formatTokens.size() - 1;
+                while (hindex > 0 && formatTokens.get(hindex).getId() != FormatToken.Kind.TEXT
+                        && formatTokens.get(hindex).getId() != FormatToken.Kind.WHITESPACE_INDENT) {
+                    hindex --;
+                }
+                if (hindex > 0 && formatTokens.get(hindex).getId() == FormatToken.Kind.WHITESPACE_INDENT) {
+                    delta = options.indentArrayItems;
+                }
+            }
 	    addFormatToken(formatTokens); // add array keyword
 	}
 	formatTokens.add(new FormatToken.IndentToken(ts.offset(), delta));
@@ -225,7 +235,6 @@ public class FormatVisitor extends DefaultVisitor {
 	addAllUntilOffset(node.getEndOffset());
     }
 
-    @Override
     public void visit(Assignment node) {
 	scan(node.getLeftHandSide());
 	while (ts.moveNext() && ts.offset() < node.getRightHandSide().getStartOffset()
@@ -691,14 +700,65 @@ public class FormatVisitor extends DefaultVisitor {
 
 	}
 	scan(node.getFunctionName());
-	if (node.getParameters() != null && node.getParameters().size() > 0) {
-	    formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
-	    scan(node.getParameters());
-	    formatTokens.add(new FormatToken.IndentToken(node.getParameters().get(node.getParameters().size() - 1).getEndOffset(), -1 * options.continualIndentSize));
-	    addAllUntilOffset(node.getEndOffset());
-	} else {
-	    super.visit(node);
+        List<Expression> parameters = node.getParameters();
+	if (parameters != null && parameters.size() > 0) {
+            boolean addIndentation = !(path.get(1) instanceof Assignment);
+            if (addIndentation) {
+                formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
+            }
+	    while (ts.moveNext() && ts.offset() < parameters.get(0).getStartOffset()) {
+		addFormatToken(formatTokens);
+	    }
+	    ts.movePrevious();
+	    addUnbreakalbeSequence(parameters.get(0), true);
+	    for (int i = 1; i < parameters.size(); i++) {
+		if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE) {
+		    addFormatToken(formatTokens);
+		} else {
+		    ts.movePrevious();
+		}
+		formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_ARGUMENT_LIST, ts.offset() + ts.token().length()));
+		addUnbreakalbeSequence(parameters.get(i), false);
+	    }
+            if (ts.token().id() == PHPTokenId.WHITESPACE) {
+                addFormatToken(formatTokens);
+            }
+            if (addIndentation) {
+                List<FormatToken> removed = new ArrayList<FormatToken>();
+                FormatToken ftoken = formatTokens.get(formatTokens.size() - 1);
+                while(ftoken.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_END
+                        || (ftoken.isWhitespace() && ftoken.getId() != FormatToken.Kind.WHITESPACE_INDENT)
+                        || ftoken.getId() == FormatToken.Kind.COMMENT
+                        || ftoken.getId() == FormatToken.Kind.COMMENT_START
+                        || ftoken.getId() == FormatToken.Kind.COMMENT_END
+                        || (ftoken.getId() == FormatToken.Kind.TEXT && ")".equals(ftoken.getOldText().toString()))) {
+                    formatTokens.remove(formatTokens.size() - 1);
+                    removed.add(ftoken);
+                    ftoken = formatTokens.get(formatTokens.size() - 1);
+                }
+                if (ftoken.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
+                    formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), -1 * options.continualIndentSize));
+                    for(int i = removed.size() - 1; i > -1; i--) {
+                        formatTokens.add(removed.get(i));
+                    }
+                } else {
+                    for(int i = removed.size() - 1; i > -1; i--) {
+                        formatTokens.add(removed.get(i));
+                    }
+                    formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), -1 * options.continualIndentSize));
+                }
+            }
 	}
+        addAllUntilOffset(node.getEndOffset());
+        
+//	if (node.getParameters() != null && node.getParameters().size() > 0) {
+//	    formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
+//	    scan(node.getParameters());
+//	    formatTokens.add(new FormatToken.IndentToken(node.getParameters().get(node.getParameters().size() - 1).getEndOffset(), -1 * options.continualIndentSize));
+//	    addAllUntilOffset(node.getEndOffset());
+//	} else {
+//	    super.visit(node);
+//	}
     }
 
     @Override
