@@ -272,36 +272,52 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
 
         private Set<FileObject> getParents() {
+            return getParents(getFiles());
+        }
+
+        private Set<FileObject> getParents(List<FileObject> files) {
             Set<FileObject> parents = new HashSet<FileObject>();
-            for (FileObject fileObject : getFiles()) {
+            for (FileObject fileObject : files) {
                 parents.add(fileObject.getParent());
             }
             return parents;
         }
 
         void attachListeners() {
-            for (FileObject parent : getParents()) {
+            attachListeners(getParents());
+        }
+
+        void attachListeners(Set<FileObject> folders) {
+            for (FileObject parent : folders) {
                 parent.addFileChangeListener(fileChangeListener);
             }
         }
 
         void removeListeners() {
-            for (FileObject parent : getParents()) {
+            removeListeners(getParents());
+        }
+
+        void removeListeners(Set<FileObject> folders) {
+            for (FileObject parent : folders) {
                 parent.removeFileChangeListener(fileChangeListener);
             }
         }
 
         void fileChange() {
-            // avoid deadlocks
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    removeListeners();
-                    files.clear();
-                    setKeys(getFiles());
-                    attachListeners();
-                }
-            });
+            final List<FileObject> oldFiles = getFiles();
+            files.clear();
+            final List<FileObject> newFiles = getFiles();
+            if (!oldFiles.equals(newFiles)) {
+                removeListeners(getParents(oldFiles));
+                attachListeners();
+                // avoid deadlocks
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setKeys(newFiles);
+                    }
+                });
+            }
         }
 
         private class ImportantFilesListener extends FileChangeAdapter {
