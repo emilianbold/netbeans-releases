@@ -54,6 +54,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
@@ -76,7 +77,7 @@ import org.openide.util.NbBundle;
  *
  * @author Radek Matous
  */
-@NodeFactory.Registration(projectType="org-netbeans-modules-php-project", position=200)
+@NodeFactory.Registration(projectType="org-netbeans-modules-php-project", position=300)
 public class IncludePathNodeFactory implements NodeFactory {
 
     public IncludePathNodeFactory() {
@@ -96,9 +97,7 @@ public class IncludePathNodeFactory implements NodeFactory {
 
     private static class IncludePathRootNode extends AbstractNode implements PropertyChangeListener {
 
-        private PhpProject project;
-        private static final String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/php/project/ui/resources/referencedClasspath.gif"; //NOI18N
-        private static final ImageIcon ICON_CLASSPATH = ImageUtilities.loadImageIcon(RESOURCE_ICON_CLASSPATH, false);
+        private final PhpProject project;
 
         public IncludePathRootNode(PhpProject project) {
             super(createChildren(project));
@@ -113,12 +112,16 @@ public class IncludePathNodeFactory implements NodeFactory {
 
         @Override
         public Image getIcon(int type) {
-            return ICON_CLASSPATH.getImage();
+            return getIcon(true);
         }
 
         @Override
         public Image getOpenedIcon(int type) {
-            return getIcon(type);
+            return getIcon(false);
+        }
+
+        private Image getIcon(boolean opened) {
+            return Utils.getIncludePathIcon(opened);
         }
 
         @Override
