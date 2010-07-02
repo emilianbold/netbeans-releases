@@ -253,11 +253,15 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                     // XXX non-existing files are simply ignored
                     if (fileObject != null) {
                         if (fileObject.isFolder()) {
-                            throw new IllegalStateException("No folders allowed among configuration files ["
+                            Exception ex = new IllegalStateException("No folders allowed among configuration files ["
                                     + fileObject.getNameExt() + " for " + frameworkProvider.getName() + "]");
+                            LOGGER.log(Level.WARNING, ex.getMessage(), ex);
+                            continue;
                         }
                         if (phpVisibilityQuery.isVisible(fileObject)) {
                             files.add(fileObject);
+                        } else {
+                            LOGGER.log(Level.INFO, "File {0} ignored (not visible)", fileObject.getPath());
                         }
                     }
                 }
