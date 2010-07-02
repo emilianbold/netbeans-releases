@@ -7161,3 +7161,14 @@ org.netbeans.modules.java.hints.jackpot.impl.hints.HintsTask$CaretFactoryImpl
 org.netbeans.modules.java.hints.jackpot.impl.hints.HintsTask$FactoryImpl
 org.netbeans.modules.java.hints.options.HintsSettings
 org.netbeans.modules.java.hints.spi.AbstractHint$HintSeverity
+
+# OK on June 30, 2010:
+org.netbeans.api.project.ProjectUtils$AnnotateIconProxyProjectInformation
+org.netbeans.spi.project.ProjectIconAnnotator
+org.netbeans.modules.kenai.ui.KenaiNBProjectAnnotator
+org.openide.actions.UndoRedoAction
+org.openide.awt.UndoRedo$Provider
+org.openide.nodes.ChildFactory$Detachable
+org.openide.loaders.MimeFactory
+
+
