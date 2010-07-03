@@ -163,12 +163,12 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
                     }
 
                     // compare extensions, then full names
-                    String ext1 = o1.getExt().toLowerCase();
-                    String ext2 = o2.getExt().toLowerCase();
+                    String ext1 = o1.getExt();
+                    String ext2 = o2.getExt();
                     if (ext1.equals(ext2)) {
-                        return o1.getNameExt().compareTo(o2.getNameExt());
+                        return o1.getNameExt().compareToIgnoreCase(o2.getNameExt());
                     }
-                    return ext1.compareTo(ext2);
+                    return ext1.compareToIgnoreCase(ext2);
                 }
             });
 
