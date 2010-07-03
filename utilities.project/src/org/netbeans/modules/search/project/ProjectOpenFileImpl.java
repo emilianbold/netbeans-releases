@@ -58,7 +58,8 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jaroslav Tulach, Jesse Glick
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openfile.OpenFileImpl.class, position=50)
+@org.openide.util.lookup.ServiceProvider(
+          service=org.netbeans.modules.openfile.OpenFileImpl.class, position=50)
 public class ProjectOpenFileImpl implements OpenFileImpl {
 
     public boolean open(FileObject fileObject, int line) {
@@ -66,14 +67,33 @@ public class ProjectOpenFileImpl implements OpenFileImpl {
             try {
                 Project p = ProjectManager.getDefault().findProject(fileObject);
                 if (p != null) {
-                    OpenProjects.getDefault().open(new Project[] {p}, false, true);
+                    openProject(p); // #171842
                     return true;
                 }
             } catch (IOException ex) {
-                Logger.getLogger(ProjectOpenFileImpl.class.getName()).log(Level.WARNING, null, ex);
+                Logger.getLogger(getClass().getName()).log(Level.WARNING,
+                                                           null, ex);
             }
         }
         return false;
+    }
+
+    /**
+     * Opens the specified project asynchronously. This method helps to avoid
+     * blocking of the current thread (e.g. AWT thread) on long-time operation
+     * of opening the project.
+     *
+     * @param p the project.
+     */
+    private void openProject(final Project p) {
+        Runnable r =new Runnable() {
+
+            @Override
+            public void run() {
+                OpenProjects.getDefault().open(new Project[] {p}, false, true);
+            }
+        };
+        new Thread(r, "Open " + p).start(); // NOI18N
     }
 
 }

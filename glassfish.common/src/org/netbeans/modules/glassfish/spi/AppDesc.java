@@ -51,11 +51,13 @@ public class AppDesc {
     private final String name;
     private final String path;
     private final String contextRoot;
+    private final boolean enabled;
     
-    public AppDesc(final String name, final String path, final String contextRoot) {
+    public AppDesc(final String name, final String path, final String contextRoot, boolean enabled) {
         this.name = name;
         this.path = path;
         this.contextRoot = contextRoot;
+        this.enabled = enabled;
     }
 
     public String getName() {
@@ -68,6 +70,10 @@ public class AppDesc {
     
     public String getContextRoot() {
         return contextRoot;
+    }
+
+    public boolean getEnabled() {
+        return enabled;
     }
     
 }

@@ -12,7 +12,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -27,7 +27,7 @@
                   <Component id="startDerby" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jdbcDriverDeployCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="monitorCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cometCheckBox" alignment="0" pref="392" max="32767" attributes="0"/>
+                  <Component id="cometCheckBox" alignment="0" pref="404" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="labelLocation" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -75,7 +75,7 @@
               <Component id="enableSessionsCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="startDerby" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="13" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

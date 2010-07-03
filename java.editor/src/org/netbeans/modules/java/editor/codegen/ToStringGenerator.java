@@ -198,9 +198,15 @@ public class ToStringGenerator implements CodeGenerator {
         ModifiersTree modifiers = make.Modifiers(mods, annotations);
 
         ExpressionTree exp = make.Literal(typeName + '{');
+        boolean first = true;
         for (VariableElement variableElement : fields) {
-            exp = make.Binary(Tree.Kind.PLUS, exp, make.Literal(variableElement.getSimpleName().toString() + '='));
+            StringBuilder sb = new StringBuilder();
+            if (!first)
+                sb.append(", ");
+            sb.append(variableElement.getSimpleName().toString()).append('=');
+            exp = make.Binary(Tree.Kind.PLUS, exp, make.Literal(sb.toString()));
             exp = make.Binary(Tree.Kind.PLUS, exp, make.Identifier(variableElement.getSimpleName()));
+            first = false;
         }
         StatementTree stat = make.Return(make.Binary(Tree.Kind.PLUS, exp, make.Literal('}'))); //NOI18N
         BlockTree body = make.Block(Collections.singletonList(stat), false);

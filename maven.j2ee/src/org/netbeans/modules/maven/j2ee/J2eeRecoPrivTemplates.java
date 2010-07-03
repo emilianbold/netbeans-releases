@@ -235,11 +235,13 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 if (Profile.JAVA_EE_6_WEB.equals(p) || Profile.JAVA_EE_6_FULL.equals(p)) {
                     ArrayList<String> toRet = new ArrayList<String>(Arrays.asList(WEB_TYPES_6));
                     J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
-                    if (cap.isEjb31Supported()) {
-                        toRet.addAll(Arrays.asList(WEB_TYPES_EJB));
-                    }
-                    if (cap.isEjb31LiteSupported()) {
-                        toRet.addAll(Arrays.asList(WEB_TYPES_EJB_LITE));
+                    if (cap != null) {
+                        if (cap.isEjb31Supported()) {
+                            toRet.addAll(Arrays.asList(WEB_TYPES_EJB));
+                        }
+                        if (cap.isEjb31LiteSupported()) {
+                            toRet.addAll(Arrays.asList(WEB_TYPES_EJB_LITE));
+                        }
                     }
                     return toRet.toArray(new String[0]);
                 }

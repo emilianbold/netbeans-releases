@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.21
+#Version 2.23
 
 CLSS public abstract interface java.io.Serializable
 
@@ -7,7 +7,7 @@ CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
-cons protected Enum(java.lang.String,int)
+cons protected init(java.lang.String,int)
 intf java.io.Serializable
 intf java.lang.Comparable<{java.lang.Enum%0}>
 meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
@@ -24,7 +24,7 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -153,6 +153,7 @@ supr java.lang.Object
 hfds choosenLocalLocation,choosenWidget,previouslyChoosenLocalLocation,previouslyChoosenWidget,selectionType
 
 CLSS public final static !enum org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType
+ outer org.netbeans.api.visual.action.ContiguousSelectEvent
 fld public final static org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType ADDITIVE_CONTIGUOUS
 fld public final static org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType ADDITIVE_NON_CONTIGUOUS
 fld public final static org.netbeans.api.visual.action.ContiguousSelectEvent$SelectionType REPLACE_CONTIGUOUS
@@ -187,12 +188,14 @@ meth public abstract void notifyOpened(org.netbeans.api.visual.action.InplaceEdi
 meth public abstract {org.netbeans.api.visual.action.InplaceEditorProvider%0} createEditorComponent(org.netbeans.api.visual.action.InplaceEditorProvider$EditorController,org.netbeans.api.visual.widget.Widget)
 
 CLSS public abstract interface static org.netbeans.api.visual.action.InplaceEditorProvider$EditorController
+ outer org.netbeans.api.visual.action.InplaceEditorProvider
 meth public abstract boolean isEditorVisible()
 meth public abstract boolean openEditor(org.netbeans.api.visual.widget.Widget)
 meth public abstract void closeEditor(boolean)
 meth public abstract void notifyEditorComponentBoundsChanged()
 
 CLSS public final static !enum org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType
+ outer org.netbeans.api.visual.action.InplaceEditorProvider
 fld public final static org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType CODE
 fld public final static org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType KEY
 fld public final static org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType MOUSE
@@ -201,6 +204,7 @@ meth public static org.netbeans.api.visual.action.InplaceEditorProvider$EditorIn
 supr java.lang.Enum<org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType>
 
 CLSS public final static !enum org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection
+ outer org.netbeans.api.visual.action.InplaceEditorProvider
 fld public final static org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection BOTTOM
 fld public final static org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection LEFT
 fld public final static org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection RIGHT
@@ -210,6 +214,7 @@ meth public static org.netbeans.api.visual.action.InplaceEditorProvider$Expansio
 supr java.lang.Enum<org.netbeans.api.visual.action.InplaceEditorProvider$ExpansionDirection>
 
 CLSS public abstract interface static org.netbeans.api.visual.action.InplaceEditorProvider$TypedEditorController
+ outer org.netbeans.api.visual.action.InplaceEditorProvider
 intf org.netbeans.api.visual.action.InplaceEditorProvider$EditorController
 meth public abstract org.netbeans.api.visual.action.InplaceEditorProvider$EditorInvocationType getEditorInvocationType()
 
@@ -257,6 +262,7 @@ meth public abstract void resizingFinished(org.netbeans.api.visual.widget.Widget
 meth public abstract void resizingStarted(org.netbeans.api.visual.widget.Widget)
 
 CLSS public final static !enum org.netbeans.api.visual.action.ResizeProvider$ControlPoint
+ outer org.netbeans.api.visual.action.ResizeProvider
 fld public final static org.netbeans.api.visual.action.ResizeProvider$ControlPoint BOTTOM_CENTER
 fld public final static org.netbeans.api.visual.action.ResizeProvider$ControlPoint BOTTOM_LEFT
 fld public final static org.netbeans.api.visual.action.ResizeProvider$ControlPoint BOTTOM_RIGHT
@@ -320,7 +326,8 @@ meth public abstract org.netbeans.api.visual.action.WidgetAction$State mouseRele
 meth public abstract org.netbeans.api.visual.action.WidgetAction$State mouseWheelMoved(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent)
 
 CLSS public static org.netbeans.api.visual.action.WidgetAction$Adapter
-cons public Adapter()
+ outer org.netbeans.api.visual.action.WidgetAction
+cons public init()
 intf org.netbeans.api.visual.action.WidgetAction
 meth public org.netbeans.api.visual.action.WidgetAction$State dragEnter(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
 meth public org.netbeans.api.visual.action.WidgetAction$State dragExit(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent)
@@ -343,7 +350,8 @@ meth public org.netbeans.api.visual.action.WidgetAction$State mouseWheelMoved(or
 supr java.lang.Object
 
 CLSS public final static org.netbeans.api.visual.action.WidgetAction$Chain
-cons public Chain()
+ outer org.netbeans.api.visual.action.WidgetAction
+cons public init()
 intf org.netbeans.api.visual.action.WidgetAction
 meth public java.util.List<org.netbeans.api.visual.action.WidgetAction> getActions()
 meth public org.netbeans.api.visual.action.WidgetAction$State dragEnter(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
@@ -372,7 +380,8 @@ supr java.lang.Object
 hfds actions,actionsUm
 
 CLSS public abstract static org.netbeans.api.visual.action.WidgetAction$LockedAdapter
-cons public LockedAdapter()
+ outer org.netbeans.api.visual.action.WidgetAction
+cons public init()
 intf org.netbeans.api.visual.action.WidgetAction
 meth protected abstract boolean isLocked()
 meth public org.netbeans.api.visual.action.WidgetAction$State dragEnter(org.netbeans.api.visual.widget.Widget,org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent)
@@ -396,6 +405,7 @@ meth public org.netbeans.api.visual.action.WidgetAction$State mouseWheelMoved(or
 supr java.lang.Object
 
 CLSS public abstract static org.netbeans.api.visual.action.WidgetAction$State
+ outer org.netbeans.api.visual.action.WidgetAction
 fld public final static org.netbeans.api.visual.action.WidgetAction$State CHAIN_ONLY
 fld public final static org.netbeans.api.visual.action.WidgetAction$State CONSUMED
 fld public final static org.netbeans.api.visual.action.WidgetAction$State REJECTED
@@ -407,7 +417,8 @@ meth public static org.netbeans.api.visual.action.WidgetAction$State createLocke
 supr java.lang.Object
 
 CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDragEvent
-cons public WidgetDropTargetDragEvent(long,java.awt.dnd.DropTargetDragEvent)
+ outer org.netbeans.api.visual.action.WidgetAction
+cons public init(long,java.awt.dnd.DropTargetDragEvent)
 intf org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
 meth public boolean isDataFlavorSupported(java.awt.datatransfer.DataFlavor)
 meth public int getDropAction()
@@ -426,7 +437,8 @@ supr java.lang.Object
 hfds event,id,x,y
 
 CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetDropEvent
-cons public WidgetDropTargetDropEvent(long,java.awt.dnd.DropTargetDropEvent)
+ outer org.netbeans.api.visual.action.WidgetAction
+cons public init(long,java.awt.dnd.DropTargetDropEvent)
 intf org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
 meth public boolean isDataFlavorSupported(java.awt.datatransfer.DataFlavor)
 meth public boolean isLocalTransfer()
@@ -446,7 +458,8 @@ supr java.lang.Object
 hfds event,id,x,y
 
 CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetDropTargetEvent
-cons public WidgetDropTargetEvent(long,java.awt.dnd.DropTargetEvent)
+ outer org.netbeans.api.visual.action.WidgetAction
+cons public init(long,java.awt.dnd.DropTargetEvent)
 intf org.netbeans.api.visual.action.WidgetAction$WidgetEvent
 meth public java.awt.dnd.DropTargetContext getDropTargetContext()
 meth public long getEventID()
@@ -454,10 +467,12 @@ supr java.lang.Object
 hfds event,id
 
 CLSS public abstract interface static org.netbeans.api.visual.action.WidgetAction$WidgetEvent
+ outer org.netbeans.api.visual.action.WidgetAction
 meth public abstract long getEventID()
 
 CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetFocusEvent
-cons public WidgetFocusEvent(long,java.awt.event.FocusEvent)
+ outer org.netbeans.api.visual.action.WidgetAction
+cons public init(long,java.awt.event.FocusEvent)
 intf org.netbeans.api.visual.action.WidgetAction$WidgetEvent
 meth public boolean isTemporary()
 meth public java.lang.Object getOppositeComponent()
@@ -467,7 +482,8 @@ supr java.lang.Object
 hfds event,id
 
 CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetKeyEvent
-cons public WidgetKeyEvent(long,java.awt.event.KeyEvent)
+ outer org.netbeans.api.visual.action.WidgetAction
+cons public init(long,java.awt.event.KeyEvent)
 intf org.netbeans.api.visual.action.WidgetAction$WidgetEvent
 meth public boolean isActionKey()
 meth public boolean isAltDown()
@@ -486,13 +502,15 @@ supr java.lang.Object
 hfds event,id
 
 CLSS public abstract interface static org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
+ outer org.netbeans.api.visual.action.WidgetAction
 intf org.netbeans.api.visual.action.WidgetAction$WidgetEvent
 meth public abstract java.awt.Point getPoint()
 meth public abstract void setPoint(java.awt.Point)
 meth public abstract void translatePoint(int,int)
 
 CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetMouseEvent
-cons public WidgetMouseEvent(long,java.awt.event.MouseEvent)
+ outer org.netbeans.api.visual.action.WidgetAction
+cons public init(long,java.awt.event.MouseEvent)
 intf org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
 meth public boolean isAltDown()
 meth public boolean isAltGraphDown()
@@ -513,7 +531,8 @@ supr java.lang.Object
 hfds event,id,x,y
 
 CLSS public final static org.netbeans.api.visual.action.WidgetAction$WidgetMouseWheelEvent
-cons public WidgetMouseWheelEvent(long,java.awt.event.MouseWheelEvent)
+ outer org.netbeans.api.visual.action.WidgetAction
+cons public init(long,java.awt.event.MouseWheelEvent)
 intf org.netbeans.api.visual.action.WidgetAction$WidgetLocationEvent
 meth public boolean isAltDown()
 meth public boolean isAltGraphDown()
@@ -538,7 +557,7 @@ supr java.lang.Object
 hfds event,id,x,y
 
 CLSS public abstract org.netbeans.api.visual.anchor.Anchor
-cons protected Anchor(org.netbeans.api.visual.widget.Widget)
+cons protected init(org.netbeans.api.visual.widget.Widget)
 fld public final static java.util.EnumSet<org.netbeans.api.visual.anchor.Anchor$Direction> DIRECTION_ANY
 innr public abstract interface static Entry
 innr public final Result
@@ -566,6 +585,7 @@ supr java.lang.Object
 hfds attachedToWidget,entries,relatedWidget
 
 CLSS public final static !enum org.netbeans.api.visual.anchor.Anchor$Direction
+ outer org.netbeans.api.visual.anchor.Anchor
 fld public final static org.netbeans.api.visual.anchor.Anchor$Direction BOTTOM
 fld public final static org.netbeans.api.visual.anchor.Anchor$Direction LEFT
 fld public final static org.netbeans.api.visual.anchor.Anchor$Direction RIGHT
@@ -575,6 +595,7 @@ meth public static org.netbeans.api.visual.anchor.Anchor$Direction[] values()
 supr java.lang.Enum<org.netbeans.api.visual.anchor.Anchor$Direction>
 
 CLSS public abstract interface static org.netbeans.api.visual.anchor.Anchor$Entry
+ outer org.netbeans.api.visual.anchor.Anchor
 meth public abstract boolean isAttachedToConnectionSource()
 meth public abstract org.netbeans.api.visual.anchor.Anchor getAttachedAnchor()
 meth public abstract org.netbeans.api.visual.anchor.Anchor getOppositeAnchor()
@@ -582,8 +603,9 @@ meth public abstract org.netbeans.api.visual.widget.ConnectionWidget getAttached
 meth public abstract void revalidateEntry()
 
 CLSS public final org.netbeans.api.visual.anchor.Anchor$Result
-cons public Result(java.awt.Point,java.util.EnumSet<org.netbeans.api.visual.anchor.Anchor$Direction>)
-cons public Result(org.netbeans.api.visual.anchor.Anchor,java.awt.Point,org.netbeans.api.visual.anchor.Anchor$Direction)
+ outer org.netbeans.api.visual.anchor.Anchor
+cons public init(java.awt.Point,java.util.EnumSet<org.netbeans.api.visual.anchor.Anchor$Direction>)
+cons public init(org.netbeans.api.visual.anchor.Anchor,java.awt.Point,org.netbeans.api.visual.anchor.Anchor$Direction)
 meth public java.awt.Point getAnchorSceneLocation()
 meth public java.util.EnumSet<org.netbeans.api.visual.anchor.Anchor$Direction> getDirections()
 supr java.lang.Object
@@ -603,6 +625,7 @@ meth public static org.netbeans.api.visual.anchor.Anchor createRectangularAnchor
 supr java.lang.Object
 
 CLSS public final static !enum org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind
+ outer org.netbeans.api.visual.anchor.AnchorFactory
 fld public final static org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind HORIZONTAL
 fld public final static org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind VERTICAL
 meth public static org.netbeans.api.visual.anchor.AnchorFactory$DirectionalAnchorKind valueOf(java.lang.String)
@@ -632,6 +655,7 @@ meth public static org.netbeans.api.visual.anchor.AnchorShapeLocationResolver cr
 supr java.lang.Object
 
 CLSS public final static !enum org.netbeans.api.visual.anchor.AnchorShapeFactory$ConnectionEnd
+ outer org.netbeans.api.visual.anchor.AnchorShapeFactory
 fld public final static org.netbeans.api.visual.anchor.AnchorShapeFactory$ConnectionEnd SOURCE
 fld public final static org.netbeans.api.visual.anchor.AnchorShapeFactory$ConnectionEnd TARGET
 meth public static org.netbeans.api.visual.anchor.AnchorShapeFactory$ConnectionEnd valueOf(java.lang.String)
@@ -654,7 +678,7 @@ meth public static org.netbeans.api.visual.anchor.PointShape createPointShape(in
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.api.visual.animator.Animator
-cons protected Animator(org.netbeans.api.visual.animator.SceneAnimator)
+cons protected init(org.netbeans.api.visual.animator.SceneAnimator)
 meth protected abstract void tick(double)
 meth protected final org.netbeans.api.visual.widget.Scene getScene()
 meth protected final void start()
@@ -678,7 +702,7 @@ meth public abstract void animatorReset(org.netbeans.api.visual.animator.Animato
 meth public abstract void animatorStarted(org.netbeans.api.visual.animator.AnimatorEvent)
 
 CLSS public final org.netbeans.api.visual.animator.SceneAnimator
-cons public SceneAnimator(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene)
 meth public boolean isAnimatingBackgroundColor(org.netbeans.api.visual.widget.Widget)
 meth public boolean isAnimatingForegroundColor(org.netbeans.api.visual.widget.Widget)
 meth public boolean isAnimatingPreferredBounds(org.netbeans.api.visual.widget.Widget)
@@ -763,6 +787,7 @@ meth public static java.util.ArrayList<org.netbeans.api.visual.export.WidgetPoly
 supr java.lang.Object
 
 CLSS public final static !enum org.netbeans.api.visual.export.SceneExporter$ImageType
+ outer org.netbeans.api.visual.export.SceneExporter
 fld public final static org.netbeans.api.visual.export.SceneExporter$ImageType JPG
 fld public final static org.netbeans.api.visual.export.SceneExporter$ImageType PNG
 meth public static org.netbeans.api.visual.export.SceneExporter$ImageType valueOf(java.lang.String)
@@ -770,6 +795,7 @@ meth public static org.netbeans.api.visual.export.SceneExporter$ImageType[] valu
 supr java.lang.Enum<org.netbeans.api.visual.export.SceneExporter$ImageType>
 
 CLSS public final static !enum org.netbeans.api.visual.export.SceneExporter$ZoomType
+ outer org.netbeans.api.visual.export.SceneExporter
 fld public final static org.netbeans.api.visual.export.SceneExporter$ZoomType ACTUAL_SIZE
 fld public final static org.netbeans.api.visual.export.SceneExporter$ZoomType CURRENT_ZOOM_LEVEL
 fld public final static org.netbeans.api.visual.export.SceneExporter$ZoomType CUSTOM_SIZE
@@ -779,14 +805,14 @@ meth public static org.netbeans.api.visual.export.SceneExporter$ZoomType[] value
 supr java.lang.Enum<org.netbeans.api.visual.export.SceneExporter$ZoomType>
 
 CLSS public final org.netbeans.api.visual.export.WidgetPolygonalCoordinates
-cons public WidgetPolygonalCoordinates(org.netbeans.api.visual.widget.Widget,java.awt.Polygon)
+cons public init(org.netbeans.api.visual.widget.Widget,java.awt.Polygon)
 meth public java.awt.Polygon getPolygon()
 meth public org.netbeans.api.visual.widget.Widget getWidget()
 supr java.lang.Object
 hfds polygon,widget
 
 CLSS public abstract org.netbeans.api.visual.graph.GraphPinScene<%0 extends java.lang.Object, %1 extends java.lang.Object, %2 extends java.lang.Object>
-cons public GraphPinScene()
+cons public init()
 innr public abstract static StringGraph
 meth protected abstract org.netbeans.api.visual.widget.Widget attachEdgeWidget({org.netbeans.api.visual.graph.GraphPinScene%1})
 meth protected abstract org.netbeans.api.visual.widget.Widget attachNodeWidget({org.netbeans.api.visual.graph.GraphPinScene%0})
@@ -825,11 +851,12 @@ supr org.netbeans.api.visual.model.ObjectScene
 hfds edgeSourcePins,edgeTargetPins,edges,edgesUm,nodePins,nodes,nodesUm,pinInputEdges,pinNodes,pinOutputEdges,pins,pinsUm
 
 CLSS public abstract static org.netbeans.api.visual.graph.GraphPinScene$StringGraph
-cons public StringGraph()
+ outer org.netbeans.api.visual.graph.GraphPinScene
+cons public init()
 supr org.netbeans.api.visual.graph.GraphPinScene<java.lang.String,java.lang.String,java.lang.String>
 
 CLSS public abstract org.netbeans.api.visual.graph.GraphScene<%0 extends java.lang.Object, %1 extends java.lang.Object>
-cons public GraphScene()
+cons public init()
 innr public abstract static StringGraph
 meth protected abstract org.netbeans.api.visual.widget.Widget attachEdgeWidget({org.netbeans.api.visual.graph.GraphScene%1})
 meth protected abstract org.netbeans.api.visual.widget.Widget attachNodeWidget({org.netbeans.api.visual.graph.GraphScene%0})
@@ -858,11 +885,12 @@ supr org.netbeans.api.visual.model.ObjectScene
 hfds edgeSourceNodes,edgeTargetNodes,edges,edgesUm,nodeInputEdges,nodeOutputEdges,nodes,nodesUm
 
 CLSS public abstract static org.netbeans.api.visual.graph.GraphScene$StringGraph
-cons public StringGraph()
+ outer org.netbeans.api.visual.graph.GraphScene
+cons public init()
 supr org.netbeans.api.visual.graph.GraphScene<java.lang.String,java.lang.String>
 
 CLSS public abstract org.netbeans.api.visual.graph.layout.GraphLayout<%0 extends java.lang.Object, %1 extends java.lang.Object>
-cons public GraphLayout()
+cons public init()
 meth protected abstract void performGraphLayout(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GraphLayout%0},{org.netbeans.api.visual.graph.layout.GraphLayout%1}>)
 meth protected abstract void performNodesLayout(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GraphLayout%0},{org.netbeans.api.visual.graph.layout.GraphLayout%1}>,java.util.Collection<{org.netbeans.api.visual.graph.layout.GraphLayout%0}>)
 meth protected final void setResolvedNodeLocation(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GraphLayout%0},{org.netbeans.api.visual.graph.layout.GraphLayout%1}>,{org.netbeans.api.visual.graph.layout.GraphLayout%0},java.awt.Point)
@@ -878,7 +906,7 @@ supr java.lang.Object
 hfds animated,listeners
 
 CLSS public org.netbeans.api.visual.graph.layout.GraphLayoutFactory
-cons public GraphLayoutFactory()
+cons public init()
 meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}> createHierarchicalGraphLayout(org.netbeans.api.visual.graph.GraphScene<{%%0},{%%1}>,boolean)
 meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}> createHierarchicalGraphLayout(org.netbeans.api.visual.graph.GraphScene<{%%0},{%%1}>,boolean,boolean)
 meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}> createHierarchicalGraphLayout(org.netbeans.api.visual.graph.GraphScene<{%%0},{%%1}>,boolean,boolean,int,int)
@@ -892,13 +920,13 @@ meth public abstract void graphLayoutStarted(org.netbeans.api.visual.graph.layou
 meth public abstract void nodeLocationChanged(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GraphLayoutListener%0},{org.netbeans.api.visual.graph.layout.GraphLayoutListener%1}>,{org.netbeans.api.visual.graph.layout.GraphLayoutListener%0},java.awt.Point,java.awt.Point)
 
 CLSS public org.netbeans.api.visual.graph.layout.GraphLayoutSupport
-cons public GraphLayoutSupport()
+cons public init()
 meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> void setTreeGraphLayoutProperties(org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}>,int,int,int,int,boolean)
 meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> void setTreeGraphLayoutRootNode(org.netbeans.api.visual.graph.layout.GraphLayout<{%%0},{%%1}>,{%%0})
 supr java.lang.Object
 
 CLSS public final org.netbeans.api.visual.graph.layout.GridGraphLayout<%0 extends java.lang.Object, %1 extends java.lang.Object>
-cons public GridGraphLayout()
+cons public init()
 meth protected void performGraphLayout(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GridGraphLayout%0},{org.netbeans.api.visual.graph.layout.GridGraphLayout%1}>)
 meth protected void performNodesLayout(org.netbeans.api.visual.graph.layout.UniversalGraph<{org.netbeans.api.visual.graph.layout.GridGraphLayout%0},{org.netbeans.api.visual.graph.layout.GridGraphLayout%1}>,java.util.Collection<{org.netbeans.api.visual.graph.layout.GridGraphLayout%0}>)
 meth public org.netbeans.api.visual.graph.layout.GridGraphLayout<{org.netbeans.api.visual.graph.layout.GridGraphLayout%0},{org.netbeans.api.visual.graph.layout.GridGraphLayout%1}> setChecker(boolean)
@@ -907,7 +935,7 @@ supr org.netbeans.api.visual.graph.layout.GraphLayout<{org.netbeans.api.visual.g
 hfds checker,horizontalGap,verticalGap
 
 CLSS public org.netbeans.api.visual.graph.layout.TreeGraphLayout<%0 extends java.lang.Object, %1 extends java.lang.Object>
-cons public TreeGraphLayout(org.netbeans.api.visual.graph.GraphScene<{org.netbeans.api.visual.graph.layout.TreeGraphLayout%0},{org.netbeans.api.visual.graph.layout.TreeGraphLayout%1}>,int,int,int,int,boolean)
+cons public init(org.netbeans.api.visual.graph.GraphScene<{org.netbeans.api.visual.graph.layout.TreeGraphLayout%0},{org.netbeans.api.visual.graph.layout.TreeGraphLayout%1}>,int,int,int,int,boolean)
 meth protected java.util.Collection<{org.netbeans.api.visual.graph.layout.TreeGraphLayout%0}> resolveChildren({org.netbeans.api.visual.graph.layout.TreeGraphLayout%0})
 meth protected void performGraphLayout(org.netbeans.api.visual.graph.layout.UniversalGraph)
 meth protected void performNodesLayout(org.netbeans.api.visual.graph.layout.UniversalGraph,java.util.Collection)
@@ -917,7 +945,7 @@ hfds horizontalGap,originX,originY,scene,vertical,verticalGap
 hcls Node
 
 CLSS public abstract org.netbeans.api.visual.graph.layout.UniversalGraph<%0 extends java.lang.Object, %1 extends java.lang.Object>
-cons public UniversalGraph()
+cons public init()
 meth public abstract java.util.Collection<{org.netbeans.api.visual.graph.layout.UniversalGraph%0}> getNodes()
 meth public abstract java.util.Collection<{org.netbeans.api.visual.graph.layout.UniversalGraph%1}> findNodeEdges({org.netbeans.api.visual.graph.layout.UniversalGraph%0},boolean,boolean)
 meth public abstract java.util.Collection<{org.netbeans.api.visual.graph.layout.UniversalGraph%1}> getEdges()
@@ -934,7 +962,7 @@ supr java.lang.Object
 hfds zoomActionModifiers
 
 CLSS public abstract org.netbeans.api.visual.laf.LookFeel
-cons public LookFeel()
+cons public init()
 meth public abstract boolean getOpaque(org.netbeans.api.visual.model.ObjectState)
 meth public abstract int getMargin()
 meth public abstract java.awt.Color getForeground()
@@ -977,6 +1005,7 @@ supr java.lang.Object
 hfds LAYOUT_ABSOLUTE,LAYOUT_OVERLAY
 
 CLSS public final static !enum org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment
+ outer org.netbeans.api.visual.layout.LayoutFactory
 fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment BOTTOM_CENTER
 fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment BOTTOM_LEFT
 fld public final static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment BOTTOM_RIGHT
@@ -998,6 +1027,7 @@ meth public static org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidget
 supr java.lang.Enum<org.netbeans.api.visual.layout.LayoutFactory$ConnectionWidgetLayoutAlignment>
 
 CLSS public final static !enum org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment
+ outer org.netbeans.api.visual.layout.LayoutFactory
 fld public final static org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment CENTER
 fld public final static org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment JUSTIFY
 fld public final static org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment LEFT_TOP
@@ -1007,7 +1037,7 @@ meth public static org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment[
 supr java.lang.Enum<org.netbeans.api.visual.layout.LayoutFactory$SerialAlignment>
 
 CLSS public abstract org.netbeans.api.visual.layout.SceneLayout
-cons protected SceneLayout(org.netbeans.api.visual.widget.Scene)
+cons protected init(org.netbeans.api.visual.widget.Scene)
 meth protected abstract void performLayout()
 meth public final void invokeLayout()
 meth public final void invokeLayoutImmediately()
@@ -1016,7 +1046,7 @@ hfds attached,listener,scene
 hcls LayoutSceneListener
 
 CLSS public org.netbeans.api.visual.model.ObjectScene
-cons public ObjectScene()
+cons public init()
 meth public !varargs final void addObject(java.lang.Object,org.netbeans.api.visual.widget.Widget[])
 meth public !varargs final void addObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,org.netbeans.api.visual.model.ObjectSceneEventType[])
 meth public !varargs final void removeObjectSceneListener(org.netbeans.api.visual.model.ObjectSceneListener,org.netbeans.api.visual.model.ObjectSceneEventType[])
@@ -1092,8 +1122,8 @@ supr java.lang.Object
 hfds NORMAL,objectFocused,objectHighlighted,objectHovered,objectSelected,widgetAimed,widgetFocused,widgetHovered
 
 CLSS public final org.netbeans.api.visual.model.StateModel
-cons public StateModel()
-cons public StateModel(int)
+cons public init()
+cons public init(int)
 innr public abstract interface static Listener
 meth public boolean getBooleanState()
 meth public int getMaxStates()
@@ -1109,6 +1139,7 @@ supr java.lang.Object
 hfds listeners,maxStates,state
 
 CLSS public abstract interface static org.netbeans.api.visual.model.StateModel$Listener
+ outer org.netbeans.api.visual.model.StateModel
 meth public abstract void stateChanged()
 
 CLSS public final org.netbeans.api.visual.print.ScenePrinter
@@ -1123,6 +1154,7 @@ meth public static void print(org.netbeans.api.visual.widget.Scene,org.netbeans.
 supr java.lang.Object
 
 CLSS public final static !enum org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy
+ outer org.netbeans.api.visual.print.ScenePrinter
 fld public final static org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy NO_SCALING
 fld public final static org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy SCALE_CURRENT_ZOOM
 fld public final static org.netbeans.api.visual.print.ScenePrinter$ScaleStrategy SCALE_PERCENT
@@ -1152,7 +1184,7 @@ supr java.lang.Object
 hfds ROUTER_DIRECT,ROUTER_FREE
 
 CLSS public abstract org.netbeans.api.visual.vmd.VMDColorScheme
-cons protected VMDColorScheme()
+cons protected init()
 meth public abstract boolean isNodeMinimizeButtonOnRight(org.netbeans.api.visual.vmd.VMDNodeWidget)
 meth public abstract int getNodeAnchorGap(org.netbeans.api.visual.vmd.VMDNodeAnchor)
 meth public abstract java.awt.Image getMinimizeWidgetImage(org.netbeans.api.visual.vmd.VMDNodeWidget)
@@ -1166,8 +1198,8 @@ meth public abstract void updateUI(org.netbeans.api.visual.vmd.VMDPinWidget,org.
 supr java.lang.Object
 
 CLSS public org.netbeans.api.visual.vmd.VMDConnectionWidget
-cons public VMDConnectionWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.router.Router)
-cons public VMDConnectionWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.vmd.VMDColorScheme)
+cons public init(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.router.Router)
+cons public init(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.vmd.VMDColorScheme)
 meth public void notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
 supr org.netbeans.api.visual.widget.ConnectionWidget
 hfds scheme
@@ -1181,13 +1213,13 @@ supr java.lang.Object
 hfds SCHEME_NB60,SCHEME_ORIGINAL
 
 CLSS public org.netbeans.api.visual.vmd.VMDGlyphSetWidget
-cons public VMDGlyphSetWidget(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene)
 meth public void setGlyphs(java.util.List<java.awt.Image>)
 supr org.netbeans.api.visual.widget.Widget
 
 CLSS public org.netbeans.api.visual.vmd.VMDGraphScene
-cons public VMDGraphScene()
-cons public VMDGraphScene(org.netbeans.api.visual.vmd.VMDColorScheme)
+cons public init()
+cons public init(org.netbeans.api.visual.vmd.VMDColorScheme)
 fld public final static java.lang.String PIN_ID_DEFAULT_SUFFIX = "#default"
 meth protected org.netbeans.api.visual.widget.Widget attachEdgeWidget(java.lang.String)
 meth protected org.netbeans.api.visual.widget.Widget attachNodeWidget(java.lang.String)
@@ -1203,9 +1235,9 @@ meth public abstract void collapseWidget()
 meth public abstract void expandWidget()
 
 CLSS public org.netbeans.api.visual.vmd.VMDNodeAnchor
-cons public VMDNodeAnchor(org.netbeans.api.visual.widget.Widget)
-cons public VMDNodeAnchor(org.netbeans.api.visual.widget.Widget,boolean)
-cons public VMDNodeAnchor(org.netbeans.api.visual.widget.Widget,boolean,org.netbeans.api.visual.vmd.VMDColorScheme)
+cons public init(org.netbeans.api.visual.widget.Widget)
+cons public init(org.netbeans.api.visual.widget.Widget,boolean)
+cons public init(org.netbeans.api.visual.widget.Widget,boolean,org.netbeans.api.visual.vmd.VMDColorScheme)
 meth protected void notifyEntryAdded(org.netbeans.api.visual.anchor.Anchor$Entry)
 meth protected void notifyEntryRemoved(org.netbeans.api.visual.anchor.Anchor$Entry)
 meth protected void notifyRevalidate()
@@ -1214,8 +1246,8 @@ supr org.netbeans.api.visual.anchor.Anchor
 hfds requiresRecalculation,results,scheme,vertical
 
 CLSS public org.netbeans.api.visual.vmd.VMDNodeWidget
-cons public VMDNodeWidget(org.netbeans.api.visual.widget.Scene)
-cons public VMDNodeWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.vmd.VMDColorScheme)
+cons public init(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.vmd.VMDColorScheme)
 intf org.netbeans.api.visual.model.StateModel$Listener
 intf org.netbeans.api.visual.vmd.VMDMinimizeAbility
 meth protected boolean isMinimizableWidget(org.netbeans.api.visual.widget.Widget)
@@ -1245,8 +1277,8 @@ hfds glyphSetWidget,header,imageWidget,minimizeWidget,nameWidget,nodeAnchor,pinC
 hcls ToggleMinimizedAction
 
 CLSS public org.netbeans.api.visual.vmd.VMDPinWidget
-cons public VMDPinWidget(org.netbeans.api.visual.widget.Scene)
-cons public VMDPinWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.vmd.VMDColorScheme)
+cons public init(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.vmd.VMDColorScheme)
 meth protected void notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
 meth public java.lang.String getPinName()
 meth public org.netbeans.api.visual.anchor.Anchor createAnchor()
@@ -1266,7 +1298,7 @@ supr java.lang.Object
 hfds birdView
 
 CLSS public org.netbeans.api.visual.widget.ComponentWidget
-cons public ComponentWidget(org.netbeans.api.visual.widget.Scene,java.awt.Component)
+cons public init(org.netbeans.api.visual.widget.Scene,java.awt.Component)
 meth protected final java.awt.Rectangle calculateClientArea()
 meth protected final void notifyAdded()
 meth protected final void notifyRemoved()
@@ -1279,7 +1311,7 @@ hfds component,componentAdded,componentListener,componentVisible,componentWrappe
 hcls ComponentComponentListener,ComponentSceneListener,ComponentWrapper
 
 CLSS public org.netbeans.api.visual.widget.ConnectionWidget
-cons public ConnectionWidget(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene)
 innr public final static !enum RoutingPolicy
 meth protected java.awt.Cursor getCursorAt(java.awt.Point)
 meth protected java.awt.Rectangle calculateClientArea()
@@ -1335,6 +1367,7 @@ hfds HIT_DISTANCE_SQUARE,STROKE_DEFAULT,connectionWidgetLayout,controlPointCutDi
 hcls ConnectionEntry
 
 CLSS public final static !enum org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy
+ outer org.netbeans.api.visual.widget.ConnectionWidget
 fld public final static org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy ALWAYS_ROUTE
 fld public final static org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy DISABLE_ROUTING
 fld public final static org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy DISABLE_ROUTING_UNTIL_END_POINT_IS_MOVED
@@ -1344,7 +1377,7 @@ meth public static org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy
 supr java.lang.Enum<org.netbeans.api.visual.widget.ConnectionWidget$RoutingPolicy>
 
 CLSS public org.netbeans.api.visual.widget.ConvolveWidget
-cons public ConvolveWidget(org.netbeans.api.visual.widget.Scene,java.awt.image.ConvolveOp)
+cons public init(org.netbeans.api.visual.widget.Scene,java.awt.image.ConvolveOp)
 meth protected void paintChildren()
 meth public java.awt.image.ConvolveOp getConvolveOp()
 meth public void clearCache()
@@ -1362,16 +1395,16 @@ meth public static org.netbeans.api.visual.widget.EventProcessingType[] values()
 supr java.lang.Enum<org.netbeans.api.visual.widget.EventProcessingType>
 
 CLSS public org.netbeans.api.visual.widget.FreeConnectionWidget
-cons public FreeConnectionWidget(org.netbeans.api.visual.widget.Scene)
-cons public FreeConnectionWidget(org.netbeans.api.visual.widget.Scene,double,double)
+cons public init(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene,double,double)
 meth public void addRemoveControlPoint(java.awt.Point)
 meth public void setSensitivity(double,double)
 supr org.netbeans.api.visual.widget.ConnectionWidget
 hfds createSensitivity,deleteSensitivity
 
 CLSS public org.netbeans.api.visual.widget.ImageWidget
-cons public ImageWidget(org.netbeans.api.visual.widget.Scene)
-cons public ImageWidget(org.netbeans.api.visual.widget.Scene,java.awt.Image)
+cons public init(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene,java.awt.Image)
 meth protected java.awt.Rectangle calculateClientArea()
 meth protected void paintWidget()
 meth public boolean isPaintAsDisabled()
@@ -1382,8 +1415,8 @@ supr org.netbeans.api.visual.widget.Widget
 hfds disabledImage,height,image,observer,paintAsDisabled,width
 
 CLSS public org.netbeans.api.visual.widget.LabelWidget
-cons public LabelWidget(org.netbeans.api.visual.widget.Scene)
-cons public LabelWidget(org.netbeans.api.visual.widget.Scene,java.lang.String)
+cons public init(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene,java.lang.String)
 innr public final static !enum Alignment
 innr public final static !enum Orientation
 innr public final static !enum VerticalAlignment
@@ -1405,6 +1438,7 @@ supr org.netbeans.api.visual.widget.Widget
 hfds alignment,cacheFont,cacheGlyphVector,cacheLabel,label,orientation,paintAsDisabled,useGlyphVector,verticalAlignment
 
 CLSS public final static !enum org.netbeans.api.visual.widget.LabelWidget$Alignment
+ outer org.netbeans.api.visual.widget.LabelWidget
 fld public final static org.netbeans.api.visual.widget.LabelWidget$Alignment BASELINE
 fld public final static org.netbeans.api.visual.widget.LabelWidget$Alignment CENTER
 fld public final static org.netbeans.api.visual.widget.LabelWidget$Alignment LEFT
@@ -1414,6 +1448,7 @@ meth public static org.netbeans.api.visual.widget.LabelWidget$Alignment[] values
 supr java.lang.Enum<org.netbeans.api.visual.widget.LabelWidget$Alignment>
 
 CLSS public final static !enum org.netbeans.api.visual.widget.LabelWidget$Orientation
+ outer org.netbeans.api.visual.widget.LabelWidget
 fld public final static org.netbeans.api.visual.widget.LabelWidget$Orientation NORMAL
 fld public final static org.netbeans.api.visual.widget.LabelWidget$Orientation ROTATE_90
 meth public static org.netbeans.api.visual.widget.LabelWidget$Orientation valueOf(java.lang.String)
@@ -1421,6 +1456,7 @@ meth public static org.netbeans.api.visual.widget.LabelWidget$Orientation[] valu
 supr java.lang.Enum<org.netbeans.api.visual.widget.LabelWidget$Orientation>
 
 CLSS public final static !enum org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment
+ outer org.netbeans.api.visual.widget.LabelWidget
 fld public final static org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment BASELINE
 fld public final static org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment BOTTOM
 fld public final static org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment CENTER
@@ -1430,21 +1466,21 @@ meth public static org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment[
 supr java.lang.Enum<org.netbeans.api.visual.widget.LabelWidget$VerticalAlignment>
 
 CLSS public org.netbeans.api.visual.widget.LayerWidget
-cons public LayerWidget(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene)
 meth protected boolean isRepaintRequiredForRevalidating()
 meth public boolean isHitAt(java.awt.Point)
 supr org.netbeans.api.visual.widget.Widget
 
 CLSS public org.netbeans.api.visual.widget.LevelOfDetailsWidget
-cons public LevelOfDetailsWidget(org.netbeans.api.visual.widget.Scene,double,double,double,double)
+cons public init(org.netbeans.api.visual.widget.Scene,double,double,double,double)
 meth public boolean isHitAt(java.awt.Point)
 meth public void paintChildren()
 supr org.netbeans.api.visual.widget.Widget
 hfds hardMaximalZoom,hardMinimalZoom,softMaximalZoom,softMinimalZoom
 
 CLSS public org.netbeans.api.visual.widget.ResourceTable
-cons public ResourceTable()
-cons public ResourceTable(org.netbeans.api.visual.widget.ResourceTable)
+cons public init()
+cons public init(org.netbeans.api.visual.widget.ResourceTable)
 fld public final static java.lang.String PARENT_RESOURCE_TABLE = "ParentResourceTable"
 meth public java.lang.Object getProperty(java.lang.String)
 meth public java.util.Set<java.lang.String> getLocalPropertyNames()
@@ -1461,7 +1497,7 @@ supr java.lang.Object
 hfds childrenTables,listeners,parentTable,properties,propertyListeners
 
 CLSS public org.netbeans.api.visual.widget.Scene
-cons public Scene()
+cons public init()
 innr public abstract interface static SceneListener
 meth protected boolean isRepaintRequiredForRevalidating()
 meth public boolean isValidated()
@@ -1502,13 +1538,14 @@ hfds activeTool,component,defaultFont,extendSceneOnly,focusedWidget,graphics,inp
 hcls WidgetHoverAction
 
 CLSS public abstract interface static org.netbeans.api.visual.widget.Scene$SceneListener
+ outer org.netbeans.api.visual.widget.Scene
 meth public abstract void sceneRepaint()
 meth public abstract void sceneValidated()
 meth public abstract void sceneValidating()
 
 CLSS public org.netbeans.api.visual.widget.ScrollWidget
-cons public ScrollWidget(org.netbeans.api.visual.widget.Scene)
-cons public ScrollWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.widget.Widget)
+cons public init(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.widget.Widget)
 meth protected java.awt.Rectangle calculateClientArea()
 meth public final org.netbeans.api.visual.widget.Widget getView()
 meth public final void setView(org.netbeans.api.visual.widget.Widget)
@@ -1517,7 +1554,7 @@ hfds BAR_HORIZONTAL_SIZE,BAR_VERTICAL_SIZE,BORDER_LOWERED,BORDER_RAISED,POINT_EM
 hcls BlockScrollAction,ButtonWidget,ScrollLayout,SliderAction,SliderWidget,UnitScrollProvider
 
 CLSS public org.netbeans.api.visual.widget.SeparatorWidget
-cons public SeparatorWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.widget.SeparatorWidget$Orientation)
+cons public init(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.widget.SeparatorWidget$Orientation)
 innr public final static !enum Orientation
 meth protected java.awt.Rectangle calculateClientArea()
 meth protected void paintWidget()
@@ -1529,6 +1566,7 @@ supr org.netbeans.api.visual.widget.Widget
 hfds orientation,thickness
 
 CLSS public final static !enum org.netbeans.api.visual.widget.SeparatorWidget$Orientation
+ outer org.netbeans.api.visual.widget.SeparatorWidget
 fld public final static org.netbeans.api.visual.widget.SeparatorWidget$Orientation HORIZONTAL
 fld public final static org.netbeans.api.visual.widget.SeparatorWidget$Orientation VERTICAL
 meth public static org.netbeans.api.visual.widget.SeparatorWidget$Orientation valueOf(java.lang.String)
@@ -1536,8 +1574,8 @@ meth public static org.netbeans.api.visual.widget.SeparatorWidget$Orientation[] 
 supr java.lang.Enum<org.netbeans.api.visual.widget.SeparatorWidget$Orientation>
 
 CLSS public org.netbeans.api.visual.widget.SwingScrollWidget
-cons public SwingScrollWidget(org.netbeans.api.visual.widget.Scene)
-cons public SwingScrollWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.widget.Widget)
+cons public init(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.widget.Widget)
 meth protected java.awt.Rectangle calculateClientArea()
 meth public final org.netbeans.api.visual.widget.Widget getView()
 meth public final void setView(org.netbeans.api.visual.widget.Widget)
@@ -1546,7 +1584,7 @@ hfds BAR_HORIZONTAL_SIZE,BAR_VERTICAL_SIZE,horizontalListener,horizontalScroll,h
 hcls MyAdjustmentListener,ScrollLayout
 
 CLSS public org.netbeans.api.visual.widget.Widget
-cons public Widget(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene)
 innr public abstract interface static Dependency
 intf javax.accessibility.Accessible
 meth protected boolean isRepaintRequiredForRevalidating()
@@ -1650,11 +1688,12 @@ supr java.lang.Object
 hfds EMPTY_HASH_MAP,MESSAGE_NULL_BOUNDS,accessibleContext,actionsChain,background,backgroundListener,backgroundProperty,border,bounds,calculatedPreferredBounds,checkClipping,children,childrenUm,constraints,cursor,dependencies,enabled,font,fontListener,fontProperties,foreground,foregroundListener,foregroundProperty,layout,location,maximumSize,minimumSize,opaque,parentWidget,preferredBounds,preferredLocation,preferredSize,requiresFullJustification,requiresFullValidation,requiresPartJustification,requiresPartValidation,resourceTable,scene,state,toolTipText,toolsActions,visible
 
 CLSS public abstract interface static org.netbeans.api.visual.widget.Widget$Dependency
+ outer org.netbeans.api.visual.widget.Widget
 meth public abstract void revalidateDependency()
 
 CLSS public org.netbeans.api.visual.widget.general.IconNodeWidget
-cons public IconNodeWidget(org.netbeans.api.visual.widget.Scene)
-cons public IconNodeWidget(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation)
+cons public init(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene,org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation)
 innr public final static !enum TextOrientation
 meth public final org.netbeans.api.visual.widget.ImageWidget getImageWidget()
 meth public final org.netbeans.api.visual.widget.LabelWidget getLabelWidget()
@@ -1665,6 +1704,7 @@ supr org.netbeans.api.visual.widget.Widget
 hfds imageWidget,labelWidget
 
 CLSS public final static !enum org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation
+ outer org.netbeans.api.visual.widget.general.IconNodeWidget
 fld public final static org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation BOTTOM_CENTER
 fld public final static org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation RIGHT_CENTER
 meth public static org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation valueOf(java.lang.String)
@@ -1672,12 +1712,12 @@ meth public static org.netbeans.api.visual.widget.general.IconNodeWidget$TextOri
 supr java.lang.Enum<org.netbeans.api.visual.widget.general.IconNodeWidget$TextOrientation>
 
 CLSS public org.netbeans.api.visual.widget.general.ListItemWidget
-cons public ListItemWidget(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene)
 meth public void notifyStateChanged(org.netbeans.api.visual.model.ObjectState,org.netbeans.api.visual.model.ObjectState)
 supr org.netbeans.api.visual.widget.LabelWidget
 
 CLSS public org.netbeans.api.visual.widget.general.ListWidget
-cons public ListWidget(org.netbeans.api.visual.widget.Scene)
+cons public init(org.netbeans.api.visual.widget.Scene)
 meth public final org.netbeans.api.visual.widget.ImageWidget getImageWidget()
 meth public final org.netbeans.api.visual.widget.LabelWidget getLabelWidget()
 meth public final org.netbeans.api.visual.widget.Widget getHeader()

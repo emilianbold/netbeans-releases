@@ -118,6 +118,10 @@ public class Dwarf {
     public ElfSection getSection(String sectionName) {
 	return dwarfReader.getSection(sectionName);
     }
+
+    public List<String> readPubNames() throws IOException {
+	return dwarfReader.readPubNames();
+    }
     
     public String getFileName() {
 	return fileName;

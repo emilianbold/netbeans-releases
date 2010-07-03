@@ -106,7 +106,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
 
     /** Creates a new instance of ProjectDeclarations */
     public DeclarationContainer(ProjectBase project) {
-        super(new DeclarationContainerKey(project.getUniqueName().toString()), false);
+        super(new DeclarationContainerKey(project.getUniqueName()), false);
         declarations = new TreeMap<CharSequence, Object>(CharSequences.comparator());
         put();
     }

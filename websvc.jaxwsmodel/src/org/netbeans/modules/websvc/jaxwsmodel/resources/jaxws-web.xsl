@@ -74,6 +74,7 @@ made subject to such option by the copyright holder.
                     <target name="wsgen-init" depends="init, -do-compile">
                         <mkdir dir="${{build.generated.sources.dir}}/jax-ws/resources/"/>
                         <mkdir dir="${{build.classes.dir}}"/>
+                        <property name="j2ee.platform.wsgen.classpath" value="${{libs.jaxws21.classpath}}"/>
                         <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
                             <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
                         </taskdef>
@@ -135,8 +136,9 @@ made subject to such option by the copyright holder.
                     <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">
                         <mkdir dir="${{build.generated.sources.dir}}/jax-ws"/>
                     </xsl:if>
+                    <property name="j2ee.platform.wsimport.classpath" value="${{libs.jaxws21.classpath}}"/>
                     <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
-                        <classpath path="${{java.home}}/../lib/tools.jar:${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}"/>
+                        <classpath path="${{java.home}}/../lib/tools.jar:${{j2ee.platform.wsimport.classpath}}"/>
                     </taskdef>
                     <condition property="conf-dir" value="${{conf.dir}}/" else="">
                         <isset property="conf.dir"/>

@@ -598,7 +598,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 {
                     closeOutputListener();
                     if (listener != null) {
-                        listener.executionFinished(process.exitValue());
+                        listener.executionFinished(-1);
                     }
                     shutdownSyncWorker();
                     postRunnable = new Runnable() {

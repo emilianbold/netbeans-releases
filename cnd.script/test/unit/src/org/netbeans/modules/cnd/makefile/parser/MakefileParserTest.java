@@ -113,7 +113,12 @@ public class MakefileParserTest extends NbTestCase {
         assertEquals(Collections.singletonList(".DONE"), done.getTargets());
         assertEquals(Collections.emptyList(), done.getPrerequisites());
 
-        assertEquals(6, elements.size());
+        MakefileMacro foo = (MakefileMacro) elements.get(6);
+        assertEquals(MakefileElement.Kind.MACRO, foo.getKind());
+        assertEquals("FOO", foo.getName());
+        assertEquals("BAR=$(BAZ)\na: b\n\techo endef\n#dummy comment", foo.getValue());
+
+        assertEquals(7, elements.size());
     }
 
     private MakefileParseResult parseFile(File file) throws ParseException {

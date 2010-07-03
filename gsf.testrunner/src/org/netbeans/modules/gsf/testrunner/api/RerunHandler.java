@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.gsf.testrunner.api;
 
+import java.util.Set;
 import javax.swing.event.ChangeListener;
 
 /**
@@ -57,10 +58,17 @@ public interface RerunHandler {
     void rerun();
 
     /**
+     * Reruns the provided tests.
+     * @param type the type of rerun to be executed
+     */
+    void rerun(Set<Testcase> tests);
+
+    /**
      * @return true if re-running is enabled (i.e. it is possible to
      * rerun the execution and it has finished).
+     * @param type the type of rerun to verify
      */
-    boolean enabled();
+    boolean enabled(RerunType type);
 
     /**
      * Adds a listener for getting notified about the enabled state.

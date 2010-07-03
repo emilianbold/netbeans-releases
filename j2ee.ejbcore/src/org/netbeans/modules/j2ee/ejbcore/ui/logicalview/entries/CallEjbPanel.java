@@ -66,6 +66,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
@@ -80,6 +81,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewController;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
@@ -529,7 +531,8 @@ public class CallEjbPanel extends javax.swing.JPanel {
 //                return false;
 //            }
             // node cannot act as EJB reference
-            if (nodes[0].getLookup().lookup(EjbReference.class) == null) {
+            EjbReference ejbRef = nodes[0].getLookup().lookup(EjbReference.class);
+            if (ejbRef == null) {
                 statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_ReferencesNotSupported")); //NOI18N
                 return false;
             }
@@ -550,31 +553,39 @@ public class CallEjbPanel extends javax.swing.JPanel {
             }
             boolean isRemoteInterfaceSelected = getSelectedInterface() == EjbReference.EjbRefIType.REMOTE;
             Project nodeProject = FileOwnerQuery.getOwner(fileObject);
-            if (!isRemoteInterfaceSelected &&
-                    !nodeProject.equals(project) &&
-                    !Utils.areInSameJ2EEApp(project, nodeProject)) {
-                statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_NotInSameEarOrProject")); //NOI18N
-                return false;
-            }
-            
-            //AC cannot contain references to local beans
-            if (!isRemoteInterfaceSelected &&
-                    Utils.isAppClient(project)) {
-                statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInAC")); //NOI18N
-                return false;
-            }
 
-            //Unit tests or classes in a JSE project cannot contain references to local beans
-            try {
-                if (!isRemoteInterfaceSelected && Utils.isTargetJavaSE(srcFile, className)) {
-                    statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInJSE")); //NOI18N
+            if (isRemoteInterfaceSelected){
+                try {
+                    if (nodeProject.equals(Utils.getProject(ejbRef, EjbReference.EjbRefIType.REMOTE))){
+                        statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_RemoteNotInSeparateJar")); //NOI18N
+                        return false;
+                    }
+                } catch (IOException ex) {
+                }
+            } else {
+                if (!nodeProject.equals(project) &&
+                        !Utils.areInSameJ2EEApp(project, nodeProject)) {
+                    statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_NotInSameEarOrProject")); //NOI18N
                     return false;
                 }
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-                return false;
+
+                //AC cannot contain references to local beans
+                if (Utils.isAppClient(project)) {
+                    statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInAC")); //NOI18N
+                    return false;
+                }
+
+                //Unit tests or classes in a JSE project cannot contain references to local beans
+                try {
+                    if (Utils.isTargetJavaSE(srcFile, className)) {
+                        statusLine.setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInJSE")); //NOI18N
+                        return false;
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                    return false;
+                }
             }
-            
             // see #75876
             if (!Util.isJavaEE5orHigher(project) && Util.isJavaEE5orHigher(nodeProject)){
                 statusLine.setWarningMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_JEESpecificationLevelsDiffer")); //NOI18N

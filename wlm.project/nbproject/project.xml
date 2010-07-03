@@ -33,10 +33,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.jxpath</code-name-base>
+                    <code-name-base>org.netbeans.modules.xml.libs.jxpath</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <specification-version>6.9</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.libs.xerces</code-name-base>
@@ -203,21 +205,19 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.soa.libs.wsdl4j</code-name-base>
+                    <code-name-base>org.netbeans.modules.soa.libs.wsdl4j</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.soa.libs.xmlbeans</code-name-base>
+                    <code-name-base>org.netbeans.modules.soa.libs.xmlbeans</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>6.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -322,42 +322,42 @@
                 <package>org.netbeans.modules.workflow.project.ui.wizards</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/wlm/wfse_def-1.0.0.jar</runtime-relative-path>
+                <runtime-relative-path>ext/wfse_def-1.0.0.jar</runtime-relative-path>
                 <binary-origin>external/wfse_def-1.0.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/wlm/log4j-1.2.13.jar</runtime-relative-path>
+                <runtime-relative-path>ext/log4j-1.2.13.jar</runtime-relative-path>
                 <binary-origin>external/log4j-1.2.13.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/wlm/chiba-1.0.0.jar</runtime-relative-path>
+                <runtime-relative-path>ext/chiba-1.0.0.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/xmlbeans-2.1.0/jsr173_1.0_api.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jsr173_1.0_api.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/xmlbeans-2.1.0/resolver.jar</runtime-relative-path>
+                <runtime-relative-path>ext/resolver.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/xmlbeans-2.1.0/xbean.jar</runtime-relative-path>
+                <runtime-relative-path>ext/xbean.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/xmlbeans-2.1.0/xbean_xpath.jar</runtime-relative-path>
+                <runtime-relative-path>ext/xbean_xpath.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/xmlbeans-2.1.0/xmlpublic.jar</runtime-relative-path>
+                <runtime-relative-path>ext/xmlpublic.jar</runtime-relative-path>
             </class-path-extension>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>
                 <classpath>${antextra.cp}</classpath>
                 <built-to>build/antclasses</built-to>
-                <built-to>${cluster}/modules/ext/wlm/anttask.jar</built-to>
+                <built-to>${cluster}/modules/ext/anttask.jar</built-to>
             </extra-compilation-unit>
             <extra-compilation-unit>
                 <package-root>chiba_src</package-root>
                 <classpath>${chiba.cp}</classpath>
                 <built-to>build/chibaclasses</built-to>
-                <built-to>${cluster}/modules/ext/wlm/chiba-1.0.0.jar</built-to>
+                <built-to>${cluster}/modules/ext/chiba-1.0.0.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

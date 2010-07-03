@@ -99,10 +99,10 @@ public class RunTestCommand extends Command implements Displayable {
         if (fo == null) {
             return null;
         }
-        LocationResult tests = GoToTest.findTest(getProject(), fo);
-        if (tests == null) {
+        LocationResult locationResult = GoToTest.findTest(getProject(), fo);
+        if (locationResult == null) {
             return null;
         }
-        return tests.getFileObject();
+        return locationResult.getFileObject();
     }
 }

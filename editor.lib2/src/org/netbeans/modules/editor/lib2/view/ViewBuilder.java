@@ -110,7 +110,7 @@ final class ViewBuilder {
 
     private List<ViewReplace<ParagraphView,EditorView>> pReplaceList;
 
-    private int docTextLength; // doc.getLength()+1 which includes an extra newline
+    private int docViewEndOffset;
 
     private boolean createLocalViews; // Whether children of paragraph views are created
 
@@ -134,7 +134,7 @@ final class ViewBuilder {
             int endModOffset, int offsetDelta, boolean createLocalViews)
     {
         Document doc = documentView.getDocument();
-        docTextLength = doc.getLength() + 1;
+        docViewEndOffset = documentView.getEndOffset();
         assert (startOffset >= 0) : "startOffset=" + startOffset + " < 0"; // NOI18N
         assert (endOffset >= endModOffset) : "endOffset=" + endOffset + " < endModOffset=" + endModOffset; // NOI18N
         this.createLocalViews = createLocalViews;
@@ -202,7 +202,7 @@ final class ViewBuilder {
                 checkRemoveParagraphs(endAffectedOffset, false);
             } else {
                 viewRemovalFinished = true;
-                matchOffset = paragraphViewEndOffset = docTextLength;
+                matchOffset = paragraphViewEndOffset = docViewEndOffset;
             }
         }
         assert (matchOffset >= 0) : "matchOffset=" + matchOffset; // NOI18N
@@ -233,7 +233,7 @@ final class ViewBuilder {
                 sb.append("=>").append(matchOffset); // NOI18N
             }
             sb.append(">, endModOffset=").append(endModOffset);
-            sb.append(", docTextLength=").append(docTextLength).append("\nfReplace=");
+            sb.append(", docTextLength=").append(docViewEndOffset).append("\nfReplace=");
             if (fReplace != null) {
                 sb.append(fReplace);
             } else {
@@ -341,9 +341,9 @@ final class ViewBuilder {
                     "prevViewEndOffset=" + prevViewEndOffset + " < 0"; // NOI18N
                 assert (prevViewEndOffset < limitOffset) :
                     "prevViewEndOffset=" + prevViewEndOffset + // NOI18N
-                    " >= limitOffset=" + limitOffset + ", docTextLength=" + docTextLength; // NOI18N
-                assert (limitOffset <= docTextLength) :
-                    "limitOffset=" + limitOffset + " > docTextLength=" + docTextLength; // NOI18N
+                    " >= limitOffset=" + limitOffset + ", docTextLength=" + docViewEndOffset; // NOI18N
+                assert (limitOffset <= docViewEndOffset) :
+                    "limitOffset=" + limitOffset + " > docTextLength=" + docViewEndOffset; // NOI18N
                 EditorView view = null;
                 int createdViewEndOffset;
                 if (createLocalViews) { // Regular views creation
@@ -359,9 +359,9 @@ final class ViewBuilder {
                     }
                 }
 
-                if (createdViewEndOffset > docTextLength) {
+                if (createdViewEndOffset > docViewEndOffset) {
                     throw new IllegalStateException("View " + view + " produced by factory " + state.factory + // NOI18N
-                            " has endOffset=" + createdViewEndOffset + " but docTextLength=" + docTextLength); // NOI18N
+                            " has endOffset=" + createdViewEndOffset + " but docTextLength=" + docViewEndOffset); // NOI18N
                 }
 
                 updateLine(createdViewEndOffset);
@@ -396,7 +396,7 @@ final class ViewBuilder {
                             assert (index < viewCount) : "Replace includes last local view; viewCount=" + // NOI18N
                                     viewCount + ", matchOffset=" + matchOffset + // NOI18N
                                     ", paragraphViewEndOffset=" + paragraphViewEndOffset + // NOI18N
-                                    ", docTextLength=" + docTextLength; // NOI18N
+                                    ", docTextLength=" + docViewEndOffset; // NOI18N
                         }
                     } else { // Remove whole paragraph(s)
                         checkRemoveParagraphs(createdViewEndOffset, eolView);
@@ -404,7 +404,7 @@ final class ViewBuilder {
                 }
                 assert (viewRemovalFinished || createdViewEndOffset <= matchOffset) :
                     "createdViewEndOffset=" + createdViewEndOffset + " > matchOffset=" + matchOffset + // NOI18N
-                    ", docTextLength=" + docTextLength; // NOI18N
+                    ", docTextLength=" + docViewEndOffset; // NOI18N
 
                 if (pReplace == null) { // Finished a paragraph view previously
                     // TODO Could possibly grab the start pos from line element
@@ -430,7 +430,7 @@ final class ViewBuilder {
                     // Init view's length except for first replace where it's updated by EBVChildren.replace()
                     if (fReplace != pReplace) {
                         int length = createdViewEndOffset - pReplace.view.getStartOffset();
-                        pReplace.view.setLength(length);
+                        pReplace.view.setLength(length, 0, 0);
                     }
                     pReplace = null;
                 }
@@ -445,7 +445,7 @@ final class ViewBuilder {
             } else { // cmp > 0 => next view starting somewhere above last view's end offset
                 // Remember the nextViewStartOffset as a limit offset for factories
                 // that lay below this factory
-                if (state.nextViewStartOffset < docTextLength) { // Can be Integer.MAX_VALUE
+                if (state.nextViewStartOffset < docViewEndOffset) { // Can be Integer.MAX_VALUE
                     limitOffset = state.nextViewStartOffset;
                 }
             }
@@ -468,7 +468,7 @@ final class ViewBuilder {
                 matchOffset = paragraphViewEndOffset;
             } else { // No more views to remove
                 viewRemovalFinished = true; // Allow to finish the loop
-                matchOffset = paragraphViewEndOffset = docTextLength;
+                matchOffset = paragraphViewEndOffset = docViewEndOffset;
                 break;
             }
         }
@@ -589,7 +589,7 @@ final class ViewBuilder {
         sb.append("-------- ViewBuilder dump -------\n");
         sb.append("prevViewEndOffset=").append(prevViewEndOffset).append('\n');
         sb.append("offsetDelta=").append(offsetDelta).append('\n');
-        sb.append("docTextLength=").append(docTextLength).append('\n');
+        sb.append("docTextLength=").append(docViewEndOffset).append('\n');
         sb.append("lineIndex=").append(lineIndex).append('\n');
         sb.append("lineStartOffset=").append(lineStartOffset).append('\n');
         sb.append("lineEndOffset=").append(lineEndOffset).append('\n');

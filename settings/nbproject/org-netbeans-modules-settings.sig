@@ -1,8 +1,8 @@
 #Signature file v4.1
-#Version 1.22.0
+#Version 1.26
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -57,8 +57,10 @@ meth public abstract !hasdefault boolean autostore()
 meth public abstract !hasdefault java.lang.String[] ignoreChanges()
 meth public abstract java.lang.String dtd()
 
+CLSS abstract interface org.netbeans.api.settings.package-info
+
 CLSS public abstract org.netbeans.spi.settings.Convertor
-cons public Convertor()
+cons public init()
 meth protected static org.openide.util.Lookup findContext(java.io.Reader)
 meth protected static org.openide.util.Lookup findContext(java.io.Writer)
 meth public abstract java.lang.Object read(java.io.Reader) throws java.io.IOException,java.lang.ClassNotFoundException
@@ -68,7 +70,7 @@ meth public abstract void write(java.io.Writer,java.lang.Object) throws java.io.
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.spi.settings.DOMConvertor
-cons protected DOMConvertor(java.lang.String,java.lang.String,java.lang.String)
+cons protected init(java.lang.String,java.lang.String,java.lang.String)
 meth protected abstract java.lang.Object readElement(org.w3c.dom.Element) throws java.io.IOException,java.lang.ClassNotFoundException
 meth protected abstract void writeElement(org.w3c.dom.Document,org.w3c.dom.Element,java.lang.Object) throws java.io.IOException
 meth protected final static java.lang.Object delegateRead(org.w3c.dom.Element) throws java.io.IOException,java.lang.ClassNotFoundException

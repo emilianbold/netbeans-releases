@@ -49,6 +49,16 @@ import org.xml.sax.*;
 public interface LibraryDeclarationHandler {
 
     /**
+     * Parser starts document parsing
+     */
+    public void startDocument();
+
+    /**
+     * Parser ended document parsing
+     */
+    public void endDocument();
+
+    /**
      * A container element start event handling method.
      * @param meta attributes
      *

@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.soa.libs.mail
-OpenIDE-Module-Specification-Version: 1.0
-OpenIDE-Module-Localizing-Bundle: org/netbeans/soa/libs/mail/Bundle.properties

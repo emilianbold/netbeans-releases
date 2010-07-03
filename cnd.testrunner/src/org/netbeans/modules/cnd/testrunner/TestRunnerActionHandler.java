@@ -52,6 +52,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
@@ -80,8 +81,10 @@ import org.netbeans.modules.cnd.testrunner.ui.CndUnitHandlerFactory;
 import org.netbeans.modules.cnd.testrunner.ui.TestRunnerLineConvertor;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
+import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -378,8 +381,13 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
     }
 
     @Override
-    public boolean enabled() {
-        return true;
+    public void rerun(Set<Testcase> tests) {
+        //not implemented yet
+    }
+
+    @Override
+    public boolean enabled(RerunType type) {
+        return RerunType.ALL.equals(type);
     }
 
     @Override
@@ -441,10 +449,10 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
                                 StringBuilder res = new StringBuilder();
                                 res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase())); // NOI18N
                                 res.append(" ("); // NOI18N
-                                if (process.exitValue() != 0) {
-                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                    res.append(' ');
-                                }
+//                                if (process.exitValue() != 0) {
+//                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+//                                    res.append(' ');
+//                                }
                                 res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
                                 res.append(')');
 
@@ -454,7 +462,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
                             }
 
                             if (listener != null) {
-                                listener.executionFinished(process.exitValue());
+                                listener.executionFinished(-1);
                             }
 
                             StatusDisplayer.getDefault().setStatusText(MessageFormat.format("MSG_TERMINATED", actionName)); // NOI18N

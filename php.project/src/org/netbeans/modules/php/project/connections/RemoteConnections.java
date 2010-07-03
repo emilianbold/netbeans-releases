@@ -91,10 +91,9 @@ public final class RemoteConnections {
     }
 
     private void initPanel() {
-        if (panel != null) {
-            return;
+        if (panel == null) {
+            panel = new RemoteConnectionsPanel(this, configManager);
         }
-        panel = new RemoteConnectionsPanel(this, configManager);
         panel.setConfigurations(getConfigurations());
     }
 
@@ -119,13 +118,15 @@ public final class RemoteConnections {
      */
     public boolean openManager(RemoteConfiguration remoteConfiguration) {
         initPanel();
-        assert panel != null;
         // original remote configurations
         List<RemoteConfiguration> remoteConfigurations = getRemoteConfigurations();
 
         boolean changed = panel.open(remoteConfiguration);
         if (changed) {
             saveRemoteConnections(remoteConfigurations);
+        } else {
+            // reset config manager (configs are kept in memory)
+            configManager.reset();
         }
         return changed;
     }
@@ -300,12 +301,6 @@ public final class RemoteConnections {
     }
 
     private class DefaultConfigProvider implements ConfigManager.ConfigProvider {
-        final Map<String, Map<String, String>> configs;
-
-        public DefaultConfigProvider() {
-            configs = ConfigManager.createEmptyConfigs();
-            readConfigs();
-        }
 
         @Override
         public String[] getConfigProperties() {
@@ -318,7 +313,8 @@ public final class RemoteConnections {
 
         @Override
         public Map<String, Map<String, String>> getConfigs() {
-            return configs;
+            // ALWAYS read the configs from disk, do not cache them
+            return readConfigs();
         }
 
         @Override
@@ -330,7 +326,8 @@ public final class RemoteConnections {
         public void setActiveConfig(String configName) {
         }
 
-        private void readConfigs() {
+        private Map<String, Map<String, String>> readConfigs() {
+            Map<String, Map<String, String>> configs = ConfigManager.createEmptyConfigs();
             Preferences remoteConnections = getPreferences();
             try {
                 for (String name : remoteConnections.childrenNames()) {
@@ -344,6 +341,7 @@ public final class RemoteConnections {
             } catch (BackingStoreException bse) {
                 LOGGER.log(Level.INFO, "Error while reading existing remote connections", bse);
             }
+            return configs;
         }
     }
 }

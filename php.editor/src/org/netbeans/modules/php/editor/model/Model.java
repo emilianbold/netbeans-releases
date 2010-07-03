@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -64,9 +66,8 @@ public final class Model {
 //        ParserManager.
 //    }
 
-    public Model getExtendedModel() {
-        getModelVisitor().extendModel();
-        return this;
+    public List<PhpBaseElement>  getExtendedElements() {
+        return getModelVisitor().extendedElements();
     }
 
     public FileScope getFileScope() {

@@ -160,7 +160,7 @@ public class WebProjectRestSupport extends WebRestSupport {
 
     public void ensureRestDevelopmentReady() throws IOException {
         boolean needsRefresh = false;
-        String resourceUrl = REST_SERVLET_ADAPTOR_MAPPING;
+        String resourceUrl = null;
         if (!isRestSupportOn()) {
             needsRefresh = true;
             setProjectProperty(REST_SUPPORT_ON, "true");
@@ -173,6 +173,9 @@ public class WebProjectRestSupport extends WebRestSupport {
 
         String restConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
         if (restConfigType == null || CONFIG_TYPE_DD.equals(restConfigType)) {
+            if (resourceUrl == null) {
+                resourceUrl = REST_SERVLET_ADAPTOR_MAPPING;
+            }
             addResourceConfigToWebApp(resourceUrl);
         }
         if (CONFIG_TYPE_IDE.equals(restConfigType)) {
@@ -276,7 +279,12 @@ public class WebProjectRestSupport extends WebRestSupport {
     }
 
     private String getServerRestLibraryName(J2eeModuleProvider j2eeModuleProvider) {
-        return "restlib_"+ j2eeModuleProvider.getServerID(); //NOI18N
+        String libName = "restlib_"+ j2eeModuleProvider.getServerID(); //NOI18N
+        if (libName.startsWith(GFV3_RESTLIB)) {
+            return GFV3_RESTLIB;
+        } else {
+            return libName;
+        }
     }
 
     private J2eePlatform getJ2eePlatform(J2eeModuleProvider j2eeModuleProvider){

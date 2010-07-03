@@ -87,6 +87,13 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
         DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(wizard),
                 Collections.singletonMap(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true));
 
+        // #187374
+        try {
+            PhpProjectUtils.reformatFile(createdFile);
+        } catch (IOException exc) {
+            LOGGER.log(Level.WARNING, exc.getMessage(), exc);
+        }
+
         return Collections.singleton(createdFile.getPrimaryFile());
     }
 

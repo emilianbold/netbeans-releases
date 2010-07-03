@@ -67,9 +67,9 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     private static class ConcurrentFileRWAccess extends BufferedRWAccess {
        
         public final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
-        public final String unit;
+        public final CharSequence unit;
 
-        public ConcurrentFileRWAccess(File file, String unit) throws IOException {
+        public ConcurrentFileRWAccess(File file, CharSequence unit) throws IOException {
             super(file);
             this.unit = unit;
         }
@@ -166,7 +166,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                 aFile = nameToFileCache.get(fileName);
                 if (aFile == null) {
                     File fileToCreate = new File(fileName);
-                    String unit = id.getUnit().toString();
+                    CharSequence unit = id.getUnit();
                     if (fileToCreate.exists()) {
                         aFile = new ConcurrentFileRWAccess(fileToCreate, unit); //NOI18N
                         putFile(fileName, aFile);
@@ -265,7 +265,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     }
     
     @Override
-    public void closeUnit(final String unitName) throws IOException {
+    public void closeUnit(final CharSequence unitName) throws IOException {
         Filter<ConcurrentFileRWAccess> filter = new Filter<ConcurrentFileRWAccess>() {
             @Override
             public boolean accept(ConcurrentFileRWAccess value) {
@@ -344,7 +344,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
 
         fileName = URLEncoder.encode(fileName, Stats.ENCODING);
 
-        fileName = StorageAllocator.getInstance().getUnitStorageName(id.getUnit().toString()) + 
+        fileName = StorageAllocator.getInstance().getUnitStorageName(id.getUnit()) + 
                 StorageAllocator.getInstance().reduceString(fileName);
 
         return fileName;

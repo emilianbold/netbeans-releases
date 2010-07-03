@@ -43,6 +43,7 @@
 package org.netbeans.modules.glassfish.spi;
 
 import java.awt.Image;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -50,6 +51,10 @@ import java.awt.Image;
  */
 public abstract class Decorator {
 
+    public static final String DISABLED = "disabled ";
+
+    public static final Image DISABLED_BADGE =
+            ImageUtilities.loadImage("org/netbeans/modules/glassfish/common/resources/disabled-badge.gif"); // NOI18N
     /**
      * Returns the badge to be used to decorate the default icon for this node.
      * 
@@ -130,6 +135,24 @@ public abstract class Decorator {
      * @return true if the object has a customizer dialog
      */
     public boolean canEditDetails() {
+        return false;
+    }
+
+    /**
+     * Can this node be enabled?
+     *
+     * @return true if enable is supported.
+     */
+    public boolean canEnable() {
+        return false;
+    }
+
+    /**
+     * Can this node be disabled?
+     *
+     * @return true if disable is supported.
+     */
+    public boolean canDisable() {
         return false;
     }
 

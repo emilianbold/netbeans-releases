@@ -265,6 +265,10 @@ public final class Context {
     }
 
     static String getIndexerPath (final String indexerName, final int indexerVersion) {
-        return indexerName + "/" + indexerVersion; //NOI18N
+        final StringBuilder sb = new StringBuilder();
+        sb.append(indexerName);
+        sb.append('/'); //NOI18N
+        sb.append(indexerVersion);
+        return sb.toString();
     }
 }

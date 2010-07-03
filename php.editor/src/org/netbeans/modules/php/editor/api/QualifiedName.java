@@ -43,17 +43,13 @@ package org.netbeans.modules.php.editor.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
@@ -69,77 +65,7 @@ public class QualifiedName {
     private final LinkedList<String> segments;
 
 
-    public static QualifiedName getPreferredName(QualifiedName fullName, NamespaceScope contextNamespace) {
-        Collection<QualifiedName> allNames = getAllNames(fullName, contextNamespace);
-        int segmentCount = Integer.MAX_VALUE;
-        QualifiedName retval = null;
-        for (QualifiedName qualifiedName : allNames) {
-            int size = qualifiedName.segments.size();
-            if (size < segmentCount) {
-                retval = qualifiedName;
-                segmentCount = size;
-            }
-        }
-        return retval;
-    }
-    public static Collection<QualifiedName> getAllNames(QualifiedName fullName, NamespaceScope contextNamespace) {
-        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
-        namesProposals.addAll(getRelatives(contextNamespace, fullName));
-        namesProposals.add(fullName.toFullyQualified());
-        return namesProposals;
-    }
-    public static Collection<QualifiedName> getRelativesToUses(NamespaceScope contextNamespace, QualifiedName fullName) {
-        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
-        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
-        for (UseElement useElement : declaredUses) {
-            QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()), true);
-            if (proposedName != null) {
-                namesProposals.add(proposedName);
-            }
-        }
-        return namesProposals;
-    }
-    public static Collection<QualifiedName> getRelativesToNamespace( NamespaceScope contextNamespace, QualifiedName fullName) {
-        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
-        QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(contextNamespace), false);
-        if (proposedName != null) {
-            namesProposals.add(proposedName);
-        }
-        return namesProposals;
-    }
-    public static Collection<QualifiedName> getRelatives( NamespaceScope contextNamespace, QualifiedName fullName) {
-        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
-        namesProposals.addAll(getRelativesToNamespace(contextNamespace, fullName));
-        namesProposals.addAll(getRelativesToUses(contextNamespace, fullName));
-        return namesProposals;
-    }
-
-    public static Collection<QualifiedName> getComposedNames(QualifiedName name, NamespaceScope contextNamespace) {
-        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
-        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
-        if (!name.getKind().isFullyQualified()) {
-            QualifiedName proposedName = QualifiedName.create(contextNamespace).append(name).toFullyQualified();
-            if (proposedName != null) {
-                namesProposals.add(proposedName);
-            }
-            for (UseElement useElement : declaredUses) {
-                final QualifiedName useQName = QualifiedName.create(useElement.getName());
-                proposedName = useQName.toNamespaceName().append(name).toFullyQualified();
-                if (proposedName != null) {
-                    namesProposals.add(proposedName);
-                }
-                if (!useQName.getName().equalsIgnoreCase(name.getName())) {
-                    proposedName = useQName.append(name).toFullyQualified();
-                    if (proposedName != null) {
-                        namesProposals.add(proposedName);
-                    }
-                }
-            }
-        }
-        namesProposals.add(name);
-        return namesProposals;
-    }
-
+//
 
     public String getName() {
         return toName().toString();
@@ -312,7 +238,7 @@ public class QualifiedName {
         assert kind.isUnqualified();
     }
     private QualifiedName(boolean isFullyQualified, List<String> segments) {
-        this.segments = new LinkedList<String>(segments.size() == 0 ?
+        this.segments = new LinkedList<String>(segments.isEmpty() ?
             Collections.singleton(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME) : segments);
         this.kind = isFullyQualified ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.resolveKind(this.segments);
     }
