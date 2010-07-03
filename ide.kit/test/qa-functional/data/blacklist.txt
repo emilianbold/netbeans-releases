@@ -545,6 +545,3 @@ org.netbeans.modules.web.debug.util.Utils
 org.netbeans.modules.versioning.system.cvss.options.AnnotationColorProvider
 org.netbeans.modules.versioning.util.OptionsPanelColorProvider
 org.netbeans.modules.versioning.util.OptionsPanelColorProvider$AnnotationFormat
-
-
-org.netbeans.spi.palette.PaletteTopComponent
