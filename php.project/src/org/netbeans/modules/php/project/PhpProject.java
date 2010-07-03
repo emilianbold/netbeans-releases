@@ -84,6 +84,7 @@ import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.IgnorePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
@@ -772,6 +773,8 @@ public final class PhpProject implements Project {
                         badged = ImageUtilities.mergeImages(badged, badgeIcon.getImage(), 15, 0);
                         first = false;
                     }
+                } else {
+                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, Utils.PLACEHOLDER_BADGE, frameworkProvider.getName()));
                 }
             }
             return badged;

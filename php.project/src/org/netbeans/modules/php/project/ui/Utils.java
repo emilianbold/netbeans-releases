@@ -83,6 +83,8 @@ public final class Utils {
 
     // protocol://[user[:password]@]domain[:port]/rel/path?query#anchor
     public static final String URL_REGEXP = "^https?://([^/?#: ]+(:[^/?#: ]+)?@)?[^/?#: ]+(:\\d+)?(/[^?# ]*(\\?[^#]*)?(#\\w*)?)?$"; // NOI18N
+    public static final URL PLACEHOLDER_BADGE = Utils.class.getResource("/org/netbeans/modules/php/project/ui/resources/placeholder-badge.png"); // NOI18N
+
     private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
     private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
