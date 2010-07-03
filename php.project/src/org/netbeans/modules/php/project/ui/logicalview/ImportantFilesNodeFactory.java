@@ -257,7 +257,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                         if (fileObject.isFolder()) {
                             Exception ex = new IllegalStateException("No folders allowed among configuration files ["
                                     + fileObject.getNameExt() + " for " + frameworkProvider.getName() + "]");
-                            LOGGER.log(Level.WARNING, ex.getMessage(), ex);
+                            LOGGER.log(Level.INFO, ex.getMessage(), ex);
                             continue;
                         }
                         if (phpVisibilityQuery.isVisible(fileObject)) {
