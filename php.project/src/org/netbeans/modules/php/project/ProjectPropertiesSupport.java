@@ -222,7 +222,7 @@ public final class ProjectPropertiesSupport {
     }
 
     public static PhpLanguageOptions.PhpVersion getDefaultPhpVersion() {
-        return getPhpVersion((String) null);
+        return PhpLanguageOptions.PhpVersion.PHP_53;
     }
 
     public static PhpLanguageOptions.PhpVersion getPhpVersion(String value) {
