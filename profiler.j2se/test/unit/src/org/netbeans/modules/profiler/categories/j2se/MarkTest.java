@@ -45,7 +45,9 @@ import java.awt.event.MouseListener;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -165,12 +167,12 @@ public class MarkTest extends TestBase {
         if ( outputStreamMethods1.size() != 0 ){
             assertTrue( "Mark for 'files.TestFileOutputStream."+
                     outputStreamMethods1.iterator().next()+"' is not found",
-                    outputStreamMethods1.size(),  0);
+                    false);
         }
         if ( outputStreamMethods2.size() != 0 ){
             assertTrue( "Mark for 'files.ChildTestOutputStream."+
                     outputStreamMethods2.iterator().next()+"' is not found",
-                    outputStreamMethods1.size(),  0);
+                    false);
         }
     }
     
@@ -343,6 +345,17 @@ public class MarkTest extends TestBase {
                 methods.add( markMapping.markMask.getMethodName());
             }
         }
+        Method[] declaredMethods = clazz.getDeclaredMethods();
+        List<Method> allMethods = new LinkedList<Method>( Arrays.asList(declaredMethods));
+        allMethods.addAll( Arrays.asList( clazz.getMethods()));
+        Set<String> visibleMethods = new HashSet<String>();
+        for (Method method : allMethods) {
+            int modifiers = method.getModifiers();
+            if ( Modifier.isProtected(modifiers) || Modifier.isPublic(modifiers)){
+                visibleMethods.add( method.getName());
+            }
+        }
+        //methods.retainAll(visibleMethods);
         return methods;
     }
     
@@ -427,7 +440,7 @@ public class MarkTest extends TestBase {
             catch (ClassNotFoundException e) {
             }
             if (excludes == null && includes == null) {
-                Set<String> allMethods = getMethods(typeName);
+                Set<String> allMethods = getMethods(clazz);
                 boolean found = false;
                 for (MarkMapping markMapping : mappings) {
                     if ( !markMapping.mark.equals( definition.getAssignedMark())){
@@ -441,7 +454,7 @@ public class MarkTest extends TestBase {
                 }
                 assertEquals( "There is no MarkMapping with class name '"+
                         typeName+"'", true , found);
-                if ( allMethods.size()!= 0){
+                if ( !(definition instanceof SingleTypeCategoryDefinition) && allMethods.size()!= 0){
                     assertEquals( "Mark for '"+typeName+"."+
                             allMethods.iterator().next()+"' is not found",allMethods.size(),  0);
                 }
