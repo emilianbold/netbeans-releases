@@ -48,10 +48,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -71,6 +69,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -207,8 +206,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
     private static class ImportantFilesChildFactory extends Children.Keys<Pair<PhpFrameworkProvider, FileObject>> {
         private final PhpProject project;
-        private final FileChangeListener fileChangeListener = new ImportantFilesListener();
-        // @GuardedBy(this)
+        private volatile FileChangeListener fileChangeListener;
+        // @GuardedBy(files)
         final List<Pair<PhpFrameworkProvider, FileObject>> files = new LinkedList<Pair<PhpFrameworkProvider, FileObject>>();
 
         public ImportantFilesChildFactory(PhpProject project) {
@@ -218,15 +217,15 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         @Override
         protected void addNotify() {
             super.addNotify();
+            attachListener();
             setKeys(getFiles());
-            attachListeners();
         }
 
         @Override
         protected void removeNotify() {
-            removeListeners();
-            files.clear();
             setKeys(Collections.<Pair<PhpFrameworkProvider, FileObject>>emptyList());
+            clearFiles();
+            removeListener();
             super.removeNotify();
         }
 
@@ -240,78 +239,74 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             return new Node[0];
         }
 
-        synchronized List<Pair<PhpFrameworkProvider, FileObject>> getFiles() {
-            List<Pair<PhpFrameworkProvider, FileObject>> list = new LinkedList<Pair<PhpFrameworkProvider, FileObject>>(files);
-            if (!list.isEmpty()) {
-                return list;
-            }
-            assert files.isEmpty() : project.getName() + ": " + files;
+        List<Pair<PhpFrameworkProvider, FileObject>> getFiles() {
+            synchronized (files) {
+                List<Pair<PhpFrameworkProvider, FileObject>> list = new LinkedList<Pair<PhpFrameworkProvider, FileObject>>(files);
+                if (!list.isEmpty()) {
+                    return list;
+                }
+                assert files.isEmpty() : project.getName() + ": " + files;
 
-            final PhpModule phpModule = project.getPhpModule();
-            final PhpVisibilityQuery phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
-            for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
-                for (File file : frameworkProvider.getConfigurationFiles(phpModule)) {
-                    final FileObject fileObject = FileUtil.toFileObject(file);
-                    // XXX non-existing files are simply ignored
-                    if (fileObject != null) {
-                        if (fileObject.isFolder()) {
-                            Exception ex = new IllegalStateException("No folders allowed among configuration files ["
-                                    + fileObject.getNameExt() + " for " + frameworkProvider.getName() + "]");
-                            LOGGER.log(Level.INFO, ex.getMessage(), ex);
-                            continue;
-                        }
-                        if (phpVisibilityQuery.isVisible(fileObject)) {
-                            files.add(Pair.of(frameworkProvider, fileObject));
-                        } else {
-                            LOGGER.log(Level.INFO, "File {0} ignored (not visible)", fileObject.getPath());
+                final PhpModule phpModule = project.getPhpModule();
+                final PhpVisibilityQuery phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
+                for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
+                    for (File file : frameworkProvider.getConfigurationFiles(phpModule)) {
+                        final FileObject fileObject = FileUtil.toFileObject(file);
+                        // XXX non-existing files are simply ignored
+                        if (fileObject != null) {
+                            if (fileObject.isFolder()) {
+                                Exception ex = new IllegalStateException("No folders allowed among configuration files ["
+                                        + fileObject.getNameExt() + " for " + frameworkProvider.getName() + "]");
+                                LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                                continue;
+                            }
+                            if (phpVisibilityQuery.isVisible(fileObject)) {
+                                files.add(Pair.of(frameworkProvider, fileObject));
+                            } else {
+                                LOGGER.log(Level.INFO, "File {0} ignored (not visible)", fileObject.getPath());
+                            }
                         }
                     }
                 }
-            }
 
-            assert !files.isEmpty();
-            return new ArrayList<Pair<PhpFrameworkProvider, FileObject>>(files);
-        }
-
-        private Set<FileObject> getParents() {
-            return getParents(getFiles());
-        }
-
-        private Set<FileObject> getParents(List<Pair<PhpFrameworkProvider, FileObject>> files) {
-            Set<FileObject> parents = new HashSet<FileObject>();
-            for (Pair<PhpFrameworkProvider, FileObject> pair : files) {
-                parents.add(pair.second.getParent());
-            }
-            return parents;
-        }
-
-        void attachListeners() {
-            attachListeners(getParents());
-        }
-
-        void attachListeners(Set<FileObject> folders) {
-            for (FileObject parent : folders) {
-                parent.addFileChangeListener(fileChangeListener);
+                assert !files.isEmpty();
+                return new ArrayList<Pair<PhpFrameworkProvider, FileObject>>(files);
             }
         }
 
-        void removeListeners() {
-            removeListeners(getParents());
+        private void clearFiles() {
+            synchronized (files) {
+                files.clear();
+            }
         }
 
-        void removeListeners(Set<FileObject> folders) {
-            for (FileObject parent : folders) {
-                parent.removeFileChangeListener(fileChangeListener);
+        private void attachListener() {
+            if (fileChangeListener == null) {
+                fileChangeListener = new ImportantFilesListener();
+                try {
+                    ProjectPropertiesSupport.getSourcesDirectory(project).getFileSystem().addFileChangeListener(fileChangeListener);
+                } catch (FileStateInvalidException exc) {
+                    LOGGER.log(Level.WARNING, exc.getMessage(), exc);
+                }
+            }
+        }
+
+        private void removeListener() {
+            if (fileChangeListener != null) {
+                try {
+                    ProjectPropertiesSupport.getSourcesDirectory(project).getFileSystem().removeFileChangeListener(fileChangeListener);
+                } catch (FileStateInvalidException exc) {
+                    LOGGER.log(Level.WARNING, exc.getMessage(), exc);
+                }
+                fileChangeListener = null;
             }
         }
 
         void fileChange() {
             final List<Pair<PhpFrameworkProvider, FileObject>> oldFiles = getFiles();
-            files.clear();
+            clearFiles();
             final List<Pair<PhpFrameworkProvider, FileObject>> newFiles = getFiles();
             if (!oldFiles.equals(newFiles)) {
-                removeListeners(getParents(oldFiles));
-                attachListeners();
                 // avoid deadlocks
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
