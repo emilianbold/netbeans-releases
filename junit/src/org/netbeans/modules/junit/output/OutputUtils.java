@@ -58,10 +58,13 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.junit.wizards.Utils;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -296,6 +299,25 @@ final class OutputUtils {
         }
         lineNumStorage[0] = lineNum;
         return file;
+    }
+
+    /**
+     * Returns {@code ActionProvider} that is associated with a project
+     * containing the specified {@code fileObject}.
+     *
+     * @param fileObject the file object.
+     * @return an {@code ActionProvider}, or {@code null} if there is no
+     *         known project containing the {@code fileObject}.
+     *
+     * @see ActionProvider
+     * @see FileOwnerQuery#getOwner(org.openide.filesystems.FileObject)
+     */
+    public static ActionProvider getActionProvider(FileObject fileObject) {
+        Project owner = FileOwnerQuery.getOwner(fileObject);
+        if(owner == null) { // #183586
+            return null;
+        }
+        return owner.getLookup().lookup(ActionProvider.class);
     }
 
 }
