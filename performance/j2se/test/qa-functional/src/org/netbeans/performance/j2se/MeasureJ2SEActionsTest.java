@@ -86,7 +86,7 @@ public class MeasureJ2SEActionsTest {
                 .addTest(SelectCategoriesInNewFileTest.class)
 // to fix        .addTest(ShiftCodeInEditorTest.class)
 // to fix                .addTest(SwitchToFileTest.class)
-                .addTest(SwitchViewTest.class)
+// to fix                .addTest(SwitchViewTest.class)
                 .addTest(TypingInEditorTest.class)
                 .addTest(ShowClassMembersInNavigatorTest.class)
 // TODO move to scenarios              .addTest(RefactorFindUsagesTest.class)*/
