@@ -32,6 +32,7 @@ package org.netbeans.modules.j2ee.persistence.provider;
 
 import java.util.Collections;
 import java.util.Map;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.openide.util.NbBundle;
 
 /**
@@ -40,46 +41,65 @@ import org.openide.util.NbBundle;
  */
 class OpenJPAProvider extends Provider{
 
+
     public OpenJPAProvider() {
-        super("org.apache.openjpa.persistence.PersistenceProviderImpl"); //NOI18N
+        this(null);
+    }
+    public OpenJPAProvider(String version) {
+        super("org.apache.openjpa.persistence.PersistenceProviderImpl", version); //NOI18N
     }
 
+    @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(KodoProvider.class, "LBL_OpenJPA"); //NOI18N
+        return NbBundle.getMessage(KodoProvider.class, "LBL_OpenJPA") + (getVersion()!=null ? "(JPA "+getVersion()+")" : ""); //NOI18N
     }
     
+    @Override
     public String getJdbcUrl() {
-        return "openjpa.ConnectionURL";//NOI18N
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "openjpa.ConnectionURL" : super.getJdbcUrl();//NOI18N
     }
     
+    @Override
     public String getJdbcDriver() {
-        return "openjpa.ConnectionDriverName";//NOI18N
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "openjpa.ConnectionDriverName" : super.getJdbcDriver();//NOI18N
     }
     
+    @Override
     public String getJdbcUsername() {
-        return "openjpa.ConnectionUserName";//NOI18N
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "openjpa.ConnectionUserName" : super.getJdbcUsername();//NOI18N
     }
     
+    @Override
     public String getJdbcPassword() {
-        return "openjpa.ConnectionPassword";//NOI18N
+        return Persistence.VERSION_1_0.equals(getVersion()) ? "openjpa.ConnectionPassword" : super.getJdbcPassword();//NOI18N
     }
 
+    @Override
+    public String getAnnotationProcessor() {
+        return Persistence.VERSION_2_0.equals(getVersion()) ? "org.apache.openjpa.persistence.meta.AnnotationProcessor6" : super.getAnnotationProcessor();
+    }
+    
+    @Override
     public String getTableGenerationPropertyName() {
         return "openjpa.jdbc.SynchronizeMappings";//NOI18N
     }
 
+    @Override
     public String getTableGenerationDropCreateValue() {
         return "buildSchema(SchemaAction='add,deleteTableContents',ForeignKeys=true)";//NOI18N
     }
 
+    @Override
     public String getTableGenerationCreateValue() {
         return "buildSchema(ForeignKeys=true)";//NOI18N
     }
 
+    @Override
     public Map getUnresolvedVendorSpecificProperties() {
         return Collections.EMPTY_MAP;
     }
 
+    @Override
     public Map getDefaultVendorSpecificProperties() {
         return Collections.EMPTY_MAP;
     }
