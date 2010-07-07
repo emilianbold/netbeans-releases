@@ -63,10 +63,11 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.mercurial</friend>
                 <friend>org.netbeans.modules.subversion</friend>
                 <package>org.ini4j</package>
+                <package>org.ini4j.spi</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/ini4j-0.4.1.jar</runtime-relative-path>
-                <binary-origin>external/ini4j-0.4.1.jar</binary-origin>
+                <runtime-relative-path>ext/ini4j-0.5.1.jar</runtime-relative-path>
+                <binary-origin>external/ini4j-0.5.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
