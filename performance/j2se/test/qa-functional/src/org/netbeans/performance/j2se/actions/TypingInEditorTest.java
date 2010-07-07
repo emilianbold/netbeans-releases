@@ -71,13 +71,13 @@ public class TypingInEditorTest extends PerformanceTestCase {
     /** Creates a new instance of TypingInEditor */
     public TypingInEditorTest(String testName) {
         super(testName);
-        WAIT_AFTER_OPEN = 200;
+        //WAIT_AFTER_OPEN = 200;
     }
     
     /** Creates a new instance of TypingInEditor */
     public TypingInEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        WAIT_AFTER_OPEN = 200;
+        //WAIT_AFTER_OPEN = 200;
     }
 
     public static NbTestSuite suite() {
@@ -91,7 +91,7 @@ public class TypingInEditorTest extends PerformanceTestCase {
   
     public void testTxtEditor() {
         fileName = "textfile.txt";
-        caretPositionX = 2;
+        caretPositionX = 9;
         caretPositionY = 1;
         fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
         doMeasurement();
@@ -99,8 +99,8 @@ public class TypingInEditorTest extends PerformanceTestCase {
     
     public void testJavaEditor() {
         fileName = "Main.java";
-        caretPositionX = 38;
-        caretPositionY = 19;
+        caretPositionX = 9;
+        caretPositionY = 1;
         fileToBeOpened = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
         doMeasurement();
     }
