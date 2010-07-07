@@ -63,6 +63,10 @@ made subject to such option by the copyright holder.
     </condition>
     <property name="testcoverage.import" value="no-testcoverage.xml"/>
     <import file="${testcoverage.import}"/>
+    
+    <target name="-build-dir-init">
+        <property name="build.dir" location="build"/>
+    </target>
 
     <target name="basic-init" depends="common-init,-jdk-init">
         <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
@@ -195,7 +199,7 @@ made subject to such option by the copyright holder.
 
     <target name="compile" depends="init,up-to-date" unless="is.jar.uptodate">
         <mkdir dir="${build.classes.dir}"/>
-        <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
+        <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="${build.dir}/depcache">
             <classpath refid="cp"/>
         </depend>
         <nb-javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" encoding="UTF-8"
@@ -214,7 +218,7 @@ made subject to such option by the copyright holder.
         <mkdir dir="${build.classes.dir}"/>
         <!-- XXX consider forcing debug=true and deprecation=true -->
         <!-- XXX consider deleting the .class file first to force a rebuild -->
-        <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
+        <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="${build.dir}/depcache">
             <classpath refid="cp"/>
         </depend>
         <nb-javac srcdir="${src.dir}" destdir="${build.classes.dir}"
@@ -407,12 +411,12 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="nbm" depends="init,netbeans,-nbm-prompt-for-storepass,-init-executables" description="Build NBM archive.">
-        <mkdir dir="build"/>
+        <mkdir dir="${build.dir}"/>
         <property name="nbm.target.cluster" value=""/> <!-- fallback -->
         <property name="license.file.override" value="${license.file}"/>
         <property name="use.pack200" value="true"/>
         <property name="pack200.excludes" value=""/>
-        <makenbm file="build/${nbm}"
+        <makenbm file="${build.dir}/${nbm}"
                  productdir="${cluster}"
                  module="${module.jar}"
                  homepage="${nbm.homepage}"
@@ -451,13 +455,13 @@ made subject to such option by the copyright holder.
                 <property name="test.@{test.type}.dir" location="test/@{test.type}"/>
                 <property name="test.@{test.type}.src.dir" location="${test.@{test.type}.dir}/src"/>
                 <property name="test.@{test.type}.data.dir" location="${test.@{test.type}.dir}/data"/>
-                <property name="build.test.@{test.type}.dir" location="build/test/@{test.type}"/>
+                <property name="build.test.@{test.type}.dir" location="${build.dir}/test/@{test.type}"/>
                 <property name="build.test.@{test.type}.classes.dir" location="${build.test.@{test.type}.dir}/classes"/>
                 <property name="build.test.@{test.type}.results.dir" location="${build.test.@{test.type}.dir}/results"/>
                 <property name="build.test.@{test.type}.work.dir" location="${build.test.@{test.type}.dir}/work"/>
                 <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/>
                 <!-- if project.xml doesn't contain test dependencies -->
-                <property name="test.@{test.type}.folder" location="build/test/@{test.type}/dist"/>
+                <property name="test.@{test.type}.folder" location="${build.dir}/test/@{test.type}/dist"/>
                 <property name="test.@{test.type}.out.folder" location="${test.@{test.type}.folder}"/>
                 <property name="test-@{test.type}-sys-prop.cluster.path.final" value="${cluster.path.final}:${cluster}"/> <!-- #153178, 176019 -->
                 <property name="test.@{test.type}.cp.extra" value=""/>
@@ -690,7 +694,7 @@ made subject to such option by the copyright holder.
 
     <target name="test-generate-html">
         <subant target="-test-browse-html" genericantfile="${ant.file}" inheritall="true">
-            <dirset dir="build/test" includes="*/results"/>
+            <dirset dir="${build.dir}/test" includes="*/results"/>
         </subant>
     </target>
 
@@ -920,8 +924,8 @@ made subject to such option by the copyright holder.
 
     <target name="arch" depends="init" description="Process an arch.xml, creating it if it does not yet exist.">
         <fail unless="javadoc.arch">You must define e.g. javadoc.arch=$${basedir}/arch.xml in project.properties</fail>
-        <mkdir dir="build"/>
-        <property name="arch.output.html" location="build/arch.html"/>
+        <mkdir dir="${build.dir}"/>
+        <property name="arch.output.html" location="${build.dir}/arch.html"/>
         <property name="arch.generate" value="true"/>
         <arch answers="${javadoc.arch}" output="${arch.output.html}"
             project="nbproject/project.xml"
@@ -941,7 +945,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="-testuserdir-delete-init" depends="files-init">
-        <property name="test.user.dir" location="build/testuserdir"/>
+        <property name="test.user.dir" location="${build.dir}/testuserdir"/>
         <property name="test.user.dir.lock" location="${test.user.dir}/lock"/>
         <available property="app.running" file="${test.user.dir.lock}"/>
     </target>
@@ -957,7 +961,7 @@ made subject to such option by the copyright holder.
     <target name="clean" depends="files-init,testuserdir-delete,test-clean">
         <delete failonerror="false" includeemptydirs="true">
             <fileset dir="${build.classes.dir}" />
-            <fileset dir="build">
+            <fileset dir="${build.dir}">
                 <exclude name="testuserdir/"/>
             </fileset>
         </delete>

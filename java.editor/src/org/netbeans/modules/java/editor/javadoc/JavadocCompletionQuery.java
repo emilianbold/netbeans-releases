@@ -657,7 +657,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 items.add(JavaCompletionItem.createTypeItem(
                         jdctx.javac, typeElement, (DeclaredType) typeElement.asType(),
                         substitutionOffset, typeName != qualTypeName,
-                        elements.isDeprecated(typeElement), false, false, true));
+                        elements.isDeprecated(typeElement), false, false, false, true));
             }
         }
 
@@ -945,7 +945,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 for(DeclaredType subtype : getSubtypesOf(baseType, prefix, jdctx)) {
                     TypeElement elem = (TypeElement)subtype.asElement();
                     if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem))
-                        items.add(JavaCompletionItem.createTypeItem(jdctx.javac, elem, subtype, substitutionOffset, true, elements.isDeprecated(elem), false, false, false));
+                        items.add(JavaCompletionItem.createTypeItem(jdctx.javac, elem, subtype, substitutionOffset, true, elements.isDeprecated(elem), false, false, false, false));
                 }
             }
         } else {

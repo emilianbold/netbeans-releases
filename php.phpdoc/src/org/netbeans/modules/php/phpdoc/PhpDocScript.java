@@ -100,8 +100,8 @@ public class PhpDocScript extends PhpProgram {
     }
 
     public void generateDocumentation(final PhpModule phpModule) {
-        String phpDocDir = PhpDocPreferences.getPhpDocDir(phpModule, true);
-        if (phpDocDir == null) {
+        String phpDocTarget = PhpDocPreferences.getPhpDocTarget(phpModule, true);
+        if (phpDocTarget == null) {
             // canceled
             return;
         }
@@ -112,7 +112,7 @@ public class PhpDocScript extends PhpProgram {
                 .addArgument(FileUtil.toFile(phpModule.getSourceDirectory()).getAbsolutePath())
                 // to
                 .addArgument("-t") // NOI18N
-                .addArgument(phpDocDir)
+                .addArgument(phpDocTarget)
                 // title
                 .addArgument("-ti") // NOI18N
                 .addArgument(PhpDocPreferences.getPhpDocTitle(phpModule));
@@ -126,7 +126,7 @@ public class PhpDocScript extends PhpProgram {
                     executionDescriptor,
                     NbBundle.getMessage(PhpDocScript.class, "LBL_GeneratingPhpDocForProject", phpModule.getDisplayName()));
             if (status == 0) {
-                File index = new File(phpDocDir, "index.html"); // NOI18N
+                File index = new File(phpDocTarget, "index.html"); // NOI18N
                 if (index.isFile()) {
                     // false for pdf e.g.
                     HtmlBrowser.URLDisplayer.getDefault().showURL(index.toURI().toURL());

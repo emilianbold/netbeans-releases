@@ -188,8 +188,8 @@ import org.openide.util.Lookup;
     }
     
     private static File initializeBuildProperties(File workDir, File dataDir, File apisZip) throws Exception {
-        File nbrootF = getTestNBRoot();
         boolean sourceAvailable = isSourceAvailable();
+        File nbrootF = sourceAvailable ? getTestNBRoot() : null;
         System.setProperty("netbeans.user", workDir.getAbsolutePath());
         File userPropertiesFile = new File(workDir, "build.properties");
         Properties p = new Properties();
@@ -227,7 +227,8 @@ import org.openide.util.Lookup;
     }
     
     private static boolean isSourceAvailable() {
-        return new File(getTestNBRoot(), "nbbuild/netbeans/" + CLUSTER_APISUPPORT
+        String nbroot = System.getProperty("test.nbroot");
+        return nbroot != null && new File(nbroot, "nbbuild/netbeans/" + CLUSTER_APISUPPORT
                 + "/modules/org-netbeans-modules-apisupport-project.jar").isFile();
     }
     

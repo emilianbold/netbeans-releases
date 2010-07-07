@@ -279,7 +279,12 @@ public class WebProjectRestSupport extends WebRestSupport {
     }
 
     private String getServerRestLibraryName(J2eeModuleProvider j2eeModuleProvider) {
-        return "restlib_"+ j2eeModuleProvider.getServerID(); //NOI18N
+        String libName = "restlib_"+ j2eeModuleProvider.getServerID(); //NOI18N
+        if (libName.startsWith(GFV3_RESTLIB)) {
+            return GFV3_RESTLIB;
+        } else {
+            return libName;
+        }
     }
 
     private J2eePlatform getJ2eePlatform(J2eeModuleProvider j2eeModuleProvider){

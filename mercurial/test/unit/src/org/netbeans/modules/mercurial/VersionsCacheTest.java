@@ -45,12 +45,15 @@ package org.netbeans.modules.mercurial;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.versioning.historystore.Storage;
 import org.netbeans.modules.versioning.historystore.StorageManager;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.Utils;
@@ -81,13 +84,33 @@ public class VersionsCacheTest extends AbstractHgTest {
         folder.mkdirs();
         File file = new File(folder, "file");
         List<File> revisions = prepareVersions(file);
-        testContents(revisions, file);
+        testContents(revisions, file, false);
+    }
+    
+    public void testCacheAfterRollback () throws Exception {
+        File folder = new File(workdir, "folder");
+        folder.mkdirs();
+        File file = new File(folder, "file");
+        List<File> revisions = prepareVersions(file);
+        testContents(revisions, file, false);
+        HgCommand.doRollback(workdir, NULL_LOGGER);
+        revisions.remove(0);
+        File newRevision = new File(new File(getDataDir(), "versionscache"), "rollback");
+        revisions.add(0, newRevision);
+        Utils.copyStreamsCloseAll(new FileOutputStream(file), new FileInputStream(newRevision));
+        commit(new File[]{file});
+        testContents(revisions, file, true);
     }
 
     private List<File> prepareVersions (File file) throws Exception {
         List<File> revisionList = new LinkedList<File>();
         File dataDir = new File(getDataDir(), "versionscache");
-        File[] revisions = dataDir.listFiles();
+        File[] revisions = dataDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith("rev");
+            }
+        });
         for (File rev : revisions) {
             if (rev.isFile()) {
                 revisionList.add(0, rev);
@@ -98,17 +121,21 @@ public class VersionsCacheTest extends AbstractHgTest {
         return revisionList;
     }
 
-    private void testContents (List<File> revisions, File file) throws Exception {
+    private void testContents (List<File> revisions, File file, boolean cacheFilled) throws Exception {
         HgLogMessage tip = HgCommand.doTip(workdir, NULL_LOGGER);
         long lastRev = tip.getRevisionAsLong();
         VersionsCache cache = VersionsCache.getInstance();
         Storage storage = StorageManager.getInstance().getStorage(workdir);
         for (File golden : revisions) {
-            File content = storage.getContent(HgUtils.getRelativePath(file), file.getName(), String.valueOf(lastRev));
-            assertEquals(0, content.length());
-            content = cache.getFileRevision(file, String.valueOf(lastRev));
+            File content;
+            HgRevision hgRev = HgCommand.getLogMessages(workdir, Collections.singleton(file), String.valueOf(lastRev), String.valueOf(lastRev), false, false, 1, NULL_LOGGER, true)[0].getHgRevision();
+            if (!cacheFilled) {
+                content = storage.getContent(HgUtils.getRelativePath(file), file.getName(), hgRev.getChangesetId());
+                assertEquals(0, content.length());
+            }
+            content = cache.getFileRevision(file, hgRev);
             assertFile(content, golden, null);
-            content = storage.getContent(HgUtils.getRelativePath(file), file.getName(), String.valueOf(lastRev));
+            content = storage.getContent(HgUtils.getRelativePath(file), file.getName(), hgRev.getChangesetId());
             assertFile(content, golden, null);
             --lastRev;
         }

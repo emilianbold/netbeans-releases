@@ -183,7 +183,6 @@ public abstract class CaretAwareJavaSourceTaskFactory extends JavaSourceTaskFact
             FileObject file = OpenedEditors.getFileObject(c);
 
             if (file != null) {
-                setLastPosition(file, c.getCaretPosition());
                 reschedule(file);
             }
         }

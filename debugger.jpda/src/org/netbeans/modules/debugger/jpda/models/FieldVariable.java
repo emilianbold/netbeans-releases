@@ -77,7 +77,7 @@ import org.openide.util.Exceptions;
 /**
  * @author   Jan Jancura
  */
-class FieldVariable extends AbstractVariable implements
+public class FieldVariable extends AbstractVariable implements
 org.netbeans.api.debugger.jpda.Field, Refreshable {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
@@ -90,7 +90,7 @@ org.netbeans.api.debugger.jpda.Field, Refreshable {
     private PrimitiveValue value;
     
 
-    FieldVariable (
+    public FieldVariable (
         JPDADebuggerImpl debugger,
         PrimitiveValue value,
     //    String className,
@@ -108,7 +108,7 @@ org.netbeans.api.debugger.jpda.Field, Refreshable {
         this.objectReference = objectReference;
     }
 
-    FieldVariable (
+    public FieldVariable (
         JPDADebuggerImpl debugger,
         Field field,
         String parentID,

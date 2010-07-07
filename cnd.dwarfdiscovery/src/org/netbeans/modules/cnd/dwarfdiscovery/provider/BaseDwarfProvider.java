@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -60,6 +61,7 @@ import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
@@ -203,18 +205,24 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (lang == null) {
                         continue;
                     }
-                    boolean isCpp = false;
+                    ItemProperties.LanguageKind language = null;
                     if (LANG.DW_LANG_C.toString().equals(lang) ||
                             LANG.DW_LANG_C89.toString().equals(lang) ||
                             LANG.DW_LANG_C99.toString().equals(lang)) {
+                        language = ItemProperties.LanguageKind.CPP;
                         res++;
                     } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
-                        isCpp = true;
+                        language = ItemProperties.LanguageKind.CPP;
+                        res++;
+                    } else if (LANG.DW_LANG_Fortran77.toString().equals(lang) ||
+                           LANG.DW_LANG_Fortran90.toString().equals(lang) ||
+                           LANG.DW_LANG_Fortran95.toString().equals(lang)) {
+                        language = ItemProperties.LanguageKind.Fortran;
                         res++;
                     } else {
                         continue;
                     }
-                    String compilerName = DwarfSource.extractCompilerName(cu, isCpp);
+                    String compilerName = DwarfSource.extractCompilerName(cu, language);
                     if (compilerName != null) {
                         AtomicInteger count = compilers.get(compilerName);
                         if (count == null) {
@@ -284,9 +292,13 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (LANG.DW_LANG_C.toString().equals(lang)
                             || LANG.DW_LANG_C89.toString().equals(lang)
                             || LANG.DW_LANG_C99.toString().equals(lang)) {
-                        source = new DwarfSource(cu, false, getCommpilerSettings(), grepBase);
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, getCommpilerSettings(), grepBase);
                     } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
-                        source = new DwarfSource(cu, true, getCommpilerSettings(), grepBase);
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.CPP, getCommpilerSettings(), grepBase);
+                    } else if (LANG.DW_LANG_Fortran77.toString().equals(lang) ||
+                           LANG.DW_LANG_Fortran90.toString().equals(lang) ||
+                           LANG.DW_LANG_Fortran95.toString().equals(lang)) {
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, getCommpilerSettings(), grepBase);
                     } else {
                         if (FULL_TRACE) {
                             System.out.println("Unknown language: " + lang);  // NOI18N
@@ -386,20 +398,22 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             }
         }
         
-        public List<String> getSystemIncludePaths(boolean isCPP) {
-            if (isCPP) {
+        public List<String> getSystemIncludePaths(ItemProperties.LanguageKind lang) {
+            if (lang == ItemProperties.LanguageKind.CPP) {
                 return systemIncludePathsCpp;
-            } else {
+            } else if (lang == ItemProperties.LanguageKind.C) {
                 return systemIncludePathsC;
             }
+            return Collections.<String>emptyList();
         }
         
-        public Map<String,String> getSystemMacroDefinitions(boolean isCPP) {
-            if (isCPP) {
+        public Map<String,String> getSystemMacroDefinitions(ItemProperties.LanguageKind lang) {
+            if (lang == ItemProperties.LanguageKind.CPP) {
                 return systemMacroDefinitionsCpp;
-            } else {
+            } else if (lang == ItemProperties.LanguageKind.C) {
                 return systemMacroDefinitionsC;
             }
+            return Collections.<String,String>emptyMap();
         }
         
         public String getNormalizedPath(String path){

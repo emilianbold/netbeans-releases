@@ -192,7 +192,9 @@
     </folder>
 
     <folder name="Templates">
-        <folder name="SunResources">
+        <folder name="WebLogicResources">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.glassfish.javaee.templates.Bundle"/>
+            <attr name="position" intvalue="1850"/>
             <file name="weblogicDD">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/glassfish/javaee/resources/ConfigFile.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.glassfish.javaee.templates.Bundle"/>

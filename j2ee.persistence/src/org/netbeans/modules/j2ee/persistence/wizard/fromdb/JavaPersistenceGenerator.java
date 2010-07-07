@@ -1020,7 +1020,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                                         break;
                                     }
                                 }
-                            } else if (nm.contentEquals("OneToOne") || nm.contentEquals("OneToMany")) {//NOI18
+                            } else if (nm.contentEquals("OneToOne") || nm.contentEquals("OneToMany") || nm.contentEquals("ManyToMany")) {//NOI18
                                 //may be relation with mappedTo
                                 for (ExpressionTree expression : annTree.getArguments()) {
                                     if (expression instanceof AssignmentTree) {
