@@ -49,7 +49,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -145,8 +144,8 @@ public class CommandRunner extends BasicTask<OperationState> {
      *
      */
     public Future<OperationState> restartServer() {
-        return execute(Commands.RESTART, "MSG_RESTART_SERVER_IN_PROGRESS"); // NOI18N
-    }
+            return execute(Commands.RESTART, "MSG_RESTART_SERVER_IN_PROGRESS"); // NOI18N
+        }
 
     /**
      * Sends list-applications command to server (synchronous)
@@ -414,7 +413,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         }
 
         int retries = 1; // disable ("version".equals(cmd) || "__locations".equals(cmd)) ? 1 : 3;
-        Logger.getLogger("glassfish").log(Level.FINEST, "CommandRunner.call(" + commandUrl + ") called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
+        Logger.getLogger("glassfish").log(Level.FINEST, "CommandRunner.call({0}) called on thread \"{1}\"", new Object[]{commandUrl, Thread.currentThread().getName()}); // NOI18N
         
         // Create a connection for this command
         try {
@@ -422,7 +421,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 
             while(!httpSucceeded && retries-- > 0) {
                 try {
-                    Logger.getLogger("glassfish").log(Level.FINE, "HTTP Command: " + commandUrl ); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.FINE, "HTTP Command: {0}", commandUrl); // NOI18N
 
                     conn = urlToConnectTo.openConnection();
                     if(conn instanceof HttpURLConnection) {
@@ -473,6 +472,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                         String contentType = serverCmd.getContentType();
                         if(contentType != null && contentType.length() > 0) {
                             hconn.setRequestProperty("Content-Type", contentType); // NOI18N
+                            hconn.setChunkedStreamingMode(0);
                         }
                         hconn.setRequestProperty("User-Agent", "hk2-agent"); // NOI18N
 
@@ -500,7 +500,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 
                         // !PW FIXME log status for debugging purposes
                         if(Boolean.getBoolean("org.netbeans.modules.hk2.LogManagerCommands")) { // NOI18N
-                            Logger.getLogger("glassfish").log(Level.FINE, "  receiving response, code: " + respCode); // NOI18N
+                            Logger.getLogger("glassfish").log(Level.FINE, "  receiving response, code: {0}", respCode); // NOI18N
                         }
 
                         // Process the response message
@@ -510,7 +510,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                         
                         httpSucceeded = true;
                     } else {
-                        Logger.getLogger("glassfish").log(Level.INFO, "Unexpected connection type: " + urlToConnectTo); // NOI18N
+                        Logger.getLogger("glassfish").log(Level.INFO, "Unexpected connection type: {0}", urlToConnectTo); // NOI18N
                     }
                 } catch(ProtocolException ex) {
                     fireOperationStateChanged(OperationState.FAILED, "MSG_Exception", // NOI18N
@@ -596,32 +596,16 @@ public class CommandRunner extends BasicTask<OperationState> {
         }
     }
     
-    private byte [] getExtraProperties() {
-        boolean success = false;
+    private byte[] getExtraProperties() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = null;
-        try {
-            Properties props = new Properties();
-            props.setProperty("data-request-type", "file-xfer"); // NOI18N
-            props.setProperty("data-request-name", serverCmd.getInputName()); // NOI18N
-            props.setProperty("last-modified", serverCmd.getLastModified()); // NOI18N
-            oos = new ObjectOutputStream(baos);
-            oos.writeObject(props);
-        } catch(IOException ex) {
-            Logger.getLogger("glassfish").log(Level.WARNING, // NOI18N
-                    "Error writing zip properties for archive deployment of " + serverCmd.getInputName(), ex); // NOI18N
-        } finally {
-            if(oos != null) {
-                try {
-                    oos.close();
-                    success = true;
-                } catch(IOException ex) {
-                    Logger.getLogger("glassfish").log(Level.WARNING, // NOI18N
-                            "Error writing zip properties for archive deployment of " + serverCmd.getInputName(), ex); // NOI18N
-                }
-            }
-        }
-        return success ? baos.toByteArray() : new byte [0];
+        Properties props = new Properties();
+        props.setProperty("data-request-type", "file-xfer"); // NOI18N
+        props.setProperty("last-modified", serverCmd.getLastModified()); // NOI18N
+        props.put("data-request-name", "DEFAULT");
+        props.put("data-request-is-recursive", "true");
+        props.put("Content-Type", "application/octet-stream");
+        props.list(new java.io.PrintStream(baos));
+        return baos.toByteArray();
     }
 
     private boolean handleReceive(HttpURLConnection hconn) throws IOException {
