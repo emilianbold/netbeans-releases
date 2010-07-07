@@ -46,6 +46,8 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.marker.Mark;
 
@@ -79,9 +81,16 @@ public class LifecycleEJBMarkingProvider extends BaseEJBMarkingProvider {
 
     @Override
     protected boolean isValid(ExecutableElement method) {
+        return isApplicable(method);
+    }
+    
+    static boolean isApplicable(ExecutableElement method) {
         if (!includedMethodNames.contains(method.getSimpleName().toString())) {
             for(AnnotationMirror am : method.getAnnotationMirrors()) {
-                if (includedAnnotationsNames.contains(am.getAnnotationType().asElement().getSimpleName().toString())) {
+                if (includedAnnotationsNames.contains(
+                        ((TypeElement)am.getAnnotationType().asElement()).
+                        getQualifiedName().toString()))
+                {
                     return true;
                 }
             }

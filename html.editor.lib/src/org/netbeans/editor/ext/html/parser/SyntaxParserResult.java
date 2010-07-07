@@ -44,7 +44,9 @@ package org.netbeans.editor.ext.html.parser;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.ext.html.dtd.DTD;
@@ -72,7 +74,7 @@ public class SyntaxParserResult {
     private Map<String, AstNode> astRoots;
 
     //ns URI to PREFIX map
-    private Map<String, String> namespaces;
+    private Map<String, List<String>> namespaces;
 
     public SyntaxParserResult(SyntaxParserContext context) {
         this.context = context;
@@ -118,21 +120,46 @@ public class SyntaxParserResult {
             //filter the elements
             List<SyntaxElement> filtered = new ArrayList<SyntaxElement>();
 
-            String prefix = UNDECLARED_TAGS_NAMESPACE.equals(namespace) ?
-                UNDECLARED_TAGS_PREFIX:
-                getDeclaredNamespaces().get(namespace);
+            //prefixes may be null, if there's is no tag with the specified namespace,
+            //
+            //or can be a one item list with the UNDECLARED_TAGS_PREFIX which represents
+            //all undeclared tags,
+            //
+            //or can be a list of tags prefixes already mapped to the given namespace
+            List<String> prefixes = UNDECLARED_TAGS_NAMESPACE.equals(namespace) ?
+                Collections.singletonList(UNDECLARED_TAGS_PREFIX):
+                getAllDeclaredNamespaces().get(namespace);
             
             for(SyntaxElement e : getElements()) {
                 if(e.type() == SyntaxElement.TYPE_TAG || e.type() == SyntaxElement.TYPE_ENDTAG) {
                     SyntaxElement.Tag tag = (SyntaxElement.Tag)e;
                     String tagNamePrefix = getTagNamePrefix(tag);
-                    if((tagNamePrefix == null && prefix == null) ||
-                            (tagNamePrefix != null && UNDECLARED_TAGS_PREFIX.equals(prefix)  && !getDeclaredNamespaces().containsValue(tagNamePrefix)) || //unknown prefixed tags falls to the 'undeclared tags parse tree'
-                            (tagNamePrefix != null && prefix != null && tagNamePrefix.equals(prefix))) {
-                        //either the tag has no prefix and the prefix is null
-                        //or the prefix matches
+
+                    boolean add = false; //for better readibility of the code below
+                    if (tagNamePrefix == null) {
+                        if (prefixes == null) {
+                            //tags w/o any prefix
+                            add = true;
+                        }
+                    } else {
+                        //tagNamePrefix != null
+                        if(prefixes != null) {
+                            if (prefixes.contains(UNDECLARED_TAGS_PREFIX)
+                                    && !getDeclaredNamespaces().containsValue(tagNamePrefix)) {
+                                //unknown prefixed tags falls to the 'undeclared tags parse tree'
+                                add = true;
+
+                            } else if (prefixes.contains(tagNamePrefix)) {
+                                //or the prefix matches
+                                add = true;
+                            }
+                        }
+                    }
+
+                    if(add) {
                         filtered.add(e);
                     }
+
                 } else {
                     //do not filter the other types
                     filtered.add(e);
@@ -192,21 +219,50 @@ public class SyntaxParserResult {
      * Not only globaly registered namespace (root tag) are taken into account.
      */
     // URI to prefix map
-    public synchronized Map<String, String> getDeclaredNamespaces() {
+    @Deprecated
+    public Map<String, String> getDeclaredNamespaces() {
+        Map<String, List<String>> all = getAllDeclaredNamespaces();
+        Map<String, String> firstPrefixOnly = new HashMap<String, String>();
+        for(String namespace : all.keySet()) {
+            List<String> prefixes = all.get(namespace);
+            if(prefixes != null && prefixes.size() > 0) {
+                firstPrefixOnly.put(namespace, prefixes.get(0));
+            }
+        }
+        return firstPrefixOnly;
+    }
+
+    /**
+     *
+     * @return map of namespace URI to a List of prefixes. The prefixes in the list
+     * are sorted according to their occurrences in the document.
+     */
+    public synchronized Map<String, List<String>> getAllDeclaredNamespaces() {
         if (namespaces == null) {
-            this.namespaces = new HashMap<String, String>();
+            this.namespaces = new HashMap<String, List<String>>();
             for (SyntaxElement se : getElements()) {
                 if (se.type() == SyntaxElement.TYPE_TAG) {
                     SyntaxElement.Tag tag = (SyntaxElement.Tag) se;
                     for (SyntaxElement.TagAttribute attr : tag.getAttributes()) {
                         String attrName = attr.getName();
-                        if (attrName.startsWith("xmlns")) {
-                            int colonIndex = attrName.indexOf(':');
+                        if (attrName.startsWith("xmlns")) { //NOI18N
+                            int colonIndex = attrName.indexOf(':'); //NOI18N
                             String nsPrefix = colonIndex == -1 ? null : attrName.substring(colonIndex + 1);
                             String value = attr.getValue();
                             //do not overwrite already existing entry
-                            if(!namespaces.containsKey(dequote(value))) {
-                                namespaces.put(dequote(value), nsPrefix);
+                            String key = dequote(value);
+                            List<String> prefixes = namespaces.get(key);
+                            if(prefixes == null) {
+                                prefixes = new LinkedList<String>();
+                                prefixes.add(nsPrefix);
+                                namespaces.put(key, prefixes);
+                            } else {
+                                //already existing list of prefixes for the namespace
+                                if(prefixes.contains(key)) {
+                                    //just relax
+                                } else {
+                                    prefixes.add(nsPrefix);
+                                }
                             }
                         }
                     }

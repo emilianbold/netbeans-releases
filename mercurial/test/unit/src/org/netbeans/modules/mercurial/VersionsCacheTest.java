@@ -125,7 +125,7 @@ public class VersionsCacheTest extends AbstractHgTest {
         HgLogMessage tip = HgCommand.doTip(workdir, NULL_LOGGER);
         long lastRev = tip.getRevisionAsLong();
         VersionsCache cache = VersionsCache.getInstance();
-        Storage storage = StorageManager.getInstance().getStorage(workdir);
+        Storage storage = StorageManager.getInstance().getStorage(workdir.getAbsolutePath());
         for (File golden : revisions) {
             File content;
             HgRevision hgRev = HgCommand.getLogMessages(workdir, Collections.singleton(file), String.valueOf(lastRev), String.valueOf(lastRev), false, false, 1, NULL_LOGGER, true)[0].getHgRevision();
