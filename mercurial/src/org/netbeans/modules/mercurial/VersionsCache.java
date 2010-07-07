@@ -96,7 +96,7 @@ public class VersionsCache {
                         HgCommand.doCat(repository, base, tempFile, revisionNumber, null);
                     } else {
                         String changesetId = revision.getChangesetId();
-                        Storage cachedVersions = StorageManager.getInstance().getStorage(repository);
+                        Storage cachedVersions = StorageManager.getInstance().getStorage(repository.getAbsolutePath());
                         String relativePath = HgUtils.getRelativePath(base);
                         File cachedFile = cachedVersions.getContent(relativePath, base.getName(), changesetId);
                         if (cachedFile.length() == 0) { // not yet cached
