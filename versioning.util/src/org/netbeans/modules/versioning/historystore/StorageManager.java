@@ -73,20 +73,20 @@ public class StorageManager {
     
     /**
      * Returns or creates (if does not yet exist) a storage for the given root
-     * @param root root of whatever you want to persist. This will mostly be the root of the working copy
+     * @param root root of whatever you want to persist. This will mostly be the path to the root of a working copy or a repository url
      * @return
      */
-    public Storage getStorage (File root) {
-        String storeFileName = Storage.getMD5(root.getAbsolutePath());
-        return getStorage(storeFileName);
+    public Storage getStorage (String root) {
+        String storeFileName = Storage.getMD5(root);
+        return getStorageIntern(storeFileName);
     }
     
-    private Storage getStorage (String storeFileName) {
+    private Storage getStorageIntern (String storeName) {
         synchronized (storages) {
-            Storage storage = storages.get(storeFileName);
+            Storage storage = storages.get(storeName);
             if (storage == null) {
-                storage = createStorage(storeFileName);
-                storages.put(storeFileName, storage);
+                storage = createStorage(storeName);
+                storages.put(storeName, storage);
             }
             return storage;
         }
@@ -117,7 +117,7 @@ public class StorageManager {
                 if (storageFolders != null) {
                     for (File storageFolder : storageFolders) {
                         // cleanup every storage
-                        Storage storage = getStorage(storageFolder.getName());
+                        Storage storage = getStorageIntern(storageFolder.getName());
                         storage.cleanUp();
                     }
                     synchronized (storages) {

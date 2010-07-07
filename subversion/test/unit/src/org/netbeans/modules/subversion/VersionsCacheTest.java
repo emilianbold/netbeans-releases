@@ -40,102 +40,80 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mercurial;
+package org.netbeans.modules.subversion;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.historystore.Storage;
 import org.netbeans.modules.versioning.historystore.StorageManager;
-import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
-import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
-import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.Utils;
+import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
  * @author ondra
  */
-public class VersionsCacheTest extends AbstractHgTest {
+public class VersionsCacheTest extends AbstractSvnTest {
 
     private File workdir;
 
-    public VersionsCacheTest (String arg0) {
+    public VersionsCacheTest (String arg0) throws Exception {
         super(arg0);
     }
     
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());
         super.setUp();
         // create
-        workdir = getWorkDir();
-        Mercurial.STATUS_LOG.setLevel(Level.FINE);
+        workdir = getWC();
     }
     
     public void testCache () throws Exception {
         File folder = new File(workdir, "folder");
         folder.mkdirs();
+        commit(workdir);
         File file = new File(folder, "file");
         List<File> revisions = prepareVersions(file);
         testContents(revisions, file, false);
-    }
-    
-    public void testCacheAfterRollback () throws Exception {
-        File folder = new File(workdir, "folder");
-        folder.mkdirs();
-        File file = new File(folder, "file");
-        List<File> revisions = prepareVersions(file);
-        testContents(revisions, file, false);
-        HgCommand.doRollback(workdir, NULL_LOGGER);
-        revisions.remove(0);
-        File newRevision = new File(new File(getDataDir(), "versionscache"), "rollback");
-        revisions.add(0, newRevision);
-        Utils.copyStreamsCloseAll(new FileOutputStream(file), new FileInputStream(newRevision));
-        commit(new File[]{file});
-        testContents(revisions, file, true);
     }
 
     private List<File> prepareVersions (File file) throws Exception {
         List<File> revisionList = new LinkedList<File>();
         File dataDir = new File(getDataDir(), "versionscache");
-        File[] revisions = dataDir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.startsWith("rev");
-            }
-        });
+        File[] revisions = dataDir.listFiles();
         for (File rev : revisions) {
             if (rev.isFile()) {
                 revisionList.add(0, rev);
                 Utils.copyStreamsCloseAll(new FileOutputStream(file), new FileInputStream(rev));
-                commit(new File[] {file});
+                commit(file);
             }
         }
         return revisionList;
     }
 
     private void testContents (List<File> revisions, File file, boolean cacheFilled) throws Exception {
-        HgLogMessage tip = HgCommand.doTip(workdir, NULL_LOGGER);
-        long lastRev = tip.getRevisionAsLong();
+        ISVNClientAdapter client = getFullWorkingClient();
+        long lastRev = client.getInfo(file).getLastChangedRevision().getNumber();
         VersionsCache cache = VersionsCache.getInstance();
-        Storage storage = StorageManager.getInstance().getStorage(workdir.getAbsolutePath());
+        SVNUrl repoUrl = SvnUtils.getRepositoryRootUrl(file);
+        SVNUrl resourceUrl = SvnUtils.getRepositoryUrl(file);
+        Storage storage = StorageManager.getInstance().getStorage(repoUrl.toString());
         for (File golden : revisions) {
             File content;
-            HgRevision hgRev = HgCommand.getLogMessages(workdir, Collections.singleton(file), String.valueOf(lastRev), String.valueOf(lastRev), false, false, 1, NULL_LOGGER, true)[0].getHgRevision();
             if (!cacheFilled) {
-                content = storage.getContent(HgUtils.getRelativePath(file), file.getName(), hgRev.getChangesetId());
+                content = storage.getContent(repoUrl.toString(), file.getName(), String.valueOf(lastRev));
                 assertEquals(0, content.length());
             }
-            content = cache.getFileRevision(file, hgRev);
+            content = cache.getFileRevision(repoUrl, resourceUrl, String.valueOf(lastRev), file.getName());
             assertFile(content, golden, null);
-            content = storage.getContent(HgUtils.getRelativePath(file), file.getName(), hgRev.getChangesetId());
+            content = cache.getFileRevision(repoUrl, resourceUrl, String.valueOf(lastRev), String.valueOf(lastRev), file.getName());
+            assertFile(content, golden, null);
+            content = storage.getContent(resourceUrl.toString() + "@" + lastRev, file.getName(), String.valueOf(lastRev));
             assertFile(content, golden, null);
             --lastRev;
         }
