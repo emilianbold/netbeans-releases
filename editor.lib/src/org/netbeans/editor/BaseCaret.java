@@ -366,7 +366,8 @@ AtomicLockListener, FoldHierarchyListener {
             }
         
             if (newCaretBounds != null) {
-                LOG.log(Level.FINE, "updateCaretBounds: old={0}, new={1}", new Object [] { caretBounds, newCaretBounds }); //NOI18N
+                LOG.log(Level.FINE, "updateCaretBounds: old={0}, new={1}, offset={2}",
+                        new Object [] { caretBounds, newCaretBounds, offset }); //NOI18N
                 caretBounds = newCaretBounds;
                 return true;
             }

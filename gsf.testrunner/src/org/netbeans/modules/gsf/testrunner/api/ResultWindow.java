@@ -45,20 +45,28 @@
 package org.netbeans.modules.gsf.testrunner.api;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.lang.ref.Reference;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import org.openide.awt.MouseUtils;
+import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -83,6 +91,13 @@ final class ResultWindow extends TopComponent {
      * @see  #getInstance
      */
     private static WeakReference<ResultWindow> instance = null;
+
+    private Map<String,JSplitPane> viewMap = new HashMap<String,JSplitPane>();
+
+    private final JTabbedPane tabPane;
+    private JPopupMenu pop;
+    private PopupListener popL;
+    private CloseListener closeL;
 
     /**
      * Returns a singleton of this class.
@@ -146,15 +161,14 @@ final class ResultWindow extends TopComponent {
     }
 
     /** */
-    private JSplitPane view;
-    private Object lookup;
+//    private JSplitPane view;
+//    private Object lookup;
 
     /** Creates a new instance of ResultWindow */
     public ResultWindow() {
         super();
         setFocusable(true);
         setLayout(new BorderLayout());
-        //add(tabbedPanel = new JTabbedPane(), BorderLayout.CENTER);
 
         setName(ID);
         setDisplayName(NbBundle.getMessage(ResultWindow.class,
@@ -168,16 +182,33 @@ final class ResultWindow extends TopComponent {
                 NbBundle.getMessage(getClass(), "ACSN_TestResults"));   //NOI18N
         accessibleContext.setAccessibleDescription(
                 NbBundle.getMessage(getClass(), "ACSD_TestResults"));   //NOI18N
+
+        pop = new JPopupMenu();
+        pop.add(new Close());
+        pop.add(new CloseAll());
+        pop.add(new CloseAllButCurrent());
+        popL = new PopupListener();
+        closeL = new CloseListener();
+
+        tabPane = TabbedPaneFactory.createCloseButtonTabbedPane();
+        tabPane.setMinimumSize(new Dimension(0, 0));
+        tabPane.addMouseListener(popL);
+        tabPane.addPropertyChangeListener(closeL);
+        add(tabPane);
     }
 
     /**
      */
     public void addDisplayComponent(JSplitPane displayComp, Lookup l) {
         assert EventQueue.isDispatchThread();
+        String key = displayComp.getToolTipText();
 
-        removeAll();
-        addView(displayComp);
-        this.lookup = new WeakReference<Lookup>(l);
+        JSplitPane prevComp = viewMap.put(key, displayComp);
+        if (prevComp == null){
+            addView(displayComp);
+        }else{
+            replaceView(prevComp, displayComp);
+        }
         revalidate();
     }
 
@@ -186,11 +217,22 @@ final class ResultWindow extends TopComponent {
     private void addView(final JSplitPane view) {
         assert EventQueue.isDispatchThread();
 
-        this.view = view;
         view.setMinimumSize(new Dimension(0, 0));
-        add(view);
+        tabPane.addTab(view.getToolTipText(), view);
+        tabPane.setSelectedComponent(view);
+        tabPane.validate();
     }
 
+    private void replaceView(JSplitPane oldView, JSplitPane newView){
+        for (int i=0; i < tabPane.getTabCount(); i++){
+            if (oldView.equals(tabPane.getComponentAt(i))){
+                tabPane.setComponentAt(i, newView);
+                tabPane.setSelectedComponent(newView);
+                tabPane.validate();
+                continue;
+            }
+        }
+    }
     /**
      */
     private boolean isActivated() {
@@ -215,11 +257,10 @@ final class ResultWindow extends TopComponent {
      * and {@link JSplitPane#HORIZONTAL_SPLIT}) to set.
      */
     public void setOrientation(int orientation) {
-        if (view == null) {
-            return;
-        }
-        if (view.getOrientation() != orientation) {
-            view.setOrientation(orientation);
+        for(JSplitPane view: viewMap.values()){
+            if (view.getOrientation() != orientation) {
+                view.setOrientation(orientation);
+            }
         }
     }
 
@@ -243,7 +284,7 @@ final class ResultWindow extends TopComponent {
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
-
+/*
     @Override
     public Lookup getLookup() {
         if (lookup == null) {
@@ -258,7 +299,7 @@ final class ResultWindow extends TopComponent {
         }
         return Lookup.EMPTY;
     }
-
+*/
     /**
      * Resolves to the {@linkplain #getDefault default instance} of this class.
      *
@@ -293,6 +334,41 @@ final class ResultWindow extends TopComponent {
     @Override
     protected void componentDeactivated() {
         activated = false;
+    }
+
+    private JSplitPane getCurrentResultView(){
+        return (JSplitPane)tabPane.getSelectedComponent();
+    }
+
+    private void closeAll(boolean butCurrent) {
+        Component current = tabPane.getSelectedComponent();
+        Component[] c =  tabPane.getComponents();
+        for (int i = 0; i< c.length; i++) {
+            if (butCurrent && c[i]==current) {
+                continue;
+            }
+            if(c[i] instanceof JSplitPane) {
+                removeView((JSplitPane) c[i]);
+            }
+        }
+    }
+
+    @Override
+    protected void componentClosed() {
+        closeAll(false);
+        super.componentClosed();
+    }
+
+    private void removeView(JSplitPane view) {
+        // probably it's need to stop testing if in progress?
+        
+        if (view == null) {
+            view = (JSplitPane) tabPane.getSelectedComponent();
+        }
+        tabPane.remove(view);
+        viewMap.remove(view.getToolTipText());
+
+        validate();
     }
 
     private class IOContainerImpl implements IOContainer.Provider {
@@ -345,7 +421,7 @@ final class ResultWindow extends TopComponent {
         }
     }
 
-    private static final class PrevNextFailure extends AbstractAction {
+    private final class PrevNextFailure extends AbstractAction {
 
         private final boolean next;
 
@@ -354,7 +430,7 @@ final class ResultWindow extends TopComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            JSplitPane view = ResultWindow.getInstance().view;
+            JSplitPane view = getCurrentResultView();
             if (view == null || !(view.getLeftComponent() instanceof StatisticsPanel)) {
                 return;
             }
@@ -364,6 +440,49 @@ final class ResultWindow extends TopComponent {
             } else {
                 statisticsPanel.selectPreviousFailure();
             }
+        }
+    }
+
+    private class Close extends AbstractAction {
+        public Close() {
+            super(NbBundle.getMessage(ResultWindow.class, "LBL_CloseWindow"));  //NOI18N
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            removeView(null);
+        }
+    }
+
+    private final class CloseAll extends AbstractAction {
+        public CloseAll() {
+            super(NbBundle.getMessage(ResultWindow.class, "LBL_CloseAll"));  //NOI18N
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            closeAll(false);
+        }
+    }
+
+    private class CloseAllButCurrent extends AbstractAction {
+        public CloseAllButCurrent() {
+            super(NbBundle.getMessage(ResultWindow.class, "LBL_CloseAllButCurrent"));  //NOI18N
+        }
+        public void actionPerformed(ActionEvent e) {
+            closeAll(true);
+        }
+    }
+
+    private class CloseListener implements PropertyChangeListener {
+        public void propertyChange(java.beans.PropertyChangeEvent evt) {
+            if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
+                removeView((JSplitPane) evt.getNewValue());
+            }
+        }
+    }
+
+    private class PopupListener extends MouseUtils.PopupMouseAdapter {
+        protected void showPopup (MouseEvent e) {
+            pop.show(ResultWindow.this, e.getX(), e.getY());
         }
     }
 }

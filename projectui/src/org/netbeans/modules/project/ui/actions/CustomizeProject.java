@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,7 +56,6 @@ import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -78,14 +76,14 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
     
     public CustomizeProject( Lookup context ) {
         super( (String)null, namePattern, namePatternPopup, null, context );
-        refresh( getLookup() );
+        refresh(getLookup(), true);
     }
             
     
    
-    protected void refresh( Lookup context ) {
+    protected @Override void refresh(Lookup context, boolean immediate) {
      
-        super.refresh( context );
+        super.refresh(context, immediate);
         
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );
                             

@@ -90,13 +90,13 @@ public class ExportDiffChangesAction extends ContextAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
-        VCSContext context = HgUtils.getCurrentContext(nodes);
-        if(!HgUtils.isFromHgRepository(context)) {
-            return false;
-        }
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             return true;
+        }
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        if(!HgUtils.isFromHgRepository(context)) {
+            return false;
         }
         return Lookup.getDefault().lookup(DiffProvider.class) != null;
     }
@@ -115,8 +115,9 @@ public class ExportDiffChangesAction extends ContextAction {
         boolean noop;
         final VCSContext context = HgUtils.getCurrentContext(nodes);
         TopComponent activated = TopComponent.getRegistry().getActivated();
+        Collection<Setup> setups = null;
         if (activated instanceof DiffSetupSource) {
-            noop = ((DiffSetupSource) activated).getSetups().isEmpty();
+            noop = (setups = ((DiffSetupSource) activated).getSetups()).isEmpty();
         } else {
             File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE, false);
             noop = files.length == 0;
@@ -127,7 +128,7 @@ public class ExportDiffChangesAction extends ContextAction {
             return;
         }
 
-        File[] roots = HgUtils.getActionRoots(context);
+        File[] roots = setups == null ? HgUtils.getActionRoots(context) : getRoots(setups);
         if (roots == null || roots.length == 0) {
             LOG.log(Level.INFO, "Null roots for {0}", context.getRootFiles()); //NOI18N
             return;
@@ -345,5 +346,16 @@ public class ExportDiffChangesAction extends ContextAction {
         if (parent != null) {
             parent.mkdirs();
         }
+    }
+
+    private File[] getRoots (Collection<Setup> setups) {
+        HashSet<File> roots = new HashSet<File>(setups.size());
+        for (Setup setup : setups) {
+            File f = setup.getBaseFile();
+            if (f != null) {
+                roots.add(f);
+            }
+        }
+        return roots.toArray(new File[roots.size()]);
     }
 }

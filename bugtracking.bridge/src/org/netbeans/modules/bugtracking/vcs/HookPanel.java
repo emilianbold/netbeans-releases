@@ -48,7 +48,6 @@
 
 package org.netbeans.modules.bugtracking.vcs;
 
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
@@ -71,7 +70,7 @@ import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
  */
 public class HookPanel extends VerticallyNonResizingPanel implements ItemListener, PropertyChangeListener {
 
-    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HookPanel");  // NOI18N
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HookPanel");  // NOI18N
 
     private QuickSearchComboBar qs;
     private Repository selectedRepository;
@@ -111,6 +110,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         linkCheckBox.setSelected(link);
         resolveCheckBox.setSelected(resolve);
         commitRadioButton.setSelected(commit);
+        pushRadioButton.setSelected(!commit);
 
         enableFields();
 
@@ -125,7 +125,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         return selectedRepository;
     }
 
-    private void enableFields() {
+    void enableFields() {
         boolean repoSelected = isRepositorySelected();
         boolean enableFields = repoSelected && (getIssue() != null);
 
@@ -206,7 +206,6 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         });
 
         buttonGroup1.add(commitRadioButton);
-        commitRadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(commitRadioButton, org.openide.util.NbBundle.getMessage(HookPanel.class, "HookPanel.commitRadioButton.text")); // NOI18N
 
         buttonGroup1.add(pushRadioButton);
@@ -239,11 +238,8 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
-                                    .add(repositoryComboBox, 0, 463, Short.MAX_VALUE))))
+                            .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, repositoryComboBox, 0, 463, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(jButton2)))
                 .addContainerGap())
@@ -338,9 +334,10 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     final javax.swing.JCheckBox resolveCheckBox = new javax.swing.JCheckBox();
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void itemStateChanged(ItemEvent e) {
         if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("itemStateChanged() - selected item: " + e.getItem()); //NOI18N
+            LOG.log(Level.FINER, "itemStateChanged() - selected item: {0}", e.getItem()); //NOI18N
         }
         enableFields();
         if(e.getStateChange() == ItemEvent.SELECTED) {
@@ -365,6 +362,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         super.removeNotify();
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(QuickSearchComboBar.EVT_ISSUE_CHANGED)) {
             enableFields();

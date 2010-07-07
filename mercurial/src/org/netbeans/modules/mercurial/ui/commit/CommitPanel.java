@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.mercurial.ui.commit;
 
+import org.netbeans.modules.versioning.util.UndoRedoSupport;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.versioning.util.TemplateSelector;
@@ -89,13 +90,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.mercurial.ui.diff.MultiDiffPanel;
-import org.netbeans.modules.mercurial.ui.diff.Setup;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.util.AutoResizingPanel;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
@@ -145,6 +145,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private HgHookContext hookContext;
     private JTabbedPane tabbedPane;
     private HashMap<File, MultiDiffPanel> displayedDiffs = new HashMap<File, MultiDiffPanel>();
+    private UndoRedoSupport um;
 
     /** Creates new form CommitPanel */
     public CommitPanel() {
@@ -167,6 +168,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+        initCollapsibleSections();
         TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault().getPreferences());
         if (ts.isAutofill()) {
             messageTextArea.setText(ts.getTemplate());
@@ -181,7 +183,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             messageTextArea.setText(lastCommitMessage);
         }
         messageTextArea.selectAll();
-        initCollapsibleSections();
+        um = UndoRedoSupport.register(messageTextArea);
     }
 
     private void initCollapsibleSections() {
@@ -293,6 +295,10 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
         HgModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        if (um != null) {
+            um.unregister();
+            um = null;
+        }
         super.removeNotify();
     }
 
@@ -321,9 +327,11 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(HgModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             Runnable inAWT = new Runnable() {
+                @Override
                 public void run() {
                     commitTable.dataChanged();
                     listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
@@ -338,6 +346,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
+    @Override
     public void tableChanged(TableModelEvent e) {
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }
@@ -362,7 +371,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         messageTextArea.setRows(4);
         messageTextArea.setTabSize(4);
         messageTextArea.setWrapStyleWord(true);
-        messageTextArea.setMinimumSize(new Dimension(80, 18));
+        messageTextArea.setMinimumSize(new Dimension(100, 18));
         jScrollPane1.setViewportView(messageTextArea);
         messageTextArea.getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitForm_Message")); // NOI18N
         messageTextArea.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitForm_Message")); // NOI18N
@@ -510,7 +519,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             File file = node.getFile();
             MultiDiffPanel panel = displayedDiffs.get(file);
             if (panel == null) {
-                panel = new MultiDiffPanel(file, Setup.REVISION_BASE, Setup.REVISION_CURRENT, false); // switch the last parameter to true if editable diff works poorly
+                panel = new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
                 displayedDiffs.put(file, panel);
                 tabbedPane.addTab(file.getName(), panel);
             }

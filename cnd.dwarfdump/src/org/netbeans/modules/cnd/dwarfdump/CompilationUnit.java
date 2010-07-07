@@ -129,6 +129,11 @@ public class CompilationUnit {
         Object cl = root.getAttributeValue(ATTR.DW_AT_SUN_command_line);
         return (cl == null) ? null : (String)cl;
     }
+
+    public String getCompileOptions() throws IOException {
+        Object cl = root.getAttributeValue(ATTR.DW_AT_SUN_compile_options);
+        return (cl == null) ? null : (String)cl;
+    }
     
     public String getSourceFileFullName() {
         String result = null;

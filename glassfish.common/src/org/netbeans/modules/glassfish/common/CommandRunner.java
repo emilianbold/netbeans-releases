@@ -141,6 +141,14 @@ public class CommandRunner extends BasicTask<OperationState> {
     }
     
     /**
+     * Sends restart-domain command to server (asynchronous)
+     *
+     */
+    public Future<OperationState> restartServer() {
+        return execute(Commands.RESTART, "MSG_RESTART_SERVER_IN_PROGRESS"); // NOI18N
+    }
+
+    /**
      * Sends list-applications command to server (synchronous)
      * 
      * @return String array of names of deployed applications.
@@ -161,7 +169,13 @@ public class CommandRunner extends BasicTask<OperationState> {
             task = executor().submit(this);
             state = task.get();
             if (state == OperationState.COMPLETED) {
-                result = processApplications(apps, getCmd.getData());
+                ServerCommand.GetPropertyCommand getRefs = new ServerCommand.GetPropertyCommand("servers.server.server.application-ref.*");
+                serverCmd = getRefs;
+                task = executor().submit(this);
+                state = task.get();
+                if (OperationState.COMPLETED == state) {
+                    result = processApplications(apps, getCmd.getData(),getRefs.getData());
+                }
             }
         } catch (InterruptedException ex) {
             Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
@@ -171,10 +185,11 @@ public class CommandRunner extends BasicTask<OperationState> {
         return result;
     }
 
-    private Map<String, List<AppDesc>> processApplications(Map<String, List<String>> appsList, Map<String, String> properties){
+    private Map<String, List<AppDesc>> processApplications(Map<String, List<String>> appsList, Map<String, String> properties, Map<String, String> refProperties){
         Map<String, List<AppDesc>> result = new HashMap<String, List<AppDesc>>();
         Iterator<String> appsItr = appsList.keySet().iterator();
         while (appsItr.hasNext()) {
+            boolean enabled = false;
             String engine = appsItr.next();
             List<String> apps = appsList.get(engine);
             for (int i = 0; i < apps.size(); i++) {
@@ -199,12 +214,18 @@ public class CommandRunner extends BasicTask<OperationState> {
                     path = path.substring(5);
                 }
 
-                List<AppDesc> appList = result.get(engine);
-                if(appList == null) {
-                    appList = new ArrayList<AppDesc>();
-                    result.put(engine, appList);
+                String enabledKey = "servers.server.server.application-ref."+name+".enabled";
+                String enabledValue = refProperties.get(enabledKey);
+                if (null != enabledValue) {
+                    enabled = Boolean.parseBoolean(enabledValue);
+
+                    List<AppDesc> appList = result.get(engine);
+                    if(appList == null) {
+                        appList = new ArrayList<AppDesc>();
+                        result.put(engine, appList);
+                    }
+                    appList.add(new AppDesc(name, path, contextRoot, enabled));
                 }
-                appList.add(new AppDesc(name, path, contextRoot));
             }
         }
         return result;
@@ -330,6 +351,14 @@ public class CommandRunner extends BasicTask<OperationState> {
         return execute(new Commands.UndeployCommand(moduleName));
     }
     
+    public Future<OperationState> enable(String moduleName) {
+        return execute(new Commands.EnableCommand(moduleName));
+    }
+
+    public Future<OperationState> disable(String moduleName) {
+        return execute(new Commands.DisableCommand(moduleName));
+    }
+
     public Future<OperationState> unregister(String resourceName, String suffix, String cmdPropName, boolean cascade) {
         return execute(new Commands.UnregisterCommand(resourceName, suffix, cmdPropName, cascade));
     }
@@ -405,14 +434,17 @@ public class CommandRunner extends BasicTask<OperationState> {
                             TrustManager[] tm = new TrustManager[]{
                                 new X509TrustManager() {
 
+                                @Override
                                     public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
                                         return;
                                     }
 
+                                @Override
                                     public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
                                         return;
                                     }
 
+                                @Override
                                     public X509Certificate[] getAcceptedIssuers() {
                                         return null;
                                     }

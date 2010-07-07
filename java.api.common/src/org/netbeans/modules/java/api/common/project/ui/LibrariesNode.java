@@ -70,7 +70,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -152,26 +151,32 @@ public final class LibrariesNode extends AbstractNode {
         this.librariesNodeActions = librariesNodeActions;
     }
 
+    @Override
     public String getDisplayName () {
         return this.displayName; 
     }
 
+    @Override
     public String getName () {
         return this.getDisplayName();
     }    
 
+    @Override
     public Image getIcon( int type ) {        
         return computeIcon( false, type );
     }
         
+    @Override
     public Image getOpenedIcon( int type ) {
         return computeIcon( true, type );
     }
 
+    @Override
     public Action[] getActions(boolean context) {        
         return this.librariesNodeActions;
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
@@ -275,6 +280,7 @@ public final class LibrariesNode extends AbstractNode {
             this.project = project;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             final boolean propRoots = ClassPath.PROP_ROOTS.equals(propName);
@@ -285,6 +291,7 @@ public final class LibrariesNode extends AbstractNode {
                     }
                 }
                 rp.post (new Runnable () {
+                    @Override
                     public void run () {
                         setKeys(getKeys());
                         if (propRoots) {
@@ -298,6 +305,7 @@ public final class LibrariesNode extends AbstractNode {
             }
         }
 
+        @Override
         protected void addNotify() {
             this.eval.addPropertyChangeListener (this);
             if (refHelper.getProjectLibraryManager() != null) {
@@ -308,6 +316,7 @@ public final class LibrariesNode extends AbstractNode {
             this.setKeys(getKeys ());
         }
 
+        @Override
         protected void removeNotify() {
             this.eval.removePropertyChangeListener(this);
             if (refHelper.getProjectLibraryManager() != null) {
@@ -324,6 +333,7 @@ public final class LibrariesNode extends AbstractNode {
             this.setKeys(Collections.<Key>emptySet());
         }
 
+        @Override
         protected Node[] createNodes(Key key) {
             Node[] result = null;
             switch (key.getType()) {
@@ -558,6 +568,7 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         
+        @Override
         public int hashCode() {
             int hashCode = this.type<<16;
             switch (this.type) {
@@ -573,6 +584,7 @@ public final class LibrariesNode extends AbstractNode {
             return hashCode;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof Key)) {
                 return false;
@@ -611,6 +623,7 @@ public final class LibrariesNode extends AbstractNode {
             this.sources = sources;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             AntArtifactItem ai[] = AntArtifactItem.showAntArtifactItemChooser(
                     new String[] {JavaProjectConstants.ARTIFACT_TYPE_JAR, JavaProjectConstants.ARTIFACT_TYPE_FOLDER},
@@ -659,6 +672,7 @@ public final class LibrariesNode extends AbstractNode {
             this.filter = filter;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             Set<Library> added = LibraryChooser.showDialog(
                     refHelper.getProjectLibraryManager(), filter,
@@ -700,6 +714,7 @@ public final class LibrariesNode extends AbstractNode {
             this.sources = sources;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             org.netbeans.api.project.ant.FileChooser chooser;
             if (helper.isSharableProject()) {
@@ -828,6 +843,7 @@ public final class LibrariesNode extends AbstractNode {
             this.extensions.addAll(FileUtil.getMIMETypeExtensions("application/x-java-archive"));    //NOI18N
         }
 
+        @Override
         public boolean accept(final File f) {
             if (f.isDirectory()) {
                 return true;
@@ -851,6 +867,7 @@ public final class LibrariesNode extends AbstractNode {
             return false;
         }
 
+        @Override
         public String getDescription() {
             return this.description;
         }

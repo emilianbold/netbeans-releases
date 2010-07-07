@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,13 +62,11 @@ import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Builds index of Javadoc filesystems.
+ * Builds index of Javadoc sets.
  * @author Svata Dedic, Jesse Glick
  */
 public class IndexBuilder implements Runnable, ChangeListener {
@@ -90,9 +89,9 @@ public class IndexBuilder implements Runnable, ChangeListener {
     private JavadocRegistry jdocRegs;
 
     /**
-     * information extracted from filesystems.
+     * information extracted from Javadoc.
      */
-    Map<FileObject,Info> filesystemInfo = Collections.emptyMap();
+    Map<URL,Info> filesystemInfo = Collections.emptyMap();
 
     private static class Info {
         /**
@@ -140,8 +139,8 @@ public class IndexBuilder implements Runnable, ChangeListener {
     public static final class Index implements Comparable<Index> {
         private static final Collator c = Collator.getInstance();
         public final String display;
-        public final FileObject fo;
-        private Index(String display, FileObject fo) {
+        public final URL fo;
+        private Index(String display, URL fo) {
             this.display = display;
             this.fo = fo;
         }
@@ -150,10 +149,10 @@ public class IndexBuilder implements Runnable, ChangeListener {
                 return false;
             }
             final Index other = (Index) obj;
-            return display.equals(other.display) && fo == other.fo;
+            return display.equals(other.display) && fo.toString().equals(other.fo.toString());
         }
         public @Override int hashCode() {
-            return display.hashCode() ^ fo.hashCode();
+            return display.hashCode() ^ fo.toString().hashCode();
         }
         public @Override int compareTo(Index o) {
             return c.compare(display, o.display);
@@ -182,9 +181,9 @@ public class IndexBuilder implements Runnable, ChangeListener {
         }
         err.log("getIndices");
         List<Index> data = new ArrayList<Index>();
-        for (Map.Entry<FileObject,Info> entry : filesystemInfo.entrySet()) {
+        for (Map.Entry<URL,Info> entry : filesystemInfo.entrySet()) {
             Info info = entry.getValue();
-            FileObject fo = entry.getKey().getFileObject(info.indexFileName);
+            URL fo = URLUtils.findOpenable(entry.getKey(), info.indexFileName);
             if (fo == null) {
                 continue;
             }
@@ -199,18 +198,17 @@ public class IndexBuilder implements Runnable, ChangeListener {
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
             err.log("refreshIndex");
         }
-        Map<FileObject,Info> oldMap;
+        Map<URL,Info> oldMap;
         synchronized (this) {
             oldMap = this.filesystemInfo;
         }
-        //Enumeration e = FileSystemCapability.DOC.fileSystems();
-        FileObject docRoots[] = jdocRegs.getDocRoots();
+        URL[] docRoots = jdocRegs.getDocRoots();
         // XXX needs to be able to listen to result; when it changes, call scheduleTask()
-        Map<FileObject,Info> m = new WeakHashMap<FileObject,Info>();
+        Map<URL,Info> m = new WeakHashMap<URL,Info>();
 //        long startTime = System.nanoTime();
 
         for ( int ifCount = 0; ifCount < docRoots.length; ifCount++ ) {
-            FileObject fo = docRoots[ifCount];
+            URL fo = docRoots[ifCount];
             Info oldInfo = oldMap.get(fo);
             if (oldInfo != null) {
                 // No need to reparse.
@@ -218,30 +216,24 @@ public class IndexBuilder implements Runnable, ChangeListener {
                 continue;
             }
             
-            FileObject index = null;
-            for (int i = 0; i < INDEX_FILE_NAMES.length; i++) {
-                if ((index = fo.getFileObject(INDEX_FILE_NAMES[i])) != null) {
-                    break;
-                }
-            }
-            if (index == null || index.getName().equals("index")) { // NOI18N
+            URL index = URLUtils.findOpenable(fo, INDEX_FILE_NAMES);
+            if (index == null || index.toString().endsWith("index.html")) { // NOI18N
                 // For single-package doc sets, overview-summary.html is not present,
                 // and index.html is less suitable (it is framed). Look for a package
                 // summary.
                 // [PENDING] Display name is not ideal, e.g. "org.openide.windows (NetBeans Input/Output API)"
                 // where simply "NetBeans Input/Output API" is preferable... but standard title filter
                 // regexps are not so powerful (to avoid matching e.g. "Servlets (Main Documentation)").
-                FileObject packageList = fo.getFileObject("package-list"); // NOI18N
-                if (packageList != null) {
+                InputStream is = URLUtils.open(fo, "package-list"); // NOI18N
+                if (is != null) {
                     try {
-                        InputStream is = packageList.getInputStream();
                         try {
                             BufferedReader r = new BufferedReader(new InputStreamReader(is));
                             String line = r.readLine();
                             if (line != null && r.readLine() == null) {
                                 // Good, exactly one line as expected. A package name.
                                 String resName = line.replace('.', '/') + "/package-summary.html"; // NOI18N
-                                FileObject pindex = fo.getFileObject(resName);
+                                URL pindex = URLUtils.findOpenable(fo, resName);
                                 if (pindex != null) {
                                     index = pindex;
                                 }
@@ -267,7 +259,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
                     title = st.getOverviewTitleBase(title);
                 }
                 if (title == null || "".equals(title)) { // NOI18N
-                    String filename = FileUtil.getFileDisplayName(index);
+                    String filename = URLUtils.getDisplayName(index);
                     if (filename.length() > 54) {
                         // trim to display 54 chars
                         filename = filename.substring(0, 10) + "[...]" // NOI18N
@@ -277,8 +269,8 @@ public class IndexBuilder implements Runnable, ChangeListener {
                             "FMT_NoOverviewTitle", new Object[] { filename }); // NOI18N
                 }
                 Info info = new Info();
-                info.title = title == null ? fo.getName() : title;
-                info.indexFileName = FileUtil.getRelativePath(fo, index);
+                info.title = title;
+                info.indexFileName = index.toString().substring(fo.toString().length());
                 m.put(fo, info);
             }
             synchronized (this) {
@@ -294,7 +286,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
      * Attempt to find the title of an HTML file object.
      * May return null if there is no title tag, or "" if it is empty.
      */
-    private String parseTitle(FileObject html) {
+    private String parseTitle(URL html) {
         String title = null;
         try {
             // #71979: html parser used again to fix encoding issues.
@@ -302,7 +294,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
             // is used (#32551).
             // In case the parser is stopped as soon as it finds the title it is
             // even faster than the previous fix.
-            InputStream is = new BufferedInputStream(html.getInputStream(), 1024);
+            InputStream is = new BufferedInputStream(URLUtils.openStream(html), 1024);
             SimpleTitleParser tp = new SimpleTitleParser(is);
             try {
                 tp.parse();

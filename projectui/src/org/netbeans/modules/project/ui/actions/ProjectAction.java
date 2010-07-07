@@ -141,7 +141,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
     }
     
     @Override
-    protected void refresh( Lookup context ) {
+    protected void refresh(Lookup context, boolean immediate) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
         
         if ( command != null ) {

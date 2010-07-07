@@ -42,6 +42,7 @@
 
 package org.openide.loaders;
 
+import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
@@ -55,6 +56,9 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -172,6 +176,14 @@ public class DefaultDataObjectTest extends NbTestCase {
 
     @RandomlyFails // #181230
     public void testRenameOpenComponent() throws Exception {
+        doRenameOpen(false);
+    }
+
+    public void testRenameOpenComponentModified() throws Exception {
+        doRenameOpen(true);
+    }
+
+    private void doRenameOpen(boolean modify) throws Exception {
         {
             OpenCookie oc = obj.getLookup().lookup(OpenCookie.class);
             assertNotNull("We have open cookie", oc);
@@ -183,6 +195,12 @@ public class DefaultDataObjectTest extends NbTestCase {
         JEditorPane[] arr = getEPanes(ec);
         assertNotNull("Editor is open", arr);
         assertEquals("One Editor is open", 1, arr.length);
+        assertEquals("Not Modified", false, obj.isModified());
+        if (modify) {
+            MockServices.setServices(FirstDD.class);
+            ec.openDocument().insertString(0, "Ahoj", null);
+            assertEquals("Modified now", true, obj.isModified());
+        }
 
         Node[] origNodes = obj.getFolder().getNodeDelegate().getChildren().getNodes();
         assertEquals("One node", 1, origNodes.length);
@@ -268,4 +286,18 @@ public class DefaultDataObjectTest extends NbTestCase {
         }
         
     }
+
+    public static final class FirstDD extends DialogDisplayer {
+
+        @Override
+        public Object notify(NotifyDescriptor descriptor) {
+            return descriptor.getOptions()[0];
         }
+
+        @Override
+        public Dialog createDialog(DialogDescriptor descriptor) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+    }
+}

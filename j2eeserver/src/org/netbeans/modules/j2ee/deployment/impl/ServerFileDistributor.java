@@ -331,9 +331,9 @@ public class ServerFileDistributor extends ServerProgress {
                 return mc;
 
             File[] paths = new File[rPaths.length];
-            for (int n=0; n<rPaths.length; n++) {
+            for (int n=0; null != configFile && n<rPaths.length; n++) {
                 paths[n] = new File(FileUtil.toFile(destRoot), rPaths[n]);
-                if (paths[n].exists() && paths[n].lastModified() > configFile.lastModified())
+                if (null != paths[n] && paths[n].exists() && paths[n].lastModified() > configFile.lastModified())
                     // FIXME destdir
                     mc.record(rPaths[n]);
             }

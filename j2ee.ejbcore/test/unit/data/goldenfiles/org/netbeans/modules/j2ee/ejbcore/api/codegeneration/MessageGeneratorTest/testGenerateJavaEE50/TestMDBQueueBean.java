@@ -23,6 +23,7 @@ public class TestMDBQueueBean implements MessageListener {
     public TestMDBQueueBean() {
     }
 
+    @Override
     public void onMessage(Message message) {
     }
     

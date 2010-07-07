@@ -100,6 +100,7 @@ public class AllSourceFileFilter extends SourceFileFilter {
         allSuffixes.addAll(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
         allSuffixes.addAll(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
         allSuffixes.addAll(MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.ASM_MIME_TYPE).getValues());
         return allSuffixes.toArray(new String[allSuffixes.size()]);
     }
 }

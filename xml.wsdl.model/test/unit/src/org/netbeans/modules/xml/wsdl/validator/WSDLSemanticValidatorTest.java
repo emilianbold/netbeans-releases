@@ -36,15 +36,10 @@ public class WSDLSemanticValidatorTest extends TestCase {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
-    }
+    protected void setUp() throws Exception {}
 
-    protected void tearDown() throws Exception {
-    }
+    protected void tearDown() throws Exception {}
 
-    /**
-     * Test of getName method, of class org.netbeans.modules.xml.wsdl.validator.WSDLSemanticValidator.
-     */
     public void testGetName() {
         System.out.println("getName");
         
@@ -53,12 +48,8 @@ public class WSDLSemanticValidatorTest extends TestCase {
         String expResult = "WSDLSemanticValidator";
         String result = instance.getName();
         assertEquals(expResult, result);
-        
     }
 
-    /**
-     * Test of validate method, of class org.netbeans.modules.xml.wsdl.validator.WSDLSemanticValidator.
-     */
     public void testValidate() throws Exception {
         System.out.println("validate");
         
@@ -80,7 +71,6 @@ public class WSDLSemanticValidatorTest extends TestCase {
         validate(uri, expectedErrors);
     }
     
-    
     public void testValidateDefinitionMissingTargetNamespaceWarning() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/definitionsTests/definitionsNoTargetN_valid_warning.wsdl";
         URL url = getClass().getResource(fileName);
@@ -90,7 +80,6 @@ public class WSDLSemanticValidatorTest extends TestCase {
         expectedErrors.add(format(mMessages.getString("VAL_ERROR_WSDL_DEFINITIONS_NO_TARGETNAMESPACE")));
         validate(uri, expectedErrors);
     }
-    
     
     public void testValidateImportBogusLocation() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/importWSDLTests/importBogusLocation_error.wsdl";
@@ -261,7 +250,6 @@ public class WSDLSemanticValidatorTest extends TestCase {
         validate(uri, expectedErrors);
     }
     
-    
     public void testValidatePartInvalidTypeAttribute() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/messageTests/messagePartBadType_error.wsdl";
         URL url = getClass().getResource(fileName);
@@ -292,7 +280,6 @@ public class WSDLSemanticValidatorTest extends TestCase {
         validate(uri, expectedErrors);
     }
     
-    
     public void testValidateBindingInvalidType() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/bindingTests/bindingRRFBogusType_error.wsdl";
         URL url = getClass().getResource(fileName);
@@ -303,7 +290,6 @@ public class WSDLSemanticValidatorTest extends TestCase {
         validate(uri, expectedErrors);
     }
     
-    
     public void testValidateBindingOperationOverloadedValid() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/bindingTests/operations/bindingRRFMultiOpsNonUniqueOpName_valid.wsdl";
         URL url = getClass().getResource(fileName);
@@ -312,7 +298,6 @@ public class WSDLSemanticValidatorTest extends TestCase {
         HashSet<String> expectedErrors = new HashSet<String>();
         validate(uri, expectedErrors);
     }
-    
     
     public void testValidateBindingOperationOverloadedNoMatchingOperationError() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/bindingTests/operations/bindingRRFMultiOpsNonUniqueOpNameNoMatch_error.wsdl";
@@ -362,7 +347,6 @@ public class WSDLSemanticValidatorTest extends TestCase {
         validate(uri, expectedErrors);
     }
     
-            
     public void testServicePortInvalidBinding() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/servicePortTests/servicePortBogusBinding_error.wsdl";
         URL url = getClass().getResource(fileName);
@@ -370,10 +354,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
         
         HashSet<String> expectedErrors = new HashSet<String>();
         expectedErrors.add(format(mMessages.getString("VAL_MISSING_BINDING_IN_SERVICE_PORT")));
-        
-        
         validate(uri, expectedErrors);
-        
     }
     
     public void testSapInlineCrossReferenceValid() throws Exception {
@@ -384,7 +365,6 @@ public class WSDLSemanticValidatorTest extends TestCase {
        
         validate(uri, expectedErrors);
     }
-   
      
     public void testEmptyInlineSchemaValid() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/typesTests/inlineSchemaTests/emptyInlineSchema.wsdl";
@@ -395,7 +375,6 @@ public class WSDLSemanticValidatorTest extends TestCase {
         validate(uri, expectedErrors);
     }
     
-    
      public void testInlineCrossReferenceAttributeValid() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/typesTests/inlineSchemaTests/MultipleInlineSchemaReferingAttributes.wsdl";
         URL url = getClass().getResource(fileName);
@@ -403,7 +382,7 @@ public class WSDLSemanticValidatorTest extends TestCase {
         HashSet<String> expectedErrors = new HashSet<String>();
        
         validate(uri, expectedErrors);
-    }
+     }
     
      public void testMultipleTypesInValid() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/typesTests/typesMultiTypes_error.wsdl";
@@ -415,7 +394,6 @@ public class WSDLSemanticValidatorTest extends TestCase {
         validate(uri, expectedErrors);
      }
       
-     
      public void testRequestReplyOperationParameterOrderValid() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/reqrep/prmOrd_valid.wsdl";
         URL url = getClass().getResource(fileName);
@@ -424,7 +402,6 @@ public class WSDLSemanticValidatorTest extends TestCase {
         
         validate(uri, expectedErrors);
      }
-     
      
      public void testRequestReplyOperationParameterOrderBogusPartsInvalid() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/reqrep/prmOrdBogusPartNames_error.wsdl";
@@ -455,7 +432,6 @@ public class WSDLSemanticValidatorTest extends TestCase {
         
         validate(uri, expectedErrors);
      }
-     
      
      public void testSolicitResponseOperationParameterOrderBogusPartsInvalid() throws Exception {
         String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/ptTests/opTests/solrep/prmOrdBogusPartNames_error.wsdl";
@@ -496,14 +472,13 @@ public class WSDLSemanticValidatorTest extends TestCase {
         ValidationHelper.dumpExpecedErrors(expectedErrors);
         while (it.hasNext()) {
             ResultItem item = it.next();
-//            System.out.println("    " + item.getDescription());
             assertTrue("Actual Error "+ item.getDescription() + "in " +relativePath, ValidationHelper.containsExpectedError(expectedErrors, item.getDescription()));
         }
         if (result.getValidationResult().size() == 0 && expectedErrors.size() > 0) {
             fail("Expected at least " + expectedErrors.size() + " error(s).  Got 0 errors instead");
         }
     }
-    
+
     private String format(String value) {
         return MessageFormat.format(value, new Object[]{});
     }

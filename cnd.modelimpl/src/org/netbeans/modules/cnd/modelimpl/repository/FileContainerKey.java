@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  */
 final public class FileContainerKey extends ProjectNameBasedKey {
 
-    public FileContainerKey(String project) {
+    public FileContainerKey(CharSequence project) {
         super(project);
         //System.err.printf(">>>>> new FileContainerKey %s \n", project);
     }
@@ -63,6 +63,7 @@ final public class FileContainerKey extends ProjectNameBasedKey {
         super(in);
     }
 
+    @Override
     public int getSecondaryDepth() {
         return 1;
     }
@@ -77,11 +78,13 @@ final public class FileContainerKey extends ProjectNameBasedKey {
         return "FileContainerKey " + getProjectName(); // NOI18N
     }
 
+    @Override
     public int getSecondaryAt(int level) {
         assert (level == 0);
         return KeyObjectFactory.KEY_FILE_CONTAINER_KEY;
     }
 
+    @Override
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
     }

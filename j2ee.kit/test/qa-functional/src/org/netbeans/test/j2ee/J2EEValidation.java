@@ -49,6 +49,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URLConnection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -66,14 +68,16 @@ import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.project.uiapi.SavingProjectDataPanel;
 import org.netbeans.test.ide.WatchProjects;
 
 /**
@@ -82,6 +86,7 @@ import org.netbeans.test.ide.WatchProjects;
  * @author Jiri.Skrivanek@sun.com
  */
 public class J2EEValidation extends JellyTestCase {
+    static Logger LOG = Logger.getLogger("org.netbeans.test.j2ee.J2EEValidation");
 
     static final String [] tests = {
                 "testWebApplication"
@@ -101,7 +106,7 @@ public class J2EEValidation extends JellyTestCase {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(J2EEValidation.class)
                 .addTest(tests)
-                .clusters(".*")
+                .clusters("enterprise|apisupport")
                 .enableModules(".*")
                 .gui(true)
                 );
@@ -124,8 +129,11 @@ public class J2EEValidation extends JellyTestCase {
     // name of sample web application project
     private static final String SAMPLE_WEB_PROJECT_NAME = "SampleWebProject";  //NOI18N
     private static final String HTTP_PORT= System.getProperty("http.port","8080"); //NOI18N
+    private static final String GF_INSTALL_ROOT= System.getProperty("com.sun.aas.installRoot"); //NOI18N
+
 
     /** Test Web Application
+     * - add server if com.sun.aas.installRoot property was set
      * - create new Web Application project
      * - wait until project is in Projects view
      * - wait classpath scanning finished
@@ -139,6 +147,7 @@ public class J2EEValidation extends JellyTestCase {
     public void testWebApplication() throws Exception {
         // workaround for jelly issue
         NewProjectWizardOperator.invoke().cancel();
+        //addServer();
         // create new web application project
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         // "Web"
@@ -216,9 +225,11 @@ public class J2EEValidation extends JellyTestCase {
         // Run project
         try {
             // "Run Project"
-            String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
+            String runProjectItem = Bundle.getString("org.netbeans.modules.apisupport.project.ui.Bundle", "ACTION_run");
             new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
             waitText(SAMPLE_WEB_PROJECT_NAME, 240000, "JSP Page");
+        } catch (Exception ex) {
+            LOG.log(Level.INFO, "=== Run Project failed:", ex);
         } finally {
             // log messages from output
             getLog("RunOutput").print(new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME).getText()); // NOI18N
@@ -281,5 +292,35 @@ public class J2EEValidation extends JellyTestCase {
         } catch (InterruptedException e) {
             throw new JemmyException("Exception while waiting for connection.", e);
         }
+    }
+
+    private void addServer() {
+        if (GF_INSTALL_ROOT == null) return;
+        try{
+        new Action("Tools|Servers", null).perform();
+        }catch(TimeoutExpiredException e){}
+        JDialogOperator servers = new JDialogOperator("Servers");
+        JButtonOperator addServer = new JButtonOperator(servers, "Add Server...");
+        addServer.pushNoBlock();
+        JDialogOperator addServerInstance = new JDialogOperator("Add Server Instance");
+        JButtonOperator next = new JButtonOperator(addServerInstance, "Next");
+        next.pushNoBlock();
+        //workaround for delay
+        try{
+            new JButtonOperator(addServerInstance, "------");
+        }catch(org.netbeans.jemmy.TimeoutExpiredException e){
+        }
+        JDialogOperator addServerInstance2 = new JDialogOperator("Add Server Instance");
+        System.out.println(new JTextFieldOperator(addServerInstance2).getText());
+        new JTextFieldOperator(addServerInstance2).setText(GF_INSTALL_ROOT);
+
+        JButtonOperator finish = new JButtonOperator(addServerInstance, "Finish");
+        finish.pushNoBlock();
+        //workaround for delay
+        try{
+            new JButtonOperator(addServerInstance, "------");
+        }catch(org.netbeans.jemmy.TimeoutExpiredException e){
+        }
+        servers.close();
     }
 }

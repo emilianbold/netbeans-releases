@@ -193,6 +193,14 @@ public class SunApplicationProxy implements SunApplication, RootInterfaceImpl {
             return;
         if (appRoot != null) {
             Document document = null;
+            if(newVersion.equals(SunApplication.VERSION_6_0_1)){
+                //This will always be an upgrade
+                document = getDocument();
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_1.GlassFishApplication appGraph =
+                        org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_1.GlassFishApplication.createGraph(document);
+                appGraph.changeDocType(DTDRegistry.GLASSFISH_APPLICATION_601_DTD_PUBLIC_ID, DTDRegistry.GLASSFISH_APPLICATION_601_DTD_SYSTEM_ID);
+                this.appRoot = appGraph;
+            }
             if(newVersion.equals(SunApplication.VERSION_6_0_0)){
                 //This will always be an upgrade
                 document = getDocument();
@@ -241,6 +249,9 @@ public class SunApplicationProxy implements SunApplication, RootInterfaceImpl {
         } else if (appRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_0.SunApplication) {
             document =
                     ((org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_0.SunApplication)appRoot).graphManager().getXmlDocument();
+        } else if (appRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_1.GlassFishApplication) {
+            document =
+                    ((org.netbeans.modules.j2ee.sun.dd.impl.app.model_6_0_1.GlassFishApplication)appRoot).graphManager().getXmlDocument();
         }
         return document;
     }

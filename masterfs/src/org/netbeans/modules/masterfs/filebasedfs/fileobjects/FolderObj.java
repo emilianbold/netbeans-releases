@@ -170,12 +170,12 @@ public final class FolderObj extends BaseFileObj {
             }
             createFolder(folder2Create, name);
 
-            final FileNaming childName = this.getChildrenCache().getChild(folder2Create.getName(), true);
+            FileNaming childName = this.getChildrenCache().getChild(folder2Create.getName(), true);
             if (childName != null && !childName.isDirectory()) {
-                NamingFactory.remove(childName, null);
+                childName = NamingFactory.fromFile(getFileName(), folder2Create, true);
             }            
             if (childName != null) {
-                NamingFactory.checkCaseSensitivity(childName, folder2Create);                        
+                childName = NamingFactory.checkCaseSensitivity(childName, folder2Create);
             }
         } finally {
             mutexPrivileged.exitWriteAccess();
@@ -183,14 +183,19 @@ public final class FolderObj extends BaseFileObj {
 
         final FileObjectFactory factory = getFactory();
         if (factory != null) {
-            retVal = (FolderObj) factory.getValidFileObject(folder2Create, FileObjectFactory.Caller.Others);
+            BaseFileObj exists = factory.getValidFileObject(folder2Create, FileObjectFactory.Caller.Others);
+            if (exists instanceof FolderObj) {
+                retVal = (FolderObj)exists;
+            } else {
+                FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N                           
+            }
         }
         if (retVal != null) {
             retVal.fireFileFolderCreatedEvent(false);
         } else {
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N                           
         }
-
+        getProvidedExtensions().createSuccess(retVal);
         return retVal;
     }
 
@@ -249,12 +254,12 @@ public final class FolderObj extends BaseFileObj {
             file2Create = BaseFileObj.getFile(getFileName().getFile(), name, ext);
             createData(file2Create);
 
-            final FileNaming childName = getChildrenCache().getChild(file2Create.getName(), true);
+            FileNaming childName = getChildrenCache().getChild(file2Create.getName(), true);
             if (childName != null && childName.isDirectory()) {
-                NamingFactory.remove(childName, null);
+                childName = NamingFactory.fromFile(getFileName(), file2Create, true);
             }
             if (childName != null) {
-                NamingFactory.checkCaseSensitivity(childName, file2Create);                        
+                childName = NamingFactory.checkCaseSensitivity(childName, file2Create);
             }
 
         } finally {
@@ -275,7 +280,7 @@ public final class FolderObj extends BaseFileObj {
         } else {
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
         }
-
+        getProvidedExtensions().createSuccess(retVal);
         return retVal;
     }
 
@@ -376,10 +381,12 @@ public final class FolderObj extends BaseFileObj {
 
                 if (newChild.isFolder()) {
                     if (fire) {
+                        getProvidedExtensions().createdExternally(newChild);
                         newChild.fireFileFolderCreatedEvent(expected);
                     }
                 } else {
                     if (fire) {
+                        getProvidedExtensions().createdExternally(newChild);
                         newChild.fireFileDataCreatedEvent(expected);
                     }
                 }
@@ -389,9 +396,11 @@ public final class FolderObj extends BaseFileObj {
                     if (newChild.isValid()) {
                         newChild.setValid(false);
                         if (newChild instanceof FolderObj) {
+                            getProvidedExtensions().deletedExternally(newChild);
                             ((FolderObj)newChild).refreshImpl(expected, fire);
                         } else {
                             if (fire) {
+                                getProvidedExtensions().deletedExternally(newChild);
                                 newChild.fireFileDeletedEvent(expected);
                             }
                         }

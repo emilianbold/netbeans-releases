@@ -119,6 +119,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * <br><b>default</b> = UI_RESPONSE */
     public long expectedTime = UI_RESPONSE;
 
+    public int iteration=1;
+
     /**
      * Maximum number of iterations to wait for last paint on component/container.
      * <br><b>default</b> = 10 iterations */
@@ -337,6 +339,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
             for(int i=1; i<=repeat && exceptionDuringMeasurement==null; i++){
                 try {
+                    iteration=i;
                     testedComponentOperator = null;
                     tr.startNewEventList("Iteration no." + i);
                     tr.connectToAWT(true);
@@ -1171,7 +1174,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         public Profile(Object profiler) {
             this.profiler = profiler;
-            RequestProcessor.getDefault().post(this, (int)expectedTime);
+            if (iteration==1) RequestProcessor.getDefault().post(this, (int)expectedTime*2);
+                else RequestProcessor.getDefault().post(this, (int)expectedTime);
         }
 
         public synchronized void run() {

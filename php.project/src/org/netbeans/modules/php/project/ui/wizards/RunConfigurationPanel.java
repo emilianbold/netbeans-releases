@@ -486,7 +486,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsScript() {
-        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), sourcesFolderProvider.getSourcesFolder(), null, null);
+        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), sourcesFolderProvider.getSourcesFolder(), null, null, null, null);
     }
 
     private String validateServerLocation() {

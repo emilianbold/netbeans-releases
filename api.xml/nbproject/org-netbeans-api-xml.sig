@@ -1,8 +1,8 @@
 #Signature file v4.1
-#Version 1.20
+#Version 1.22
 
 CLSS public java.beans.FeatureDescriptor
-cons public FeatureDescriptor()
+cons public init()
 meth public boolean isExpert()
 meth public boolean isHidden()
 meth public boolean isPreferred()
@@ -22,7 +22,7 @@ supr java.lang.Object
 hfds classRef,displayName,expert,hidden,name,preferred,shortDescription,table
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -40,11 +40,11 @@ intf org.openide.nodes.Node$Cookie
 meth public abstract boolean checkXML(org.netbeans.api.xml.cookies.CookieObserver)
 
 CLSS public final org.netbeans.api.xml.cookies.CookieMessage
-cons public CookieMessage(java.lang.String)
-cons public CookieMessage(java.lang.String,int)
-cons public CookieMessage(java.lang.String,int,java.lang.Object)
-cons public CookieMessage(java.lang.String,int,org.openide.util.Lookup)
-cons public CookieMessage(java.lang.String,java.lang.Object)
+cons public init(java.lang.String)
+cons public init(java.lang.String,int)
+cons public init(java.lang.String,int,java.lang.Object)
+cons public init(java.lang.String,int,org.openide.util.Lookup)
+cons public init(java.lang.String,java.lang.Object)
 fld public final static int ERROR_LEVEL = 2
 fld public final static int FATAL_ERROR_LEVEL = 3
 fld public final static int INFORMATIONAL_LEVEL = 0
@@ -68,7 +68,7 @@ intf org.openide.nodes.Node$Cookie
 meth public abstract boolean validateXML(org.netbeans.api.xml.cookies.CookieObserver)
 
 CLSS public abstract org.netbeans.api.xml.cookies.XMLProcessorDetail
-cons public XMLProcessorDetail()
+cons public init()
 meth public abstract int getColumnNumber()
 meth public abstract int getLineNumber()
 meth public abstract java.lang.Exception getException()
@@ -77,7 +77,7 @@ meth public abstract java.lang.String getSystemId()
 supr java.lang.Object
 
 CLSS public final org.netbeans.api.xml.parsers.DocumentInputSource
-cons public DocumentInputSource(javax.swing.text.Document)
+cons public init(javax.swing.text.Document)
 meth public final void setCharacterStream(java.io.Reader)
 meth public java.io.Reader getCharacterStream()
 meth public java.lang.String getSystemId()
@@ -86,8 +86,8 @@ supr org.xml.sax.InputSource
 hfds class$org$openide$ErrorManager,doc
 
 CLSS public org.netbeans.api.xml.parsers.SAXEntityParser
-cons public SAXEntityParser(org.xml.sax.XMLReader)
-cons public SAXEntityParser(org.xml.sax.XMLReader,boolean)
+cons public init(org.xml.sax.XMLReader)
+cons public init(org.xml.sax.XMLReader,boolean)
 intf org.xml.sax.XMLReader
 meth protected boolean propagateException(org.xml.sax.SAXParseException)
 meth protected org.xml.sax.InputSource wrapInputSource(org.xml.sax.InputSource)
@@ -110,7 +110,7 @@ hfds FAKE_PUBLIC_ID,FAKE_SYSTEM_ID,RANDOM,generalEntity,peer,used
 hcls EH,ER
 
 CLSS public abstract org.netbeans.api.xml.services.UserCatalog
-cons public UserCatalog()
+cons public init()
 meth public java.util.Iterator getPublicIDs()
 meth public javax.xml.transform.URIResolver getURIResolver()
 meth public org.xml.sax.EntityResolver getEntityResolver()
@@ -119,8 +119,8 @@ supr java.lang.Object
 hfds class$org$netbeans$api$xml$services$UserCatalog
 
 CLSS public org.netbeans.spi.xml.cookies.CheckXMLSupport
-cons public CheckXMLSupport(org.xml.sax.InputSource)
-cons public CheckXMLSupport(org.xml.sax.InputSource,int)
+cons public init(org.xml.sax.InputSource)
+cons public init(org.xml.sax.InputSource,int)
 fld public final static int CHECK_ENTITY_MODE = 1
 fld public final static int CHECK_PARAMETER_ENTITY_MODE = 2
 fld public final static int DOCUMENT_MODE = 3
@@ -139,8 +139,8 @@ hfds SAX_FEATURES_NAMESPACES,class$org$openide$cookies$EditorCookie,saxParserFac
 hcls DataObjectInputSource,DataObjectSAXSource
 
 CLSS public org.netbeans.spi.xml.cookies.DefaultXMLProcessorDetail
-cons public DefaultXMLProcessorDetail(javax.xml.transform.TransformerException)
-cons public DefaultXMLProcessorDetail(org.xml.sax.SAXParseException)
+cons public init(javax.xml.transform.TransformerException)
+cons public init(org.xml.sax.SAXParseException)
 meth public int getColumnNumber()
 meth public int getLineNumber()
 meth public java.lang.Exception getException()
@@ -150,7 +150,7 @@ supr org.netbeans.api.xml.cookies.XMLProcessorDetail
 hfds columnNumber,exception,lineNumber,publicId,systemId
 
 CLSS public final org.netbeans.spi.xml.cookies.TransformableSupport
-cons public TransformableSupport(javax.xml.transform.Source)
+cons public init(javax.xml.transform.Source)
 intf org.netbeans.api.xml.cookies.TransformableCookie
 meth public void transform(javax.xml.transform.Source,javax.xml.transform.Result,org.netbeans.api.xml.cookies.CookieObserver) throws javax.xml.transform.TransformerException
 supr java.lang.Object
@@ -158,7 +158,7 @@ hfds source,transformerFactory
 hcls ExceptionWriter,Proxy
 
 CLSS public org.netbeans.spi.xml.cookies.ValidateXMLSupport
-cons public ValidateXMLSupport(org.xml.sax.InputSource)
+cons public init(org.xml.sax.InputSource)
 intf org.netbeans.api.xml.cookies.ValidateXMLCookie
 meth protected org.xml.sax.EntityResolver createEntityResolver()
 meth protected org.xml.sax.InputSource createInputSource() throws java.io.IOException
@@ -167,8 +167,8 @@ meth public boolean validateXML(org.netbeans.api.xml.cookies.CookieObserver)
 supr java.lang.Object
 
 CLSS public abstract org.openide.nodes.Node
-cons protected Node(org.openide.nodes.Children)
-cons protected Node(org.openide.nodes.Children,org.openide.util.Lookup)
+cons protected init(org.openide.nodes.Children)
+cons protected init(org.openide.nodes.Children,org.openide.util.Lookup)
 fld public final static java.lang.String PROP_COOKIE = "cookie"
 fld public final static java.lang.String PROP_DISPLAY_NAME = "displayName"
 fld public final static java.lang.String PROP_ICON = "icon"
@@ -227,6 +227,7 @@ meth public final void addNodeListener(org.openide.nodes.NodeListener)
 meth public final void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public final void removeNodeListener(org.openide.nodes.NodeListener)
 meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public int hashCode()
 meth public java.lang.String getHtmlDisplayName()
 meth public java.lang.String toString()
 meth public javax.swing.Action getPreferredAction()
@@ -248,11 +249,12 @@ hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBa
 hcls LookupEventList
 
 CLSS public abstract interface static org.openide.nodes.Node$Cookie
+ outer org.openide.nodes.Node
 
 CLSS public final org.openide.util.HelpCtx
-cons public HelpCtx(java.lang.Class)
-cons public HelpCtx(java.lang.String)
-cons public HelpCtx(java.net.URL)
+cons public init(java.lang.Class)
+cons public init(java.lang.String)
+cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
 innr public abstract interface static Provider
@@ -268,10 +270,11 @@ supr java.lang.Object
 hfds err,helpCtx,helpID
 
 CLSS public abstract interface static org.openide.util.HelpCtx$Provider
+ outer org.openide.util.HelpCtx
 meth public abstract org.openide.util.HelpCtx getHelpCtx()
 
 CLSS public abstract org.openide.util.Lookup
-cons public Lookup()
+cons public init()
 fld public final static org.openide.util.Lookup EMPTY
 innr public abstract interface static Provider
 innr public abstract static Item
@@ -288,13 +291,14 @@ hfds defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider
+ outer org.openide.util.Lookup
 meth public abstract org.openide.util.Lookup getLookup()
 
 CLSS public org.xml.sax.InputSource
-cons public InputSource()
-cons public InputSource(java.io.InputStream)
-cons public InputSource(java.io.Reader)
-cons public InputSource(java.lang.String)
+cons public init()
+cons public init(java.io.InputStream)
+cons public init(java.io.Reader)
+cons public init(java.lang.String)
 meth public java.io.InputStream getByteStream()
 meth public java.io.Reader getCharacterStream()
 meth public java.lang.String getEncoding()

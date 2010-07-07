@@ -508,7 +508,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             add(messagePaneNetBeans, new GridBagConstraints(
                     0, 3,                             // x, y
                     1, 1,                             // width, height
-                    1.0, 1.0,                         // weight-x, weight-y
+                    1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,          // fill
                     new Insets(11, 11, 0, 11),       // padding
@@ -517,7 +517,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             add(metricsPanel, new GridBagConstraints(
                     0, 4,                             // x, y
                     1, 1,                             // width, height
-                    1.0, 1.0,                         // weight-x, weight-y
+                    1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,          // fill
                     new Insets(11, 0, 0, 0),       // padding
@@ -527,7 +527,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             add(registrationPanel, new GridBagConstraints(
                     0, 5,                             // x, y
                     1, 1,                             // width, height
-                    1.0, 1.0,                         // weight-x, weight-y
+                    1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,          // fill
                     new Insets(11, 0, 0, 0),       // padding

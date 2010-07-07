@@ -84,6 +84,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.processing.Processor;
 import javax.swing.event.ChangeEvent;
 import  javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -668,6 +669,12 @@ public class JavacParser extends Parser {
         options.add(validatedSourceLevel.name);
         boolean aptEnabled = aptUtils != null && (backgroundCompilation ? aptUtils.aptEnabledOnScan() : aptUtils.aptEnabledInEditor())
                 && !ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE).entries().isEmpty();
+        Collection<? extends Processor> processors = null;
+        if (aptEnabled) {
+            processors = aptUtils.resolveProcessors(backgroundCompilation);
+            if (processors.isEmpty())
+                aptEnabled = false;
+        }
         if (aptEnabled) {
             for (Map.Entry<? extends String, ? extends String> entry : aptUtils.processorOptions().entrySet()) {
                 StringBuilder sb = new StringBuilder();
@@ -680,7 +687,6 @@ public class JavacParser extends Parser {
         } else {
             options.add("-proc:none"); // NOI18N, Disable annotation processors
         }
-        options.add("-XDfindDiamond"); //XXX: should be part of options
 
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
@@ -692,7 +698,7 @@ public class JavacParser extends Parser {
                     ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
                     diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
             if (aptEnabled) {
-                task.setProcessors(aptUtils.resolveProcessors());
+                task.setProcessors(processors);
             }
             Context context = task.getContext();
             JavadocClassReader.preRegister(context, !backgroundCompilation);
@@ -717,6 +723,7 @@ public class JavacParser extends Parser {
 
     private static @NonNull com.sun.tools.javac.code.Source validateSourceLevel(@NullAllowed String sourceLevel, ClasspathInfo cpInfo) {
         ClassPath bootClassPath = cpInfo.getClassPath(PathKind.BOOT);
+        ClassPath srcClassPath = cpInfo.getClassPath(PathKind.SOURCE);
         com.sun.tools.javac.code.Source[] sources = com.sun.tools.javac.code.Source.values();
         Level warnLevel;
         if (sourceLevel == null) {
@@ -730,20 +737,24 @@ public class JavacParser extends Parser {
             if (source.name.equals(sourceLevel)) {
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_4) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/AssertionError.class") == null) { //NOI18N
-                        LOGGER.log(warnLevel,
-                                   "Even though the source level of {0} is set to: {1}, java.lang.AssertionError cannot be found on the bootclasspath: {2}\n" +
-                                   "Changing source level to 1.3",
-                                   new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
-                        return com.sun.tools.javac.code.Source.JDK1_3;
+                        if (srcClassPath != null && srcClassPath.findResource("java/lang/AssertionError.java") == null) {
+                            LOGGER.log(warnLevel,
+                                       "Even though the source level of {0} is set to: {1}, java.lang.AssertionError cannot be found on the bootclasspath: {2}\n" +
+                                       "Changing source level to 1.3",
+                                       new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                            return com.sun.tools.javac.code.Source.JDK1_3;
+                        }
                     }
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_5) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/StringBuilder.class") == null) { //NOI18N
-                        LOGGER.log(warnLevel,
-                                   "Even though the source level of {0} is set to: {1}, java.lang.StringBuilder cannot be found on the bootclasspath: {2}\n" +
-                                   "Changing source level to 1.4",
-                                   new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
-                        return com.sun.tools.javac.code.Source.JDK1_4;
+                        if (srcClassPath != null && srcClassPath.findResource("java/lang/StringBuilder.java")==null) {
+                            LOGGER.log(warnLevel,
+                                       "Even though the source level of {0} is set to: {1}, java.lang.StringBuilder cannot be found on the bootclasspath: {2}\n" +
+                                       "Changing source level to 1.4",
+                                       new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                            return com.sun.tools.javac.code.Source.JDK1_4;
+                        }
                     }
                 }
                 return source;

@@ -123,7 +123,7 @@ public class ProjectSettingsValidator {
         }
 	updateMap(headers);
 	updateMap(sources);
-	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName().toString());
+	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName());
 	RepositoryUtils.put(key, data);
 	if( TraceFlags.TIMING ) {
 	    time = System.currentTimeMillis() - time;
@@ -142,7 +142,7 @@ public class ProjectSettingsValidator {
 	if( nativeProject == null ) {
 	    return;
 	}
-	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName().toString());
+	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName());
 	data = (Data) RepositoryUtils.get(key);
         if( data == null ) {
             data = new Data();

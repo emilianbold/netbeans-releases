@@ -93,7 +93,7 @@ public interface DiscoveryProvider {
      * 0 provider is not sure about results at all
      * 100 provider is sure about results
      */
-    int canAnalyze(ProjectProxy project);
+    DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project);
 
     /**
      * Analyze project and returns list of configuration

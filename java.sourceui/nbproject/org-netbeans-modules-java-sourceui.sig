@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.11.0
+#Version 1.13.0
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -7,7 +7,7 @@ CLSS public abstract interface !annotation java.lang.Deprecated
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -93,12 +93,13 @@ meth public static boolean runWhenScanFinished(java.lang.Runnable,java.lang.Stri
 supr java.lang.Object
 
 CLSS public final org.netbeans.api.java.source.ui.TypeElementFinder
-cons public TypeElementFinder()
+cons public init()
 innr public abstract interface static Customizer
 meth public static org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement> find(org.netbeans.api.java.source.ClasspathInfo,org.netbeans.api.java.source.ui.TypeElementFinder$Customizer)
 supr java.lang.Object
 
 CLSS public abstract interface static org.netbeans.api.java.source.ui.TypeElementFinder$Customizer
+ outer org.netbeans.api.java.source.ui.TypeElementFinder
 meth public abstract boolean accept(org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>)
 meth public abstract java.util.Set<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> query(org.netbeans.api.java.source.ClasspathInfo,java.lang.String,org.netbeans.api.java.source.ClassIndex$NameKind,java.util.Set<org.netbeans.api.java.source.ClassIndex$SearchScope>)
 

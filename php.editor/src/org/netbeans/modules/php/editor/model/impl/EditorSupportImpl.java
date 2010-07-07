@@ -57,6 +57,7 @@ import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpFunction;
 import org.netbeans.modules.php.api.editor.PhpVariable;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
@@ -111,17 +112,17 @@ public class EditorSupportImpl implements EditorSupport {
         return retval;
     }
 
-    public Collection<FileObject> filesForClass(FileObject sourceRoot, PhpClass phpClass) {
+    public Collection<Pair<FileObject, Integer>> filesForClass(FileObject sourceRoot, PhpClass phpClass) {
         if (sourceRoot.isData()) {
             throw new IllegalArgumentException("sourceRoot must be a folder");
         }
-        final List<FileObject> retval = new ArrayList<FileObject>();
+        final List<Pair<FileObject, Integer>> retval = new ArrayList<Pair<FileObject, Integer>>();
         Index indexQuery = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(sourceRoot));
         Set<ClassElement> classes = indexQuery.getClasses(NameKind.exact(phpClass.getFullyQualifiedName()));
         for (ClassElement indexedClass : classes) {
             FileObject fo = indexedClass.getFileObject();
             if (fo != null && fo.isValid()) {
-                retval.add(fo);
+                retval.add(Pair.of(fo, indexedClass.getOffset()));
             }
         }
         return retval;

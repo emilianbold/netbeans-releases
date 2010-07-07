@@ -47,7 +47,9 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
@@ -415,6 +417,36 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
             }
         }
 
+        if (tp.getParentPath() != null && tp.getParentPath().getLeaf().getKind() == Kind.IMPORT) {
+            ImportTree it = (ImportTree) tp.getParentPath().getLeaf();
+            if (it.isStatic() && tp.getLeaf().getKind() == Kind.MEMBER_SELECT) {
+                MemberSelectTree mst = (MemberSelectTree) tp.getLeaf();
+                if (!"*".contentEquals(mst.getIdentifier())) {
+                    List<int[]> bag = new ArrayList<int[]>();
+                    Token<JavaTokenId> tok = Utilities.getToken(info, doc, tp);
+                    if (tok != null)
+                        bag.add(new int[] {tok.offset(null), tok.offset(null) + tok.length()});
+                    el = info.getTrees().getElement(new TreePath(tp, mst.getExpression()));
+                    if (el != null) {
+                        FindLocalUsagesQuery fluq = new FindLocalUsagesQuery();
+                        setLocalUsages(fluq);
+                        try {
+                            for (Element element : el.getEnclosedElements()) {
+                                if (element.getModifiers().contains(Modifier.STATIC)) {
+                                    for (Token t : fluq.findUsages(element, info, doc)) {
+                                        bag.add(new int[] {t.offset(null), t.offset(null) + t.length()});
+                                    }
+                                }
+                            }
+                            return bag;
+                        } finally {
+                            setLocalUsages(null);
+                        }
+                    }
+                }
+            }
+        }
+        
         return null;
     }
 

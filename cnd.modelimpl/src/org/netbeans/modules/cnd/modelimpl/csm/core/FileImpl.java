@@ -2283,8 +2283,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public static final class OffsetSortedKey implements Comparable<OffsetSortedKey>, Persistent, SelfPersistent {
 
-        private int start = 0;
-        private CharSequence name;
+        private final int start;
+        private final CharSequence name;
 
         private OffsetSortedKey(CsmOffsetableDeclaration declaration) {
             start = ((CsmOffsetable) declaration).getStartOffset();

@@ -1,11 +1,11 @@
 #Signature file v4.1
-#Version 1.9.0
+#Version 1.11.0
 
 CLSS public abstract interface java.lang.Iterable<%0 extends java.lang.Object>
 meth public abstract java.util.Iterator<{java.lang.Iterable%0}> iterator()
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -19,7 +19,7 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public abstract org.netbeans.spi.tasklist.FileTaskScanner
-cons public FileTaskScanner(java.lang.String,java.lang.String,java.lang.String)
+cons public init(java.lang.String,java.lang.String,java.lang.String)
 innr public final static Callback
 meth public abstract java.util.List<? extends org.netbeans.spi.tasklist.Task> scan(org.openide.filesystems.FileObject)
 meth public abstract void attach(org.netbeans.spi.tasklist.FileTaskScanner$Callback)
@@ -29,19 +29,21 @@ supr java.lang.Object
 hfds description,displayName,optionsPath
 
 CLSS public final static org.netbeans.spi.tasklist.FileTaskScanner$Callback
+ outer org.netbeans.spi.tasklist.FileTaskScanner
 meth public !varargs void refresh(org.openide.filesystems.FileObject[])
 meth public void refreshAll()
 supr java.lang.Object
 hfds scanner,tm
 
 CLSS public abstract org.netbeans.spi.tasklist.PushTaskScanner
-cons public PushTaskScanner(java.lang.String,java.lang.String,java.lang.String)
+cons public init(java.lang.String,java.lang.String,java.lang.String)
 innr public final static Callback
 meth public abstract void setScope(org.netbeans.spi.tasklist.TaskScanningScope,org.netbeans.spi.tasklist.PushTaskScanner$Callback)
 supr java.lang.Object
 hfds description,displayName,optionsPath
 
 CLSS public final static org.netbeans.spi.tasklist.PushTaskScanner$Callback
+ outer org.netbeans.spi.tasklist.PushTaskScanner
 meth public void clearAllTasks()
 meth public void finished()
 meth public void setTasks(java.util.List<? extends org.netbeans.spi.tasklist.Task>)
@@ -62,8 +64,8 @@ supr java.lang.Object
 hfds actions,defaultAction,description,file,group,line,unknownTaskGroups,url
 
 CLSS public abstract org.netbeans.spi.tasklist.TaskScanningScope
-cons public TaskScanningScope(java.lang.String,java.lang.String,java.awt.Image)
-cons public TaskScanningScope(java.lang.String,java.lang.String,java.awt.Image,boolean)
+cons public init(java.lang.String,java.lang.String,java.awt.Image)
+cons public init(java.lang.String,java.lang.String,java.awt.Image,boolean)
 innr public final static Callback
 intf java.lang.Iterable<org.openide.filesystems.FileObject>
 intf org.openide.util.Lookup$Provider
@@ -74,12 +76,13 @@ supr java.lang.Object
 hfds description,displayName,icon,isDefault
 
 CLSS public final static org.netbeans.spi.tasklist.TaskScanningScope$Callback
+ outer org.netbeans.spi.tasklist.TaskScanningScope
 meth public void refresh()
 supr java.lang.Object
 hfds scope,tm
 
 CLSS public abstract org.openide.util.Lookup
-cons public Lookup()
+cons public init()
 fld public final static org.openide.util.Lookup EMPTY
 innr public abstract interface static Provider
 innr public abstract static Item
@@ -96,5 +99,6 @@ hfds defaultLookup
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider
+ outer org.openide.util.Lookup
 meth public abstract org.openide.util.Lookup getLookup()
 

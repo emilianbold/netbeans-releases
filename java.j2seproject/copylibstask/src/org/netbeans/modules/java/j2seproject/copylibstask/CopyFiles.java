@@ -149,7 +149,9 @@ public class CopyFiles extends Task {
             fs = new FileSet();
             fs.setDir(f);
         }
-        fs.setIncludes("META-INF/**/*.tld"); // NOI18N
+	// #187624 - web-fragment.xml must stay under WEB-INF/lib in EAR app
+	// TODO: 'iftldtodir' attribute should be renamed to some more general name
+        fs.setIncludes("META-INF/**/*.tld,META-INF/web-fragment.xml"); // NOI18N
         DirectoryScanner ds = fs.getDirectoryScanner(getProject());
         ds.scan();
         return ds.getIncludedFilesCount() > 0;

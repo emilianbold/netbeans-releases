@@ -116,7 +116,7 @@ public class PhpModuleImpl extends PhpModule {
     }
 
     @Override
-    public <T extends PhpFrameworkProvider> Preferences getPreferences(Class<T> clazz, boolean shared) {
+    public Preferences getPreferences(Class<?> clazz, boolean shared) {
         return ProjectUtils.getPreferences(phpProject, clazz, shared);
     }
 }

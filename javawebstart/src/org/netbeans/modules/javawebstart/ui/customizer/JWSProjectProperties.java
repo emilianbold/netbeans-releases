@@ -165,7 +165,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     
     private J2SEPropertyEvaluator j2sePropEval;
     private PropertyEvaluator evaluator;
-    private Project j2seProject;
+    private Project project;
     
     private List<Map<String,String>> extResProperties;
     private List<Map<String,String>> appletParamsProperties;
@@ -185,7 +185,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
 
     private DescType selectedDescType = null;
 
-    boolean isJnlpImplPreviousVersion = false;
+    boolean jnlpImplOldOrModified = false;
 
     // Models 
     JToggleButton.ToggleButtonModel enabledModel;
@@ -213,11 +213,11 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     /** Creates a new instance of JWSProjectProperties */
     public JWSProjectProperties(Lookup context) {
         
-        j2seProject = context.lookup(Project.class);
+        project = context.lookup(Project.class);
         
-        if (j2seProject != null) {
+        if (project != null) {
             
-            j2sePropEval = j2seProject.getLookup().lookup(J2SEPropertyEvaluator.class);
+            j2sePropEval = project.getLookup().lookup(J2SEPropertyEvaluator.class);
             
             evaluator = j2sePropEval.evaluator();
         
@@ -231,7 +231,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             codebaseModel = new CodebaseComboBoxModel();
             codebaseURLDocument = createCBTextFieldDocument();
 
-            appletClassModel = new AppletClassComboBoxModel(j2seProject);
+            appletClassModel = new AppletClassComboBoxModel(project);
             mixedCodeModel = createMixedCodeModel(j2sePropEval.evaluator());
             initRadioButtons();
 
@@ -239,11 +239,11 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             appletParamsProperties = readProperties(evaluator, JNLP_APPLET_PARAMS_PREFIX, appletParamsSuffixes);
 
             // check if the jnlp-impl.xml script is of previous version -> should be upgraded
-            FileObject jnlpImlpFO = j2seProject.getProjectDirectory().getFileObject("nbproject/jnlp-impl.xml");
+            FileObject jnlpImlpFO = project.getProjectDirectory().getFileObject("nbproject/jnlp-impl.xml");
             if (jnlpImlpFO != null) {
                 try {
                     String crc = JWSCompositeCategoryProvider.computeCrc32(jnlpImlpFO.getInputStream());
-                    isJnlpImplPreviousVersion = JWSCompositeCategoryProvider.isJnlpImplPreviousVer(crc);
+                    jnlpImplOldOrModified = !JWSCompositeCategoryProvider.isJnlpImplCurrentVer(crc);
                 } catch (IOException ex) {
                     // nothing to do really
                 }
@@ -389,7 +389,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public void store() throws IOException {
         
         final EditableProperties ep = new EditableProperties(true);
-        final FileObject projPropsFO = j2seProject.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         
         try {
             final InputStream is = projPropsFO.getInputStream();
@@ -419,27 +419,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                             os.close();
                         }
                     }
-                    FileObject srcRoot = null;
-                    for (SourceGroup sg : ProjectUtils.getSources(j2seProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                        if (!isTest(sg.getRootFolder(),j2seProject)) {
-                            srcRoot = sg.getRootFolder();
-                            break;
-                        }
-                    }
-                    if (srcRoot != null) {
-                        final Collection<? extends URL> toAdd  = isWebStart(ep) ? findWebStartJars(isApplet(ep)) : new LinkedList<URL>();
-                        final ClassPath bootCp = ClassPath.getClassPath(srcRoot, "classpath/endorsed"); //NOI18N
-                        final Collection<? extends URL> included = findWebStartJars(bootCp);
-                        final Collection<? extends URL> toRemove = new ArrayList<URL>(included);
-                        toRemove.removeAll(toAdd);
-                        toAdd.removeAll(included);
-                        if (!toRemove.isEmpty()) {
-                            ProjectClassPathModifier.removeRoots(toRemove.toArray(new URL[toRemove.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
-                        }
-                        if (!toAdd.isEmpty()) {
-                            ProjectClassPathModifier.addRoots(toAdd.toArray(new URL[toAdd.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
-                        }
-                    }
+                    updateWebStartJars(project, evaluator);
                     return null;
                 }
             });
@@ -487,13 +467,39 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         
     public String getProjectDistDir() {
         String dD = evaluator.getProperty("dist.dir"); // NOI18N
-        File distDir = new File(FileUtil.toFile(j2seProject.getProjectDirectory()), dD != null ? dD : ""); // NOI18N
+        File distDir = new File(FileUtil.toFile(project.getProjectDirectory()), dD != null ? dD : ""); // NOI18N
         return distDir.toURI().toString();
     }
     
     // only should return JNLP properties
     public String getProperty(String propName) {
         return evaluator.getProperty(propName);
+    }
+
+    public static void updateWebStartJars(
+            final Project project,
+            final PropertyEvaluator eval) throws IOException {
+        FileObject srcRoot = null;
+        for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            if (!isTest(sg.getRootFolder(),project)) {
+                srcRoot = sg.getRootFolder();
+                break;
+            }
+        }
+        if (srcRoot != null) {
+            final Collection<? extends URL> toAdd  = isWebStart(eval) ? findWebStartJars(eval, isApplet(eval)) : new LinkedList<URL>();
+            final ClassPath bootCp = ClassPath.getClassPath(srcRoot, "classpath/endorsed"); //NOI18N
+            final Collection<? extends URL> included = findWebStartJars(bootCp);
+            final Collection<? extends URL> toRemove = new ArrayList<URL>(included);
+            toRemove.removeAll(toAdd);
+            toAdd.removeAll(included);
+            if (!toRemove.isEmpty()) {
+                ProjectClassPathModifier.removeRoots(toRemove.toArray(new URL[toRemove.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
+            }
+            if (!toAdd.isEmpty()) {
+                ProjectClassPathModifier.addRoots(toAdd.toArray(new URL[toAdd.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
+            }
+        }
     }
     
     // ----------
@@ -781,7 +787,9 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         return model;
     }
 
-    private Collection<? extends URL> findWebStartJars(final boolean applet) throws IOException {
+    private static Collection<? extends URL> findWebStartJars(
+            final PropertyEvaluator evaluator,
+            final boolean applet) throws IOException {
         final List<URL> result = new ArrayList<URL>(2);
         final String platformName = evaluator.getProperty("platform.active");   //NOI18N
         if (platformName != null) {
@@ -808,7 +816,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         return result;
     }
 
-    private Collection<? extends URL> findWebStartJars(final ClassPath cp) throws IOException {
+    private static Collection<? extends URL> findWebStartJars(final ClassPath cp) throws IOException {
         final List<URL> result = new ArrayList<URL>(2);
         Pattern pattern = Pattern.compile(
                 ".*/("+Pattern.quote(LIB_JAVAWS)+"|"+Pattern.quote(LIB_PLUGIN)+")!/",Pattern.CASE_INSENSITIVE); //NOI18N
@@ -855,16 +863,16 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         return false;
     }
 
-    private static boolean isWebStart (final EditableProperties ep) {
-        assert ep != null;
-        return isTrue(ep.getProperty(JNLP_ENABLED));
+    private static boolean isWebStart (final PropertyEvaluator eval) {
+        assert eval != null;
+        return isTrue(eval.getProperty(JNLP_ENABLED));
     }
 
-    private static boolean isApplet(final EditableProperties ep) {
-        return DescType.applet.toString().equals(ep.getProperty(JNLP_DESCRIPTOR));
+    private static boolean isApplet(final PropertyEvaluator eval) {
+        return DescType.applet.toString().equals(eval.getProperty(JNLP_DESCRIPTOR));
     }
 
-    private static boolean isTrue(final String value) {
+    public static boolean isTrue(final String value) {
         return value != null &&
                 (value.equalsIgnoreCase("true") ||  //NOI18N
                  value.equalsIgnoreCase("yes") ||   //NOI18N
