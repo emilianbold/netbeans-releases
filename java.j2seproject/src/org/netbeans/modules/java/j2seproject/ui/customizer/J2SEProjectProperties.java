@@ -813,6 +813,9 @@ public class J2SEProjectProperties {
                     ep.remove(prop);
                 }
             }
+            if (ep == projectProperties) {  //Remove old value from private props (higher priority) when storing to  project props
+                privateProperties.remove(prop);
+            }
         }
         for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
             String config = entry.getKey();
