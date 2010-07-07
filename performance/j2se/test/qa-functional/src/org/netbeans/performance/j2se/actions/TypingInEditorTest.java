@@ -53,8 +53,11 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+
+import java.awt.event.KeyEvent;
 
 /**
  * Test of typing in opened source editor.
@@ -67,17 +70,18 @@ public class TypingInEditorTest extends PerformanceTestCase {
     protected String fileName;
     protected int caretPositionX, caretPositionY;
     Node fileToBeOpened;
+    JEditorPaneOperator epo;
     
     /** Creates a new instance of TypingInEditor */
     public TypingInEditorTest(String testName) {
         super(testName);
-        //WAIT_AFTER_OPEN = 200;
+        WAIT_AFTER_OPEN = 200;
     }
     
     /** Creates a new instance of TypingInEditor */
     public TypingInEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        //WAIT_AFTER_OPEN = 200;
+        WAIT_AFTER_OPEN = 200;
     }
 
     public static NbTestSuite suite() {
@@ -114,10 +118,11 @@ public class TypingInEditorTest extends PerformanceTestCase {
     }
     
     public void prepare() {
+        epo=new JEditorPaneOperator(editorOperator);     
     }
     
     public ComponentOperator open(){
-        editorOperator.typeKey('a');
+        epo.pushKey(KeyEvent.VK_A);
         return null;
     }
     
