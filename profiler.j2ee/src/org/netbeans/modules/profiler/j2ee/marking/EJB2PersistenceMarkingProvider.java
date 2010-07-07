@@ -58,6 +58,10 @@ public class EJB2PersistenceMarkingProvider extends BaseEJBMarkingProvider {
 
     @Override
     protected boolean isValid(ExecutableElement method) {
+        return isApplicable(method);
+    }
+    
+    static boolean isApplicable(ExecutableElement method) {
         String methodName = method.getSimpleName().toString();
         return (methodName.equals("ejbLoad") || methodName.equals("ejbStore"));
     }
