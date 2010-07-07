@@ -145,7 +145,7 @@ public final class Tracer {
             }
         }
         printStream.println("\n========== Dumping Project friends");
-        for(Map.Entry<CharSequence, Set<CsmUID<? extends CsmFriend>>> entry : container.testFriends().entrySet()){
+        for(Map.Entry<CharSequence, Set<CsmUID<CsmFriend>>> entry : container.testFriends().entrySet()){
             printStream.print("\t"+entry.getKey().toString()+" ");
             TreeMap<CharSequence, CsmFriend> set = new TreeMap<CharSequence, CsmFriend>();
             for(CsmUID<? extends CsmFriend> uid : entry.getValue()) {
