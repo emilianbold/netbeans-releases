@@ -89,6 +89,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.modules.Dependency;
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 
@@ -181,7 +182,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     public void testAreAttributesFine () {
         List<String> errors = new ArrayList<String>();
         
-        Enumeration<? extends FileObject> files = FileUtil.getConfigRoot().getChildren(true);
+        FileObject root = FileUtil.getConfigRoot();
+        Enumeration<? extends FileObject> files = Enumerations.concat(Enumerations.singleton(root), root.getChildren(true));
         while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
             
@@ -215,6 +217,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
 
                 if (isInstanceAttribute(name)) {
                     continue;
+                }
+                
+                if (name.indexOf('\\') != -1) {
+                    errors.add("File: " + fo.getPath() + " attribute name must not contain backslashes: " + name);
                 }
                 
                 Object attr = fo.getAttribute(name);

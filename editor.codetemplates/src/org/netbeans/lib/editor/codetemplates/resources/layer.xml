@@ -45,7 +45,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-    <attr name="Services\MIMEResolver\org-netbeans-modules-editor-settings-storage-mime-resolver.xml\position" intvalue="325"/>
     <folder name="Editors">
         <file name="org-netbeans-lib-editor-codetemplates-textsync-TextRegionManager$Highlighting$HLFactory.instance" />
         <folder name="text">
