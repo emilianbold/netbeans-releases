@@ -45,6 +45,28 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <filesystem>
+    <attr name="Editors\text\x-java\Popup\Profiling\position" intvalue="2100"/>
+    <attr name="Editors\text\x-java\Popup\SeparatorAfterFormat.instance\position" intvalue="1100"/>
+    <attr name="Editors\text\x-java\Popup\SeparatorAfterGoToHelp.instance\position" intvalue="500"/>
+    <attr name="Editors\text\x-java\Popup\SeparatorAfterPaste.instance\position" intvalue="2300"/>
+    <attr name="Editors\text\x-java\Popup\SeparatorBeforeCut.instance\position" intvalue="2200"/>
+    <attr name="Editors\text\x-java\Popup\SeparatorBeforeWS.instance\position" intvalue="2500"/>
+    <attr name="Editors\text\x-java\Popup\fix-imports\position" intvalue="700"/>
+    <attr name="Editors\text\x-java\Popup\format\position" intvalue="1000"/>
+    <attr name="Editors\text\x-java\Popup\generate-code\position" intvalue="600"/>
+    <attr name="Editors\text\x-java\Popup\generate-fold-popup\position" intvalue="2400"/>
+    <attr name="Editors\text\x-java\Popup\generate-preprocessor-popup\position" intvalue="800"/>
+    <attr name="Editors\text\x-java\Popup\goto-help\position" intvalue="200"/>
+    <attr name="Editors\text\x-java\Popup\org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow\position" intvalue="1900"/>
+    <attr name="Editors\text\x-java\Popup\org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow\position" intvalue="1300"/>
+    <attr name="Editors\text\x-java\Popup\org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.shadow\position" intvalue="1500"/>
+    <attr name="Editors\text\x-java\Popup\org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow\position" intvalue="1800"/>
+    <attr name="Editors\text\x-java\Popup\org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow\position" intvalue="2000"/>
+    <attr name="Editors\text\x-java\Popup\org-netbeans-modules-project-ui-RunSingle.shadow\position" intvalue="1200"/>
+    <attr name="Editors\text\x-java\Popup\org-netbeans-modules-project-ui-TestSingle.shadow\position" intvalue="1400"/>
+    <attr name="Editors\text\x-java\Popup\org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance\position" intvalue="900"/>
+    <attr name="Editors\text\x-java\Popup\org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow\position" intvalue="300"/>
+    <attr name="Editors\text\x-java\Popup\org-netbeans-modules-refactoring-java-callhierarchy-CallHierarchyAction.shadow\position" intvalue="400"/>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="junit-3.8.2.xml" url="junit_3_8_2_lib.xml">
@@ -164,11 +186,20 @@ made subject to such option by the copyright holder.
             <folder name="x-java">
                 <folder name="Popup">
                     <folder name="goto">
+                        <attr name="position" intvalue="100"/>
                         <file name="org-netbeans-modules-gototest-GotoOppositeAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/UnitTests/org-netbeans-modules-gototest-GotoOppositeAction.instance"/>
                             <attr name="position" intvalue="220"/>
                         </file>
                     </folder>
+                    <file name="org-netbeans-modules-junit-actions-RunTestMethodAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-actions-RunTestMethodAction.instance"/>
+                        <attr name="position" intvalue="1795"/>
+                    </file>
+                    <file name="org-netbeans-modules-junit-actions-DebugTestMethodAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-actions-DebugTestMethodAction.instance"/>
+                        <attr name="position" intvalue="1797"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
@@ -179,6 +210,8 @@ made subject to such option by the copyright holder.
         <folder name="JUnitTests">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
             <file name="org-netbeans-modules-junit-CreateTestAction.instance"/>
+            <file name="org-netbeans-modules-junit-actions-RunTestMethodAction.instance"/>
+            <file name="org-netbeans-modules-junit-actions-DebugTestMethodAction.instance"/>
         </folder>
     </folder>
     <folder name="UI">
