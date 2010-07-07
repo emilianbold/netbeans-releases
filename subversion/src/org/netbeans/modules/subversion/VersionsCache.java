@@ -48,6 +48,8 @@ import java.io.*;
 import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.util.*;
+import org.netbeans.modules.versioning.historystore.Storage;
+import org.netbeans.modules.versioning.historystore.StorageManager;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
@@ -98,12 +100,25 @@ public class VersionsCache {
     public File getFileRevision(SVNUrl repoUrl, SVNUrl url, String revision, String pegRevision, String fileName) throws IOException {
         try {
             SvnClient client = Subversion.getInstance().getClient(repoUrl);
-            InputStream in = getInputStream(client, url, revision, pegRevision);
-            return createContent(fileName, in);
+            if ("false".equals(System.getProperty("versioning.subversion.historycache.enable", "true"))) { //NOI18N
+                InputStream in = getInputStream(client, url, revision, pegRevision);
+                return createContent(fileName, in);
+            } else {
+                String rootUrl = repoUrl.toString();
+                String resourceUrl = url.toString() + "@" + pegRevision; //NOI18N
+                Storage cachedVersions = StorageManager.getInstance().getStorage(rootUrl);
+                File cachedFile = cachedVersions.getContent(resourceUrl, fileName, revision);
+                if (cachedFile.length() == 0) { // not yet cached
+                    InputStream in = getInputStream(client, url, revision, pegRevision);
+                    cachedFile = createContent(fileName, in);
+                    if (cachedFile.length() != 0) {
+                        cachedVersions.setContent(resourceUrl, revision, cachedFile);
+                    }
+                }
+                return cachedFile;
+            }
         } catch (SVNClientException ex) {
-            IOException ioex = new IOException("Can not load: " + url + " in revision: " + revision); // NOI18N
-            ioex.initCause(ex);
-            throw ioex;
+            throw new IOException("Can not load: " + url + " in revision: " + revision, ex);
         }
     }
 
@@ -178,9 +193,7 @@ public class VersionsCache {
                 }
                 return createContent(base.getName(), in);
             } catch (SVNClientException ex) {
-                IOException ioex = new IOException("Can not load: " + base.getAbsolutePath() + " in revision: " + revision); // NOI18N
-                ioex.initCause(ex);
-                throw ioex;
+                throw new IOException("Can not load: " + base.getAbsolutePath() + " in revision: " + revision, ex);
             }
         }
     }
@@ -218,9 +231,7 @@ public class VersionsCache {
             expanded.setLastModified(svnBase.lastModified());
             return expanded;
         } catch (SVNClientException e) {
-            IOException ioe = new IOException();
-            ioe.initCause(e);
-            throw ioe;
+            throw new IOException(e);
         }
     }
 
