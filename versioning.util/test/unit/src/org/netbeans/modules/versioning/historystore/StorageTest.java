@@ -153,7 +153,7 @@ public class StorageTest extends NbTestCase {
             }
         });
         for (File rev : revisions) {
-            Storage historyStore = StorageManager.getInstance().getStorage(workdir);
+            Storage historyStore = StorageManager.getInstance().getStorage(workdir.getAbsolutePath());
             testContents(historyStore, file, rev, true);
             historyStore.setContent(file.getAbsolutePath(), rev.getName(), rev);
             testContents(historyStore, file, rev, false);
