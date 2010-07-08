@@ -55,7 +55,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ini4j.Ini;
-import org.ini4j.InvalidIniFormatException;
+import org.ini4j.InvalidFileFormatException;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
@@ -212,7 +212,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
             } finally {
                 is.close();
             }
-        } catch (InvalidIniFormatException x) {
+        } catch (InvalidFileFormatException x) {
             LOG.log(Level.FINE, "{0} was malformed, perhaps no workspace: {1}", new Object[] {hgrc, x});
             return null;
         } catch (FileNotFoundException x) {
