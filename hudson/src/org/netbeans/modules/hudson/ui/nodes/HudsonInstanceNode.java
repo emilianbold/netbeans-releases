@@ -149,7 +149,7 @@ public class HudsonInstanceNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        if (!instance.getViews().isEmpty()) {
+        if (instance.getViews().size() > 1) {
             actions.add(new ViewSwitcher());
             actions.add(null);
         }
@@ -257,7 +257,7 @@ public class HudsonInstanceNode extends AbstractNode {
         
         private void refreshKeys() {
             List<HudsonJob> jobs = new ArrayList<HudsonJob>();
-            HudsonView view = null;
+            HudsonView view = instance.getPrimaryView();
             String selectedView = instance.prefs().get(SELECTED_VIEW, null);
             if (selectedView != null) {
                 for (HudsonView v : instance.getViews()) {
@@ -268,7 +268,7 @@ public class HudsonInstanceNode extends AbstractNode {
                 }
             }
             for (HudsonJob job : instance.getJobs()) {
-                if (view != null && !job.getViews().contains(view)) {
+                if (!job.getViews().contains(view)) {
                     continue;
                 }
                 jobs.add(job);
@@ -297,8 +297,9 @@ public class HudsonInstanceNode extends AbstractNode {
                 public JComponent[] getMenuPresenters() {
                     removeAll();
                     String selectedView = instance.prefs().get(SELECTED_VIEW, null);
-                    JRadioButtonMenuItem item = new JRadioButtonMenuItem(NbBundle.getMessage(HudsonInstanceNode.class, "HudsonInstanceNode.all_view"));
-                    item.setSelected(selectedView == null);
+                    String primaryViewName = instance.getPrimaryView().getName();
+                    JRadioButtonMenuItem item = new JRadioButtonMenuItem(primaryViewName);
+                    item.setSelected(selectedView == null || selectedView.equals(primaryViewName));
                     item.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             instance.prefs().remove(SELECTED_VIEW);
@@ -307,11 +308,15 @@ public class HudsonInstanceNode extends AbstractNode {
                     add(item);
                     addSeparator();
                     for (final HudsonView view : instance.getViews()) {
-                        item = new JRadioButtonMenuItem(view.getName());
-                        item.setSelected(view.getName().equals(selectedView));
+                        final String name = view.getName();
+                        if (name.equals(primaryViewName)) {
+                            continue;
+                        }
+                        item = new JRadioButtonMenuItem(name);
+                        item.setSelected(name.equals(selectedView));
                         item.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
-                                instance.prefs().put(SELECTED_VIEW, view.getName());
+                                instance.prefs().put(SELECTED_VIEW, name);
                             }
                         });
                         add(item);
