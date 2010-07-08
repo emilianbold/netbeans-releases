@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,51 +34,37 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.api.common.queries;
 
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.support.ant.EditableProperties;
+package org.netbeans.modules.java.project;
+
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
 import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Returns source level of project Java source files.
- * @author David Konecny
+ *
+ * @author Tomas Zezula
  */
-@SuppressWarnings("deprecation")
-class SourceLevelQueryImpl implements org.netbeans.spi.java.queries.SourceLevelQueryImplementation {
+@ServiceProvider(service=SourceLevelQueryImplementation2.class,position=99)
+public class ProjectSourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
 
-    private final PropertyEvaluator evaluator;
-
-    public SourceLevelQueryImpl(PropertyEvaluator evaluator) {
-        assert evaluator != null;
-        
-        this.evaluator = evaluator;
-    }
-    
     @Override
-    public String getSourceLevel(FileObject javaFile) {
-        return findSourceLevel(evaluator);
-    }
-
-    static String findSourceLevel (final PropertyEvaluator eval) {
-        final String activePlatform = eval.getProperty("platform.active"); //NOI18N
-        if (CommonProjectUtils.getActivePlatform(activePlatform) != null) {
-            String sl = eval.getProperty("javac.source"); //NOI18N
-            if (sl != null && sl.length() > 0) {
-                return sl;
+    public Result getSourceLevel(FileObject javaFile) {
+        final Project project = FileOwnerQuery.getOwner(javaFile);
+        if (project != null) {
+            SourceLevelQueryImplementation2 impl = project.getLookup().lookup(SourceLevelQueryImplementation2.class);
+            if (impl != null) {
+                return impl.getSourceLevel(javaFile);
             }
-            return null;
-        }
-
-        EditableProperties props = PropertyUtils.getGlobalProperties();
-        String sl = props.get("default.javac.source"); //NOI18N
-        if (sl != null && sl.length() > 0) {
-            return sl;
         }
         return null;
     }
-    
+
 }
