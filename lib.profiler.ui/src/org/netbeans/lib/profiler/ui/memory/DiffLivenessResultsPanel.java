@@ -100,14 +100,6 @@ public class DiffLivenessResultsPanel extends SnapshotLivenessResultsPanel {
     protected JPopupMenu getPopupMenu() {
         if (popup == null) {
             popup = new JPopupMenu();
-
-            Font boldfont = popup.getFont().deriveFont(Font.BOLD);
-
-            popupShowSource = new JMenuItem();
-            popupShowSource.setText(GO_SOURCE_POPUP_ITEM);
-            popupShowSource.setFont(boldfont);
-            popup.add(popupShowSource);
-            popupShowSource.addActionListener(this);
         }
 
         return popup;

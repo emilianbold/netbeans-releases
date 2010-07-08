@@ -45,7 +45,6 @@ package org.netbeans.modules.profiler.heapwalk;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.lib.profiler.heap.*;
 import org.netbeans.modules.profiler.heapwalk.ui.ClassesListControllerUI;
@@ -59,7 +58,6 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.JPanel;
-import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 
 
 /**
@@ -141,7 +139,7 @@ public class ClassesListController extends AbstractController {
         List filteredClasses;
 
         if ((filterType == FILTER_SUBCLASS) && !((filterStrings == null) || filterStrings[0].equals(""))) { // NOI18N
-            filteredClasses = getFilteredClasses(getSubclasses(heap, filterStrings, fragmentWalker.getHeapDumpProject()), null,
+            filteredClasses = getFilteredClasses(getSubclasses(heap, filterStrings), null,
                                                  CommonConstants.FILTER_NONE, showZeroInstances, showZeroSize);
         } else {
             filteredClasses = getFilteredClasses(heap.getAllClasses(), filterStrings, filterType, showZeroInstances, showZeroSize);
@@ -201,7 +199,7 @@ public class ClassesListController extends AbstractController {
         return new ClassesListControllerUI(this);
     }
 
-    private static Collection getContextSubclasses(Heap heap, String className, Project project) {
+    private static Collection getContextSubclasses(Heap heap, String className) {
         ProgressHandle pHandle = null;
 
         try {
@@ -211,7 +209,7 @@ public class ClassesListController extends AbstractController {
 
             HashSet subclasses = new HashSet();
 
-            String[] subclassesNames = SourceUtils.getSubclassesNames(className, project);
+            String[] subclassesNames = new String[]{className};
 
             for (int i = 0; i < subclassesNames.length; i++) {
                 JavaClass jClass = heap.getJavaClassByName(subclassesNames[i]);
@@ -253,7 +251,7 @@ public class ClassesListController extends AbstractController {
         return filteredClasses;
     }
 
-    private static List getSubclasses(Heap heap, String[] filterStrings, Project project) {
+    private static List getSubclasses(Heap heap, String[] filterStrings) {
         HashSet subclasses = new HashSet();
 
         for (int i = 0; i < filterStrings.length; i++) {
@@ -269,9 +267,7 @@ public class ClassesListController extends AbstractController {
                 } else {
                     // jClass may be an interface and subclasses will be obtained from IDE infrastructure
                     // if heapdump has a project context
-                    if (project != null) {
-                        subclasses.addAll(getContextSubclasses(heap, filterStrings[i], project));
-                    }
+
                 }
             }
         }

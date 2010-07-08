@@ -71,6 +71,8 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import org.netbeans.lib.profiler.results.monitor.VMTelemetryDataManager;
+import org.netbeans.lib.profiler.ui.components.FlatToolBar;
+import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 
 
 /** An IDE TopComponent to display profiling results.
@@ -106,7 +108,7 @@ public final class TelemetryWindow extends TopComponent {
 
             setLayout(new BorderLayout());
 
-            final JToolBar toolBar = new JToolBar() {
+            final JToolBar toolBar = new FlatToolBar() {
                 public Component add(Component comp) {
                     if (comp instanceof JButton) {
                         UIUtils.fixButtonUI((JButton) comp);
@@ -362,7 +364,8 @@ public final class TelemetryWindow extends TopComponent {
         getAccessibleContext().setAccessibleDescription(TELEMETRY_ACCESS_DESCR);
         setLayout(new BorderLayout());
         tabs = new JTabbedPane();
-
+        tabs.setOpaque(true);
+ 	    tabs.setBackground(new HTMLTextArea().getBackground());
         tabs.setTabPlacement(JTabbedPane.BOTTOM);
         add(tabs, BorderLayout.CENTER);
 
