@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,51 +34,84 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.java.api.common.queries;
 
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
+import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
 
 /**
- * Returns source level of project Java source files.
- * @author David Konecny
+ * @author Tomas Zezula
  */
-@SuppressWarnings("deprecation")
-class SourceLevelQueryImpl implements org.netbeans.spi.java.queries.SourceLevelQueryImplementation {
-
-    private final PropertyEvaluator evaluator;
-
-    public SourceLevelQueryImpl(PropertyEvaluator evaluator) {
-        assert evaluator != null;
-        
-        this.evaluator = evaluator;
-    }
+class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
     
+    private final PropertyEvaluator eval;
+    private final Result result;
+
+    SourceLevelQueryImpl2(final @NonNull PropertyEvaluator eval) {
+        Parameters.notNull("eval", eval);   //NOI18N
+        this.eval = eval;
+        this.result = new R();
+    }
+
     @Override
-    public String getSourceLevel(FileObject javaFile) {
-        return findSourceLevel(evaluator);
+    public Result getSourceLevel(FileObject javaFile) {
+        return this.result;
     }
 
-    static String findSourceLevel (final PropertyEvaluator eval) {
-        final String activePlatform = eval.getProperty("platform.active"); //NOI18N
-        if (CommonProjectUtils.getActivePlatform(activePlatform) != null) {
-            String sl = eval.getProperty("javac.source"); //NOI18N
-            if (sl != null && sl.length() > 0) {
-                return sl;
+    private class R implements Result, PropertyChangeListener {
+        
+        private final ChangeSupport cs = new ChangeSupport(this);
+
+        @SuppressWarnings("LeakingThisInConstructor")
+        private R() {
+            eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
+        }
+
+        @Override
+        public String getSourceLevel() {
+            return SourceLevelQueryImpl.findSourceLevel(eval);
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+            this.cs.addChangeListener(listener);
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+            this.cs.removeChangeListener(listener);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            final String name = evt.getPropertyName();
+            if (name == null ||
+                "javac.source".equals(name) ||     //NOI18N
+                "platform.active".equals(name)) {  //NOI18N
+                this.cs.fireChange();
             }
-            return null;
         }
 
-        EditableProperties props = PropertyUtils.getGlobalProperties();
-        String sl = props.get("default.javac.source"); //NOI18N
-        if (sl != null && sl.length() > 0) {
-            return sl;
+        @Override
+        public String toString() {
+            final String sl = getSourceLevel();
+            return sl == null ? "" : sl.toString(); //NOI18M
         }
-        return null;
+
     }
-    
+
 }

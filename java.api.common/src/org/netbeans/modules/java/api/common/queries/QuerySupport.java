@@ -56,7 +56,7 @@ import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
 import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -199,11 +199,24 @@ public final class QuerySupport {
      * Create a new query to find out specification source level of Java source files.
      * @param evaluator {@link PropertyEvaluator} used for obtaining needed properties.
      * @return a {@link SourceLevelQueryImplementation} to find out specification source level of Java source files.
+     * @deprecated Use {@link QuerySupport#createSourceLevelQuery(org.netbeans.spi.project.support.ant.PropertyEvaluator)}
      */
-    public static SourceLevelQueryImplementation createSourceLevelQuery(PropertyEvaluator evaluator) {
+    @Deprecated
+    public static org.netbeans.spi.java.queries.SourceLevelQueryImplementation createSourceLevelQuery(PropertyEvaluator evaluator) {
         Parameters.notNull("evaluator", evaluator); // NOI18N
 
         return new SourceLevelQueryImpl(evaluator);
+    }
+
+    /**
+     * Create a new query to find out source level of Java source files (SourceLevelQueryImplementation2).
+     * @param evaluator {@link PropertyEvaluator} used for obtaining needed properties.
+     * @return a {@link SourceLevelQueryImplementation2} to find out source level of Java source files.
+     * @since 1.22
+     */
+    public static SourceLevelQueryImplementation2 createSourceLevelQuery2(@NonNull PropertyEvaluator evaluator) {
+        Parameters.notNull("evaluator", evaluator); // NOI18N
+        return new SourceLevelQueryImpl2(evaluator);
     }
 
     /**
