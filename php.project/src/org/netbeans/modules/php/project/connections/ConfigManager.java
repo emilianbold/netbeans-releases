@@ -78,7 +78,8 @@ public final class ConfigManager {
     public ConfigManager(ConfigProvider configProvider) {
         this.configProvider = configProvider;
         changeSupport = new ChangeSupport(this);
-        configs = configProvider.getConfigs();
+        configs = createEmptyConfigs();
+        configs.putAll(configProvider.getConfigs());
 
         List<String> tmp = new ArrayList<String>(Arrays.asList(configProvider.getConfigProperties()));
         tmp.add(PROP_DISPLAY_NAME);
