@@ -95,6 +95,7 @@ public class TestsuiteNode extends AbstractNode {
     protected TestSuite suite;
     protected Report report;
     protected boolean filtered;
+    protected int filterMask = 0;
 
     /**
      *
@@ -123,7 +124,7 @@ public class TestsuiteNode extends AbstractNode {
     protected TestsuiteNode(final Report report,
                           final String suiteName,
                           final boolean filtered, Lookup lookup) {
-        super(report != null ? new TestsuiteNodeChildren(report, filtered)
+        super(report != null ? new TestsuiteNodeChildren(report, 0)
                              : Children.LEAF, lookup);
         this.report = report; 
         this.suiteName = (report != null) ? report.getSuiteClassName() : suiteName;
@@ -207,7 +208,7 @@ public class TestsuiteNode extends AbstractNode {
         if (ch instanceof TestsuiteNodeChildren){
             ((TestsuiteNodeChildren)ch).addNotify();
         }else{
-            setChildren(new TestsuiteNodeChildren(report, filtered));
+            setChildren(new TestsuiteNodeChildren(report, filterMask));
         }
         if (DISPLAY_TOOLTIPS) {
             setShortDescription(toTooltipText(getOutput()));
@@ -332,15 +333,16 @@ public class TestsuiteNode extends AbstractNode {
 
     /**
      */
-    void setFiltered(final boolean filtered) {
-        if (filtered == this.filtered) {
+    void setFilterMask(final int filterMask) {
+        if (filterMask == this.filterMask) {
             return;
         }
-        this.filtered = filtered;
+        this.filtered = filterMask != 0;
+        this.filterMask = filterMask;
         
         Children children = getChildren();
         if (children != Children.LEAF) {
-            ((TestsuiteNodeChildren) children).setFiltered(filtered);
+            ((TestsuiteNodeChildren) children).setFilterMask(filterMask);
         }
     }
     

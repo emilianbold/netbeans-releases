@@ -52,8 +52,10 @@ import java.awt.event.ItemListener;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
@@ -91,7 +93,8 @@ final class StatisticsPanel extends JPanel implements ItemListener {
     private final ResultDisplayHandler displayHandler;
 
     //default pressed value for the Show Failures Only button
-    private static boolean showFailuresOnly = false;
+    private boolean filterEnabled = false;
+    int filterMask = Status.PASSED.getBitMask();
 
     private static final Icon rerunIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/rerun.png", true);
     private static final Icon rerunFailedIcon = ImageUtilities.image2Icon(ImageUtilities.mergeImages(
@@ -106,7 +109,10 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         this.displayHandler = displayHandler;
         JComponent toolbar = createToolbar();
         treePanel = new ResultPanelTree(displayHandler, this);
-        treePanel.setFiltered(btnFilter.isSelected());
+        if (filterEnabled)
+            treePanel.setFilterMask(filterMask);
+        else
+            treePanel.setFilterMask(0);
 
         add(toolbar, BorderLayout.WEST);
         add(treePanel, BorderLayout.CENTER);
@@ -182,11 +188,35 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         btnFilter = new JToggleButton(ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/filter.png", true));
         btnFilter.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(getClass(), "ACSN_FilterButton"));  //NOI18N
-        btnFilter.setSelected(showFailuresOnly);
+        btnFilter.setSelected(filterEnabled);
         btnFilter.addItemListener(this);
+        btnFilter.setComponentPopupMenu(createFilterPopupMenu());
         updateFilterButtonLabel();
     }
 
+    private JPopupMenu createFilterPopupMenu(){
+        JPopupMenu popup = new JPopupMenu();
+
+        JCheckBoxMenuItem item = new JCheckBoxMenuItem();
+        item.setText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.btnFilter.popup.hidePassed")); //NOI18N
+        item.setSelected((filterMask & Status.PASSED.getBitMask()) != 0);
+        item.addItemListener(new FilterItemListener(Status.PASSED));
+        popup.add(item);
+
+        item = new JCheckBoxMenuItem();
+        item.setText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.btnFilter.popup.hideFailed")); //NOI18N
+        item.setSelected((filterMask & Status.FAILED.getBitMask()) != 0);
+        item.addItemListener(new FilterItemListener(Status.FAILED));
+        popup.add(item);
+
+        item = new JCheckBoxMenuItem();
+        item.setText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.btnFilter.popup.hideError")); //NOI18N
+        item.setSelected((filterMask & Status.ERROR.getBitMask()) != 0);
+        item.addItemListener(new FilterItemListener(Status.ERROR));
+        popup.add(item);
+
+        return popup;
+    }
     /**
      */
     private void updateFilterButtonLabel() {
@@ -235,8 +265,11 @@ final class StatisticsPanel extends JPanel implements ItemListener {
      */
     public void itemStateChanged(ItemEvent e) {
         /* called when the Filter button is toggled. */
-        showFailuresOnly = btnFilter.isSelected();
-        treePanel.setFiltered(btnFilter.isSelected());
+        filterEnabled = btnFilter.isSelected();
+        if (filterEnabled)
+            treePanel.setFilterMask(filterMask);
+        else
+            treePanel.setFilterMask(0);
         updateFilterButtonLabel();
     }
     
@@ -277,6 +310,24 @@ final class StatisticsPanel extends JPanel implements ItemListener {
      */
     void displayMsg(final String msg) {
         treePanel.displayMsg(msg);
+    }
+
+    private class FilterItemListener implements ItemListener {
+        private int itemMask;
+
+        public FilterItemListener(Status status) {
+            this.itemMask = status.getBitMask();
+        }
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            if (e.getStateChange() == e.SELECTED) {
+                filterMask |= itemMask;
+            } else if (e.getStateChange() == e.DESELECTED) {
+                filterMask &= ~itemMask;
+            }
+            StatisticsPanel.this.itemStateChanged(e);
+        }
     }
     
 }
