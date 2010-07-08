@@ -48,6 +48,7 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 
 /**
  * CSL language for Expression Language
@@ -73,8 +74,8 @@ public class ELLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public HintsProvider getHintsProvider() {
-        return super.getHintsProvider();
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        return new ELIndexer.Factory();
     }
 
 }
