@@ -43,11 +43,9 @@ package org.netbeans.modules.web.jsf.editor.el;
 
 import com.sun.el.parser.ELParser;
 import com.sun.el.parser.Node;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.el.ELException;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -69,39 +67,18 @@ public final class JsfElParser extends Parser {
 
     private static final Logger LOGGER = Logger.getLogger(JsfElParser.class.getName());
     private final Document document;
-    private final String snapshot;
     private ELParserResult result;
 
-    private JsfElParser(Document document, String snapshot) {
+    private JsfElParser(Document document) {
         this.document = document;
-        this.snapshot = snapshot;
     }
 
     public JsfElParser() {
-        this(null, null);
+        this(null);
     }
 
     public static JsfElParser create(final Document document) {
-        //clone the document's text
-        final AtomicReference<BadLocationException> ble = new AtomicReference<BadLocationException>();
-        final AtomicReference<String> snap = new AtomicReference<String>();
-        document.render(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    snap.set(document.getText(0, document.getLength()));
-                } catch (BadLocationException ex) {
-                    ble.set(ex);
-                }
-            }
-        });
-        if (ble.get() != null) {
-            throw new RuntimeException(ble.get());
-        }
-
-        String snapshot = snap.get();
-        return new JsfElParser(document, snapshot);
+        return new JsfElParser(document);
     }
     
     /**
@@ -121,20 +98,20 @@ public final class JsfElParser extends Parser {
     public ELParserResult parse() {
 
         FileObject fo = NbEditorUtilities.getFileObject(document);
-        ELParserResult result = new ELParserResult(fo);
+        ELParserResult parseResult = new ELParserResult(fo);
 
         String documentMimetype = NbEditorUtilities.getMimeType(document);
         Language lang = Language.find(documentMimetype);
 
         if (lang == null) {
-            return result;
+            return parseResult;
         }
 
         TokenHierarchy<?> th = TokenHierarchy.get(document);
         TokenSequence<?> topLevel = th.tokenSequence();
 
         if (topLevel == null) {
-            return result;
+            return parseResult;
         }
 
         topLevel.moveStart();
@@ -150,14 +127,14 @@ public final class JsfElParser extends Parser {
                 OffsetRange range = new OffsetRange(startOffset, endOffset);
                 try {
                     Node node = parse(expression);
-                    result.add(ELElement.valid(node, range, expression));
+                    parseResult.add(ELElement.valid(node, range, expression));
                 } catch (ELException ex) {
-                    result.add(ELElement.error(ex, range, expression));
+                    parseResult.add(ELElement.error(ex, range, expression));
                 }
             }
         }
 
-        return result;
+        return parseResult;
     }
 
     @Override
