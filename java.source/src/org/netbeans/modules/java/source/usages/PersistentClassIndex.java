@@ -54,9 +54,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -229,10 +231,24 @@ public class PersistentClassIndex extends ClassIndexImpl {
                                     ClassIndexManager.getDefault().takeWriteLock(
                                         new ClassIndexManager.ExceptionAction<Void>() {
                                             public Void run () throws IOException {
-                                                controller.toPhase(Phase.RESOLVED);
-                                                final SourceAnalyser sa = getSourceAnalyser();
-                                                sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
-                                                ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
+                                                if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED)<0) {
+                                                    return null;
+                                                }
+                                                try {
+                                                    final SourceAnalyser sa = getSourceAnalyser();
+                                                    sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
+                                                    ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
+                                                } catch (IllegalArgumentException ia) {
+                                                    //Debug info for issue #187344
+                                                    //seems that invalid dirty class index is used
+                                                    final ClassPath scp = controller.getClasspathInfo().getClassPath(PathKind.SOURCE);
+                                                    throw new IllegalArgumentException(
+                                                            String.format("Provided source path: %s root: %s cache root: %",    //NOI18N
+                                                                scp == null ? "<null>" : scp.toString(),    //NOI18N
+                                                                root.toExternalForm(),
+                                                                cacheRoot.toURI().toURL())
+                                                                ,ia);
+                                                }
                                                 return null;
                                             }
                                     });
