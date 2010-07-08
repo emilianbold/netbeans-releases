@@ -90,6 +90,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ConfigurationFilesListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -322,6 +323,11 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
             if (old != _brokenDataSource) {
                 setBrokenDataSource(_brokenDataSource);
             }
+            old = brokenServerLibrary;
+            boolean _brokenServerLibrary = hasBrokenServerLibrary();
+            if (old != _brokenServerLibrary) {
+                setBrokenServerLibrary(_brokenServerLibrary);
+            }
         }
     });
 
@@ -515,7 +521,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         // Private methods -------------------------------------------------
 
         private boolean isBroken() {
-            return broken || brokenServer || brokenDataSource || illegalState;
+            return broken || brokenServer || brokenDataSource || illegalState || brokenServerLibrary;
         }
 
         public @Override void stateChanged(ChangeEvent e) {
@@ -531,6 +537,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
     private boolean deployOnSaveDisabled;  //true iff Deploy-on-Save is disabled
     private boolean brokenServer;
     private boolean brokenDataSource;
+    private boolean brokenServerLibrary;
 
     // Private methods -------------------------------------------------
 
@@ -556,6 +563,11 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
 
     private void setBrokenServer(boolean brokenServer) {
         this.brokenServer = brokenServer;
+        changeSupport.fireChange();
+    }
+
+    private void setBrokenServerLibrary(boolean brokenServerLibrary) {
+        this.brokenServerLibrary = brokenServerLibrary;
         changeSupport.fireChange();
     }
         
@@ -589,7 +601,8 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
             switch (mode) {
                 case 1: return lvp.new BrokenLinksAction();
                 case 2: return lvp.new BrokenServerAction();
-                default: return lvp.new BrokenDataSourceAction();
+                case 3: return lvp.new BrokenDataSourceAction();
+                default: return lvp.new BrokenServerLibraryAction();
             }
             
         }
@@ -606,6 +619,10 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
 
     public static Action brokenDataSourceActionFactory() {
         return new ActionFactory(3);
+    }
+
+    public static Action brokenServerLibraryActionFactory() {
+        return new ActionFactory(4);
     }
 
     public static Action redeploy() {
@@ -737,6 +754,26 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
 
     }
 
+    private class BrokenServerLibraryAction extends AbstractAction {
+
+        public BrokenServerLibraryAction() {
+            putValue(Action.NAME, NbBundle.getMessage(AbstractLogicalViewProvider.class, "LBL_Fix_Broken_Server_Library_Action"));
+            setEnabled(brokenServerLibrary);
+            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            BrokenServerLibrarySupport.fixServerLibraries(project, new Runnable() {
+                @Override
+                public void run() {
+                    testBroken();
+                }
+            });
+        }
+
+    }
+
     private boolean hasBrokenServer() {
         String servInstID = evaluator.getProperty("j2ee.server.instance");
         return BrokenServerSupport.isBroken(servInstID);
@@ -773,6 +810,10 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         }
         // if the project has any broken data sources then set the brokenDatasource flag to true
         return !BrokenDatasourceSupport.getBrokenDatasources(project).isEmpty();
+    }
+
+    private boolean hasBrokenServerLibrary() {
+        return BrokenServerLibrarySupport.isBroken(project);
     }
             
 }

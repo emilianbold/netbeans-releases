@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.j2ee.deployment.plugins.api;
 
-import java.io.File;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;

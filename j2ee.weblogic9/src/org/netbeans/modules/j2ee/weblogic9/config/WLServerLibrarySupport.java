@@ -109,7 +109,9 @@ public class WLServerLibrarySupport {
         this.serverRoot = serverRoot;
     }
 
-    public File[] getClasspathEntries(Set<ServerLibraryDependency> libraries) throws ConfigurationException {
+    public Map<ServerLibrary, List<File>> getClasspathEntries(Set<ServerLibraryDependency> libraries)
+            throws ConfigurationException {
+
         Set<WLServerLibrary> deployed = getDeployedLibraries();
         Set<WLServerLibrary> classpath = new HashSet<WLServerLibrary>();
 
@@ -125,7 +127,7 @@ public class WLServerLibrarySupport {
 
         // TODO deployable files
 
-        List<File> result = new ArrayList<File>();
+        Map<ServerLibrary, List<File>> result = new HashMap<ServerLibrary, List<File>>();
         // XXX optimize collection of libs on same server and/or same name
         for (WLServerLibrary lib : classpath) {
             String server = lib.getServer();
@@ -144,7 +146,7 @@ public class WLServerLibrarySupport {
                                 if (webInfLib.exists() && webInfLib.isDirectory()) {
                                     File[] children = webInfLib.listFiles(JAR_FILTER);
                                     if (children != null) {
-                                        result.addAll(Arrays.asList(children));
+                                        result.put(ServerLibraryFactory.createServerLibrary(lib), Arrays.asList(children));
                                     }
                                 }
                             }
@@ -154,7 +156,7 @@ public class WLServerLibrarySupport {
             }
         }
 
-        return result.toArray(new File[result.size()]);
+        return result;
     }
 
     Set<WLServerLibrary> getDeployedLibraries() {

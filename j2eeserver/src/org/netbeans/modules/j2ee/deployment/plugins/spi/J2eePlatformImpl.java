@@ -72,11 +72,11 @@ public abstract class J2eePlatformImpl {
     
     /** Display name property */
     public static final String PROP_DISPLAY_NAME = "displayName";       //NOI18N
+
     /** Libraries property */
-    public static final String PROP_LIBRARIES = "libraries";            //NOI18N
-    /** Platform roots property */
-    public static final String PROP_PLATFORM_ROOTS = "platformRoots";   //NOI18N
-    
+    public static final String PROP_LIBRARIES = "libraries"; //NOI18N
+    public static final String PROP_SERVER_LIBRARIES = "serverLibraries"; //NOI18N
+
     private PropertyChangeSupport supp;
     
     /**
@@ -86,8 +86,8 @@ public abstract class J2eePlatformImpl {
      */
     public abstract LibraryImplementation[] getLibraries();
 
-    public File[] getClasspathEntries(Set<ServerLibraryDependency> libraries) {
-        return new File[] {};
+    public LibraryImplementation[] getLibraries(Set<ServerLibraryDependency> libraries) {
+        return getLibraries();
     }
 
     /**

@@ -81,17 +81,7 @@ public class WLServerLibraryManager implements ServerLibraryManager {
 
     @Override
     public void deployLibraries(Set<ServerLibraryDependency> libraries) throws ConfigurationException {
-        Set<ServerLibraryDependency> notHandled = new HashSet<ServerLibraryDependency>(libraries);
-        Set<ServerLibrary> deployed = getDeployedLibraries();
-
-        for (ServerLibraryDependency range : libraries) {
-            for (ServerLibrary lib : deployed) {
-                if (range.versionMatches(lib)) {
-                    notHandled.remove(range);
-                    break;
-                }
-            }
-        }
+        Set<ServerLibraryDependency> notHandled = filterDeployed(libraries);
 
         Set<File> toDeploy = new HashSet<File>();
         Map<ServerLibrary, File> deployable = support.getDeployableFiles();
@@ -128,6 +118,43 @@ public class WLServerLibraryManager implements ServerLibraryManager {
         return result;
     }
 
+    @Override
+    public Set<ServerLibraryDependency> getDeployableDependencies(Set<ServerLibraryDependency> libraries) {
+        Set<ServerLibraryDependency> notHandled = filterDeployed(libraries);
+
+        Set<ServerLibraryDependency> result = new HashSet<ServerLibraryDependency>();
+        Map<ServerLibrary, File> deployable = support.getDeployableFiles();
+        for (Iterator<ServerLibraryDependency> it = notHandled.iterator(); it.hasNext(); ) {
+            ServerLibraryDependency range = it.next();
+            for (Map.Entry<ServerLibrary, File> entry : deployable.entrySet()) {
+                if (range.versionMatches(entry.getKey())) {
+                    result.add(range);
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<ServerLibraryDependency> getMissingDependencies(Set<ServerLibraryDependency> libraries) {
+        Set<ServerLibraryDependency> notHandled = filterDeployed(libraries);
+
+        Map<ServerLibrary, File> deployable = support.getDeployableFiles();
+        for (Iterator<ServerLibraryDependency> it = notHandled.iterator(); it.hasNext(); ) {
+            ServerLibraryDependency range = it.next();
+            for (Map.Entry<ServerLibrary, File> entry : deployable.entrySet()) {
+                if (range.versionMatches(entry.getKey())) {
+                    it.remove();
+                    break;
+                }
+            }
+        }
+
+        return notHandled;
+    }
+
     private void deployFiles(Set<File> libraries) throws ConfigurationException {
         WLCommandDeployer deployer = new WLCommandDeployer(WLDeploymentFactory.getInstance(),
                 manager.getInstanceProperties());
@@ -137,5 +164,21 @@ public class WLServerLibraryManager implements ServerLibraryManager {
             String msg = NbBundle.getMessage(WLDatasourceManager.class, "MSG_FailedToDeployLibrary");
             throw new ConfigurationException(msg);
         }
+    }
+
+    private Set<ServerLibraryDependency> filterDeployed(Set<ServerLibraryDependency> libraries) {
+        Set<ServerLibraryDependency> notHandled = new HashSet<ServerLibraryDependency>(libraries);
+        Set<ServerLibrary> deployed = getDeployedLibraries();
+
+        for (ServerLibraryDependency range : libraries) {
+            for (ServerLibrary lib : deployed) {
+                if (range.versionMatches(lib)) {
+                    notHandled.remove(range);
+                    break;
+                }
+            }
+        }
+
+        return notHandled;
     }
 }
