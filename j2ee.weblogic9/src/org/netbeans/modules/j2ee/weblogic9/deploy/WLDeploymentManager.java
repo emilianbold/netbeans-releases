@@ -74,6 +74,7 @@ import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
@@ -144,6 +145,14 @@ public class WLDeploymentManager implements DeploymentManager {
         return port;
     }
 
+    public void addDomainChangeListener(ChangeListener listener) {
+        mutableState.addDomainChangeListener(listener);
+    }
+
+    public void removeDomainChangeListener(ChangeListener listener) {
+        mutableState.removeDomainChangeListener(listener);
+    }
+
     public boolean isRestartNeeded() {
         return mutableState.isRestartNeeded();
     }
@@ -155,7 +164,7 @@ public class WLDeploymentManager implements DeploymentManager {
     /**
      * Returns the InstanceProperties object for the current server instance.
      */
-    public synchronized InstanceProperties getInstanceProperties() {
+    public final synchronized InstanceProperties getInstanceProperties() {
         if (instanceProperties == null) {
             this.instanceProperties = InstanceProperties.getInstanceProperties(uri);
 
@@ -479,4 +488,5 @@ public class WLDeploymentManager implements DeploymentManager {
             return super.getResources(name);
         }
     }
+
 }

@@ -72,6 +72,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -774,10 +775,38 @@ public class ServerInstance implements Node.Cookie, Comparable {
         return libraries;
     }
 
+    public Set<ServerLibraryDependency> getDeployableDependencies(
+            @NonNull Set<ServerLibraryDependency> dependencies) {
+        ServerLibraryManager libraryManager = getDisconnectedServerLibraryManager();
+
+        Set<ServerLibraryDependency> result = Collections.emptySet();
+        if (libraryManager != null) {
+            result = libraryManager.getDeployableDependencies(dependencies);
+        }
+
+        return result;
+    }
+
+    public Set<ServerLibraryDependency> getMissingDependencies(
+            @NonNull Set<ServerLibraryDependency> dependencies) {
+        ServerLibraryManager libraryManager = getDisconnectedServerLibraryManager();
+
+        Set<ServerLibraryDependency> result = Collections.emptySet();
+        if (libraryManager != null) {
+            result = libraryManager.getMissingDependencies(dependencies);
+        }
+
+        return result;
+    }
+
     public void deployLibraries(Set<ServerLibraryDependency> libraries) throws ConfigurationException {
         ServerLibraryManager libraryManager = getServerLibraryManager();
 
         if (libraryManager != null) {
+            StartServer ss = getStartServer();
+            if (ss != null && !ss.isRunning() && ss.needsStartForAdminConfig()) {
+                start();
+            }
             libraryManager.deployLibraries(libraries);
         }
     }
