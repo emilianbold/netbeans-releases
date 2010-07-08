@@ -18,6 +18,10 @@ public final class ELElement {
 
     private ELElement(Node node, OffsetRange offset, ELException error, String expression) {
         assert node == null || error == null;
+        if (node != null) {
+            assert offset.getLength() == node.endOffset() - node.startOffset()
+                    : "Offsets don't match: " + offset + ", node: " + node.startOffset() + "-" + node.endOffset();
+        }
         this.node = node;
         this.offset = offset;
         this.error = error;
@@ -50,6 +54,17 @@ public final class ELElement {
 
     public String getExpression() {
         return expression;
+    }
+
+    public Node findNodeAt(int offset) {
+        if (!getOffset().containsInclusive(offset)) {
+            return null;
+        }
+        if (isValid()) {
+            // should fa
+            return null;
+        }
+        return null;
     }
 
     @Override

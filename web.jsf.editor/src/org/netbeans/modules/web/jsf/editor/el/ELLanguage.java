@@ -37,50 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.hints;
+package org.netbeans.modules.web.jsf.editor.el;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
- * TODO declarative providers
+ * CSL language for Expression Language
  *
- * @author marekfukala
+ * @author Erno Mononen
  */
-public class HintsRegistry {
-    
-    private static HintsRegistry INSTANCE;
+@LanguageRegistration(mimeType="text/x-el") //NOI18N
+public class ELLanguage extends DefaultLanguageConfig {
 
-    public static synchronized HintsRegistry getDefault() {
-        if(INSTANCE == null) {
-            INSTANCE = new HintsRegistry();
-        }
-        return INSTANCE;
+    @Override
+    public Language getLexerLanguage() {
+        return ELTokenId.language();
     }
 
-    private final Collection<HintsProvider> PROVIDERS;
-
-    private HintsRegistry() {
-        PROVIDERS = new ArrayList<HintsProvider>();
-        //init providers
-        PROVIDERS.add(new ComponentUsagesChecker());
-        PROVIDERS.add(new LibraryDeclarationChecker());
-//        PROVIDERS.add(new ELSyntaxChecker());
-//        PROVIDERS.add(new ElChecker());
+    @Override
+    public String getDisplayName() {
+        return "EL";
     }
 
-    public List<Hint> gatherHints(RuleContext context) {
-        List<Hint> hints = new ArrayList<Hint>();
-        for(HintsProvider provider : PROVIDERS) {
-            hints.addAll(provider.compute(context));
-        }
-        return hints;
+    @Override
+    public Parser getParser() {
+        return new JsfElParser();
+    }
+
+    @Override
+    public HintsProvider getHintsProvider() {
+        return super.getHintsProvider();
     }
 
 }

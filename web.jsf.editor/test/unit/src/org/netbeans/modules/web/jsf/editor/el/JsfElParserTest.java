@@ -41,9 +41,18 @@
  */
 package org.netbeans.modules.web.jsf.editor.el;
 
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
+import com.sun.el.ValueExpressionImpl;
+import com.sun.el.lang.EvaluationContext;
+import java.beans.FeatureDescriptor;
+import java.lang.reflect.Method;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
+import javax.el.ELContext;
+import javax.el.ELResolver;
+import javax.el.ValueExpression;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -61,6 +70,8 @@ import org.openide.filesystems.FileObject;
 import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import javax.el.ELException;
+import javax.el.FunctionMapper;
+import javax.el.VariableMapper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.web.jsf.editor.TestBase;
@@ -224,6 +235,11 @@ public class JsfElParserTest extends TestBase {
             indent.append(" ");
         }
         System.out.println(indent.toString() + node + ", offset: start - " + node.startOffset()  + " end - " + node.endOffset() + ", image: " + node.getImage() + ", class: " + node.getClass().getSimpleName());
+        try {
+            System.out.println("Type: " + node.getType(getEvaluationContext()) );
+        } catch (UnsupportedOperationException ue) {
+            System.out.println("Type unresolvable");
+        }
         for (int i = 0; i < node.jjtGetNumChildren(); i++) {
             Node child = node.jjtGetChild(i);
             printTree(child, ++level);
@@ -252,6 +268,141 @@ public class JsfElParserTest extends TestBase {
                 });
             }
         });
+
+    }
+
+    private static EvaluationContext getEvaluationContext() {
+
+        final FunctionMapper fm = new FuncMapper();
+        final VariableMapper vm = new VarMapper();
+        ELContext elc = new ELContext() {
+
+            @Override
+            public ELResolver getELResolver() {
+                return new ELResolver() {
+
+                    @Override
+                    public Object getValue(ELContext elc, Object o, Object o1) {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+
+                    @Override
+                    public Class<?> getType(ELContext elc, Object o, Object o1) {
+                        return "".getClass();
+                    }
+
+                    @Override
+                    public void setValue(ELContext elc, Object o, Object o1, Object o2) {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+
+                    @Override
+                    public boolean isReadOnly(ELContext elc, Object o, Object o1) {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+
+                    @Override
+                    public Iterator<FeatureDescriptor> getFeatureDescriptors(ELContext elc, Object o) {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+
+                    @Override
+                    public Class<?> getCommonPropertyType(ELContext elc, Object o) {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+
+                };
+            }
+
+            @Override
+            public FunctionMapper getFunctionMapper() {
+                return fm;
+            }
+
+            @Override
+            public VariableMapper getVariableMapper() {
+                return vm;
+            }
+
+            @Override
+            public boolean isPropertyResolved() {
+                return true;
+            }
+
+
+        };
+
+        EvaluationContext ec = new EvaluationContext(elc, fm, vm);
+        return ec;
+    }
+
+    private static class FuncMapper extends FunctionMapper {
+
+        @Override
+        public Method resolveFunction(String string, String string1) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+    }
+
+    private static class VarMapper extends VariableMapper {
+
+        @Override
+        public ValueExpression resolveVariable(String string) {
+            System.out.println("string: " + string);
+            return new ValueExpression() {
+
+                @Override
+                public Object getValue(ELContext elc) {
+                    return "unknown";
+                }
+
+                @Override
+                public void setValue(ELContext elc, Object o) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public boolean isReadOnly(ELContext elc) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public Class<?> getType(ELContext elc) {
+                    return "".getClass();
+                }
+
+                @Override
+                public Class<?> getExpectedType() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public String getExpressionString() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public boolean equals(Object o) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public int hashCode() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                @Override
+                public boolean isLiteralText() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            };
+        }
+
+        @Override
+        public ValueExpression setVariable(String string, ValueExpression ve) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
 
     }
 }

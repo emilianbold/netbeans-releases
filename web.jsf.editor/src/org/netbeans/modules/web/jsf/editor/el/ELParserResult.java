@@ -42,9 +42,14 @@
 
 package org.netbeans.modules.web.jsf.editor.el;
 
+import com.sun.el.parser.Node;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -52,13 +57,20 @@ import org.openide.filesystems.FileObject;
  *
  * @author Erno Mononen
  */
-public final class ELParserResult {
+public final class ELParserResult extends ParserResult {
 
-    private final FileObject fileObject;
     private final List<ELElement> elements = new ArrayList<ELElement>();
 
-    public ELParserResult(FileObject fileObject) {
-        this.fileObject = fileObject;
+    private final FileObject file;
+
+    public ELParserResult(Snapshot snapshot) {
+        super(snapshot);
+        this.file = snapshot.getSource().getFileObject();
+    }
+
+    public ELParserResult(FileObject fo) {
+        super(null);
+        this.file = fo;
     }
 
     public List<ELElement> getElements() {
@@ -70,7 +82,7 @@ public final class ELParserResult {
     }
 
     public FileObject getFileObject() {
-        return fileObject;
+        return file;
     }
 
     public boolean hasElements() {
@@ -87,7 +99,83 @@ public final class ELParserResult {
     }
 
     @Override
+    protected void invalidate() {
+    }
+
+    @Override
     public String toString() {
-        return "ELParserResult{" + "fileObject=" + fileObject + "elements=" + elements + '}';
+        return "ELParserResult{" + "fileObject=" + getFileObject() + "elements=" + elements + '}';
+    }
+
+    @Override
+    public List<? extends Error> getDiagnostics() {
+        List<ELError> result = new ArrayList<ELError>();
+        for (ELElement each : elements) {
+            if (!each.isValid()) {
+                result.add(new ELError(each, file));
+            }
+        }
+        return result;
+    }
+
+    private static class ELError implements Error.Badging {
+
+        private final ELElement errorElement;
+        private final FileObject file;
+
+        public ELError(ELElement errorElement, FileObject file) {
+            this.errorElement = errorElement;
+            this.file = file;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return errorElement.getError().getLocalizedMessage();
+        }
+
+        @Override
+        public String getDescription() {
+            return errorElement.getError().getLocalizedMessage();
+        }
+
+        @Override
+        public String getKey() {
+            return null;
+        }
+
+        @Override
+        public FileObject getFile() {
+            return file;
+        }
+
+        @Override
+        public int getStartPosition() {
+            return errorElement.getOffset().getStart();
+        }
+
+        @Override
+        public int getEndPosition() {
+            return errorElement.getOffset().getEnd();
+        }
+
+        @Override
+        public boolean isLineError() {
+            return false;
+        }
+
+        @Override
+        public Severity getSeverity() {
+            return Severity.ERROR;
+        }
+
+        @Override
+        public Object[] getParameters() {
+            return new Object[0];
+        }
+
+        @Override
+        public boolean showExplorerBadge() {
+            return true;
+        }
     }
 }

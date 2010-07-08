@@ -44,15 +44,12 @@ package org.netbeans.modules.web.jsf.editor.hints;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.editor.el.JsfElParser;
 import org.netbeans.modules.web.jsf.editor.el.ELElement;
 import org.netbeans.modules.web.jsf.editor.el.ELParserResult;
-import org.openide.filesystems.FileObject;
 
 /**
  * Hints provider for checking syntax of EL expressions.

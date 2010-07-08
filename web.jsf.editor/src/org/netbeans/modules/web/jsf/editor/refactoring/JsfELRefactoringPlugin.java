@@ -37,50 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.hints;
+package org.netbeans.modules.web.jsf.editor.refactoring;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 
 /**
- * TODO declarative providers
  *
- * @author marekfukala
  */
-public class HintsRegistry {
-    
-    private static HintsRegistry INSTANCE;
+public class JsfELRefactoringPlugin implements RefactoringPlugin {
 
-    public static synchronized HintsRegistry getDefault() {
-        if(INSTANCE == null) {
-            INSTANCE = new HintsRegistry();
-        }
-        return INSTANCE;
+    @Override
+    public Problem preCheck() {
+        return null;
     }
 
-    private final Collection<HintsProvider> PROVIDERS;
-
-    private HintsRegistry() {
-        PROVIDERS = new ArrayList<HintsProvider>();
-        //init providers
-        PROVIDERS.add(new ComponentUsagesChecker());
-        PROVIDERS.add(new LibraryDeclarationChecker());
-//        PROVIDERS.add(new ELSyntaxChecker());
-//        PROVIDERS.add(new ElChecker());
+    @Override
+    public Problem checkParameters() {
+        return null;
     }
 
-    public List<Hint> gatherHints(RuleContext context) {
-        List<Hint> hints = new ArrayList<Hint>();
-        for(HintsProvider provider : PROVIDERS) {
-            hints.addAll(provider.compute(context));
-        }
-        return hints;
+    @Override
+    public Problem fastCheckParameters() {
+        return null;
+    }
+
+    @Override
+    public void cancelRequest() {
+    }
+
+    @Override
+    public Problem prepare(RefactoringElementsBag refactoringElements) {
+        return null;
     }
 
 }

@@ -37,50 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.hints;
+package org.netbeans.modules.web.jsf.editor.refactoring;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 
 /**
- * TODO declarative providers
  *
- * @author marekfukala
  */
-public class HintsRegistry {
-    
-    private static HintsRegistry INSTANCE;
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=300)
+public class JsfELRefactoringFactory implements RefactoringPluginFactory {
 
-    public static synchronized HintsRegistry getDefault() {
-        if(INSTANCE == null) {
-            INSTANCE = new HintsRegistry();
-        }
-        return INSTANCE;
-    }
-
-    private final Collection<HintsProvider> PROVIDERS;
-
-    private HintsRegistry() {
-        PROVIDERS = new ArrayList<HintsProvider>();
-        //init providers
-        PROVIDERS.add(new ComponentUsagesChecker());
-        PROVIDERS.add(new LibraryDeclarationChecker());
-//        PROVIDERS.add(new ELSyntaxChecker());
-//        PROVIDERS.add(new ElChecker());
-    }
-
-    public List<Hint> gatherHints(RuleContext context) {
-        List<Hint> hints = new ArrayList<Hint>();
-        for(HintsProvider provider : PROVIDERS) {
-            hints.addAll(provider.compute(context));
-        }
-        return hints;
+    @Override
+    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+        return null;
     }
 
 }
