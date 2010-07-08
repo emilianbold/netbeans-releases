@@ -43,9 +43,17 @@
 package org.netbeans.modules.php.symfony;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
@@ -55,6 +63,7 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.symfony.commands.SymfonyCommandSupport;
 import org.netbeans.modules.php.symfony.editor.SymfonyEditorExtender;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -66,8 +75,14 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     private static final String ICON_PATH = "org/netbeans/modules/php/symfony/ui/resources/symfony_badge_8.png"; // NOI18N
     private static final SymfonyPhpFrameworkProvider INSTANCE = new SymfonyPhpFrameworkProvider();
+    private static final Set<String> CONFIG_FILE_EXTENSIONS = new HashSet<String>();
 
     private final BadgeIcon badgeIcon;
+
+    static {
+        CONFIG_FILE_EXTENSIONS.add("ini"); // NOI18N
+        CONFIG_FILE_EXTENSIONS.add("yml"); // NOI18N
+    }
 
     @PhpFrameworkProvider.Registration(position=100)
     public static SymfonyPhpFrameworkProvider getInstance() {
@@ -121,7 +136,47 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public File[] getConfigurationFiles(PhpModule phpModule) {
-        return new File[0];
+        List<File> files = new LinkedList<File>();
+        FileObject appConfig = phpModule.getSourceDirectory().getFileObject("config"); // NOI18N
+        if (appConfig != null) {
+            List<FileObject> fileObjects = new LinkedList<FileObject>();
+            Enumeration<? extends FileObject> children = appConfig.getChildren(true);
+            while (children.hasMoreElements()) {
+                FileObject child = children.nextElement();
+                if (child.isData()
+                        && (CONFIG_FILE_EXTENSIONS.contains(child.getExt().toLowerCase()) || FileUtils.isPhpFile(child))) {
+                    fileObjects.add(child);
+                }
+            }
+            Collections.sort(fileObjects, new Comparator<FileObject>() {
+                @Override
+                public int compare(FileObject o1, FileObject o2) {
+                    // php files go last
+                    boolean phpFile1 = FileUtils.isPhpFile(o1);
+                    boolean phpFile2 = FileUtils.isPhpFile(o2);
+                    if (phpFile1 && phpFile2) {
+                        return o1.getNameExt().compareTo(o2.getNameExt());
+                    } else if (phpFile1) {
+                        return 1;
+                    } else if (phpFile2) {
+                        return -1;
+                    }
+
+                    // compare extensions, then full names
+                    String ext1 = o1.getExt();
+                    String ext2 = o2.getExt();
+                    if (ext1.equals(ext2)) {
+                        return o1.getNameExt().compareToIgnoreCase(o2.getNameExt());
+                    }
+                    return ext1.compareToIgnoreCase(ext2);
+                }
+            });
+
+            for (FileObject fo : fileObjects) {
+                files.add(FileUtil.toFile(fo));
+            }
+        }
+        return files.toArray(new File[files.size()]);
     }
 
     @Override
