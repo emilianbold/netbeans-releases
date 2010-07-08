@@ -105,7 +105,7 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         super(new BorderLayout(0, 0));
         this.displayHandler = displayHandler;
         JComponent toolbar = createToolbar();
-        treePanel = new ResultPanelTree(displayHandler);
+        treePanel = new ResultPanelTree(displayHandler, this);
         treePanel.setFiltered(btnFilter.isSelected());
 
         add(toolbar, BorderLayout.WEST);
@@ -168,10 +168,13 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         }
     }
 
-    private void updateButtons(){
+    void updateButtons(){
         RerunHandler rerunHandler = displayHandler.getSession().getRerunHandler();
-        rerunButton.setEnabled(rerunHandler.enabled(RerunType.ALL));
-        rerunFailedButton.setEnabled(rerunHandler.enabled(RerunType.CUSTOM));
+        rerunButton.setEnabled(displayHandler.sessionFinished &&
+                               rerunHandler.enabled(RerunType.ALL));
+        rerunFailedButton.setEnabled(displayHandler.sessionFinished && 
+                                     rerunHandler.enabled(RerunType.CUSTOM) &&
+                                     !treePanel.getFailedTests().isEmpty());
     }
     /**
      */

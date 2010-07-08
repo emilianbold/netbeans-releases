@@ -306,6 +306,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         // Ignore other languages
                     }
                     if (source != null) {
+                        if (source.getCompilePath() == null) {
+                            if (TRACE_READ_EXCEPTIONS) {
+                                System.out.println("Compilation unit has NULL compile path in file " + objFileName);  // NOI18N
+                            }
+                            continue;
+                        }
                         String name = source.getItemPath();
                         SourceFileProperties old = map.get(name);
                         if (old != null && old.getUserInludePaths().size() > 0) {
@@ -316,12 +322,6 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                             continue;
                         }
                         source.process(cu);
-                        if (source.getCompilePath() == null) {
-                            if (TRACE_READ_EXCEPTIONS) {
-                                System.out.println("Compilation unit has NULL compile path in file " + objFileName);  // NOI18N
-                            }
-                            continue;
-                        }
                         list.add(source);
                     }
                 }
@@ -369,7 +369,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     private CompilerSettings myCommpilerSettings;
 
     public static class GrepEntry {
-        List<String> includes = new ArrayList<String>();
+        ArrayList<String> includes = new ArrayList<String>();
         String firstMacro = null;
         int firstMacroLine = -1;
     }
@@ -419,8 +419,8 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         public String getNormalizedPath(String path){
             String res = normalizedPaths.get(path);
             if (res == null) {
-                res = normalizePath(path);
-                normalizedPaths.put(path,res);
+                res = PathCache.getString(normalizePath(path));
+                normalizedPaths.put(PathCache.getString(path),res);
             }
             return res;
         }

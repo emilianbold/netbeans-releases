@@ -324,7 +324,39 @@ public class OutlineView extends JScrollPane {
         hScrollBar.getModel().addChangeListener(listener);
     }
 
-    void setTreeHorizontalScrollBarPolicy(int policy) {
+    /**
+     * Returns the horizontal scroll bar policy value for the tree column.
+     * @return the <code>treeHorizontalScrollBarPolicy</code> property
+     * @see #setTreeHorizontalScrollBarPolicy
+     * @since 6.30
+     */
+    public int getTreeHorizontalScrollBarPolicy() {
+        return treeHorizontalScrollBarPolicy;
+    }
+
+    /**
+     * Determines when the horizontal scrollbar appears in the tree column.
+     * The options are:<ul>
+     * <li><code>ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED</code>
+     * <li><code>ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER</code>
+     * <li><code>ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS</code>
+     * </ul>
+     *
+     * @param policy one of the three values listed above
+     * @exception IllegalArgumentException if <code>policy</code>
+     *				is not one of the legal values shown above
+     * @see #getTreeHorizontalScrollBarPolicy
+     * @since 6.30
+     *
+     * @beaninfo
+     *   preferred: true
+     *       bound: true
+     * description: The tree column scrollbar policy
+     *        enum: HORIZONTAL_SCROLLBAR_AS_NEEDED ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
+     *              HORIZONTAL_SCROLLBAR_NEVER ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+     *              HORIZONTAL_SCROLLBAR_ALWAYS ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS
+     */
+    public void setTreeHorizontalScrollBarPolicy(int policy) {
         if (policy == treeHorizontalScrollBarPolicy) {
             return ;
         }

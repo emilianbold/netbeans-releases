@@ -95,8 +95,9 @@ final class ResultPanelTree extends JPanel
     private final ResultDisplayHandler displayHandler;
 
     private final ResultBar resultBar = new ResultBar();
+    private StatisticsPanel statPanel;
 
-    ResultPanelTree(ResultDisplayHandler displayHandler) {
+    ResultPanelTree(ResultDisplayHandler displayHandler, StatisticsPanel statPanel) {
         super(new BorderLayout());
         treeView = new ResultTreeView();
         treeView.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TestResults"));
@@ -116,6 +117,7 @@ final class ResultPanelTree extends JPanel
         initAccessibility();
 
         this.displayHandler = displayHandler;
+        this.statPanel = statPanel;
         displayHandler.setLookup(ExplorerUtils.createLookup(explorerManager, new ActionMap()));
     }
 
@@ -161,6 +163,7 @@ final class ResultPanelTree extends JPanel
 
         rootNode.displayMessageSessionFinished(msg);
         resultBar.stop();
+        statPanel.updateButtons();
     }
 
     /**
@@ -216,6 +219,7 @@ final class ResultPanelTree extends JPanel
             }
         }
         resultBar.setPassedPercentage(rootNode.getPassedPercentage());
+        statPanel.updateButtons();
     }
 
     /**
@@ -232,6 +236,7 @@ final class ResultPanelTree extends JPanel
             rootNode.displayReports(reports);
         }
         resultBar.setPassedPercentage(rootNode.getPassedPercentage());
+        statPanel.updateButtons();
    }
 
     /**
