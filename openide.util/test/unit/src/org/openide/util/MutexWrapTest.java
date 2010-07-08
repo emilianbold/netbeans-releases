@@ -45,9 +45,7 @@
 package org.openide.util;
 
 import java.util.concurrent.Executor;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.util.Mutex.Action;
 import org.openide.util.Mutex.ExceptionAction;
 
@@ -61,11 +59,6 @@ public class MutexWrapTest extends NbTestCase implements Executor {
         super(testName);
     }
 
-    public static Test suite() {
-//        return new MutexWrapTest("testPostRead");
-        return new NbTestSuite(MutexWrapTest.class);
-    }
-    
     /** Sets up the test.
      */
     @Override

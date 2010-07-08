@@ -57,11 +57,9 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.*;
@@ -103,14 +101,6 @@ public class FolderChildrenTest extends NbTestCase {
         return Level.FINE;
     }
 
-    public static Test suite() {
-        Test t = null;
-//        t = new FolderChildrenTest("testALotOfHiddenEntries");
-        if (t == null) {
-            t = new NbTestSuite(FolderChildrenTest.class);
-        }
-        return t;
-    }
     protected void assertChildrenType(Children ch) {
         assertEquals("Use lazy children by default", FolderChildren.class, ch.getClass());
     }

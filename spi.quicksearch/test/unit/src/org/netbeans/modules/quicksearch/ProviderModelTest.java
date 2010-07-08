@@ -43,9 +43,7 @@
 package org.netbeans.modules.quicksearch;
 
 import java.util.List;
-import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
@@ -60,24 +58,10 @@ public class ProviderModelTest extends NbTestCase {
     private static final String DISPLAY_NAME = "Test2 category";
     private static final String COMMAND_PREFIX = "t";
 
-    /** Creates a new instance of ProviderModelTest */
-    public ProviderModelTest() {
-        super("");
-    }
-    
     public ProviderModelTest(String testName) {
         super(testName);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(ProviderModelTest.class);
-        return suite;
-    }
-
     /** Tests ProviderModel functionality */
     public void testGetProviders () throws Exception {
         UnitTestUtils.prepareTest(new String [] { "/org/netbeans/modules/quicksearch/resources/testGetProviders.xml" });

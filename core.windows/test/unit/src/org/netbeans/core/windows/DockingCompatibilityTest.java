@@ -44,7 +44,6 @@
 
 package org.netbeans.core.windows;
 
-import junit.framework.*;
 import org.netbeans.junit.*;
 
 import org.openide.windows.*;
@@ -58,22 +57,8 @@ import org.openide.windows.*;
  */
 public class DockingCompatibilityTest extends NbTestCase {
 
-    /** Creates a new instance of SFSTest */
     public DockingCompatibilityTest (String name) {
         super (name);
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(DockingCompatibilityTest.class);
-        
-        return suite;
     }
 
     protected boolean runInEQ () {

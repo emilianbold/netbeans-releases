@@ -81,11 +81,6 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         super(name);
     }
 
-//    public static Test suite() {
-//        return new SuiteCustomizerLibrariesTest("testClusterAndModuleNodesEnablement");
-//        // return new NbTestSuite(SuiteCustomizerLibrariesTest.class);
-//    }
-    
     private NbPlatform platform;
     private SuiteProject suite;
     private File install;

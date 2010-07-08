@@ -55,7 +55,6 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.JTextField;
 
-import junit.framework.*;
 
 import org.netbeans.junit.*;
 import org.openide.cookies.*;
@@ -78,10 +77,6 @@ public class TopComponentGetLookupTest extends NbTestCase {
     
     public TopComponentGetLookupTest(String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        return new NbTestSuite(TopComponentGetLookupTest.class);
     }
     
     /** Setup component with lookup.

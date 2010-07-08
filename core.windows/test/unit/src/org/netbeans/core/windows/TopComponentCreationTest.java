@@ -47,12 +47,9 @@ package org.netbeans.core.windows;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
@@ -74,12 +71,6 @@ public class TopComponentCreationTest extends NbTestCase {
     
     public TopComponentCreationTest (String name) {
         super (name);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(TopComponentCreationTest.class);
-        
-        return suite;
     }
     
     @Override

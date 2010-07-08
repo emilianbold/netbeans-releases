@@ -51,9 +51,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.SplitConstraint;
@@ -74,15 +72,6 @@ public class WindowManagerParserTest extends NbTestCase {
     
     public WindowManagerParserTest(java.lang.String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(WindowManagerParserTest.class);
-        return suite;
     }
     
     protected void setUp () throws Exception {

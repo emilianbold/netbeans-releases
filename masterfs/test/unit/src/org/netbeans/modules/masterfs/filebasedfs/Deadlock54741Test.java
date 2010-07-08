@@ -47,9 +47,7 @@ package org.netbeans.modules.masterfs.filebasedfs;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -162,10 +160,4 @@ public class Deadlock54741Test extends NbTestCase {
         return t;  
     }  
         
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(Deadlock54741Test.class);
-         
-        return new FileBasedFileSystemTest(suite);
-    }
 }

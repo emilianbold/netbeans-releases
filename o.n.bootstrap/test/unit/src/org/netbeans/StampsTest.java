@@ -51,10 +51,8 @@ import java.nio.MappedByteBuffer;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -66,11 +64,6 @@ public class StampsTest extends NbTestCase {
     private File platform;
     private File install;
     
-    
-    public static Test suite() {
-        //return new StampsTest("testStampsInvalidatedWhenClustersChange");
-        return new NbTestSuite(StampsTest.class);
-    }
     
     public StampsTest(String testName) {
         super(testName);

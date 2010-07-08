@@ -51,7 +51,6 @@ import java.util.Enumeration;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import junit.framework.*;
 import com.sun.org.apache.bcel.internal.classfile.ClassParser;
 import com.sun.org.apache.bcel.internal.classfile.DescendingVisitor;
 import com.sun.org.apache.bcel.internal.classfile.EmptyVisitor;
@@ -71,7 +70,6 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 
@@ -87,12 +85,6 @@ public class BytecodeTest extends NbTestCase {
         super(testName);
     }
 
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(BytecodeTest.class);
-        
-        return suite;
-    }
-    
     @Override
     protected Level logLevel() {
         return Level.INFO;
