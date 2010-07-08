@@ -43,10 +43,8 @@
  */
 package org.netbeans.modules.java.project;
 
-import java.net.URI;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 
 /**
  * Finds project owning given file, SourceLevelQueryImplementation impl in its
@@ -54,7 +52,8 @@ import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
  * @author David Konecny
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceLevelQueryImplementation.class, position=100)
-public class ProjectSourceLevelQueryImpl implements SourceLevelQueryImplementation {
+@SuppressWarnings("deprecation")
+public class ProjectSourceLevelQueryImpl implements org.netbeans.spi.java.queries.SourceLevelQueryImplementation {
 
     /** Default constructor for lookup. */
     public ProjectSourceLevelQueryImpl() {}
@@ -62,7 +61,7 @@ public class ProjectSourceLevelQueryImpl implements SourceLevelQueryImplementati
     public String getSourceLevel(org.openide.filesystems.FileObject javaFile) {
         Project project = FileOwnerQuery.getOwner(javaFile);
         if (project != null) {
-            SourceLevelQueryImplementation slq = project.getLookup().lookup(SourceLevelQueryImplementation.class);
+            org.netbeans.spi.java.queries.SourceLevelQueryImplementation slq = project.getLookup().lookup(org.netbeans.spi.java.queries.SourceLevelQueryImplementation.class);
             if (slq != null) {
                 return slq.getSourceLevel(javaFile);
             }

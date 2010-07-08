@@ -378,6 +378,7 @@ made subject to such option by the copyright holder.
                 </and>
             </fileset>
         </copy>
+        <touch file="${dest.dir}/${cluster.name}/.lastModified"/>
         <condition property="copy.nbexec" value="true">
             <matches pattern="^platform[0-9]*$" string="${cluster.name}"/>
         </condition>
