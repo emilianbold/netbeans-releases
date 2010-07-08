@@ -74,7 +74,7 @@ import static javax.lang.model.util.ElementFilter.*;
  *
  * @author Marian Petras
  */
-final class OutputUtils {
+public final class OutputUtils {
 
     static final Action[] NO_ACTIONS = new Action[0];
     
