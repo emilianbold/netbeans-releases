@@ -75,7 +75,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     private final URL root;
     private final File cacheRoot;
     private final boolean isSource;
-    private URL dirty;
+    private volatile URL dirty;
     private static final Logger LOGGER = Logger.getLogger(PersistentClassIndex.class.getName());
     private static IndexFactory indexFactory = LuceneIndexFactory.getInstance();
     
@@ -191,7 +191,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
         });        
     }
     
-    public synchronized void setDirty (final URL url) {
+    public void setDirty (final URL url) {
         this.dirty = url;
     }
     
@@ -213,10 +213,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     // Private methods ---------------------------------------------------------                          
     
     private void updateDirty () {
-        final URL url;
-        synchronized (this) {
-            url = this.dirty;
-        }
+        final URL url = this.dirty;
         if (url != null) {
             final FileObject file = url != null ? URLMapper.findFileObject(url) : null;
             final JavaSource js = file != null ? JavaSource.forFileObject(file) : null;
@@ -256,9 +253,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
                         Exceptions.printStackTrace(ioe);
                     }
                 }
-                synchronized (this) {
-                    this.dirty = null;
-                }
+                this.dirty = null;
                 final long endTime = System.currentTimeMillis();
                 LOGGER.fine("PersistentClassIndex.updateDirty took: " + (endTime-startTime)+ " ms");     //NOI18N
             }
