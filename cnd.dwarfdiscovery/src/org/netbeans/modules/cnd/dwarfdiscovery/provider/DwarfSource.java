@@ -579,11 +579,11 @@ public class DwarfSource implements SourceFileProperties{
             includeFullName = compilePath + File.separator + path;
         } else {
             includeFullName = fixCygwinPath(path);
-            includeFullName = normalizePath(includeFullName);
         }
         if (normilizeProvider.isWindows()) {
             includeFullName = includeFullName.replace('\\', '/'); // NOI18N
         }
+        includeFullName = normalizePath(includeFullName);
         if (isPath) {
             String userPath = null;
             int i = includeFullName.lastIndexOf('/'); // NOI18N
@@ -876,6 +876,7 @@ public class DwarfSource implements SourceFileProperties{
         } else {
             if (FULL_TRACE) {System.out.println("Cannot grep file:"+fileName);} // NOI18N
         }
+        res.includes.trimToSize();
         grepBase.put(fileName,res);
         return res;
     }

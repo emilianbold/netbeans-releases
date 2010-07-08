@@ -20,10 +20,11 @@ import java.net.ProxySelector;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import org.ini4j.Ini;
-import org.ini4j.Ini.Section;
+import org.ini4j.Profile.Section;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -158,40 +159,17 @@ public class SvnConfigFilesTest extends NbTestCase {
         // TODO
     }
 
-    public void testProxy() {
-        String[] wordsActual = {""};
-        String[] wordsExpected = {""};
-        String[] proxy = {"my.proxy", "my.proxy", "my.proxy", "", "", "my.proxy", "my.proxy", "my.proxy", null, null};
-        int result = -1;
-        
+    public void testProxy() throws IOException {
+        String[] proxy = {"my.proxy", "my.proxy", "my.proxy", "", "", "my.proxy", "my.proxy", "my.proxy", null, null};       
         //for (int i = 1; i < proxy.length + 1; i++) {
         for (int i = 1; i < proxy.length + 1; i++) {
             //changeSvnConfigLocation("svn" + i, "golden" + i, "my.proxy", "8080");
-            changeSvnConfigLocation("svn" + i, "golden" + i, proxy[i-1], "8080");
-            String generatedConfig = getContent(svnNbPath + java.io.File.separator + "config");
-            String generatedServers = getContent(svnNbPath + java.io.File.separator + "servers");
-            String goldenConfig = getContent(svnGoldenPath + java.io.File.separator + "config");
-            String goldenServers = getContent(svnGoldenPath + java.io.File.separator + "servers");
-
+            changeSvnConfigLocation("svn" + i, "golden" + i, proxy[i-1], "8080");           
             //Compare and verify
             //config file
-            Pattern p = Pattern.compile("(\\s)+");
-            wordsActual = p.split(generatedConfig);
-            //printArray(wordsActual);
-            wordsExpected = p.split(goldenConfig);
-            //printArray(wordsExpected);
-            result = org.netbeans.modules.subversion.TestKit.compareThem(wordsExpected, wordsActual, false);
-            assertEquals(wordsExpected.length, result);
-            System.out.println("Config " + i + ". ok !");
-
+            isSubsetOf(svnNbPath + java.io.File.separator + "config", svnGoldenPath + java.io.File.separator + "config");                                   
             //servers file
-            wordsActual = p.split(generatedServers);
-            //printArray(wordsActual);
-            wordsExpected = p.split(goldenServers);
-            //printArray(wordsExpected);
-            result = org.netbeans.modules.subversion.TestKit.compareThem(wordsExpected, wordsActual, false);
-            assertEquals(wordsExpected.length, result);
-            System.out.println("Servers " + i + ". ok !");            
+            isSubsetOf(svnNbPath + java.io.File.separator + "servers", svnGoldenPath + java.io.File.separator + "servers");            
         } 
     } /* Test of getNBConfigPath method, of class SvnConfigFiles. */
 
@@ -335,4 +313,25 @@ public class SvnConfigFilesTest extends NbTestCase {
         assertEquals("c:\\foo\\bar/dil", ret);
 
     }
+
+    private void isSubsetOf(String sourceIniPath, String expectedIniPath) throws IOException {
+        Ini goldenIni = new Ini(new FileInputStream(expectedIniPath));
+        Ini sourceIni = new Ini(new FileInputStream(sourceIniPath));
+        for(String key : goldenIni.keySet()) {
+            if(!sourceIni.containsKey(key) && goldenIni.get(key).size() > 0) {
+                fail("missing section " + key + " in file " + sourceIniPath);
+            }
+
+            Section goldenSection = goldenIni.get(key);
+            Section sourceSection = sourceIni.get(key);
+
+            for(String name : goldenSection.childrenNames()) {
+                if(!sourceSection.containsKey(name)) {
+                    fail("missing name " + name + " in file " + sourceIniPath + " section [" + name + "]");
+                }                
+                assertEquals(goldenSection.get(name), sourceSection.get(name));
+            }                
+        }
+    }
+    
 }

@@ -223,7 +223,7 @@ final class ResultDisplayHandler {
     private String runningSuite;
     private final List<Report> reports = new ArrayList<Report>();
     private String message;
-    private boolean sessionFinished;
+    boolean sessionFinished;
 
     /**
      *
@@ -305,10 +305,10 @@ final class ResultDisplayHandler {
 
         synchronized (this) {
             if (treePanel == null) {
-                sessionFinished = true;
                 message = msg;
                 return;
             }
+            sessionFinished = true;
         }
 
         displayInDispatchThread(prepareMethod("displayMsgSessionFinished", String.class), msg);        //NOI18N
