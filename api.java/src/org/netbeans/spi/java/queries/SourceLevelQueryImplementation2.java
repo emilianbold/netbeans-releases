@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,12 +34,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.spi.java.queries;
 
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.openide.filesystems.FileObject;
 
 /**
+ *
  * Permits providers to return specification source level of Java source file.
  * <p>
  * A default implementation is registered by the
@@ -60,21 +64,45 @@ import org.openide.filesystems.FileObject;
  * @see org.netbeans.api.queries.FileOwnerQuery
  * @see org.netbeans.api.project.Project#getLookup
  * @see org.netbeans.api.java.classpath.ClassPath#BOOT
- * @author David Konecny
- * @since org.netbeans.api.java/1 1.5
- * @deprecated use {@link SourceForBinaryQueryImplementation2}
+ * @author Tomas Zezula
+ * @since 1.30
  */
-@Deprecated
-public interface SourceLevelQueryImplementation {
+public interface SourceLevelQueryImplementation2 {
 
     /**
      * Returns source level of the given Java file. For acceptable return values
-     * see the documentation of <code>-source</code> command line switch of 
+     * see the documentation of <code>-source</code> command line switch of
      * <code>javac</code> compiler .
      * @param javaFile Java source file in question
-     * @return source level of the Java file, e.g. "1.3", "1.4" or "1.5", or
-     *    null if it is not known
+     * @return source level of the Java file encapsulated as {@link Result}, or
+     *    null if the file is not handled by this provider.
      */
-    public String getSourceLevel(FileObject javaFile);
+    Result getSourceLevel(FileObject javaFile);
 
+    /**
+     * Result of finding source level, encapsulating the answer as well as the
+     * ability to listen to it.
+     * @since 1.30
+     */
+    interface Result {
+
+        /**
+         * Get the source level.
+         * @return a source level of the Java file, e.g. "1.3", "1.4", "1.5"
+         * or null if the source level is unknown.
+         */
+        @CheckForNull String getSourceLevel();
+
+        /**
+         * Add a listener to changes of source level.
+         * @param listener a listener to add
+         */
+        void addChangeListener(@NonNull ChangeListener listener);
+
+        /**
+         * Remove a listener to changes of source level.
+         * @param listener a listener to add
+         */
+        void removeChangeListener(@NonNull ChangeListener listener);
+    }
 }

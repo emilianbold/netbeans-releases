@@ -202,11 +202,11 @@ public class HudsonMercurialSCM implements HudsonSCM {
             InputStream is = cb.url(hgrc.toURL()).connection().getInputStream();
             try {
                 Ini ini = new Ini(is);
-                Ini.Section section = (Ini.Section) ini.get("paths"); // NOI18N
+                Ini.Section section = ini.get("paths"); // NOI18N
                 if (section != null) {
-                    defaultPull = (String) section.get("default-pull"); // NOI18N
+                    defaultPull = section.get("default-pull"); // NOI18N
                     if (defaultPull == null) {
-                        defaultPull = (String) section.get("default"); // NOI18N
+                        defaultPull = section.get("default"); // NOI18N
                     }
                 }
             } finally {
