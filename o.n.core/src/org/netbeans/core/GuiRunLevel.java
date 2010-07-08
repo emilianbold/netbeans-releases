@@ -133,7 +133,7 @@ public class GuiRunLevel implements RunLevel {
         
         StartLog.logStart ("Main window initialization"); //NOI18N
 
-        TimableEventQueue.initialize();
+        // TimableEventQueue.initialize();
         
         // -----------------------------------------------------------------------------------------------------
         // 11. Initialization of main window
