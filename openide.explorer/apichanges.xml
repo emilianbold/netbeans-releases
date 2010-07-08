@@ -50,6 +50,21 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="OutlineView.setTreeHorizontalScrollBarPolicy">
+        <api name="explorer"/>
+        <summary>OutlineView can provide horizontal scroll bar in the tree column.</summary>
+        <version major="6" minor="30"/>
+        <date day="7" month="7" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            In order to be able to provide horizontal scroll bar in the tree column,
+            two methods are added: <code>getTreeHorizontalScrollBarPolicy()</code>
+            and <code>setTreeHorizontalScrollBarPolicy()</code>.
+        </description>
+        <class package="org.openide.explorer.view" name="OutlineView"/>
+        <issue number="188130"/>
+    </change>
     <change id="ListView.setShowParentNode">
         <api name="explorer"/>
         <summary>ListView can now display ".." item</summary>
