@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,6 +34,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.profiler.categories.j2se;
 
@@ -47,7 +45,9 @@ import java.awt.event.MouseListener;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -123,17 +123,21 @@ public class MarkTest extends TestBase {
         MarkMapping[] mappings = getCategorization().getMappings();
         boolean testFound = false;
         boolean childFound = false;
-        String method = null;
-        String childMethod = null;
+        
         Set<String> outputStreamMethods = getCategorizationMethods( FileOutputStream.class);
+        Set<String> outputStreamMethods1 = new HashSet( outputStreamMethods );
+        Set<String> outputStreamMethods2 = new HashSet( outputStreamMethods ); 
+        
         Set<String> excludedOSMethods = getExcludedMethods( FileOutputStream.class );
         for (MarkMapping markMapping : mappings) {
             String className = markMapping.markMask.getClassName();
             String methodName = markMapping.markMask.getMethodName();
             if ( "files.TestFileOutputStream".equals(className)){
                 testFound = true;
+                outputStreamMethods1.remove(methodName);
                 if ( !outputStreamMethods.contains( methodName)){
-                    method = methodName;
+                    assertTrue( "Found unexpected mark for 'files.TestFileOutputStream." +
+                            methodName+"'", false );
                 }
                 assertNotSame("There is a MarkMapping for files.TestFileOutputStream.reset() method " +
                 		"which should not present in Files Category for" +
@@ -143,8 +147,10 @@ public class MarkTest extends TestBase {
             } 
             else if ("files.ChildTestOutputStream".equals(className)){
                 childFound = true;
+                outputStreamMethods2.remove(methodName );
                 if ( !outputStreamMethods.contains( methodName)){
-                    childMethod = methodName;
+                    assertTrue( "Found unexpected mark for 'files.ChildTestFileOutputStream." +
+                            methodName+"'", false );
                 }
                 assertNotSame("There is a MarkMapping for files.ChildTestOutputStream.reset() method " +
                         "which should not present in Files Category for" +
@@ -155,10 +161,19 @@ public class MarkTest extends TestBase {
         }
         
         
-        assertTrue( "No found mark for files.TestFileOutputStream class", testFound );
-        assertTrue( "No found mark for files.ChildTestOutputStream class", childFound );
-        assertNull( "No found mark for 'files.TestFileOutputStream." +method+"'", method );
-        assertNull( "No found mark for 'files.ChildTestFileOutputStream." +childMethod+"'", childMethod );
+        assertTrue( "Mark for files.TestFileOutputStream class is not found ", testFound );
+        assertTrue( "Mark for files.ChildTestOutputStream class is not found", childFound );
+        
+        if ( outputStreamMethods1.size() != 0 ){
+            assertTrue( "Mark for 'files.TestFileOutputStream."+
+                    outputStreamMethods1.iterator().next()+"' is not found",
+                    false);
+        }
+        if ( outputStreamMethods2.size() != 0 ){
+            assertTrue( "Mark for 'files.ChildTestOutputStream."+
+                    outputStreamMethods2.iterator().next()+"' is not found",
+                    false);
+        }
     }
     
     public void testListeners(){
@@ -177,6 +192,10 @@ public class MarkTest extends TestBase {
                 if ( "eventDispatched".equals( methodName)){
                     dispatcherFound = true;
                 }
+                if ( getMethods( Object.class).contains(methodName)){
+                   assertTrue( "Method 'listeners.TestAWTEventListener."+
+                           methodName+ "' should not be marked", false);
+                }
             }
             else if ( "listeners.SubTestAWTEventListener".equals( className)){
                 assertNotSame("Found mark for 'listeners.SubTestAWTEventListener.method()'", 
@@ -184,6 +203,10 @@ public class MarkTest extends TestBase {
                     if ( "eventDispatched".equals( methodName)){
                         subDispatcherFound = true;
                     }
+                    if ( getMethods( Object.class).contains(methodName)){
+                        assertTrue( "Method 'listeners.SubTestAWTEventListener."+
+                                methodName+ "' should not be marked", false);
+                     }
             }
             else if ( "listeners.TestMouseListener".equals( className)){
                 mouseListenerFound = true;
@@ -192,20 +215,20 @@ public class MarkTest extends TestBase {
                 }
             }
         }
-        assertTrue( "No mark for " +
-        		"'listeners.TestAWTEventListener.eventDispatched() method'", 
+        assertTrue( "Mark for " +
+        		"'listeners.TestAWTEventListener.eventDispatched() method' is not found", 
         		dispatcherFound);
-        assertTrue( "No mark for " +
-                "'listeners.SubTestAWTEventListener.eventDispatched() method'", 
+        assertTrue( "Mark for " +
+                "'listeners.SubTestAWTEventListener.eventDispatched() method' is not found", 
                 subDispatcherFound);
         /*
          * * TODO : Temporary commented. There is an issue which need to be fixed
-         * assertTrue( "No marks found for listeners.TestMouseListener",
+         * assertTrue( 'Mark  for listeners.TestMouseListener is not found",
                 mouseListenerFound);
          * along with enabling this test.
          * 
-         * assertNull("No marks found for 'listeners.TestMouseListener."+mouseListenerMethod
-                +"'",mouseListenerMethod);
+         * assertNull("Mark for 'listeners.TestMouseListener."+mouseListenerMethod
+                +"' is not found",mouseListenerMethod);
                 */
     }
     
@@ -213,6 +236,7 @@ public class MarkTest extends TestBase {
         MarkMapping[] mappings = getCategorization().getMappings();
         String method = null;
         Set<String> jComponentMethods = getCategorizationMethods(JComponent.class);
+        Set<String> copyJComponentMethods = new HashSet<String>( jComponentMethods );
         Set<String> jComponentExcludedMethods = getExcludedMethods(JComponent.class);
         boolean found = false;
         for (MarkMapping markMapping : mappings) {
@@ -222,9 +246,11 @@ public class MarkTest extends TestBase {
                 found = true;
                 assertNotSame("Found mark for 'TestPanel.getUI()'", 
                     "getUI", methodName);
+                copyJComponentMethods.remove( methodName);
                 if ( !jComponentMethods.contains(methodName) ){
-                    method = methodName;
-                    break;
+                    assertTrue( "Unexpected mark for " +
+                            "'painters.TestPanel."+ methodName+"' method is found", 
+                            false);
                 }
                 assertFalse("Found mark for 'painters.TestPanel."+methodName
                         +"' method",jComponentExcludedMethods.contains( methodName));
@@ -234,17 +260,21 @@ public class MarkTest extends TestBase {
         
         /* TODO : Temporary commented. There is an issue which need to be fixed
          * along with enabling this test.
-        assertTrue( "No marks found for painters.TestPanel class",found );
-        assertNull( "No mark for " +
-                "'painters.TestPanel."+ method+"' method'", 
-                method);
-                */
+        assertTrue( "Mark for painters.TestPanel class is not found",found );
+                
+        if ( copyJComponentMethods.size() != 0 ){
+            assertTrue( "Mark for 'painters.TestPanel."+
+                    copyJComponentMethods.iterator().next()+"' is not found",
+                    copyJComponentMethods.size(),  0);
+                    
+        }*/
     }
     
     public void testSocketChanelMarks(){
         MarkMapping[] mappings = getCategorization().getMappings();
         String method = null;
-        Set<String> socketChanel = getMethods(SocketChannel.class);
+        Set<String> socketChanel = getCategorizationMethods(SocketChannel.class);
+        Set<String> copySocketChanel = new HashSet<String>( socketChanel );
         Set<String> socketChanelExcluded = getExcludedMethods(SocketChannel.class);
         boolean found = false;
         for (MarkMapping markMapping : mappings) {
@@ -252,25 +282,28 @@ public class MarkTest extends TestBase {
             String methodName = markMapping.markMask.getMethodName();
             if ( "socket.TestSocketChanel".equals( className)){
                 found = true;
+                copySocketChanel.remove(methodName);
                 if ( !socketChanel.contains(methodName) ){
-                    method = methodName;
-                    break;
+                    assertTrue( "Found unexpected mark for " +
+                            "'socket.TestSocketChanel."+ methodName+"' method'", 
+                            false);
                 }
                 assertFalse("Found mark for 'socket.TestSocketChanel."+methodName
                         +"' method",socketChanelExcluded.contains( methodName));
             }
         }
-        assertTrue( "No marks found for socket.TestSocketChanel class",found );
-        assertNull( "No mark for " +
-                "'socket.TestSocketChanel."+ method+"' method'", 
-                method);
+        assertTrue( "Mark for socket.TestSocketChanel class is not found",found );
+        if ( copySocketChanel.size()!= 0){
+            assertTrue( "Mark for 'socket.TestSocketChanel."+
+                    copySocketChanel.iterator().next()+"' is not found", false);
+        }
     }
     
     public void testInputStreamMarks(){
         MarkMapping[] mappings = getCategorization().getMappings();
         boolean testFound = false;
-        String method = null;
         Set<String> inputStreamMethods = getCategorizationMethods( InputStream.class);
+        Set<String> copyInputStreamMethods = new HashSet<String>( inputStreamMethods);
         Set<String> excludedISMethods = getExcludedMethods( InputStream.class );
         for (MarkMapping markMapping : mappings) {
             String className = markMapping.markMask.getClassName();
@@ -279,20 +312,30 @@ public class MarkTest extends TestBase {
                 testFound = true;
                 assertNotSame("There is a mark for 'streams.TestInputStream.write' " +
                 		"method","write",methodName);
+                copyInputStreamMethods.remove( methodName );
                 if ( !inputStreamMethods.contains(methodName)){
-                    method = methodName;
+                    assertTrue( "Found unexpected mark for 'streams.TestInputStream."+ 
+                            methodName+"' method", false );
                 }
                 assertFalse( "There is a mark for method : 'streams.TestInputStream."+
                         methodName+"'", excludedISMethods.contains( methodName));
             }
         }
         
-        assertTrue( "No found mark for files.TestFileOutputStream class", testFound );
+        assertTrue( "Mark for streams.TestInputStream class is not found", testFound );
+        if ( copyInputStreamMethods.size()!= 0){
+            assertTrue( "Mark for 'streams.TestInputStream."+
+                    copyInputStreamMethods.iterator().next()+"' is not found", false);
+        }
         
-        assertNull( "No found mark for 'streams.TestInputStream."+ method+"' method", method );
     }
     
     private Set<String> getCategorizationMethods( Class<?>  clazz){
+        assertFalse("Method getCategorizationMethods() should not be called " +
+        		"for interface class. Otherwise it returns empty set." +
+        		"This lead to incorrect test result." +
+        		"Interface methods are not marked. Only implementation" +
+        		" classes methods are marked",clazz.isInterface());
         String fqn = clazz.getCanonicalName();
         Set<String> methods= new HashSet<String>();
         MarkMapping[] mappings = getCategorization().getMappings();
@@ -302,6 +345,17 @@ public class MarkTest extends TestBase {
                 methods.add( markMapping.markMask.getMethodName());
             }
         }
+        Method[] declaredMethods = clazz.getDeclaredMethods();
+        List<Method> allMethods = new LinkedList<Method>( Arrays.asList(declaredMethods));
+        allMethods.addAll( Arrays.asList( clazz.getMethods()));
+        Set<String> visibleMethods = new HashSet<String>();
+        for (Method method : allMethods) {
+            int modifiers = method.getModifiers();
+            if ( Modifier.isProtected(modifiers) || Modifier.isPublic(modifiers)){
+                visibleMethods.add( method.getName());
+            }
+        }
+        //methods.retainAll(visibleMethods);
         return methods;
     }
     
@@ -336,6 +390,9 @@ public class MarkTest extends TestBase {
                 for (String include : includes) {
                     boolean found = false;
                     for (MarkMapping markMapping : mappings) {
+			if ( !markMapping.mark.equals( definition.getAssignedMark())){
+                            continue;
+                        }
                         String className = markMapping.markMask.getClassName();
                         if (typeName.equals(className)) {
                             String methodName = markMapping.markMask.getMethodName();
@@ -356,6 +413,9 @@ public class MarkTest extends TestBase {
             if (excludes != null) {
                 excludes : for (String exclude : excludes) {
                     for (MarkMapping markMapping : mappings) {
+			if ( !markMapping.mark.equals( definition.getAssignedMark())){
+                            continue;
+                        }
                         String className = markMapping.markMask.getClassName();
                         if (typeName.equals(className)) {
                             String methodName = markMapping.markMask.getMethodName();
@@ -380,15 +440,24 @@ public class MarkTest extends TestBase {
             catch (ClassNotFoundException e) {
             }
             if (excludes == null && includes == null) {
+                Set<String> allMethods = getMethods(clazz);
                 boolean found = false;
                 for (MarkMapping markMapping : mappings) {
+                    if ( !markMapping.mark.equals( definition.getAssignedMark())){
+                        continue;
+                    }
                     String className = markMapping.markMask.getClassName();
                     if (typeName.equals(className)) {
                         found = true;
+                        allMethods.remove(markMapping.markMask.getMethodName());
                     }
                 }
                 assertEquals( "There is no MarkMapping with class name '"+
                         typeName+"'", true , found);
+                if ( !(definition instanceof SingleTypeCategoryDefinition) && allMethods.size()!= 0){
+                    assertEquals( "Mark for '"+typeName+"."+
+                            allMethods.iterator().next()+"' is not found",allMethods.size(),  0);
+                }
             }
         }
     }
