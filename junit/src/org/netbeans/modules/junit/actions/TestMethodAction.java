@@ -40,6 +40,7 @@
 package org.netbeans.modules.junit.actions;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -72,7 +73,7 @@ public abstract class TestMethodAction extends NodeAction {
         if (sm != null){
             ActionProvider ap = OutputUtils.getActionProvider(sm.getFile());
             if (ap != null){
-                return ap.isActionEnabled(command, Lookups.singleton(sm));
+                return Arrays.asList(ap.getSupportedActions()).contains(command) && ap.isActionEnabled(command, Lookups.singleton(sm));
             }
         }
         return false;
