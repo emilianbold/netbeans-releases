@@ -356,7 +356,7 @@ public final class J2SEProject implements Project {
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
-            QuerySupport.createSourceLevelQuery(evaluator()),
+            QuerySupport.createSourceLevelQuery2(evaluator()),
             QuerySupport.createSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, J2SEProjectProperties.DIST_DIR)),
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
