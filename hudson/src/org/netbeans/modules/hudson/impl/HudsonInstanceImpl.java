@@ -107,6 +107,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     
     private Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
+    private HudsonView primaryView;
     private final Collection<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
     private ProblemNotificationController problemNotificationController;
     /**
@@ -227,6 +228,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         version = null;
         jobs.clear();
         views.clear();
+        primaryView = null;
         
         // Fire changes
         fireStateChanges();
@@ -285,14 +287,22 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         props.put(INSTANCE_SUPPRESSED_JOBS, HudsonInstanceProperties.join(suppressed));
     }
     
-    public synchronized Collection<HudsonView> getViews() {
+    public @Override synchronized Collection<HudsonView> getViews() {
         return views;
     }
     
-    public synchronized void setViews(Collection<HudsonView> views) {
-        this.views = views;
+    public @Override synchronized HudsonView getPrimaryView() {
+        if (primaryView == null) {
+            primaryView = new HudsonViewImpl(this, "All", getUrl()); // NOI18N
+        }
+        return primaryView;
     }
     
+    synchronized void setViews(Collection<HudsonView> views, HudsonView primaryView) {
+        this.views = views;
+        this.primaryView = primaryView;
+    }
+
     public synchronized void synchronize() {
         if (semaphore.tryAcquire()) {
             final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
