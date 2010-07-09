@@ -416,7 +416,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         svnProgressSupport = new VersioningPanelProgressSupport() {
             public void perform() {
                 try {
-                    StatusAction.executeStatus(context, this);
+                    StatusAction.executeStatus(context, this, true);
                 } finally {
                     setFinished(true); // stops skipping versioning events
                 }
@@ -438,12 +438,12 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         String title = parentTopComponent.getContentTitle();
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {            
             LifecycleManager.getDefault().saveAll();
-            DiffAction.diff(context, Setup.DIFFTYPE_LOCAL, title);
+            DiffAction.diff(context, Setup.DIFFTYPE_LOCAL, title, true); // do not trigger status refresh, statuses already known
         } else if (displayStatuses == FileInformation.STATUS_REMOTE_CHANGE) {
-            DiffAction.diff(context, Setup.DIFFTYPE_REMOTE, title);
+            DiffAction.diff(context, Setup.DIFFTYPE_REMOTE, title, true); // do not trigger status refresh, statuses already known
         } else {
             LifecycleManager.getDefault().saveAll();
-            DiffAction.diff(context, Setup.DIFFTYPE_ALL, title);
+            DiffAction.diff(context, Setup.DIFFTYPE_ALL, title, true); // do not trigger status refresh, statuses already known
         }
     }
 

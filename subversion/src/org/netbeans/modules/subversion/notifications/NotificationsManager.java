@@ -160,7 +160,7 @@ public class NotificationsManager {
                 if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
                     if(CMD_DIFF.equals(e.getDescription())) {
                         Context ctx = new Context(files);
-                        DiffAction.diff(ctx, Setup.DIFFTYPE_REMOTE, NbBundle.getMessage(NotificationsManager.class, "LBL_Remote_Changes", projectDir.getName()));  // NOI18N
+                        DiffAction.diff(ctx, Setup.DIFFTYPE_REMOTE, NbBundle.getMessage(NotificationsManager.class, "LBL_Remote_Changes", projectDir.getName()), false); //NOI18N
                     } else if (revision != null) {
                         try {
                             SearchHistoryAction.openSearch(new SVNUrl(url), projectDir, Long.parseLong(revision));

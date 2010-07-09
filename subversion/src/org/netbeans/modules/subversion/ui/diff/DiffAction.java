@@ -49,6 +49,7 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
 import org.netbeans.modules.subversion.ui.actions.ActionUtils;
+import org.netbeans.modules.subversion.ui.status.SyncFileNode;
 import org.netbeans.modules.subversion.util.ClientCheckSupport;
 import org.openide.nodes.Node;
 import org.openide.util.*;
@@ -76,9 +77,8 @@ public class DiffAction extends ContextAction {
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED; 
     }
     
-    public static void diff(Context ctx, int type, String contextName) {
-        
-        MultiDiffPanel panel = new MultiDiffPanel(ctx, type, contextName); // spawns bacground DiffPrepareTask
+    public static void diff(Context ctx, int type, String contextName, boolean initialStatusRefreshDisabled) {
+        MultiDiffPanel panel = new MultiDiffPanel(ctx, type, contextName, initialStatusRefreshDisabled); // spawns bacground DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); // NOI18N
         tc.open();
@@ -108,9 +108,25 @@ public class DiffAction extends ContextAction {
             public void run() {
                 Context ctx = getContext(nodes);
                 String contextName = getContextDisplayName(nodes);
-                diff(ctx, SvnModuleConfig.getDefault().getLastUsedModificationContext(), contextName);
+                diff(ctx, SvnModuleConfig.getDefault().getLastUsedModificationContext(), contextName, isSvnNodes(nodes));
             }
         });
     }
-   
+    
+    /**
+     * Returns true if the given nodes are from the versioning view.
+     * In such case the deep scan is not required because the files and their statuses should already be known
+     * @param nodes
+     * @return
+     */
+    private static boolean isSvnNodes (Node[] nodes) {
+        boolean fromSubversionView = true;
+        for (Node node : nodes) {
+            if (!(node instanceof SyncFileNode)) {
+                fromSubversionView = false;
+                break;
+            }
+        }
+        return fromSubversionView;
+    }   
 }

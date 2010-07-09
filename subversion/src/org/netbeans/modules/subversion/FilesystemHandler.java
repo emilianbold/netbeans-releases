@@ -371,7 +371,7 @@ class FilesystemHandler extends VCSInterceptor {
                         SvnClient client = Subversion.getInstance().getClient(file);
                         if (client != null) {
                             Subversion.getInstance().getStatusCache().refreshCached(new Context(file));
-                            StatusAction.executeStatus(file, client, null);
+                            StatusAction.executeStatus(file, client, null, false); // no need to contact server
                         }
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
