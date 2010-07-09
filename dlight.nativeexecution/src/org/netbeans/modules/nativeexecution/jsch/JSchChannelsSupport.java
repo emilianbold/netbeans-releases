@@ -113,7 +113,7 @@ public final class JSchChannelsSupport {
                         sessionsLock.unlock();
                     }
                 } else {
-                    throw new IOException("All " + JSCH_SESSIONS_PER_ENV + " sessions for " + env.getDisplayName() + " are fully loaded");
+                    throw new IOException("All " + JSCH_SESSIONS_PER_ENV + " sessions for " + env.getDisplayName() + " are fully loaded"); // NOI18N
                 }
             }
         }
@@ -140,8 +140,9 @@ public final class JSchChannelsSupport {
         return false;
     }
 
-    public synchronized void reconnect(ExecutionEnvironment env) throws IOException {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public synchronized void reconnect(ExecutionEnvironment env) throws IOException, JSchException {
+        disconnect();
+        connect();
     }
 
     private Session findFreeSession() {
