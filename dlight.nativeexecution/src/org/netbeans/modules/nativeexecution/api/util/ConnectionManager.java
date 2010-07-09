@@ -41,26 +41,18 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
+import java.awt.Desktop.Action;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
@@ -69,13 +61,12 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.jsch.JSchChannelsSupport;
+import org.netbeans.modules.nativeexecution.jsch.JSchConnectionTask;
 import org.netbeans.modules.nativeexecution.support.Authentication;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
-import org.netbeans.modules.nativeexecution.support.ui.AuthTypeSelectorDlg;
 import org.netbeans.modules.nativeexecution.support.ui.AuthenticationSettingsPanel;
-import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -87,20 +78,15 @@ import org.openide.util.RequestProcessor;
 public final class ConnectionManager {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
-    private static final boolean USE_JZLIB = Boolean.getBoolean("jzlib"); // NOI18N
-    private static final int JSCH_CONNECTION_TIMEOUT = Integer.getInteger("jsch.connection.timeout", 10000); // NOI18N
-    private static final int SOCKET_CREATION_TIMEOUT = Integer.getInteger("socket.connection.timeout", 10000); // NOI18N
-    private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
     // Connections are always established sequently in connectorThread
     private static final RequestProcessor connectorThread = new RequestProcessor("ConnectionManager queue", 1); // NOI18N
-    // Map that contains all connected sessions;
-    private static final HashMap<ExecutionEnvironment, Session> sessions = new HashMap<ExecutionEnvironment, Session>();
     // Actual sessions pools. One per host
-    private static final HashMap<ExecutionEnvironment, JSch> jschPool = new HashMap<ExecutionEnvironment, JSch>();
+    private static final HashMap<ExecutionEnvironment, JSchChannelsSupport> channelsSupport = new HashMap<ExecutionEnvironment, JSchChannelsSupport>();
     private static List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
     private static HashMap<ExecutionEnvironment, ConnectToAction> connectionActions = new HashMap<ExecutionEnvironment, ConnectToAction>();
     // Instance of the ConnectionManager
     private static final ConnectionManager instance = new ConnectionManager();
+    private static final HashMap<ExecutionEnvironment, JSch> jschPool = new HashMap<ExecutionEnvironment, JSch>();
 
     static {
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
@@ -169,12 +155,9 @@ public final class ConnectionManager {
             return true;
         }
 
-        synchronized (sessions) {
-            if (sessions.containsKey(execEnv)) {
-                return sessions.get(execEnv).isConnected();
-            }
-
-            return false;
+        synchronized (channelsSupport) {
+            return channelsSupport.containsKey(execEnv)
+                    && channelsSupport.get(execEnv).isConnected();
         }
     }
 
@@ -194,87 +177,51 @@ public final class ConnectionManager {
             return;
         }
 
-        int attempts = 2;
+        JSch jsch = jschPool.get(env);
 
-        while (attempts > 0) {
-            if (doConnect(env, true)) {
-                break;
-            }
-
-            // For non-unit-tests-mode will itterate
-            // while either connection is established or
-            // is cancelled implicitly.
-
-            if (UNIT_TEST_MODE) {
-                attempts--;
-            }
+        if (jsch == null) {
+            jsch = new JSch();
+            jschPool.put(env, jsch);
         }
 
-    }
+        final JSchConnectionTask connectionTask = new JSchConnectionTask(jsch, env);
+        final Future<JSchChannelsSupport> connectionTaskResult = connectorThread.submit(connectionTask);
 
-    private boolean doConnect(final ExecutionEnvironment env, final boolean fetchHostInfo) throws IOException, CancellationException {
-
-        final ConnectionTask connectionTask = new ConnectionTask(env);
-        final Future<Session> connectionTaskResult = connectorThread.submit(connectionTask);
         final ProgressHandle ph = ProgressHandleFactory.createHandle(
                 loc("ConnectionManager.Connecting", // NOI18N
                 env.toString()), connectionTask);
 
         ph.start();
 
-        Session session = null;
-
         try {
-            session = connectionTaskResult.get();
+            JSchChannelsSupport cs = connectionTaskResult.get();
+
+            if (cs != null) {
+                channelsSupport.put(env, cs);
+            } else {
+                JSchConnectionTask.Problem problem = connectionTask.getProblem();
+                switch (problem.type) {
+                    case CONNECTION_CANCELLED:
+                        throw new CancellationException("Connection cancelled for " + env); // NOI18N
+                    default:
+                        // Note that AUTH_FAIL is generated not only on bad password,
+                        // but on socket timeout as well. These cases are
+                        // indistinguishable based on information from JSch.
+                        throw new IOException(env.getDisplayName() + ": " + problem.type.name(), problem.cause); // NOI18N
+                }
+            }
+
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+            log.log(Level.FINE, "New connection established: {0} - {1}", new String[]{env.toString(), hostInfo.getOS().getName()}); // NOI18N
+
+            fireConnected(env);
         } catch (InterruptedException ex) {
-            // should not occur
-            //but is is occurred when user cancel connection in the CND connection Wizard
-            //catch it here and throw CancellationException
-            throw new CancellationException("Connection cancelled for " + env); // NOI18N
+            Exceptions.printStackTrace(ex);
         } catch (ExecutionException ex) {
-            // should not occur
-            // any exception thrown from the connectionTask will be wrapped
-            // in this one...
             Exceptions.printStackTrace(ex);
         } finally {
             ph.finish();
         }
-
-        if (connectionTask.cancelled) {
-            throw new CancellationException("Connection cancelled for " + env); // NOI18N
-        }
-
-        if (connectionTask.problem != null) {
-            if (connectionTask.problem == Problem.AUTH_FAIL) {
-                // Note that AUTH_FAIL is generated not only on bad password,
-                // but on socket timeout as well. These cases are
-                // indistinguishable based on information from JSch.
-                log.log(Level.FINE, "JSch problem connecting to {0}: {1}", new Object[]{env, connectionTask.problem}); // NOI18N
-                if (!UNIT_TEST_MODE) {
-                    // Do not clean password when running unit tests.
-                    // We want to be able to repeat the connection attempt.
-                    PasswordManager.getInstance().clearPassword(env);
-                }
-                return false;
-            } else {
-                throw new IOException(env.getDisplayName() + ": " + connectionTask.problem.name()); // NOI18N
-            }
-        }
-
-        assert session != null;
-
-        synchronized (sessions) {
-            sessions.put(env, session);
-        }
-
-        if (fetchHostInfo) {
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
-            log.log(Level.FINE, "New connection established: {0} - {1}", new String[]{env.toString(), hostInfo.getOS().getName()}); // NOI18N
-        }
-
-        fireConnected(env);
-
-        return true;
     }
 
     public static ConnectionManager getInstance() {
@@ -311,44 +258,15 @@ public final class ConnectionManager {
         return NbBundle.getMessage(ConnectionManager.class, key, params);
     }
 
-    /**
-     *
-     * @param execEnv
-     * @param restoreLostConnection
-     * @return returns previously created session.
-     * If execEnv was not connected before - returns null
-     * disregarding the restoreLostConnection flag.
-     * It also could return null if attempt to restore
-     * lost connection failed.
-     */
-    private Session getSession(ExecutionEnvironment execEnv, boolean restoreLostConnection) {
-        synchronized (sessions) {
-            if (sessions.containsKey(execEnv)) {
-                int attempts = 3;
-
-                while (attempts-- > 0) {
-                    Session session = sessions.get(execEnv);
-
-                    if (!restoreLostConnection || session.isConnected()) {
-                        return session;
-                    }
-
-                    try {
-                        reconnect(execEnv);
-                    } catch (IOException ex) {
-                        return null;
-                    }
+    private void reconnect(ExecutionEnvironment env) throws IOException {
+        synchronized (channelsSupport) {
+            if (channelsSupport.containsKey(env)) {
+                try {
+                    channelsSupport.get(env).reconnect(env);
+                } catch (JSchException ex) {
+                    throw new IOException(ex);
                 }
             }
-
-            return null;
-        }
-    }
-
-    private void reconnect(ExecutionEnvironment env) throws IOException {
-        synchronized (sessions) {
-            disconnectImpl(env);
-            connectTo(env);
         }
     }
 
@@ -357,30 +275,22 @@ public final class ConnectionManager {
         PasswordManager.getInstance().onExplicitDisconnect(env);
     }
 
-    private void disconnectImpl(ExecutionEnvironment env) {
-        synchronized (sessions) {
-            Session session = sessions.remove(env);
-            if (session != null) {
-                session.disconnect();
+    private void disconnectImpl(final ExecutionEnvironment env) {
+        synchronized (channelsSupport) {
+            if (channelsSupport.containsKey(env)) {
+                JSchChannelsSupport cs = channelsSupport.remove(env);
+                cs.disconnect();
                 fireDisconnected(env);
-            }
-
-            JSch jsch = jschPool.get(env);
-
-            if (jsch != null) {
-                jschPool.remove(env);
             }
         }
     }
 
     private static void shutdown() {
         log.fine("Shutting down Connection Manager");
-        Collection<ExecutionEnvironment> connectedEnvs;
-        synchronized (sessions) {
-            connectedEnvs = new ArrayList<ExecutionEnvironment>(sessions.keySet());
-        }
-        for (ExecutionEnvironment env : connectedEnvs) {
-            ConnectionManager.getInstance().disconnect(env);
+        synchronized (channelsSupport) {
+            for (JSchChannelsSupport cs : channelsSupport.values()) {
+                cs.disconnect();
+            }
         }
     }
 
@@ -402,178 +312,6 @@ public final class ConnectionManager {
 
         Authentication.getFor(env).remove();
         jschPool.remove(env);
-    }
-
-    private static final class ConnectionTask implements Callable<Session>, Cancellable {
-
-        private final ExecutionEnvironment env;
-        private volatile boolean cancelled = false;
-        private volatile Problem problem = null;
-
-        private ConnectionTask(final ExecutionEnvironment env) {
-            this.env = env;
-        }
-
-        @Override
-        public Session call() throws Exception {
-            Session newSession = null;
-            try {
-                try {
-                    env.prepareForConnection();
-                } catch (Throwable th) {
-                    problem = Problem.ENV_PREPARE_ERROR;
-                    return null;
-                }
-
-                if (cancelled) {
-                    return null;
-                }
-
-                if (!isReachable()) {
-                    problem = Problem.HOST_UNREACHABLE;
-                    return null;
-                }
-
-                if (cancelled) {
-                    return null;
-                }
-
-                UserInfo userInfo = new RemoteUserInfo(env, !UNIT_TEST_MODE);
-
-                JSch jsch = jschPool.get(env);
-
-                if (jsch == null) {
-                    jsch = new JSch();
-                    jschPool.put(env, jsch);
-                    if (!initJsch(env)) {
-                        jschPool.remove(env);
-                        cancelled = true;
-                        return null;
-                    }
-                }
-
-                newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());
-                newSession.setUserInfo(userInfo);
-
-                if (USE_JZLIB) {
-                    newSession.setConfig("compression.s2c", "zlib@openssh.com,zlib,none"); // NOI18N
-                    newSession.setConfig("compression.c2s", "zlib@openssh.com,zlib,none"); // NOI18N
-                    newSession.setConfig("compression_level", "9"); // NOI18N
-                }
-
-                try {
-                    // connect methods tries to handle auth fail
-                    // itself by re-asking for password 6 times
-                    // only after 6th attempt it throws an exception
-                    newSession.connect(JSCH_CONNECTION_TIMEOUT);
-                } catch (JSchException e) {
-                    log.log(Level.FINE, "JSchException connecting to " + env, e); // NOI18N
-                    if (e.getMessage().equals("Auth fail")) { // NOI18N
-                        problem = Problem.AUTH_FAIL;
-                        return null;
-                    } else if (e.getMessage().equals("Auth cancel")) { // NOI18N
-                        cancelled = true;
-                        return null;
-                    } else if (e.getMessage().contains("java.net.SocketTimeoutException") // NOI18N
-                            || e.getMessage().contains("timeout")) { // NOI18N
-                        problem = Problem.CONNECTION_TIMEOUT;
-                        return null;
-                    }
-                    problem = Problem.CONNECTION_FAILED;
-                } catch (CancellationException ex) {
-                    log.log(Level.FINE, "CancellationException", ex); // NOI18N
-                    cancelled = true;
-                    return null;
-                }
-            } catch (Throwable th) {
-                Exceptions.printStackTrace(th);
-                problem = Problem.CONNECTION_FAILED;
-            }
-
-            return newSession;
-        }
-
-        public Problem getProblem() {
-            return problem;
-        }
-
-        private boolean isReachable() throws IOException {
-            // IZ#165591 - Trying to connect to wrong host breaks remote host setup (for other hosts)
-            // To prevent this first try to just open a socket and
-            // go to the jsch code in case of success only.
-
-            // The important thing here is that we still need to be interruptable
-            // In case of wrong IP address (unreachable) the SocketImpl's connect()
-            // method may hang in system call for a long period of time, being
-            // insensitive to interrupts.
-            // So do this in a separate thread...
-
-            Callable<Boolean> checker = new Callable<Boolean>() {
-
-                @Override
-                public Boolean call() throws Exception {
-                    final Socket socket = new Socket();
-                    final SocketAddress addressToConnect =
-                            new InetSocketAddress(env.getHostAddress(), env.getSSHPort());
-                    try {
-                        socket.connect(addressToConnect, SOCKET_CREATION_TIMEOUT);
-                    } catch (Exception ioe) {
-                        return false;
-                    } finally {
-                        socket.close();
-                    }
-                    return true;
-                }
-            };
-
-            final Future<Boolean> task = NativeTaskExecutorService.submit(
-                    checker, "Host " + env.getHost() + " availability test"); // NOI18N
-
-            while (!cancelled && !task.isDone()) {
-                try {
-                    task.get(500, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException ex) {
-                    // normally should never happen
-                } catch (ExecutionException ex) {
-                    // normally should never happen
-                } catch (TimeoutException ex) {
-                    // OK.. still be waiting
-                }
-            }
-
-            boolean result = false;
-
-            if (task.isDone()) {
-                try {
-                    result = task.get();
-                } catch (Exception ex) {
-                    // normally should never happen
-                }
-            }
-
-            return result;
-        }
-
-        @Override
-        public boolean cancel() {
-            cancelled = true;
-            return true;
-        }
-    }
-
-    private static boolean initJsch(ExecutionEnvironment env) {
-        Authentication auth = Authentication.getFor(env);
-
-        if (!auth.isDefined()) {
-            AuthTypeSelectorDlg dlg = new AuthTypeSelectorDlg();
-            if (!dlg.initAuthentication(auth)) {
-                return false;
-            }
-        } else {
-            auth.apply();
-        }
-
-        return true;
     }
 
     /**
@@ -618,21 +356,34 @@ public final class ConnectionManager {
         }
     }
 
-    private enum Problem {
-
-        ENV_PREPARE_ERROR,
-        AUTH_FAIL,
-        HOST_UNREACHABLE,
-        CONNECTION_FAILED,
-        CONNECTION_TIMEOUT,
-    }
-
     private static final class ConnectionManagerAccessorImpl
             extends ConnectionManagerAccessor {
 
         @Override
-        public Session getConnectionSession(ExecutionEnvironment env, boolean restoreLostConnection) {
-            return instance.getSession(env, restoreLostConnection);
+        public Channel openAndAcquireChannel(ExecutionEnvironment env, String type, boolean waitIfNoAvailable) throws InterruptedException, JSchException, IOException {
+            synchronized (channelsSupport) {
+                if (channelsSupport.containsKey(env)) {
+                    JSchChannelsSupport cs = channelsSupport.get(env);
+                    return cs.acquireChannel(type, waitIfNoAvailable);
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public void closeAndReleaseChannel(final ExecutionEnvironment env, final Channel channel) throws JSchException {
+            JSchChannelsSupport cs = null;
+
+            synchronized (channelsSupport) {
+                if (channelsSupport.containsKey(env)) {
+                    cs = channelsSupport.get(env);
+                }
+            }
+
+            if (cs != null && channel != null) {
+                cs.releaseChannel(channel);
+            }
         }
 
         @Override
@@ -669,11 +420,6 @@ public final class ConnectionManager {
                         }
                 }
             }
-        }
-
-        @Override
-        public boolean doConnect(ExecutionEnvironment execEnv, boolean fetchHostInfo) throws IOException, CancellationException {
-            return instance.doConnect(execEnv, fetchHostInfo);
         }
     }
 }
