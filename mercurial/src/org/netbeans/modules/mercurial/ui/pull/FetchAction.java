@@ -63,6 +63,7 @@ import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
+import org.openide.DialogDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -135,15 +136,15 @@ public class FetchAction extends ContextAction {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE")); // NOI18N
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE_SEP")); // NOI18N
             
-            logger.outputInRed(NbBundle.getMessage(FetchAction.class, 
-                    "MSG_FETCH_LAUNCH_INFO", root.getAbsolutePath())); // NOI18N
-
             final String pullSourceString = new HgConfigFiles(root).getDefaultPull(true);
             // If the repository has no default pull path then inform user
-            if (pullSourceString == null) {
+            if (HgUtils.isNullOrEmpty(pullSourceString)) {
+                notifyDefaultPullUrlNotSpecified(logger);
                 return;
             }
 
+            logger.outputInRed(NbBundle.getMessage(FetchAction.class, 
+                    "MSG_FETCH_LAUNCH_INFO", root.getAbsolutePath())); // NOI18N
             try {
                 pullSource = new HgURL(pullSourceString);
             } catch (URISyntaxException ex) {
@@ -172,5 +173,11 @@ public class FetchAction extends ContextAction {
                 pullSource.clearPassword();
             }
         }
+    }
+    
+    private static void notifyDefaultPullUrlNotSpecified(OutputLogger logger) {
+        logger.output(NbBundle.getMessage(FetchAction.class, "MSG_NO_DEFAULT_PULL_SET_MSG")); //NOI18N
+        logger.output(""); //NOI18N
+        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(NbBundle.getMessage(FetchAction.class, "MSG_NO_DEFAULT_PULL_SET"))); //NOI18N
     }
 }
