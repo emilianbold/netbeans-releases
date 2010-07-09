@@ -54,10 +54,8 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.netbeans.lib.uihandler.TestHandler;
 import org.w3c.dom.Document;
@@ -72,12 +70,6 @@ public class LogRecordsTest extends NbTestCase {
     
     public LogRecordsTest(String testName) {
         super(testName);
-    }
-    
-    
-    public static Test suite() {
-        return new NbTestSuite(LogRecordsTest.class);
-//        return new LogRecordsTest("testCanReadEmpty");
     }
     
     protected Level logLevel() {

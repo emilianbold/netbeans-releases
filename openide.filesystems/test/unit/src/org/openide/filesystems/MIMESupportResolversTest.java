@@ -66,18 +66,6 @@ public class MIMESupportResolversTest extends TestCase {
         super (testName);
     }
 
-    protected void setUp () throws Exception {
-    }
-
-    protected void tearDown () throws Exception {
-    }
-
-    public static Test suite () {
-        TestSuite suite = new TestSuite(MIMESupportResolversTest.class);
-        return suite;
-    }
-    
-    
     public void testWrongImplOfGetResolvers() throws Exception {
         MIMEResolver[] all = MIMESupport.getResolvers();
         assertTrue("Error manager race condition activated", ErrMgr.switchDone);

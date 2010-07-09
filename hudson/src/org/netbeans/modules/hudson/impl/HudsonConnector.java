@@ -109,10 +109,11 @@ public class HudsonConnector {
     }
     
     public synchronized Collection<HudsonJob> getAllJobs() {
-        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1&xpath=/&exclude=//primaryView&exclude=//view[name='All']" +
+        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + "?depth=1&xpath=/&exclude=//assignedLabel&exclude=//primaryView/job" +
                 "&exclude=//view/job/url&exclude=//view/job/color&exclude=//description&exclude=//job/build&exclude=//healthReport" +
                 "&exclude=//firstBuild&exclude=//keepDependencies&exclude=//nextBuildNumber&exclude=//property&exclude=//action" +
-                "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem&exclude=//scm&exclude=//concurrentBuild"); // NOI18N
+                "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem&exclude=//scm&exclude=//concurrentBuild" +
+                "&exclude=//job/lastUnstableBuild&exclude=//job/lastUnsuccessfulBuild"); // NOI18N
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -120,9 +121,7 @@ public class HudsonConnector {
         // Clear cache
         cache.clear();
         
-        // Parse views and set them into instance
-        Collection<HudsonView> cViews = getViews(docInstance);
-        instance.setViews(cViews);
+        configureViews(instance, docInstance);
         
         // Parse jobs and return them
         return getJobs(docInstance);
@@ -210,8 +209,18 @@ public class HudsonConnector {
         
     }
     
-    private Collection<HudsonView> getViews(Document doc) {
+    private void configureViews(HudsonInstanceImpl instance, Document doc) {
+        String primaryViewName = null;
+        Element primaryViewEl = XMLUtil.findElement(doc.getDocumentElement(), "primaryView", null); // NOI18N
+        if (primaryViewEl != null) {
+            Element nameEl = XMLUtil.findElement(primaryViewEl, "name", null); // NOI18N
+            if (nameEl != null) {
+                primaryViewName = XMLUtil.findText(nameEl);
+            }
+        }
+        
         Collection<HudsonView> views = new ArrayList<HudsonView>();
+        HudsonView primaryView = null;
 
         NodeList nodes = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
@@ -222,6 +231,7 @@ public class HudsonConnector {
             
             String name = null;
             String url = null;
+            boolean isPrimary = false;
             
             for (int j = 0; j < n.getChildNodes().getLength(); j++) {
                 Node o = n.getChildNodes().item(j);
@@ -230,8 +240,9 @@ public class HudsonConnector {
                 }
                 if (o.getNodeName().equals(XML_API_NAME_ELEMENT)) {
                     name = o.getFirstChild().getTextContent();
+                    isPrimary = name.equals(primaryViewName);
                 } else if (o.getNodeName().equals(XML_API_URL_ELEMENT)) {
-                    url = normalizeUrl(o.getFirstChild().getTextContent(), "view/[^/]+/"); // NOI18N
+                    url = normalizeUrl(o.getFirstChild().getTextContent(), isPrimary ? "/" : "view/[^/]+/"); // NOI18N
                 }
             }
             
@@ -258,11 +269,14 @@ public class HudsonConnector {
                 }
                 
                 views.add(view);
+                if (isPrimary) {
+                    primaryView = view;
+                }
             }
             
         }
         
-        return views;
+        instance.setViews(views, primaryView);
     }
     
     private Collection<HudsonJob> getJobs(Document doc) {

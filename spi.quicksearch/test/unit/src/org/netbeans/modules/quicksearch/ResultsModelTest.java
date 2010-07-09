@@ -45,9 +45,7 @@ package org.netbeans.modules.quicksearch;
 import java.util.Collections;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -58,21 +56,8 @@ public class ResultsModelTest extends NbTestCase {
     
     private int changeCounter;
     
-    public ResultsModelTest() {
-        super("");
-    }
-    
     public ResultsModelTest(String testName) {
         super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(ResultsModelTest.class);
-        return suite;
     }
     
     /** Tests behavior of model when providers are filling it quickly - changes

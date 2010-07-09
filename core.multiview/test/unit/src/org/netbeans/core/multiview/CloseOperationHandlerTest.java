@@ -44,11 +44,6 @@
 
 package org.netbeans.core.multiview;
 
-import java.awt.Image;
-import javax.swing.Action;
-import javax.swing.JPanel;
-import javax.swing.JToolBar;
-import junit.framework.*;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
@@ -56,8 +51,6 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.junit.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.lookup.Lookups;
 
 import org.openide.windows.*;
 
@@ -68,24 +61,10 @@ import org.openide.windows.*;
  */
 public class CloseOperationHandlerTest extends NbTestCase {
     
-    /** Creates a new instance of SFSTest */
     public CloseOperationHandlerTest(String name) {
         super (name);
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(CloseOperationHandlerTest.class);
-        
-        return suite;
-    }
-
     protected boolean runInEQ () {
         return true;
     }

@@ -53,10 +53,6 @@ public class ChildrenLazyKeysTest extends ChildrenKeysTest {
         super(testName);
     }
 
-//    public static ChildrenLazyKeysTest suite() {
-//        return new ChildrenLazyKeysTest("testRefreshKey");
-//    }
-
     @Override
     protected boolean lazy() {
         return true;

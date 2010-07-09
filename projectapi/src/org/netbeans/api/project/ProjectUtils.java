@@ -274,7 +274,7 @@ public class ProjectUtils {
         public AnnotateIconProxyProjectInformation(ProjectInformation pi) {
             pinfo = pi;
             pinfo.addPropertyChangeListener(WeakListeners.propertyChange(this, pinfo));
-            annotatorResult.addLookupListener(this);
+            annotatorResult.addLookupListener(WeakListeners.create(LookupListener.class, this, annotatorResult));
             annotatorsChanged();
         }
 

@@ -209,11 +209,8 @@ public final class PathUiSupport {
 
         private static final String RESOURCE_ICON_BROKEN_BADGE
                 = "org/netbeans/modules/php/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
-        private static final String RESOURCE_ICON_CLASSPATH
-                = "org/netbeans/modules/php/project/ui/resources/referencedClasspath.gif"; //NOI18N
 
         private static final ImageIcon ICON_BROKEN_BADGE = ImageUtilities.loadImageIcon(RESOURCE_ICON_BROKEN_BADGE, false);
-        private static final ImageIcon ICON_CLASSPATH = ImageUtilities.loadImageIcon(RESOURCE_ICON_CLASSPATH, false);
         private static ImageIcon ICON_FOLDER = null;
         private static ImageIcon ICON_BROKEN_FOLDER = null;
 
@@ -271,7 +268,7 @@ public final class PathUiSupport {
         private static Icon getIcon(BasePathSupport.Item item) {
             switch (item.getType()) {
                 case CLASSPATH:
-                    return ICON_CLASSPATH;
+                    return ImageUtilities.image2Icon(Utils.getIncludePathIcon(false));
                     //break;
                 default:
                     if (item.isBroken()) {

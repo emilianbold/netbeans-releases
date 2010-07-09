@@ -59,7 +59,6 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import junit.framework.Test;
 import org.openide.actions.EditAction;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -84,15 +83,6 @@ public class DataLoaderInLayerTest extends NbTestCase {
     @Override
     protected Level logLevel() {
         return Level.FINE;
-    }
-    
-    public static Test suite() {
-        Test t = null;
-        t = new NbTestSuite(DataLoaderInLayerTest.class);
-        if (t == null) {
-            t = new DataLoaderInLayerTest("testFactoryInstanceRegistrationWorksAsWell");
-        }
-        return t;
     }
     
     protected FileSystem createFS(String... resources) throws IOException {

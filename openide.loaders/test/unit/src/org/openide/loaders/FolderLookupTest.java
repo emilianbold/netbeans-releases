@@ -50,9 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.logging.Level;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -77,15 +75,6 @@ public class FolderLookupTest extends NbTestCase implements LookupListener {
 
     static {
         System.setProperty ("org.openide.util.Lookup", GLkp.class.getName());
-    }
-
-    public static Test suite() {
-        Test t = null;
-        t = new NbTestSuite(FolderLookupTest.class);
-        if (t == null) {
-            t = new FolderLookupTest("testFolderLookupIsUpdatedQuicklyForSubfolders");
-        }
-        return t;
     }
 
     @Override

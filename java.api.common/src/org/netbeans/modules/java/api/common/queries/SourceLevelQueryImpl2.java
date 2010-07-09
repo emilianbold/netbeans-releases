@@ -40,70 +40,78 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.java.api.common.queries;
 
-import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.netbeans.spi.project.ProjectIconAnnotator;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
-import org.openide.util.ImageUtilities;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
 
-@ServiceProvider(service=ProjectIconAnnotator.class)
-public class PhpProjectAnnotator implements ProjectIconAnnotator {
-    private static final String TOOLTIP = "<img src=\"%s\">&nbsp;%s"; // NOI18N
+/**
+ * @author Tomas Zezula
+ */
+class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
+    
+    private final PropertyEvaluator eval;
+    private final Result result;
 
-    final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final PropertyChangeListener propertyChangeListener;
-
-    public PhpProjectAnnotator() {
-        propertyChangeListener = new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (PhpProject.PROP_FRAMEWORKS.equals(evt.getPropertyName())) {
-                    changeSupport.fireChange();
-                }
-            }
-        };
+    SourceLevelQueryImpl2(final @NonNull PropertyEvaluator eval) {
+        Parameters.notNull("eval", eval);   //NOI18N
+        this.eval = eval;
+        this.result = new R();
     }
 
     @Override
-    public Image annotateIcon(Project p, Image original, boolean openedNode) {
-        PhpProject phpProject = p.getLookup().lookup(PhpProject.class);
-        if (phpProject == null) {
-            return original;
+    public Result getSourceLevel(FileObject javaFile) {
+        return this.result;
+    }
+
+    private class R implements Result, PropertyChangeListener {
+        
+        private final ChangeSupport cs = new ChangeSupport(this);
+
+        @SuppressWarnings("LeakingThisInConstructor")
+        private R() {
+            eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
         }
 
-        ProjectPropertiesSupport.addWeakPropertyChangeListener(phpProject, propertyChangeListener);
+        @Override
+        public String getSourceLevel() {
+            return SourceLevelQueryImpl.findSourceLevel(eval);
+        }
 
-        // badge - 1st wins; tooltip - all frameworks
-        Image badged = original;
-        boolean first = true;
-        for (PhpFrameworkProvider frameworkProvider : phpProject.getFrameworks()) {
-            BadgeIcon badgeIcon = frameworkProvider.getBadgeIcon();
-            if (badgeIcon != null) {
-                badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, badgeIcon.getUrl(), frameworkProvider.getName()));
-                if (first) {
-                    badged = ImageUtilities.mergeImages(badged, badgeIcon.getImage(), 15, 0);
-                    first = false;
-                }
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+            this.cs.addChangeListener(listener);
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+            this.cs.removeChangeListener(listener);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            final String name = evt.getPropertyName();
+            if (name == null ||
+                "javac.source".equals(name) ||     //NOI18N
+                "platform.active".equals(name)) {  //NOI18N
+                this.cs.fireChange();
             }
         }
-        return badged;
+
+        @Override
+        public String toString() {
+            final String sl = getSourceLevel();
+            return sl == null ? "" : sl.toString(); //NOI18M
+        }
+
     }
 
-    @Override
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
 }

@@ -86,7 +86,7 @@ final class ResultPanelTree extends JPanel
     /** */
     private final ResultTreeView treeView;
     /** should the results be filtered (only failures and errors displayed)? */
-    private boolean filtered = false;
+    private int filterMask = 0;
     /** */
     private ChangeListener changeListener;
     /** */
@@ -95,8 +95,9 @@ final class ResultPanelTree extends JPanel
     private final ResultDisplayHandler displayHandler;
 
     private final ResultBar resultBar = new ResultBar();
+    private StatisticsPanel statPanel;
 
-    ResultPanelTree(ResultDisplayHandler displayHandler) {
+    ResultPanelTree(ResultDisplayHandler displayHandler, StatisticsPanel statPanel) {
         super(new BorderLayout());
         treeView = new ResultTreeView();
         treeView.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TestResults"));
@@ -110,12 +111,13 @@ final class ResultPanelTree extends JPanel
         add(treeView, BorderLayout.CENTER);
 
         explorerManager = new ExplorerManager();
-        explorerManager.setRootContext(rootNode = new RootNode(displayHandler.getSession(), filtered));
+        explorerManager.setRootContext(rootNode = new RootNode(displayHandler.getSession(), filterMask));
         explorerManager.addPropertyChangeListener(this);
 
         initAccessibility();
 
         this.displayHandler = displayHandler;
+        this.statPanel = statPanel;
         displayHandler.setLookup(ExplorerUtils.createLookup(explorerManager, new ActionMap()));
     }
 
@@ -161,6 +163,7 @@ final class ResultPanelTree extends JPanel
 
         rootNode.displayMessageSessionFinished(msg);
         resultBar.stop();
+        statPanel.updateButtons();
     }
 
     /**
@@ -216,6 +219,7 @@ final class ResultPanelTree extends JPanel
             }
         }
         resultBar.setPassedPercentage(rootNode.getPassedPercentage());
+        statPanel.updateButtons();
     }
 
     /**
@@ -232,6 +236,7 @@ final class ResultPanelTree extends JPanel
             rootNode.displayReports(reports);
         }
         resultBar.setPassedPercentage(rootNode.getPassedPercentage());
+        statPanel.updateButtons();
    }
 
     /**
@@ -251,14 +256,13 @@ final class ResultPanelTree extends JPanel
 
     /**
      */
-    void setFiltered(final boolean filtered) {
-        if (filtered == this.filtered) {
+    void setFilterMask(final int filterMask) {
+        if (filterMask == this.filterMask) {
             return;
         }
 
-        this.filtered = filtered;
-
-        rootNode.setFiltered(filtered);
+        this.filterMask = filterMask;
+        rootNode.setFilterMask(filterMask);
     }
 
     /**
@@ -315,9 +319,9 @@ final class ResultPanelTree extends JPanel
 
     Set<Testcase> getFailedTests(){
         Set<Testcase> failedTests = new HashSet();
-        for(TestMethodNode node:getFailedTestMethodNodes()){
-            if (node.failed()){
-                failedTests.add(node.getTestCase());
+        for(Testcase tc:displayHandler.getSession().getAllTestCases()){
+            if (Status.isFailureOrError(tc.getStatus())){
+                failedTests.add(tc);
             }
         }
         return failedTests;

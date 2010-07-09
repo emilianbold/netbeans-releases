@@ -43,9 +43,17 @@
 package org.netbeans.modules.junit.output;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -63,6 +71,36 @@ public class JUnitTestsuiteNode extends TestsuiteNode{
         Action preferred = getPreferredAction();
         if (preferred != null) {
             actions.add(preferred);
+        }
+
+        FileObject testFO = ((JUnitTestSuite)getSuite()).getSuiteFO();
+        if (testFO != null){
+            ActionProvider actionProvider = OutputUtils.getActionProvider(testFO);
+            DataObject testDO = null;
+            try {
+                testDO = DataObject.find(testFO);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (actionProvider != null && testDO != null){
+                List supportedActions = Arrays.asList(actionProvider.getSupportedActions());
+                Lookup nodeContext = Lookups.singleton(testDO);
+
+                if (supportedActions.contains(ActionProvider.COMMAND_TEST_SINGLE) &&
+                        actionProvider.isActionEnabled(ActionProvider.COMMAND_TEST_SINGLE, nodeContext)) {
+                    actions.add(new TestMethodNodeAction(actionProvider,
+                                                         nodeContext,
+                                                         ActionProvider.COMMAND_TEST_SINGLE,
+                                                         "LBL_RerunTest"));     //NOI18N
+                }
+                if (supportedActions.contains(ActionProvider.COMMAND_DEBUG_TEST_SINGLE) &&
+                        actionProvider.isActionEnabled(ActionProvider.COMMAND_DEBUG_TEST_SINGLE, nodeContext)) {
+                    actions.add(new TestMethodNodeAction(actionProvider,
+                                                         nodeContext,
+                                                         ActionProvider.COMMAND_DEBUG_TEST_SINGLE,
+                                                         "LBL_DebugTest"));     //NOI18N
+                }
+            }
         }
         
         return actions.toArray(new Action[actions.size()]);

@@ -1867,7 +1867,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Indexing binary " + root + " using " + indexer); //NOI18N
                     }
-                    SPIAccessor.getInstance().index(indexer, ctx);
+                    try {
+                        SPIAccessor.getInstance().index(indexer, ctx);
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t) {
+                        LOGGER.log(Level.WARNING, null, t);
+                    }
                 }
                 return true;
             } finally {

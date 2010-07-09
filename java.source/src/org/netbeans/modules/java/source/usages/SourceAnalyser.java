@@ -307,7 +307,6 @@ public class SourceAnalyser {
         private final Set<CharSequence> importIdents;
         private final Set<CharSequence> packageAnnotationIdents;
         private final boolean virtual;
-        private final boolean storeIndex;
         private boolean isStaticImport;
         private State state;
         private Element enclosingElement = null;
@@ -345,7 +344,6 @@ public class SourceAnalyser {
             this.signatureFiles = true;
             this.manager = manager;
             this.virtual = tuple.virtual;
-            this.storeIndex = tuple.index;
             this.siblingUrl = virtual ? tuple.indexable.getURL() : sibling.toUri().toURL();
             this.sourceName = inferBinaryName(manager, sibling);
             this.topLevels = null;
@@ -383,7 +381,6 @@ public class SourceAnalyser {
             this.topLevels = topLevels;
             this.newTypes = null;
             this.virtual = false;
-            this.storeIndex = true;
         }
 
         final Types getTypes() {

@@ -48,9 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 
-import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -69,11 +67,6 @@ public class TCRefParserTest extends NbTestCase {
         super(testName);
     }
     
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(TCRefParserTest.class);
-        return suite;
-    }
-
     ////////////////////////////////
     //Testing CORRECT data
     ////////////////////////////////

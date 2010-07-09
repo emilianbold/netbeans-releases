@@ -52,9 +52,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.openide.windows.GlobalActionContextImpl;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -81,11 +79,6 @@ implements org.openide.util.LookupListener {
         super(testName);
     }
     
-    public static Test suite() {
-        return new NbTestSuite(GlobalContextImplTest.class);
-        //return new GlobalContextImplTest("testRequestVisibleBlinksTheActionMapForAWhileWithOwnComponentAndAction");
-    }
-
     @Override
     protected int timeOut() {
         return 15000;

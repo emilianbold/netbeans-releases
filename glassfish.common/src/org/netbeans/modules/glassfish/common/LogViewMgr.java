@@ -304,13 +304,13 @@ public class LogViewMgr {
         }
         OutputWriter writer = error ? io.getErr() : io.getOut();
         if(LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.log(Level.FINEST, "getIOWriter: closed = " + io.isClosed() + " [ " + (error ? "STDERR" : "STDOUT") + " ]" + ", output error flag = " + writer.checkError()); // NOI18N
+            LOGGER.log(Level.FINEST, "getIOWriter: closed = {0} [ {1}" + " ]" + ", output error flag = " + "{2}", new Object[]{io.isClosed(), error ? "STDERR" : "STDOUT", writer.checkError()}); // NOI18N
         }
         if(writer.checkError() == true) {
             InputOutput newIO = getServerIO(uri);
             if(newIO == null) {
                 if(LOGGER.isLoggable(Level.INFO)) {
-                    LOGGER.log(Level.INFO, "Unable to recreate I/O for " + uri + ", still in error state"); // NOI18N
+                    LOGGER.log(Level.INFO, "Unable to recreate I/O for {0}, still in error state", uri); // NOI18N
                 }
                 writer = null;
             } else {
@@ -366,7 +366,7 @@ public class LogViewMgr {
      */
     public synchronized void selectIO() {
         if(LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.log(Level.FINEST, "selectIO: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError()); // NOI18N
+            LOGGER.log(Level.FINEST, "selectIO: closed = {0}, output error flag = {1}", new Object[]{io.isClosed(), io.getOut().checkError()}); // NOI18N
         }
 
         // Only select the output window if it's closed.  This makes sure it's
@@ -482,7 +482,7 @@ public class LogViewMgr {
                 // ignoreEof is true for log files and false for process streams.
                 // FIXME Should differentiate filter types more cleanly.
                 Filter filter = ignoreEof ? new LogFileFilter(localizedLevels) : 
-                    (uri.contains("]deployer:gfv3ee6:") ? new LogFileFilter(localizedLevels) :new StreamFilter());
+                    (uri.contains("]deployer:gfv3ee6") ? new LogFileFilter(localizedLevels) :new StreamFilter());
                 
                 // read from the input stream and put all the changes to the I/O window
                 char [] chars = new char[1024];
@@ -553,7 +553,7 @@ public class LogViewMgr {
 
         private void processLine(String line) {
             if(LOGGER.isLoggable(Level.FINEST)) {
-                LOGGER.log(Level.FINEST, "processing text: '" + line + "'"); // NOI18N
+                LOGGER.log(Level.FINEST, "processing text: ''{0}''", line); // NOI18N
             }
             // XXX sort of a hack to eliminate specific glassfish messages that
             // ought not to be printed at their current level (INFO vs FINE+).
@@ -695,7 +695,7 @@ public class LogViewMgr {
                 ;
     }
 
-    private static final String stripNewline(String s) {
+    private static String stripNewline(String s) {
         int len = s.length();
         if(len > 0 && '\n' == s.charAt(len-1)) {
             s = s.substring(0, len-1);
@@ -1005,18 +1005,18 @@ public class LogViewMgr {
                 boolean valid = true;
                 if(serverIO.isClosed()) {
                     if(LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Output window for " + uri + " is closed."); // NOI18N
+                        LOGGER.log(Level.FINE, "Output window for {0} is closed.", uri); // NOI18N
                     }
                 }
                 if(serverIO.getOut().checkError()) {
                     if(LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Standard out for " + uri + " is in error state."); // NOI18N
+                        LOGGER.log(Level.FINE, "Standard out for {0} is in error state.", uri); // NOI18N
                     }
                     valid = false;
                 }
                 if(serverIO.getErr().checkError()) {
                     if(LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Standard error for " + uri + " is in error state."); // NOI18N
+                        LOGGER.log(Level.FINE, "Standard error for {0} is in error state.", uri); // NOI18N
                     }
                     valid = false;
                 }

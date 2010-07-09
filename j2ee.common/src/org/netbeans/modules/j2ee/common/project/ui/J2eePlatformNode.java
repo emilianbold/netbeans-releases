@@ -265,17 +265,18 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
             
             J2eePlatform j2eePlatform = ((J2eePlatformNode)this.getNode()).getPlatform();
             if (j2eePlatform != null) {
-                File[] classpathEntries = j2eePlatform.getClasspathEntries();
-                result = new ArrayList<SourceGroup>(classpathEntries.length);
-                addToSourceGroups(classpathEntries, result);
+                result = new ArrayList<SourceGroup>();
                 if (j2eeModuleProvider != null) {
                     try {
-                        classpathEntries = j2eePlatform.getClasspathEntries(j2eeModuleProvider.getConfigSupport().getLibraries());
+                        File[] classpathEntries = j2eePlatform.getClasspathEntries(j2eeModuleProvider.getConfigSupport().getLibraries());
                         addToSourceGroups(classpathEntries, result);
                     } catch (ConfigurationException ex) {
                         // noop
                         LOGGER.log(Level.INFO, null, ex);
                     }
+                } else {
+                    File[] classpathEntries = j2eePlatform.getClasspathEntries();
+                    addToSourceGroups(classpathEntries, result);
                 }
             } else {
                 result = Collections.<SourceGroup>emptyList();
