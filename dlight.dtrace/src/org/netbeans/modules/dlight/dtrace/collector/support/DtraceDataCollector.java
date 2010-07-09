@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
-import java.beans.FeatureDescriptor;
 import org.netbeans.modules.dlight.dtrace.collector.DtraceParser;
 import java.io.File;
 import java.io.IOException;
@@ -57,11 +56,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.input.LineProcessor;
-import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
@@ -77,10 +76,6 @@ import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.api.execution.DLightDeploymentService;
 import org.netbeans.modules.dlight.api.execution.DLightDeploymentTarget;
-import org.netbeans.modules.dlight.api.impl.DLightToolAccessor;
-import org.netbeans.modules.dlight.api.impl.DLightToolConfigurationAccessor;
-import org.netbeans.modules.dlight.api.tool.DLightTool;
-import org.netbeans.modules.dlight.api.tool.DLightToolConfiguration;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
 import org.netbeans.modules.dlight.extras.api.support.CollectorRunner;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
@@ -544,6 +539,10 @@ public final class DtraceDataCollector
             try {
                 sps.requestPrivileges(requiredPrivilegesSet, false);
                 status = true;
+            } catch (InterruptedException ex) {
+                // Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                // Exceptions.printStackTrace(ex);
             } catch (NotOwnerException ex) {
             }
         }

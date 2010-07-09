@@ -76,11 +76,11 @@ public interface SolarisPrivilegesSupport {
 
     public void requestPrivileges(
             Collection<String> requestedPrivileges,
-            boolean askForPassword) throws NotOwnerException, CancellationException;
+            boolean askForPassword) throws NotOwnerException, InterruptedException, CancellationException;
 
-    public void requestPrivileges(
+    public boolean requestPrivileges(
             Collection<String> requestedPrivs,
-            String user, char[] passwd) throws NotOwnerException, CancellationException;
+            String user, char[] passwd) throws NotOwnerException, InterruptedException, CancellationException;
 
     /**
      * Tests whether the <tt>ExecutionEnvironment</tt> has all needed
@@ -105,7 +105,6 @@ public interface SolarisPrivilegesSupport {
      */
     public AsynchronousAction getRequestPrivilegesAction(
             Collection<String> requestedPrivileges, Runnable onPrivilegesGranted);
-
 
     /**
      *  This method is invoked when connection to the ExecutionEnviroment is lost
