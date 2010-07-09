@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.j2ee.deployment.plugins.spi;
 
-import java.io.File;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -76,6 +75,14 @@ public interface ServerLibraryManager {
     @NonNull
     Set<ServerLibrary> getDeployedLibraries();
 
+    @NonNull
+    Set<ServerLibraryDependency> getMissingDependencies(
+            @NonNull Set<ServerLibraryDependency> dependencies);
+
+    @NonNull
+    Set<ServerLibraryDependency> getDeployableDependencies(
+            @NonNull Set<ServerLibraryDependency> dependencies);
+
     /**
      * Deploys all the required libraries passed to the method. The libraries
      * passed to the method may be already deployed and it is up to implementor
@@ -85,6 +92,7 @@ public interface ServerLibraryManager {
      * @throws ConfigurationException if there was a problem during
      *             the deployment
      */
-    void deployLibraries(@NonNull Set<ServerLibraryDependency> libraries) throws ConfigurationException;
+    void deployLibraries(@NonNull Set<ServerLibraryDependency> libraries)
+            throws ConfigurationException;
 
 }
