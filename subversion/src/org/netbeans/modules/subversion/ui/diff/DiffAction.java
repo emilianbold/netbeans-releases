@@ -62,6 +62,7 @@ import org.tigris.subversion.svnclientadapter.ISVNStatus;
  */
 public class DiffAction extends ContextAction {
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Diff";    // NOI18N
     }

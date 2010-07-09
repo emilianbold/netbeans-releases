@@ -70,14 +70,17 @@ public class StatusAction  extends ContextAction {
     
     private static final int enabledForStatus = FileInformation.STATUS_MANAGED;
     
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_ShowChanges"; // NOI18N
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return enabledForStatus;
     }
 
+    @Override
     public void performContextAction(Node[] nodes) {
         
         if(!Subversion.getInstance().checkClientAvailable()) {            
@@ -98,7 +101,7 @@ public class StatusAction  extends ContextAction {
      */
     public static void executeStatus(final Context context, SvnProgressSupport support, boolean contactServer) {
 
-        if (context == null || context.getRoots().size() == 0) {
+        if (context == null || context.getRoots().isEmpty()) {
             return;
         }
             

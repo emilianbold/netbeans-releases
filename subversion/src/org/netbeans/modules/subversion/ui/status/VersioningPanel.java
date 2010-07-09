@@ -127,11 +127,13 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         parent.getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
 
         getActionMap().put("prevInnerView", new AbstractAction("") { // NOI18N
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onNextInnerView();
             }
         });
         getActionMap().put("nextInnerView", new AbstractAction("") { // NOI18N
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onPrevInnerView();
             }
@@ -160,12 +162,14 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         onDisplayedStatusChanged();
     }
     
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             repaint();
         }
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
@@ -189,10 +193,12 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         reScheduleRefresh(0);
     }
     
+    @Override
     public ExplorerManager getExplorerManager () {
         return explorerManager;
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
@@ -203,6 +209,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         reScheduleRefresh(0);   // the view does not listen for changes when it is not visible
     }
 
+    @Override
     public void removeNotify() {
         SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         subversion.getStatusCache().removeVersioningListener(this);
@@ -257,6 +264,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private void setupModels() {
         if (context == null) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     syncTable.setTableModel(new SyncFileNode[0]);
                 }
@@ -303,6 +311,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             }
 
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if (nodes.length > 0) {
                         syncTable.setColumns(tableColumns);
@@ -317,6 +326,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             });
         } finally {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     ph.finish();
                 }
@@ -414,6 +424,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         svnProgressSupport = new VersioningPanelProgressSupport() {
+            @Override
             public void perform() {
                 try {
                     StatusAction.executeStatus(context, this, true);
@@ -472,6 +483,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         reScheduleRefresh(0);
     }
 
+    @Override
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
             if (!affectsView(event)) return;
@@ -511,6 +523,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     void deserialize() {
         if (syncTable != null) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     syncTable.setDefaultColumnSizes();
                 }
@@ -534,6 +547,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
 
     private class RefreshViewTask implements Runnable {
+        @Override
         public void run() {
             setupModels();
         }
@@ -564,9 +578,11 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         private Set<JComponent> adjusted = new HashSet<JComponent>();
 
+        @Override
         public void removeLayoutComponent(Component comp) {
         }
 
+        @Override
         public void layoutContainer(Container parent) {
             Dimension dim = VersioningPanel.this.getSize();
             Dimension max = parent.getSize();
@@ -598,9 +614,11 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             }
         }
 
+        @Override
         public void addLayoutComponent(String name, Component comp) {
         }
 
+        @Override
         public Dimension minimumLayoutSize(Container parent) {
 
             // in column layout use taller toolbar
@@ -628,6 +646,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             return new Dimension(horizont, height);
         }
 
+        @Override
         public Dimension preferredLayoutSize(Container parent) {
             // Eliminates double height toolbar problem
             Dimension dim = VersioningPanel.this.getSize();
@@ -685,11 +704,13 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                 button.setMargin(new Insets(0, 3, 0, 3));
                 button.setBorderPainted(false);
                 button.addMouseListener(new MouseAdapter() {
+                    @Override
                     public void mouseEntered(MouseEvent e) {
                         button.setContentAreaFilled(true);
                         button.setBorderPainted(true);
                     }
 
+                    @Override
                     public void mouseExited(MouseEvent e) {
                         button.setContentAreaFilled(false);
                         button.setBorderPainted(false);
