@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.maven.output;
 
-import org.netbeans.modules.maven.output.CompileAnnotation;
-import org.netbeans.modules.maven.output.JavaOutputListenerProvider;
 import java.io.File;
 import junit.framework.*;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
@@ -58,16 +56,8 @@ public class JavaOutputListenerProviderTest extends TestCase {
         super(testName);
     }
    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(JavaOutputListenerProviderTest.class);
-        return suite;
-    }
-
     protected void setUp() throws java.lang.Exception {
         provider = new JavaOutputListenerProvider();
-    }
-
-    protected void tearDown() throws java.lang.Exception {
     }
 
     public void testRecognizeLine() {

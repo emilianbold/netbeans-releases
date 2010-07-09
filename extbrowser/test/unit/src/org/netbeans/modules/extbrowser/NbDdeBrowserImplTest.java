@@ -49,13 +49,7 @@
 
 package org.netbeans.modules.extbrowser;
 
-import junit.framework.*;
 import org.netbeans.junit.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.net.*;
-import javax.swing.*;
          
 /**
  *
@@ -67,10 +61,6 @@ public class NbDdeBrowserImplTest extends NbTestCase {
         super(testName);
     }        
         
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     private NbDdeBrowserImpl getDDEBrowserImpl() {
         return (NbDdeBrowserImpl)((DelegatingWebBrowserImpl)testObject).getImplementation();
     }
@@ -154,15 +144,6 @@ public class NbDdeBrowserImplTest extends NbTestCase {
         testObject.stopLoading ();
     }
     
-    public static Test suite () {
-        TestSuite suite = new NbTestSuite (NbDdeBrowserImplTest.class);
-        
-        return suite;
-    }
-    
-    // Add test methods here, they have to start with 'test' name.
-    // for example: 
-    // public void testHello() {}
     protected ExtBrowserImpl testObject;
     
     protected void setUp () {

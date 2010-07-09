@@ -49,10 +49,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 public class MutexTest extends NbTestCase {
     Mutex.Privileged p;
@@ -64,12 +62,6 @@ public class MutexTest extends NbTestCase {
         super(testName);
     }
 
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite(MutexTest.class);
-
-        return suite;
-    }
-    
     /** Sets up the test.
      */
     @Override

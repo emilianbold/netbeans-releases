@@ -41,12 +41,8 @@
  */
 package org.netbeans.modules.maven.output;
 
-import org.netbeans.modules.maven.output.CompileAnnotation;
-import org.netbeans.modules.maven.output.JavaOutputListenerProvider;
-import java.io.File;
 import junit.framework.*;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -58,16 +54,8 @@ public class ScalaOutputListenerProviderTest extends TestCase {
         super(testName);
     }
    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(ScalaOutputListenerProviderTest.class);
-        return suite;
-    }
-
     protected void setUp() throws java.lang.Exception {
         provider = new ScalaOutputListenerProvider();
-    }
-
-    protected void tearDown() throws java.lang.Exception {
     }
 
     public void testRecognizeLine() {

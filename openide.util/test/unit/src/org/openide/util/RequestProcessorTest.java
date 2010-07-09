@@ -49,7 +49,6 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Test;
 import org.openide.ErrorManager;
 import org.netbeans.junit.*;
 
@@ -62,15 +61,6 @@ public class RequestProcessorTest extends NbTestCase {
 
     public RequestProcessorTest(java.lang.String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        Test t = null;
-//        t = new RequestProcessorTest("testPriorityInversionOnFinishedTasks");
-        if (t == null) {
-            t = new NbTestSuite(RequestProcessorTest.class);
-        }
-        return t;
     }
 
     @Override

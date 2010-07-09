@@ -44,10 +44,6 @@
 package org.netbeans.modules.masterfs.filebasedfs.utils;
 
 import java.io.File;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Utilities;
 
@@ -59,19 +55,6 @@ public class FileInfoTest extends NbTestCase {
 
     public FileInfoTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(FileInfoTest.class);
-        return suite;
     }
 
     /** Test getRoot() method. */

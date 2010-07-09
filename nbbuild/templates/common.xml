@@ -750,12 +750,16 @@ made subject to such option by the copyright holder.
                 <delete file="${test.report.file}"/>
                 <mkdir dir="${build.test.@{test.type}.results.dir}"/>
                 <touch file="${test.report.file}" verbose="false"/>   <!-- must exist, otherwise the XML formatter would fail -->
+                <condition property="test.methods.line" value="methods=${test.methods}" else="">
+                    <isset property="test.methods"/>
+                </condition>
                 <java fork="true" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner">
                     <jvmarg value="-Xdebug"/>
                     <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
                     <jvmarg line="${test.run.args}"/>
                     <classpath>
                         <path refid="test.@{test.type}.run.cp"/>
+                        <fileset dir="${ant.home}" includes="patches/*.jar"/>
                         <pathelement location="${ant.home}/lib/ant.jar"/>
                         <pathelement location="${ant.home}/lib/ant-junit.jar"/>
                     </classpath>
@@ -765,6 +769,7 @@ made subject to such option by the copyright holder.
                     <arg value="showoutput=true"/>
                     <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
                     <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${test.report.file}"/>
+                    <arg line="${test.methods.line}"/>
                 </java>
             </sequential>
         </macrodef>
@@ -793,7 +798,30 @@ made subject to such option by the copyright holder.
         <property name="test.type" value="unit"/>
         <debug-test-single-nb test.type="${test.type}"/>
     </target>
-
+    
+    <target name="test-method" depends="init,test-init,test-build">
+        <macrodef name="test-method">
+            <attribute name="test.type"/>
+            <sequential>
+                <fail unless="test.class">Must set test.class</fail>
+                <fail unless="test.methods">Must set test.methods</fail>
+                <mkdir dir="${build.test.@{test.type}.results.dir}"/>
+                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" filtertrace="${test.filter.trace}" tempdir="${build.test.@{test.type}.results.dir}" timeout="${test.timeout}">
+                    <test name="${test.class}" methods="${test.methods}" todir="${build.test.@{test.type}.results.dir}"/>
+                    <classpath refid="test.@{test.type}.run.cp"/>
+                    <syspropertyset refid="test.@{test.type}.properties"/>
+                    <jvmarg line="${test.run.args}"/>
+                    <jvmarg line="${test.bootclasspath.prepend.args}"/>
+                    <formatter type="brief" usefile="false"/>
+                    <formatter type="xml"/>
+                </junit>
+                <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
+            </sequential>
+        </macrodef>
+        <property name="test.type" value="unit"/>
+        <test-method test.type="${test.type}"/>
+    </target>
+    
     <target name="run-test-main"  depends="init,test-init,test-build">
         <macrodef name="tjava">
             <attribute name="test.type"/>

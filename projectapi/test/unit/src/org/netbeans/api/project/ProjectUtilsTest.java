@@ -48,6 +48,8 @@ import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -316,6 +318,11 @@ public class ProjectUtilsTest extends NbTestCase {
         listener.assertEvents(ProjectInformation.PROP_ICON);
         MockLookup.setInstances();
         listener.assertEvents(ProjectInformation.PROP_ICON);
+        Reference<?> piRef = new WeakReference<Object>(pi);
+        lookupResult = Lookup.getDefault().lookupResult(ProjectIconAnnotator.class);
+        pi = null;
+        assertGC("can collect proxy ProjectInformation's", piRef);
     }
+    private static Object lookupResult;
 
 }

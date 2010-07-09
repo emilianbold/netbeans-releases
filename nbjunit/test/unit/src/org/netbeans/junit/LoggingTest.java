@@ -67,17 +67,6 @@ public class LoggingTest extends NbTestCase {
         super(testName);
     }
 
-    public static NbTestSuite suite() {
-//        NbTestSuite suite = new NbTestSuite();
-//        // you can define order of test cases here
-//        suite.addTest(new LoggingTest("testLogFileName"));
-//        suite.addTest(new LoggingTest("testLogFileNameEqualsToNameOfTest"));
-//        suite.addTest(new LoggingTest("testTrimLogFiles"));
-        
-        NbTestSuite suite = new NbTestSuite(LoggingTest.class);
-        return suite;
-    }
-    
     protected void setUp() throws Exception {
         clearWorkDir();
     }

@@ -53,10 +53,6 @@ public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
         super(testName);
     }
 
-//    public static ChildrenFilterAsLazyKeysTest suite() {
-//        return new ChildrenFilterAsLazyKeysTest("testProblemsWithRefereshAfterInitializationInReadAccessIssue140313");
-//    }
-
     @Override
     protected boolean lazy() {
         return true;

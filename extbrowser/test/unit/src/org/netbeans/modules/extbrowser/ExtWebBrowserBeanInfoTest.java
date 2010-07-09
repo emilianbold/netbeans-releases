@@ -49,11 +49,8 @@
 
 package org.netbeans.modules.extbrowser;
 
-import junit.framework.*;
 import org.netbeans.junit.*;
-import java.awt.Image;
 import java.beans.*;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -65,10 +62,6 @@ public class ExtWebBrowserBeanInfoTest extends NbTestCase {
         super(testName);
     }
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     /** Test of getBeanDescriptor method, of class org.netbeans.modules.extbrowser.ExtWebBrowserBeanInfo. */
     public void testGetBeanDescriptor () {
         if (testObject.getBeanDescriptor () == null)
@@ -87,15 +80,6 @@ public class ExtWebBrowserBeanInfoTest extends NbTestCase {
             fail ("ExtWebBrowserBeanInfo.getIcon (BeanInfo.ICON_COLOR_32x32) returned <null>.");
     }
     
-    public static Test suite () {
-        TestSuite suite = new NbTestSuite (ExtWebBrowserBeanInfoTest.class);
-        
-        return suite;
-    }
-    
-    // Add test methods here, they have to start with 'test' name.
-    // for example: 
-    // public void testHello() {}
     protected BeanInfo testObject;
     
     protected void setUp () {

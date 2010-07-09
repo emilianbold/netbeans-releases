@@ -49,7 +49,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
-import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileUtil;
 
@@ -99,14 +98,6 @@ public class AbstractProjectDefinitionTest extends NbTestCase {
     protected void tearDown() throws Exception {
         clearWorkDir();
     }
-
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite(AbstractProjectDefinitionTest.class);
-        
-        return suite;
-    }
-
     /**
      * Test of getName method, of class org.netbeans.modules.projectimport.jbuilder.j2seimport.AbstractProjectDefinition.
      */
