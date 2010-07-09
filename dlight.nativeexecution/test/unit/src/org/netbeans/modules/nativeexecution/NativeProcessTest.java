@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import java.util.concurrent.TimeoutException;
@@ -66,6 +67,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
@@ -142,9 +144,10 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
     }
 
     public void doTestDestroyInfiniteTasks(final ExecutionEnvironment execEnv) throws Exception {
+        ConnectionManager.getInstance().connectTo(execEnv);
         final BlockingQueue<NativeProcess> processQueue = new LinkedBlockingQueue<NativeProcess>();
         final Counters counters = new Counters();
-        int count = 5;
+        int count = 20;
 
         final TaskFactory infiniteTaskFactory = new TaskFactory() {
 
@@ -157,11 +160,10 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
         performDestroyTest(execEnv, count, infiniteTaskFactory, counters, processQueue);
 
         counters.dump(System.err);
-
-        assertEquals(count, counters.getCounter("Done").get()); // NOI18N
-        assertEquals(counters.getCounter("Started").get(), counters.getCounter("Finished").get()); // NOI18N
-        assertEquals(counters.getCounter("Started").get(), counters.getCounter("Killed").get()); // NOI18N
-        assertEquals(count, counters.getCounter("IOException").get() + counters.getCounter("InterruptedException").get() + counters.getCounter("Finished").get()); // NOI18N
+        assertEquals(count, counters.getCounter("Started").get()); // NOI18N
+        assertEquals(count, counters.getCounter("Killed").get()); // NOI18N
+        assertEquals(count, counters.getCounter("Finished").get()); // NOI18N
+        assertEquals(count, counters.getCounter("State == " + State.CANCELLED.name()).get());
     }
 
     public void doTestExecAndWaitTasks(final ExecutionEnvironment execEnv) throws Exception {
@@ -255,7 +257,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
                             System.out.println("Kill process " + pid); // NOI18N
                             p.destroy();
 
-                            int maxSecondsToWait = 5;
+                            int maxSecondsToWait = 10;
 
                             // Will wait for maximum secondsToWait seconds for
                             // the destroyed process...
@@ -431,6 +433,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
                 counters.getCounter("Started").incrementAndGet(); // NOI18N
                 System.out.println("Process done. Result is: " + p.waitFor()); // NOI18N
                 counters.getCounter("Finished").incrementAndGet(); // NOI18N
+                counters.getCounter("State == " + p.getState().name()).incrementAndGet(); // NOI18N
             } catch (InterruptedException ex) {
                 counters.getCounter("InterruptedException").incrementAndGet(); // NOI18N
             } catch (InterruptedIOException ex) {
