@@ -54,6 +54,7 @@ import java.util.*;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.JTextField;
+import junit.framework.Test;
 
 
 import org.netbeans.junit.*;
@@ -77,6 +78,10 @@ public class TopComponentGetLookupTest extends NbTestCase {
     
     public TopComponentGetLookupTest(String testName) {
         super(testName);
+    }
+    
+    public static Test suite() {
+        return new NbTestSuite(TopComponentGetLookupTest.class);
     }
     
     /** Setup component with lookup.
