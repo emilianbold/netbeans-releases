@@ -40,77 +40,57 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.refactoring;
+package org.netbeans.modules.web.jsf.editor.el;
 
-import java.util.List;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
-import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.web.jsf.editor.el.ELIndexer.Fields;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
+ * Index for Expresion Language
  *
+ * @author Erno Mononen
  */
-public class JsfELRefactoringPlugin implements RefactoringPlugin {
+public final class ELIndex {
 
-    private final AbstractRefactoring refactoring;
+    private final QuerySupport querySupport;
 
-    public JsfELRefactoringPlugin(AbstractRefactoring refactoring) {
-        this.refactoring = refactoring;
+    private ELIndex(QuerySupport querySupport) {
+        this.querySupport = querySupport;
     }
 
-    @Override
-    public Problem preCheck() {
-        return null;
-    }
+    public static ELIndex get(FileObject file) {
+        Project project = FileOwnerQuery.getOwner(file);
+        Collection<FileObject> sourceRoots = QuerySupport.findRoots(project,
+                null,
+                Collections.<String>emptyList(),
+                Collections.<String>emptyList());
+        try {
+            QuerySupport support = QuerySupport.forRoots(ELIndexer.Factory.NAME,
+                    ELIndexer.Factory.VERSION,
+                    sourceRoots.toArray(new FileObject[]{}));
+            
+            return new ELIndex(support);
 
-    @Override
-    public Problem checkParameters() {
-        return null;
-    }
-
-    @Override
-    public Problem fastCheckParameters() {
-        return null;
-    }
-
-    @Override
-    public void cancelRequest() {
-    }
-
-    @Override
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        return null;
-    }
-
-    protected final TreePathHandle getHandle() {
-        return refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-    }
-
-    protected final FileObject getFileObject() {
-        FileObject fo = refactoring.getRefactoringSource().lookup(FileObject.class);
-        if (fo != null) {
-            return fo;
-        }
-        return getHandle().getFileObject();
-    }
-
-    protected final WebModule getWebModule() {
-        return WebModule.getWebModule(getFileObject());
-    }
-
-    protected FacesManagedBean findManagedBeanByClass(String clazz) {
-        List<FacesManagedBean> beans = JSFBeanCache.getBeans(getWebModule());
-        for (FacesManagedBean bean : beans) {
-            if (bean.getManagedBeanClass().equals(clazz)) {
-                return bean;
-            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         return null;
+    }
+
+    public Collection<? extends IndexResult> findManagedBeanReferences(String managedBeanName) {
+        try {
+            return querySupport.query(ELIndexer.Fields.IDENTIFIER, managedBeanName, QuerySupport.Kind.EXACT);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return Collections.emptySet();
     }
 }

@@ -43,17 +43,22 @@
 package org.netbeans.modules.web.jsf.editor.refactoring;
 
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 
 /**
  *
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=300)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=177)
 public class JsfELRefactoringFactory implements RefactoringPluginFactory {
 
     @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+        if (refactoring instanceof WhereUsedQuery &&
+                ((WhereUsedQuery) refactoring).getBooleanValue(WhereUsedQuery.FIND_REFERENCES)) {
+            return new ELWhereUsedQuery((WhereUsedQuery) refactoring);
+        }
         return null;
     }
 

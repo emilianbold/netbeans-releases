@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,83 +40,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.web.jsf.editor.refactoring;
 
-import java.util.List;
+import java.io.IOException;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
-import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
- *
+ * XXX: need a common module for sharing code with refactorings, same stuff here
+ * as e.g. in jpa.refactoring.
  */
-public class JsfELRefactoringPlugin implements RefactoringPlugin {
+public final class RefactoringUtil {
 
-    private final AbstractRefactoring refactoring;
-
-    public JsfELRefactoringPlugin(AbstractRefactoring refactoring) {
-        this.refactoring = refactoring;
+    private RefactoringUtil() {
     }
-
-    @Override
-    public Problem preCheck() {
-        return null;
-    }
-
-    @Override
-    public Problem checkParameters() {
-        return null;
-    }
-
-    @Override
-    public Problem fastCheckParameters() {
-        return null;
-    }
-
-    @Override
-    public void cancelRequest() {
-    }
-
-    @Override
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        return null;
-    }
-
-    protected final TreePathHandle getHandle() {
-        return refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-    }
-
-    protected final FileObject getFileObject() {
-        FileObject fo = refactoring.getRefactoringSource().lookup(FileObject.class);
-        if (fo != null) {
-            return fo;
+    
+    public static CompilationInfo getCompilationInfo(TreePathHandle handle, final AbstractRefactoring refactoring){
+        
+        CompilationInfo existing = refactoring.getRefactoringSource().lookup(CompilationInfo.class);
+        if (existing != null){
+            return existing;
         }
-        return getHandle().getFileObject();
-    }
-
-    protected final WebModule getWebModule() {
-        return WebModule.getWebModule(getFileObject());
-    }
-
-    protected FacesManagedBean findManagedBeanByClass(String clazz) {
-        List<FacesManagedBean> beans = JSFBeanCache.getBeans(getWebModule());
-        for (FacesManagedBean bean : beans) {
-            if (bean.getManagedBeanClass().equals(clazz)) {
-                return bean;
-            }
+        final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
+        JavaSource source = JavaSource.create(cpInfo, new FileObject[]{handle.getFileObject()});
+        try{
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                
+                public void run(CompilationController co) throws Exception {
+                    co.toPhase(JavaSource.Phase.RESOLVED);
+                    refactoring.getContext().add(co);
+                }
+                
+                public void cancel() {
+                }
+                
+            }, false);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return null;
+        return refactoring.getContext().lookup(CompilationInfo.class);
     }
+    
 }

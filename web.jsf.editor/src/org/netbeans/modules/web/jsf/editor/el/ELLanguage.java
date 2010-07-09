@@ -43,12 +43,12 @@
 package org.netbeans.modules.web.jsf.editor.el;
 
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 
 /**
  * CSL language for Expression Language
@@ -56,6 +56,7 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
  * @author Erno Mononen
  */
 @LanguageRegistration(mimeType="text/x-el") //NOI18N
+@PathRecognizerRegistration(mimeTypes="text/x-el", libraryPathIds={}, binaryLibraryPathIds={}) //NOI18N
 public class ELLanguage extends DefaultLanguageConfig {
 
     @Override

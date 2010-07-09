@@ -116,11 +116,14 @@ public final class ELIndexer extends EmbeddingIndexer {
         }
     }
 
-    static final class Fields {
-        static final String IDENTIFIER = "identifier";
+    public static final class Fields {
+        public static final String IDENTIFIER = "identifier";
     }
 
     public static final class Factory extends EmbeddingIndexerFactory {
+
+        static final String NAME = "EL"; //NOI18N
+        static final int VERSION = 1;
 
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
@@ -145,12 +148,12 @@ public final class ELIndexer extends EmbeddingIndexer {
 
         @Override
         public String getIndexerName() {
-            return "EL"; //NOI18N
+            return NAME;
         }
 
         @Override
         public int getIndexVersion() {
-            return 1;
+            return VERSION;
         }
     }
 }
