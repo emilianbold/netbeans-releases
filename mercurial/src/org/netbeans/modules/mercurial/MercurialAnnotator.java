@@ -43,6 +43,10 @@
  */
 package org.netbeans.modules.mercurial;
 
+import org.netbeans.modules.mercurial.ui.menu.ShowMenu;
+import org.netbeans.modules.mercurial.ui.menu.MergeMenu;
+import org.netbeans.modules.mercurial.ui.menu.ShareMenu;
+import org.netbeans.modules.mercurial.ui.menu.RecoverMenu;
 import org.netbeans.modules.mercurial.ui.clone.CloneAction;
 import org.netbeans.modules.mercurial.ui.clone.CloneExternalAction;
 import org.netbeans.modules.mercurial.ui.create.CreateAction;
@@ -67,7 +71,7 @@ import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
-import org.netbeans.modules.mercurial.ui.diff.ExportMenu;
+import org.netbeans.modules.mercurial.ui.menu.ExportMenu;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
 import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
@@ -371,6 +375,8 @@ public class MercurialAnnotator extends VCSAnnotator {
                             ? loc.getString("CTL_PopupMenuItem_IncludeInCommit") //NOI18N
                             : loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context)); //NOI18N
                 }
+                actions.add(null);
+                actions.add(new ShareMenu(context));
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(PropertiesAction.class), loc.getString("CTL_PopupMenuItem_Properties"), context)); //NOI18N
             }

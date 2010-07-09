@@ -168,6 +168,8 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                     sa.actionPerformed(e);
                 }
             });
+        } else if (action instanceof Presenter.Menu) {
+            item = ((Presenter.Menu) action).getMenuPresenter();
         } else {
             item = new JMenuItem(action);
         }
