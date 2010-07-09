@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.smarty;
 
 import java.io.File;
+import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -54,21 +55,33 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
  * @author Martin Fousek
  */
 public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
-
+    private static final String ICON_PATH = "org/netbeans/modules/php/smarty/resources/smarty-badge-8.png"; // NOI18N
     private static final SmartyPhpFrameworkProvider INSTANCE = new SmartyPhpFrameworkProvider();
 
+    private final BadgeIcon badgeIcon;
+
+    @PhpFrameworkProvider.Registration(position=300)
     public static SmartyPhpFrameworkProvider getInstance() {
         return INSTANCE;
     }
 
     private SmartyPhpFrameworkProvider() {
         super(NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "LBL_FrameworkName"), NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "LBL_FrameworkDescription"));
+        badgeIcon = new BadgeIcon(
+                ImageUtilities.loadImage(ICON_PATH),
+                SmartyPhpFrameworkProvider.class.getResource("/" + ICON_PATH)); // NOI18N
+    }
+
+    @Override
+    public BadgeIcon getBadgeIcon() {
+        return badgeIcon;
     }
 
     public static boolean isSmartyTemplateExtension(String ext) {
