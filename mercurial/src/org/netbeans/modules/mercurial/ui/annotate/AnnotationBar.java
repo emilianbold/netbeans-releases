@@ -321,12 +321,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         doc.runAtomic(new Runnable() {
             @Override
             public void run() {
-                String url = HgUtils.getRemoteRepository(repositoryRoot);
-                boolean isKenaiRepository = url != null && HgKenaiAccessor.getInstance().isKenai(url);
-                if(isKenaiRepository) {
-                    kenaiUsersMap = new HashMap<String, KenaiUser>();
-                }
-
                 StyledDocument sd = (StyledDocument) doc;
                 Iterator<AnnotateLine> it = lines.iterator();
                 previousRevisions = Collections.synchronizedMap(new HashMap<String, HgRevision>());
@@ -336,16 +330,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     int lineNum = ann2editorPermutation[line.getLineNum() -1];
                     try {
                         int lineOffset = NbDocument.findLineOffset(sd, lineNum -1);
-                        Element element = sd.getParagraphElement(lineOffset);
-                        if(isKenaiRepository) {
-                            String author = line.getAuthor();
-                            if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
-                                KenaiUser ku = HgKenaiAccessor.getInstance().forName(author, url);
-                                if(ku != null) {
-                                    kenaiUsersMap.put(author, ku);
-                                }
-                            }
-                        }
+                        Element element = sd.getParagraphElement(lineOffset);                        
                         elementAnnotations.put(element, line);
                     } catch (IndexOutOfBoundsException ex) {
                         // TODO how could I get line behind document end?
@@ -356,6 +341,23 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         });
 
+        final String url = HgUtils.getRemoteRepository(repositoryRoot);
+        final boolean isKenaiRepository = url != null && HgKenaiAccessor.getInstance().isKenai(url);
+        if(isKenaiRepository) {
+            kenaiUsersMap = new HashMap<String, KenaiUser>();
+            Iterator<AnnotateLine> it = lines.iterator();
+            while (it.hasNext()) {
+                AnnotateLine line = it.next();
+                String author = line.getAuthor();
+                if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
+                    KenaiUser ku = HgKenaiAccessor.getInstance().forName(author, url);
+                    if(ku != null) {
+                        kenaiUsersMap.put(author, ku);
+                    }
+                }
+            }
+        }
+                
         // lazy listener registration
         caret.addChangeListener(this);
         this.caretTimer = new Timer(500, this);
