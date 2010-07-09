@@ -146,16 +146,17 @@ public final class BrokenServerLibrarySupport {
         Set<ServerLibraryDependency> deps = getDependencies(jmp);
 
         String serverInstanceID = jmp.getServerInstanceID();
-        ServerInstance inst = Deployment.getDefault().getServerInstance(serverInstanceID);
-        try {
-            ServerInstance.LibraryManager manager = inst.getLibraryManager();
-            if (manager != null) {
-                return manager.getMissingDependencies(deps);
+        if (serverInstanceID != null) {
+            ServerInstance inst = Deployment.getDefault().getServerInstance(serverInstanceID);
+            try {
+                ServerInstance.LibraryManager manager = inst.getLibraryManager();
+                if (manager != null) {
+                    return manager.getMissingDependencies(deps);
+                }
+            } catch(InstanceRemovedException ex) {
+                LOGGER.log(Level.FINE, null, ex);
             }
-        } catch(InstanceRemovedException ex) {
-            LOGGER.log(Level.FINE, null, ex);
         }
-
         return Collections.emptySet();
     }
 
@@ -165,16 +166,17 @@ public final class BrokenServerLibrarySupport {
         Set<ServerLibraryDependency> deps = getDependencies(jmp);
 
         String serverInstanceID = jmp.getServerInstanceID();
-        ServerInstance inst = Deployment.getDefault().getServerInstance(serverInstanceID);
-        try {
-        ServerInstance.LibraryManager manager = inst.getLibraryManager();
-            if (manager != null) {
-                return manager.getDeployableDependencies(deps);
+        if (serverInstanceID != null) {
+            ServerInstance inst = Deployment.getDefault().getServerInstance(serverInstanceID);
+            try {
+            ServerInstance.LibraryManager manager = inst.getLibraryManager();
+                if (manager != null) {
+                    return manager.getDeployableDependencies(deps);
+                }
+            } catch(InstanceRemovedException ex) {
+                LOGGER.log(Level.FINE, null, ex);
             }
-        } catch(InstanceRemovedException ex) {
-            LOGGER.log(Level.FINE, null, ex);
         }
-
         return Collections.emptySet();
     }
 
