@@ -66,6 +66,7 @@ public class MeasureJ2SEActionsTest {
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ExpandNodesInComponentInspectorTest.class)
 // TODO move to scenarios        .addTest(SearchTest.class)
+                .addTest(TypingInEditorTest.class)
                 .addTest(CloseAllEditorsTest.class)
                 .addTest(CloseEditorTest.class)
                 .addTest(CloseEditorModifiedTest.class)
@@ -86,8 +87,7 @@ public class MeasureJ2SEActionsTest {
                 .addTest(SelectCategoriesInNewFileTest.class)
 // to fix        .addTest(ShiftCodeInEditorTest.class)
 // to fix                .addTest(SwitchToFileTest.class)
-                .addTest(SwitchViewTest.class)
-                .addTest(TypingInEditorTest.class)
+// to fix                .addTest(SwitchViewTest.class)
                 .addTest(ShowClassMembersInNavigatorTest.class)
 // TODO move to scenarios              .addTest(RefactorFindUsagesTest.class)*/
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
