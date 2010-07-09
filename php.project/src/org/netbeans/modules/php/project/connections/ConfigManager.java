@@ -78,7 +78,8 @@ public final class ConfigManager {
     public ConfigManager(ConfigProvider configProvider) {
         this.configProvider = configProvider;
         changeSupport = new ChangeSupport(this);
-        configs = configProvider.getConfigs();
+        configs = createEmptyConfigs();
+        configs.putAll(configProvider.getConfigs());
 
         List<String> tmp = new ArrayList<String>(Arrays.asList(configProvider.getConfigProperties()));
         tmp.add(PROP_DISPLAY_NAME);
@@ -124,6 +125,13 @@ public final class ConfigManager {
 
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
+    }
+
+    // configs are reseted to their original state (discards changes in memory)
+    public synchronized void reset() {
+        configs.clear();
+        configErrors.clear();
+        configs.putAll(configProvider.getConfigs());
     }
 
     public synchronized boolean exists(String name) {

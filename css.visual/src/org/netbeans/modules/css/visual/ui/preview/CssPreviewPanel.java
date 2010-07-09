@@ -46,6 +46,7 @@ package org.netbeans.modules.css.visual.ui.preview;
 import java.awt.Graphics;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Handler;
@@ -279,7 +280,14 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
                     //so we can simply use WebUtils.resolve()
                     String absoluteLink = uri.substring(doubleSlashIndex + 1); //+1 => just one slash goes away
                     // Absolute path now we will look to the webRoot of the project
-                    FileObject edited = URLMapper.findFileObject(new URL(getBaseURL()));
+                    URL url = new URL(getBaseURL());
+
+                    //fix for Bug 188259 - java.net.URISyntaxException: Illegal character in path at index 20: file:/C:/Users/Bryan Field/Projects/SurfNSecure.com-Applied-Thermal-DocumentNotes/web/,.css (edit)
+                    //the FileBasedURLMapper.getFileObjects() logs URISyntaxException instead of passing it out,
+                    //if happens during its call to url.getURI();
+                    url.toURI(); //lets catch the exception here
+
+                    FileObject edited = URLMapper.findFileObject(url);
                     if (edited != null) {
                         FileObject target = WebUtils.resolve(edited, absoluteLink);
                         if (target != null) {
@@ -291,6 +299,8 @@ public class CssPreviewPanel extends javax.swing.JPanel implements CssPreviewCom
                     }
                 }
 
+            } catch (URISyntaxException ex) {
+                LOGGER.log(Level.INFO, null, ex); //NOI18N
             } catch (MalformedURLException ex) {
                 LOGGER.log(Level.INFO, null, ex); //NOI18N
             }

@@ -46,7 +46,6 @@ package org.netbeans.modules.project.ui.actions;
 
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.ProjectTab;
@@ -119,7 +118,7 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
         this.command = command;
         this.performer = performer;
         this.namePattern = namePattern;
-        refresh( getLookup() );
+        refresh(getLookup(), true);
     }
        
     protected void actionPerformed( Lookup context ) {
@@ -131,7 +130,7 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
         }
     }
     
-    protected void refresh( Lookup context ) {        
+    protected @Override void refresh(Lookup context, boolean immediate) {
         FileObject fo = getFileFromLookup( context );
         setEnabled( fo != null );        
     }

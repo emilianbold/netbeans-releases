@@ -192,9 +192,10 @@ public class KenaiAccessorImpl extends KenaiAccessor {
             if (project != null) {
                 kenaiProjects.add(KenaiProjectImpl.getInstance(project));
             } else {
-                Support.LOG.warning(
-                        "No Kenai project is available for ProjectHandle" //NOI18N
-                        + " [" + handle.getId() + ", " + handle.getDisplayName() + "]"); //NOI18N
+                Support.LOG.log(
+                        Level.WARNING,
+                        "No Kenai project is available for ProjectHandle" + " [{0}, {1}]", //NOI18N
+                        new Object[]{handle.getId(), handle.getDisplayName()}); 
             }
         }
         return kenaiProjects.toArray(new KenaiProjectImpl[kenaiProjects.size()]);
@@ -223,7 +224,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
         if(kenai != null) {
             addPropertyChangeListener(listener, kenai);
         } else {
-            Support.LOG.warning("trying to unregister on a unknown kenai host " + kenaiHostUrl);
+            Support.LOG.log(Level.WARNING, "trying to unregister on a unknown kenai host {0}", kenaiHostUrl);  //NOI18N
         }
     }
 
@@ -233,7 +234,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
         if(kenai != null) {
             removePropertyChangeListener(listener, kenai);
         } else {
-            Support.LOG.warning("trying to unregister on a unknown kenai host " + kenaiHostUrl);
+            Support.LOG.log(Level.WARNING, "trying to unregister on a unknown kenai host {0}", kenaiHostUrl);  //NOI18N
         }
     }
 

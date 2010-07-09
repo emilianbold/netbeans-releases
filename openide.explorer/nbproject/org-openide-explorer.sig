@@ -1,8 +1,8 @@
 #Signature file v4.1
-#Version 6.22.0
+#Version 6.28
 
 CLSS public abstract java.awt.Component
-cons protected Component()
+cons protected init()
 fld public final static float BOTTOM_ALIGNMENT = 1.0
 fld public final static float CENTER_ALIGNMENT = 0.5
 fld public final static float LEFT_ALIGNMENT = 0.0
@@ -272,11 +272,11 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,ProxyCapabilities,SingleBufferStrategy
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,boundsOp,bufferStrategy,changeSupport,changeSupportLock,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dropTarget,enabled,eventCache,eventLog,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,opaquePropertyChangeListener,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,SingleBufferStrategy
 
 CLSS public java.awt.Container
-cons public Container()
+cons public init()
 innr protected AccessibleAWTContainer
 meth protected java.lang.String paramString()
 meth protected void addImpl(java.awt.Component,java.lang.Object,int)
@@ -353,12 +353,11 @@ meth public void setFocusTraversalKeys(int,java.util.Set<? extends java.awt.AWTK
 meth public void setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
 meth public void setFont(java.awt.Font)
 meth public void setLayout(java.awt.LayoutManager)
-meth public void transferFocusBackward()
 meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,descendantsCount,dispatcher,eventLog,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,log,mixingLog,modalAppContext,modalComp,ncomponents,numOfHWComponents,numOfLWComponents,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS public abstract interface java.awt.ItemSelectable
@@ -425,7 +424,7 @@ CLSS public abstract interface !annotation java.lang.Deprecated
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Object
-cons public Object()
+cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
 meth public boolean equals(java.lang.Object)
@@ -470,7 +469,7 @@ CLSS public abstract interface javax.accessibility.Accessible
 meth public abstract javax.accessibility.AccessibleContext getAccessibleContext()
 
 CLSS public abstract javax.swing.AbstractButton
-cons public AbstractButton()
+cons public init()
 fld protected java.awt.event.ActionListener actionListener
 fld protected java.awt.event.ItemListener itemListener
 fld protected javax.swing.ButtonModel model
@@ -595,7 +594,7 @@ hfds action,actionPropertyChangeListener,borderPaintedSet,contentAreaFilled,cont
 hcls ButtonActionPropertyChangeListener,Handler
 
 CLSS public abstract javax.swing.AbstractListModel
-cons public AbstractListModel()
+cons public init()
 fld protected javax.swing.event.EventListenerList listenerList
 intf java.io.Serializable
 intf javax.swing.ListModel
@@ -614,10 +613,10 @@ meth public abstract java.lang.Object getSelectedItem()
 meth public abstract void setSelectedItem(java.lang.Object)
 
 CLSS public javax.swing.JComboBox
-cons public JComboBox()
-cons public JComboBox(java.lang.Object[])
-cons public JComboBox(java.util.Vector<?>)
-cons public JComboBox(javax.swing.ComboBoxModel)
+cons public init()
+cons public init(java.lang.Object[])
+cons public init(java.util.Vector<?>)
+cons public init(javax.swing.ComboBoxModel)
 fld protected boolean isEditable
 fld protected boolean lightWeightPopupEnabled
 fld protected int maximumRowCount
@@ -708,7 +707,7 @@ hfds action,actionPropertyChangeListener,firingActionEvent,prototypeDisplayValue
 hcls ComboBoxActionPropertyChangeListener,DefaultKeySelectionManager
 
 CLSS public abstract javax.swing.JComponent
-cons public JComponent()
+cons public init()
 fld protected javax.accessibility.AccessibleContext accessibleContext
 fld protected javax.swing.event.EventListenerList listenerList
 fld protected javax.swing.plaf.ComponentUI ui
@@ -862,14 +861,14 @@ meth public void unregisterKeyboardAction(javax.swing.KeyStroke)
 meth public void update(java.awt.Graphics)
 meth public void updateUI()
 supr java.awt.Container
-hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_NOTIFIER_KEY,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_KEY,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,TRANSFER_HANDLER_KEY,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
+hfds ACTIONMAP_CREATED,ANCESTOR_INPUTMAP_CREATED,ANCESTOR_USING_BUFFER,AUTOSCROLLS_SET,COMPLETELY_OBSCURED,CREATED_DOUBLE_BUFFER,DEBUG_GRAPHICS_LOADED,FOCUS_INPUTMAP_CREATED,FOCUS_TRAVERSAL_KEYS_BACKWARD_SET,FOCUS_TRAVERSAL_KEYS_FORWARD_SET,INHERITS_POPUP_MENU,INPUT_VERIFIER_SOURCE_KEY,IS_DOUBLE_BUFFERED,IS_OPAQUE,IS_PAINTING_TILE,IS_PRINTING,IS_PRINTING_ALL,IS_REPAINTING,KEYBOARD_BINDINGS_KEY,KEY_EVENTS_ENABLED,NEXT_FOCUS,NOT_OBSCURED,OPAQUE_SET,PARTIALLY_OBSCURED,REQUEST_FOCUS_DISABLED,RESERVED_1,RESERVED_2,RESERVED_3,RESERVED_4,RESERVED_5,RESERVED_6,REVALIDATE_RUNNABLE_SCHEDULED,WHEN_IN_FOCUSED_WINDOW_BINDINGS,WIF_INPUTMAP_CREATED,WRITE_OBJ_COUNTER_FIRST,WRITE_OBJ_COUNTER_LAST,aaTextInfo,actionMap,alignmentX,alignmentY,ancestorInputMap,autoscrolls,border,clientProperties,componentObtainingGraphicsFrom,componentObtainingGraphicsFromLock,defaultLocale,flags,focusController,focusInputMap,inputVerifier,isAlignmentXSet,isAlignmentYSet,managingFocusBackwardTraversalKeys,managingFocusForwardTraversalKeys,paintingChild,popupMenu,readObjectCallbacks,tempRectangles,uiClassID,verifyInputWhenFocusTarget,vetoableChangeSupport,windowInputMap
 hcls ActionStandin,IntVector,KeyboardState,ReadObjectCallback
 
 CLSS public javax.swing.JMenu
-cons public JMenu()
-cons public JMenu(java.lang.String)
-cons public JMenu(java.lang.String,boolean)
-cons public JMenu(javax.swing.Action)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,boolean)
+cons public init(javax.swing.Action)
 fld protected javax.swing.JMenu$WinListener popupListener
 innr protected AccessibleJMenu
 innr protected WinListener
@@ -933,12 +932,12 @@ hfds DEBUG,TRACE,VERBOSE,customMenuLocation,delay,listenerRegistry,menuChangeLis
 hcls MenuChangeListener
 
 CLSS public javax.swing.JMenuItem
-cons public JMenuItem()
-cons public JMenuItem(java.lang.String)
-cons public JMenuItem(java.lang.String,int)
-cons public JMenuItem(java.lang.String,javax.swing.Icon)
-cons public JMenuItem(javax.swing.Action)
-cons public JMenuItem(javax.swing.Icon)
+cons public init()
+cons public init(java.lang.String)
+cons public init(java.lang.String,int)
+cons public init(java.lang.String,javax.swing.Icon)
+cons public init(javax.swing.Action)
+cons public init(javax.swing.Icon)
 innr protected AccessibleJMenuItem
 intf javax.accessibility.Accessible
 intf javax.swing.MenuElement
@@ -981,10 +980,10 @@ hfds DEBUG,TRACE,VERBOSE,accelerator,isMouseDragged,uiClassID
 hcls MenuItemFocusListener
 
 CLSS public javax.swing.JPanel
-cons public JPanel()
-cons public JPanel(boolean)
-cons public JPanel(java.awt.LayoutManager)
-cons public JPanel(java.awt.LayoutManager,boolean)
+cons public init()
+cons public init(boolean)
+cons public init(java.awt.LayoutManager)
+cons public init(java.awt.LayoutManager,boolean)
 innr protected AccessibleJPanel
 intf javax.accessibility.Accessible
 meth protected java.lang.String paramString()
@@ -997,10 +996,10 @@ supr javax.swing.JComponent
 hfds uiClassID
 
 CLSS public javax.swing.JScrollPane
-cons public JScrollPane()
-cons public JScrollPane(int,int)
-cons public JScrollPane(java.awt.Component)
-cons public JScrollPane(java.awt.Component,int,int)
+cons public init()
+cons public init(int,int)
+cons public init(java.awt.Component)
+cons public init(java.awt.Component,int,int)
 fld protected int horizontalScrollBarPolicy
 fld protected int verticalScrollBarPolicy
 fld protected java.awt.Component lowerLeft
@@ -1122,7 +1121,7 @@ meth public abstract void intervalAdded(javax.swing.event.ListDataEvent)
 meth public abstract void intervalRemoved(javax.swing.event.ListDataEvent)
 
 CLSS public abstract javax.swing.table.AbstractTableModel
-cons public AbstractTableModel()
+cons public init()
 fld protected javax.swing.event.EventListenerList listenerList
 intf java.io.Serializable
 intf javax.swing.table.TableModel
@@ -1156,8 +1155,8 @@ meth public abstract void removeTableModelListener(javax.swing.event.TableModelL
 meth public abstract void setValueAt(java.lang.Object,int,int)
 
 CLSS public javax.swing.tree.DefaultTreeModel
-cons public DefaultTreeModel(javax.swing.tree.TreeNode)
-cons public DefaultTreeModel(javax.swing.tree.TreeNode,boolean)
+cons public init(javax.swing.tree.TreeNode)
+cons public init(javax.swing.tree.TreeNode,boolean)
 fld protected boolean asksAllowsChildren
 fld protected javax.swing.event.EventListenerList listenerList
 fld protected javax.swing.tree.TreeNode root
@@ -1208,13 +1207,13 @@ meth public abstract void valueForPathChanged(javax.swing.tree.TreePath,java.lan
 
 CLSS public org.openide.awt.JMenuPlus
  anno 0 java.lang.Deprecated()
-cons public JMenuPlus()
-cons public JMenuPlus(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
 supr javax.swing.JMenu
 hfds serialVersionUID
 
 CLSS public final org.openide.explorer.ExplorerManager
-cons public ExplorerManager()
+cons public init()
 fld public final static java.lang.String PROP_EXPLORED_CONTEXT = "exploredContext"
 fld public final static java.lang.String PROP_NODE_CHANGE = "nodeChange"
 fld public final static java.lang.String PROP_ROOT_CONTEXT = "rootContext"
@@ -1241,6 +1240,7 @@ hfds LOCK,SCHEDULE_REMOVE_ASYNCH,SELECTION_SYNC_DELAY,actions,exploredContext,li
 hcls Listener
 
 CLSS public abstract interface static org.openide.explorer.ExplorerManager$Provider
+ outer org.openide.explorer.ExplorerManager
 meth public abstract org.openide.explorer.ExplorerManager getExplorerManager()
 
 CLSS public final org.openide.explorer.ExplorerUtils
@@ -1258,8 +1258,8 @@ meth public abstract boolean delete(org.openide.nodes.Node[]) throws java.io.IOE
 
 CLSS public org.openide.explorer.propertysheet.DefaultPropertyModel
  anno 0 java.lang.Deprecated()
-cons public DefaultPropertyModel(java.lang.Object,java.beans.PropertyDescriptor)
-cons public DefaultPropertyModel(java.lang.Object,java.lang.String)
+cons public init(java.lang.Object,java.beans.PropertyDescriptor)
+cons public init(java.lang.Object,java.lang.String)
 intf java.beans.PropertyChangeListener
 intf org.openide.explorer.propertysheet.ExPropertyModel
 meth public java.beans.FeatureDescriptor getFeatureDescriptor()
@@ -1306,6 +1306,7 @@ meth public abstract void setPropertyModel(org.openide.explorer.propertysheet.Pr
 meth public abstract void setValue(java.lang.Object)
 
 CLSS public abstract interface static org.openide.explorer.propertysheet.InplaceEditor$Factory
+ outer org.openide.explorer.propertysheet.InplaceEditor
 meth public abstract org.openide.explorer.propertysheet.InplaceEditor getInplaceEditor()
 
 CLSS public org.openide.explorer.propertysheet.PropertyEnv
@@ -1336,11 +1337,11 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 meth public abstract void setValue(java.lang.Object) throws java.lang.reflect.InvocationTargetException
 
 CLSS public org.openide.explorer.propertysheet.PropertyPanel
-cons public PropertyPanel()
-cons public PropertyPanel(java.lang.Object,java.lang.String,int)
-cons public PropertyPanel(org.openide.explorer.propertysheet.PropertyModel,int)
-cons public PropertyPanel(org.openide.nodes.Node$Property)
-cons public PropertyPanel(org.openide.nodes.Node$Property,int)
+cons public init()
+cons public init(java.lang.Object,java.lang.String,int)
+cons public init(org.openide.explorer.propertysheet.PropertyModel,int)
+cons public init(org.openide.nodes.Node$Property)
+cons public init(org.openide.nodes.Node$Property,int)
 fld public final static int PREF_CUSTOM_EDITOR = 2
 fld public final static int PREF_INPUT_STATE = 4
 fld public final static int PREF_READ_ONLY = 1
@@ -1384,7 +1385,7 @@ hfds beans,changeImmediate,displayer,initializing,inner,isGtk,listener,model,pre
 hcls AccessiblePropertyPanel,CustomEditorProxyAction,Listener
 
 CLSS public org.openide.explorer.propertysheet.PropertySheet
-cons public PropertySheet()
+cons public init()
 fld protected static javax.swing.Icon iAlphaSort
  anno 0 java.lang.Deprecated()
 fld protected static javax.swing.Icon iCustomize
@@ -1457,11 +1458,11 @@ meth public void setValueColor(java.awt.Color)
  anno 0 java.lang.Deprecated()
 meth public void updateUI()
 supr javax.swing.JPanel
-hfds ACTION_INVOKE_HELP,ACTION_INVOKE_POPUP,INIT_DELAY,MAX_DELAY,forceTabs,helpAction,helperNodes,initTask,neverTabs,pclistener,popupEnabled,psheet,scheduleTask,serialVersionUID,showDesc,sortingMode,storedNode,table
+hfds ACTION_INVOKE_HELP,ACTION_INVOKE_POPUP,INIT_DELAY,MAX_DELAY,RP,forceTabs,helpAction,helperNodes,initTask,neverTabs,pclistener,popupEnabled,psheet,scheduleTask,serialVersionUID,showDesc,sortingMode,storedNode,table
 hcls HelpAction,MutableAction,SheetPCListener,TabInfo,TabSelectionListener
 
 CLSS public org.openide.explorer.propertysheet.PropertySheetView
-cons public PropertySheetView()
+cons public init()
 meth public void addNotify()
 meth public void removeNotify()
 supr org.openide.explorer.propertysheet.PropertySheet
@@ -1495,7 +1496,7 @@ meth public abstract org.w3c.dom.Node storeToXML(org.w3c.dom.Document)
 meth public abstract void readFromXML(org.w3c.dom.Node) throws java.io.IOException
 
 CLSS public org.openide.explorer.view.BeanTreeView
-cons public BeanTreeView()
+cons public init()
 meth protected boolean selectionAccept(org.openide.nodes.Node[])
 meth protected org.openide.explorer.view.NodeTreeModel createModel()
 meth protected void selectionChanged(org.openide.nodes.Node[],org.openide.explorer.ExplorerManager) throws java.beans.PropertyVetoException
@@ -1513,7 +1514,7 @@ meth public abstract java.lang.Boolean isSelected()
 meth public abstract void setSelected(java.lang.Boolean)
 
 CLSS public org.openide.explorer.view.ChoiceView
-cons public ChoiceView()
+cons public init()
 intf java.io.Externalizable
 meth protected org.openide.explorer.view.NodeListModel createModel()
 meth public boolean getShowExploredContext()
@@ -1527,7 +1528,7 @@ hfds iListener,manager,model,serialVersionUID,showExploredContext
 hcls PropertyIL
 
 CLSS public org.openide.explorer.view.ContextTreeView
-cons public ContextTreeView()
+cons public init()
 meth protected boolean selectionAccept(org.openide.nodes.Node[])
 meth protected boolean useExploredContextMenu()
 meth protected org.openide.explorer.view.NodeTreeModel createModel()
@@ -1539,7 +1540,7 @@ hfds LOG,serialVersionUID
 hcls NodeContextModel
 
 CLSS public org.openide.explorer.view.IconView
-cons public IconView()
+cons public init()
 intf java.io.Externalizable
 meth protected javax.swing.JList createList()
 supr org.openide.explorer.view.ListView
@@ -1547,8 +1548,8 @@ hfds serialVersionUID
 
 CLSS public org.openide.explorer.view.ListTableView
  anno 0 java.lang.Deprecated()
-cons public ListTableView()
-cons public ListTableView(org.openide.explorer.view.NodeTableModel)
+cons public init()
+cons public init(org.openide.explorer.view.NodeTableModel)
 meth public final int getListPreferredWidth()
 meth public final int getTableAutoResizeMode()
 meth public final int getTableColumnPreferredWidth(int)
@@ -1565,7 +1566,7 @@ hfds controlledTableView,listener,manager,pchl,prefSize,table,tableChanging
 hcls Listener
 
 CLSS public org.openide.explorer.view.ListView
-cons public ListView()
+cons public init()
 fld protected javax.swing.JList list
 fld protected org.openide.explorer.view.NodeListModel model
 intf java.io.Externalizable
@@ -1578,6 +1579,7 @@ meth protected void validateTree()
 meth public boolean isDragSource()
 meth public boolean isDropTarget()
 meth public boolean isPopupAllowed()
+meth public boolean isShowParentNode()
 meth public boolean isTraversalAllowed()
 meth public boolean requestFocusInWindow()
 meth public int getAllowedDragActions()
@@ -1598,14 +1600,15 @@ meth public void setDragSource(boolean)
 meth public void setDropTarget(boolean)
 meth public void setPopupAllowed(boolean)
 meth public void setSelectionMode(int)
+meth public void setShowParentNode(boolean)
 meth public void setTraversalAllowed(boolean)
 meth public void writeExternal(java.io.ObjectOutput) throws java.io.IOException
 supr javax.swing.JScrollPane
-hfds allowedDragActions,allowedDropActions,defaultProcessor,dragActive,dragSupport,dropActive,dropSupport,listenerActive,manager,managerListener,popupAllowed,popupSupport,serialVersionUID,traversalAllowed,wlpc,wlvc
+hfds allowedDragActions,allowedDropActions,defaultProcessor,dragActive,dragSupport,dropActive,dropSupport,listenerActive,manager,managerListener,popupAllowed,popupSupport,serialVersionUID,showParentNode,traversalAllowed,wlpc,wlvc
 hcls EnterAction,GoUpAction,GuardedActions,Listener,NbList,PopupSupport
 
 CLSS public org.openide.explorer.view.MenuView
-cons public MenuView()
+cons public init()
 innr public abstract interface static Acceptor
 innr public static Menu
 innr public static MenuItem
@@ -1616,18 +1619,20 @@ hfds DEFAULT_LISTENER,current,explorerManager,listener,root,serialVersionUID
 hcls AcceptorProxy,Listener
 
 CLSS public abstract interface static org.openide.explorer.view.MenuView$Acceptor
+ outer org.openide.explorer.view.MenuView
  anno 0 java.lang.Deprecated()
 meth public abstract boolean accept(org.openide.nodes.Node)
  anno 0 java.lang.Deprecated()
 
 CLSS public static org.openide.explorer.view.MenuView$Menu
-cons public Menu(org.openide.nodes.Node)
-cons public Menu(org.openide.nodes.Node,org.openide.explorer.view.MenuView$Acceptor)
+ outer org.openide.explorer.view.MenuView
+cons public init(org.openide.nodes.Node)
+cons public init(org.openide.nodes.Node,org.openide.explorer.view.MenuView$Acceptor)
  anno 0 java.lang.Deprecated()
-cons public Menu(org.openide.nodes.Node,org.openide.explorer.view.MenuView$Acceptor,boolean)
+cons public init(org.openide.nodes.Node,org.openide.explorer.view.MenuView$Acceptor,boolean)
  anno 0 java.lang.Deprecated()
-cons public Menu(org.openide.nodes.Node,org.openide.nodes.NodeAcceptor)
-cons public Menu(org.openide.nodes.Node,org.openide.nodes.NodeAcceptor,boolean)
+cons public init(org.openide.nodes.Node,org.openide.nodes.NodeAcceptor)
+cons public init(org.openide.nodes.Node,org.openide.nodes.NodeAcceptor,boolean)
 fld protected org.openide.nodes.Node node
 fld protected org.openide.nodes.NodeAcceptor action
 meth protected javax.swing.JMenuItem createMenuItem(org.openide.nodes.Node)
@@ -1638,13 +1643,14 @@ hfds filled,serialVersionUID
 hcls Helper
 
 CLSS public static org.openide.explorer.view.MenuView$MenuItem
-cons public MenuItem(org.openide.nodes.Node)
-cons public MenuItem(org.openide.nodes.Node,org.openide.explorer.view.MenuView$Acceptor)
+ outer org.openide.explorer.view.MenuView
+cons public init(org.openide.nodes.Node)
+cons public init(org.openide.nodes.Node,org.openide.explorer.view.MenuView$Acceptor)
  anno 0 java.lang.Deprecated()
-cons public MenuItem(org.openide.nodes.Node,org.openide.explorer.view.MenuView$Acceptor,boolean)
+cons public init(org.openide.nodes.Node,org.openide.explorer.view.MenuView$Acceptor,boolean)
  anno 0 java.lang.Deprecated()
-cons public MenuItem(org.openide.nodes.Node,org.openide.nodes.NodeAcceptor)
-cons public MenuItem(org.openide.nodes.Node,org.openide.nodes.NodeAcceptor,boolean)
+cons public init(org.openide.nodes.Node,org.openide.nodes.NodeAcceptor)
+cons public init(org.openide.nodes.Node,org.openide.nodes.NodeAcceptor,boolean)
 fld protected org.openide.nodes.Node node
 fld protected org.openide.nodes.NodeAcceptor action
 intf org.openide.util.HelpCtx$Provider
@@ -1654,8 +1660,8 @@ supr javax.swing.JMenuItem
 hfds serialVersionUID
 
 CLSS public org.openide.explorer.view.NodeListModel
-cons public NodeListModel()
-cons public NodeListModel(org.openide.nodes.Node)
+cons public init()
+cons public init(org.openide.nodes.Node)
 intf javax.swing.ComboBoxModel
 meth public int getDepth()
 meth public int getIndex(java.lang.Object)
@@ -1666,19 +1672,19 @@ meth public void setDepth(int)
 meth public void setNode(org.openide.nodes.Node)
 meth public void setSelectedItem(java.lang.Object)
 supr javax.swing.AbstractListModel
-hfds childrenCount,depth,listener,parent,selectedObject,serialVersionUID,size
+hfds childrenCount,depth,listener,parent,selectedObject,serialVersionUID,showParent,size
 hcls Info,Listener
 
 CLSS public org.openide.explorer.view.NodePopupFactory
-cons public NodePopupFactory()
+cons public init()
 meth public javax.swing.JPopupMenu createPopupMenu(int,int,org.openide.nodes.Node[],java.awt.Component)
 meth public void setShowQuickFilter(boolean)
 supr java.lang.Object
 hfds showQuickFilter
 
 CLSS public org.openide.explorer.view.NodeRenderer
-cons public NodeRenderer()
-cons public NodeRenderer(boolean)
+cons public init()
+cons public init(boolean)
  anno 0 java.lang.Deprecated()
 intf javax.swing.ListCellRenderer
 intf javax.swing.tree.TreeCellRenderer
@@ -1690,7 +1696,7 @@ supr java.lang.Object
 hfds bigIcons,draggedOver,instance,renderer
 
 CLSS public org.openide.explorer.view.NodeTableModel
-cons public NodeTableModel()
+cons public init()
 meth protected org.openide.nodes.Node$Property getPropertyFor(org.openide.nodes.Node,org.openide.nodes.Node$Property)
 meth public boolean isCellEditable(int,int)
 meth public int getColumnCount()
@@ -1705,23 +1711,29 @@ hfds ATTR_COMPARABLE_COLUMN,ATTR_DESCENDING_ORDER,ATTR_DISPLAY_NAME_WITH_MNEMONI
 hcls ArrayColumn
 
 CLSS public org.openide.explorer.view.NodeTreeModel
-cons public NodeTreeModel()
-cons public NodeTreeModel(org.openide.nodes.Node)
+cons public init()
+cons public init(org.openide.nodes.Node)
 meth public void setNode(org.openide.nodes.Node)
 meth public void valueForPathChanged(javax.swing.tree.TreePath,java.lang.Object)
 supr javax.swing.tree.DefaultTreeModel
-hfds listener,serialVersionUID,views
+hfds LOG,listener,serialVersionUID,views
 hcls Listener,TreeModelEventImpl
 
 CLSS public org.openide.explorer.view.OutlineView
-cons public OutlineView()
-cons public OutlineView(java.lang.String)
+cons public init()
+cons public init(java.lang.String)
+meth protected int getAllowedDropActions(java.awt.datatransfer.Transferable)
 meth protected org.netbeans.swing.outline.OutlineModel createOutlineModel(org.openide.explorer.view.NodeTreeModel,org.netbeans.swing.outline.RowModel,java.lang.String)
+meth public !varargs final void setPropertyColumns(java.lang.String[])
 meth public boolean isDragSource()
 meth public boolean isDropTarget()
 meth public boolean isExpanded(org.openide.nodes.Node)
 meth public boolean isPopupAllowed()
 meth public boolean requestFocusInWindow()
+meth public final boolean removePropertyColumn(java.lang.String)
+meth public final void addPropertyColumn(java.lang.String,java.lang.String)
+meth public final void addPropertyColumn(java.lang.String,java.lang.String,java.lang.String)
+meth public final void setPropertyColumnDescription(java.lang.String,java.lang.String)
 meth public int getAllowedDragActions()
 meth public int getAllowedDropActions()
 meth public org.netbeans.swing.outline.Outline getOutline()
@@ -1741,14 +1753,16 @@ meth public void setDropTarget(boolean)
 meth public void setNodePopupFactory(org.openide.explorer.view.NodePopupFactory)
 meth public void setPopupAllowed(boolean)
 meth public void setProperties(org.openide.nodes.Node$Property[])
+ anno 0 java.lang.Deprecated()
+meth public void setTreeSortable(boolean)
 meth public void writeSettings(java.util.Properties,java.lang.String)
 supr javax.swing.JScrollPane
 hfds allowedDragActions,allowedDropActions,defaultTreeActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,manager,managerListener,model,outline,popupFactory,popupListener,rowModel,treeModel,wlpc,wlvc
-hcls DefaultTreeAction,NodeOutlineModel,OutlinePopupFactory,OutlineViewOutline,PopupAction,PopupAdapter,TableSelectionListener
+hcls DefaultTreeAction,NodeOutlineModel,OutlinePopupFactory,OutlineViewOutline,PopupAction,PopupAdapter,PrototypeProperty,TableSelectionListener
 
 CLSS public org.openide.explorer.view.TableView
-cons public TableView()
-cons public TableView(org.openide.explorer.view.NodeTableModel)
+cons public init()
+cons public init(org.openide.explorer.view.NodeTableModel)
 meth public boolean isDragSource()
 meth public boolean isDropTarget()
 meth public boolean isPopupAllowed()
@@ -1773,8 +1787,8 @@ hfds allowedDragActions,allowedDropActions,dragActive,dragSupport,dropActive,dro
 hcls PopupAction,PopupAdapter,TableSelectionListener,TableViewETable
 
 CLSS public org.openide.explorer.view.TreeTableView
-cons public TreeTableView()
-cons public TreeTableView(org.openide.explorer.view.NodeTableModel)
+cons public init()
+cons public init(org.openide.explorer.view.NodeTableModel)
 fld protected javax.swing.JTable treeTable
 meth protected org.openide.explorer.view.NodeTreeModel createModel()
 meth protected void showSelection(javax.swing.tree.TreePath[])
@@ -1805,8 +1819,8 @@ hfds COLUMNS_ICON,SORT_ASC_ICON,SORT_DESC_ICON,accessContext,allowHideColumns,al
 hcls AccessibleTreeTableView,CompoundScrollPane,DefaultTreeAction,ScrollListener,SortedNodeTreeModel,SortingHeaderRenderer,TreeColumnProperty
 
 CLSS public abstract org.openide.explorer.view.TreeView
-cons public TreeView()
-cons public TreeView(boolean,boolean)
+cons public init()
+cons public init(boolean,boolean)
 fld protected javax.swing.JTree tree
 meth protected abstract boolean selectionAccept(org.openide.nodes.Node[])
 meth protected abstract org.openide.explorer.view.NodeTreeModel createModel()
@@ -1844,7 +1858,7 @@ meth public void setUseSubstringInQuickSearch(boolean)
 meth public void updateUI()
 meth public void validate()
 supr javax.swing.JScrollPane
-hfds LOG,MIN_TREEVIEW_HEIGHT,MIN_TREEVIEW_WIDTH,TIME_TO_COLLAPSE,allowedDragActions,allowedDropActions,autoWaitCursor,defaultActionEnabled,defaultActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,isSynth,manager,managerListener,origSelectionPaths,originalScrollMode,popupListener,quickSearchUsingSubstring,searchTextField,searchpanel,serialVersionUID,treeModel,visHolder,wlpc,wlvc
+hfds LOG,MIN_TREEVIEW_HEIGHT,MIN_TREEVIEW_WIDTH,TIME_TO_COLLAPSE,allowedDragActions,allowedDropActions,autoWaitCursor,defaultActionEnabled,defaultActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,isSynth,lastSearchField,manager,managerListener,origSelectionPaths,originalScrollMode,popupListener,quickSearchUsingSubstring,searchTextField,searchpanel,serialVersionUID,treeModel,visHolder,wlpc,wlvc
 hcls CursorR,DummyTransferHandler,ExplorerScrollPaneLayout,ExplorerTree,PopupAdapter,PopupSupport,SearchPanel,TreePropertyListener,VisualizerHolder
 
 CLSS public org.openide.explorer.view.Visualizer
@@ -1853,9 +1867,9 @@ meth public static org.openide.nodes.Node findNode(java.lang.Object)
 supr java.lang.Object
 
 CLSS public final org.openide.util.HelpCtx
-cons public HelpCtx(java.lang.Class)
-cons public HelpCtx(java.lang.String)
-cons public HelpCtx(java.net.URL)
+cons public init(java.lang.Class)
+cons public init(java.lang.String)
+cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
 innr public abstract interface static Provider
@@ -1871,5 +1885,6 @@ supr java.lang.Object
 hfds err,helpCtx,helpID
 
 CLSS public abstract interface static org.openide.util.HelpCtx$Provider
+ outer org.openide.util.HelpCtx
 meth public abstract org.openide.util.HelpCtx getHelpCtx()
 

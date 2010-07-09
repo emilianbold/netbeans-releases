@@ -506,7 +506,9 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
     protected void validateDocument() throws IOException {
         try {
             RootInterfaceImpl proxyImpl = (RootInterfaceImpl) DDProvider.getDefault().getDDRoot(createReader());
-            setSaxError(proxyImpl.getError());
+            if (null != proxyImpl) {
+                setSaxError(proxyImpl.getError());
+            }
         } catch(Schema2BeansException ex) {
             setSaxError(new SAXException(ex));
         } catch(Schema2BeansRuntimeException ex) {

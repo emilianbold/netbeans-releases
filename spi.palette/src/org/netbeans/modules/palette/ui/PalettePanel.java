@@ -729,6 +729,8 @@ public class PalettePanel extends JPanel implements Scrollable {
         SwingUtilities.invokeLater( new Runnable() {
             @Override
                 public void run() {
+                    if( null == model )
+                        return;
                     Item item = model.getSelectedItem();
                     Category category = model.getSelectedCategory();
                     setSelectedItemFromModel( category, item );

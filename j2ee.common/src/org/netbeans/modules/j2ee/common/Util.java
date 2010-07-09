@@ -60,9 +60,12 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -88,6 +91,8 @@ public class Util {
     public static final String DESTINATION_DIRECTORY_ROOT = "100";
     public static final String DESTINATION_DIRECTORY_LIB = "200";
     public static final String DESTINATION_DIRECTORY_DO_NOT_COPY = "300";
+
+    private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
     public static void updateDirsAttributeInCPSItem(org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item item,
             Element element) {
@@ -298,7 +303,14 @@ public class Util {
             if (j2eeModuleProvider != null) {
                 J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
                 if (j2eePlatform != null) {
-                    return j2eePlatform.getClasspathEntries();
+                    File[] classpath = null;
+                    try {
+                        classpath = j2eePlatform.getClasspathEntries(j2eeModuleProvider.getConfigSupport().getLibraries());
+                    } catch (ConfigurationException ex) {
+                        LOGGER.log(Level.FINE, null, ex);
+                        classpath = j2eePlatform.getClasspathEntries();
+                    }
+                    return classpath;
                 }
             }
         }

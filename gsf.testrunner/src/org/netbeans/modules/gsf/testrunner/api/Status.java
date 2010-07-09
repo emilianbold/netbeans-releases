@@ -50,14 +50,23 @@ package org.netbeans.modules.gsf.testrunner.api;
  */
 public enum Status {
 
-    PASSED("00CC00"), PENDING("800080"), FAILED("FF0000"), ERROR("FF0000"), ABORTED("D69D29"), SKIPPED("585858"); //NOI18N
-    
+    PASSED(1,"00CC00"), PENDING(1<<1,"800080"), FAILED(1<<2,"FF0000"), ERROR(1<<3,"FF0000"), ABORTED(1<<4,"D69D29"), SKIPPED(1<<5,"585858"); //NOI18N
+
+    private final int bitMask;
     private final String displayColor;
 
-    private Status(String displayColor) {
+    private Status(int bitMask, String displayColor) {
+        this.bitMask = bitMask;
         this.displayColor = displayColor;
     }
-    
+
+    /**
+     * @return the bit mask for this status.
+     */
+    public int getBitMask(){
+        return bitMask;
+    }
+
     /**
      * @return the html display color for this status.
      */
@@ -68,7 +77,12 @@ public enum Status {
     /**
      * @return true if the given status represents a failure or an error.
      */
-    static boolean isFailure(Status status) {
+    static boolean isFailureOrError(Status status) {
         return FAILED.equals(status) || ERROR.equals(status);
     }
+
+    boolean isMaskApplied(int mask){
+        return (mask & getBitMask()) != 0;
+    }
+
 }

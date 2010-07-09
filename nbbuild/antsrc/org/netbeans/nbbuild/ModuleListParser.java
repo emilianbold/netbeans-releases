@@ -190,7 +190,7 @@ final class ModuleListParser {
                             @SuppressWarnings("unchecked") Map<String,Entry> _entries = (Map) oi.readObject();
                             entries = _entries;
                             if (project != null) {
-                                project.log("Loaded modules: " + entries.keySet(), Project.MSG_VERBOSE);
+                                project.log("Loaded modules: " + entries.keySet(), Project.MSG_DEBUG);
                             }
                         }
                     } finally {
@@ -403,14 +403,20 @@ final class ModuleListParser {
             faketask.setName("suite.dir");
             faketask.setValue(properties.get("suite.dir"));
             faketask.execute();
+            faketask.setName("suite.build.dir");
+            faketask.setValue(fakeproj.replaceProperties("${suite.dir}/build"));
+            faketask.execute();
             faketask.setName("cluster");
-            faketask.setValue(fakeproj.replaceProperties("${suite.dir}/build/cluster"));
+            faketask.setValue(fakeproj.replaceProperties("${suite.build.dir}/cluster"));
             faketask.execute();
             break;
         case STANDALONE:
             assert path == null;
+            faketask.setName("build.dir");
+            faketask.setValue(fakeproj.replaceProperties("${basedir}/build"));
+            faketask.execute();
             faketask.setName("cluster");
-            faketask.setValue(fakeproj.replaceProperties("${basedir}/build/cluster"));
+            faketask.setValue(fakeproj.replaceProperties("${build.dir}/cluster"));
             faketask.execute();
             break;
         default:
@@ -557,6 +563,9 @@ final class ModuleListParser {
     private static void doScanBinaries(File cluster, Map<String,Entry> entries) throws IOException {
         File moduleAutoDepsDir = new File(new File(cluster, "config"), "ModuleAutoDeps");
             for (String moduleDir : MODULE_DIRS) {
+                if (moduleDir.endsWith("lib") && !cluster.getName().contains("platform")) {
+                    continue;
+                }
                 File dir = new File(cluster, moduleDir.replace('/', File.separatorChar));
                 if (!dir.isDirectory()) {
                     continue;
@@ -579,6 +588,9 @@ final class ModuleListParser {
                     // TODO, read location, scan
                     final String fileName = xml.getName();
                     if (!fileName.endsWith(".xml")) {
+                        continue;
+                    }
+                    if (entries.containsKey(fileName.substring(0, fileName.length() - 4).replace('-', '.'))) {
                         continue;
                     }
                     try {

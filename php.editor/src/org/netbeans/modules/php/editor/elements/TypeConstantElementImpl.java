@@ -43,15 +43,20 @@ package org.netbeans.modules.php.editor.elements;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.openide.util.Parameters;
 
 /**
@@ -102,6 +107,20 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
             retval = new TypeConstantElementImpl(type, signParser.getConstantName(),signParser.getValue(),
                     signParser.getOffset(), indexResult.getUrl().toString(),
                     indexScopeQuery);
+        }
+        return retval;
+    }
+
+    public static Set<TypeConstantElement> fromNode(final TypeElement type, ConstantDeclaration node, final ElementQuery.File fileQuery) {
+        Parameters.notNull("type", type);
+        Parameters.notNull("node", node);
+        Parameters.notNull("fileQuery", fileQuery);
+        final List<? extends ClassConstantDeclarationInfo> consts = ClassConstantDeclarationInfo.create(node);
+        final Set<TypeConstantElement> retval = new HashSet<TypeConstantElement>();
+        for (ClassConstantDeclarationInfo info : consts) {
+            retval.add(new TypeConstantElementImpl(
+                    type, info.getName(), info.getValue(), info.getRange().getStart(),
+                    fileQuery.getURL().toExternalForm(), fileQuery));
         }
         return retval;
     }

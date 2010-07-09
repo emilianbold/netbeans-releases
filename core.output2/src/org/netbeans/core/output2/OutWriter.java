@@ -41,11 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-/*
- * OutWriter.java
- *
- * Created on February 27, 2004, 7:24 PM
- */
 
 package org.netbeans.core.output2;
 
@@ -65,7 +60,7 @@ import org.openide.util.Utilities;
  * @author  Tim Boudreau
  */
 class OutWriter extends PrintWriter {
-    /** A flag indicating an io exception occured */
+    /** A flag indicating an io exception occurred */
     private boolean trouble = false;
 
     private NbIO owner;
@@ -123,7 +118,7 @@ class OutWriter extends PrintWriter {
         }
         if (storage == null) {
             storage = USE_HEAP_STORAGE || lowDiskSpace ? 
-                (Storage)new HeapStorage() : (Storage)new FileMapStorage();
+                new HeapStorage() : new FileMapStorage();
         }
         return storage;
     }
@@ -180,6 +175,7 @@ class OutWriter extends PrintWriter {
         } catch (java.nio.channels.AsynchronousCloseException ace) {
             //Execution termination has sent ThreadDeath to the process in the
             //middle of a write
+            Exceptions.printStackTrace(ace);
             onWriteException();
         } catch (IOException ioe) {
             //Out of disk space

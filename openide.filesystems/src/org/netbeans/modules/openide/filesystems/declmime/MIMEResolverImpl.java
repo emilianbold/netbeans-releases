@@ -1095,6 +1095,8 @@ public final class MIMEResolverImpl {
                     Object attr = fo.getAttribute(fatts[i]);
                     if (attr != null) {
                         if (!attr.toString().equals(vals[i]) && vals[i] != null) return false;
+                    } else {
+                        return false;
                     }
                 }
             }

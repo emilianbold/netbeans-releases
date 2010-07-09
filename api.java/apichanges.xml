@@ -76,6 +76,25 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="source-level-changes">
+            <api name="queries"/>
+            <summary>Added notifications about source level changes into SourceLevelQuery</summary>
+            <version major="1" minor="30"/>
+            <date day="8" month="7" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    The SourceLevelQuery did not allow listening on the source level changes. Such a
+                    notifications are required by the annotation processor support and indexing.
+                    This API change adds a SourceLevelQuery.getSourceLevel2 which returns a Result object
+                    which allows listening like other queries.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="SourceLevelQuery" />
+            <class package="org.netbeans.spi.java.queries" name="SourceLevelQueryImplementation2" />
+            <issue number="185031"/>
+        </change>
         <change id="ap-query-triggers">
             <api name="classpath"/>
             <summary>Introducing AnnotationProcessingQuery.Result.Trigger</summary>

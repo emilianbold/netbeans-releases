@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -354,7 +357,18 @@ public final class CommandUtils {
      * @throws MalformedURLException if any error occurs
      */
     public static URL createDebugUrl(URL url) throws MalformedURLException {
-        return appendQuery(url, getDebugArguments(XDebugUrlArguments.XDEBUG_SESSION_START));
+        return createDebugUrl(url, XDebugUrlArguments.XDEBUG_SESSION_START);
+    }
+
+    /**
+     * Create {@link URL} for debugging from the given {@link URL}.
+     * @param url original URL
+     * @param xDebugArgument
+     * @return {@link URL} for debugging
+     * @throws MalformedURLException if any error occurs
+     */
+    public static URL createDebugUrl(final URL url, final XDebugUrlArguments xDebugArgument) throws MalformedURLException {
+        return appendQuery(url, getDebugArguments(xDebugArgument));
     }
 
     /**
@@ -472,9 +486,29 @@ public final class CommandUtils {
             relativePath = FileUtil.getRelativePath(webRoot, file);
             assert relativePath != null : String.format("WebRoot %s must be parent of file %s", webRoot, file);
         }
-        URL retval = new URL(getBaseURL(project), relativePath);
+        URL retval = new URL(getBaseURL(project), encodeRelativeUrl(relativePath));
         String arguments = ProjectPropertiesSupport.getArguments(project);
         return (arguments != null) ? appendQuery(retval, arguments) : retval;
+    }
+
+    // because of unit tests
+    static String encodeRelativeUrl(String relativeUrl) {
+        if (!StringUtils.hasText(relativeUrl)) {
+            return relativeUrl;
+        }
+        StringBuilder sb = new StringBuilder(relativeUrl.length() * 2);
+        try {
+            for (String part : StringUtils.explode(relativeUrl, "/")) { // NOI18N
+                if (sb.length() > 0) {
+                    sb.append('/'); // NOI18N
+                }
+                sb.append(URLEncoder.encode(part, "UTF-8")); // NOI18N
+            }
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+            return relativeUrl;
+        }
+        return sb.toString();
     }
 
     private static URL appendQuery(URL originalURL, String queryWithoutQMark) throws MalformedURLException {

@@ -356,8 +356,15 @@ public class ModelSource implements SourceFileProperties {
             return LanguageKind.C;
         } else if (item.getLanguage() == Language.CPP){
             return LanguageKind.CPP;
+        } else if (item.getLanguage() == Language.FORTRAN){
+            return LanguageKind.Fortran;
         }
         return LanguageKind.Unknown;
+    }
+
+    @Override
+    public String getCompilerName() {
+        return null;
     }
 }
 

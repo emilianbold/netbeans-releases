@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -131,7 +132,7 @@ public final class SuiteProject implements Project {
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
             UILookupMergerSupport.createProjectOpenHookMerger(new OpenedHook()),
-            helper.createSharabilityQuery(eval, new String[0], new String[] {"build", "${dist.dir}"}), // NOI18N
+            helper.createSharabilityQuery(eval, new String[0], new String[] {"${suite.build.dir}", "${dist.dir}"}), // NOI18N
             new SuiteSubprojectProviderImpl(helper, eval),
             new SuiteProviderImpl(),
             new SuiteActions(this),
@@ -182,7 +183,7 @@ public final class SuiteProject implements Project {
      *         platform specified, or an invalid platform is specified, or even if
      *         fallback is true but even the default platform is not available
      */
-    public NbPlatform getPlatform(boolean fallback) {
+    public @CheckForNull NbPlatform getPlatform(boolean fallback) {
         NbPlatform p;
         // #65652: more reliable to use the dest dir, in case nbplatform.active is not set.
         String destdir = getEvaluator().getProperty("netbeans.dest.dir"); // NOI18N
@@ -231,8 +232,10 @@ public final class SuiteProject implements Project {
         fixedProps.put(SuiteProperties.DISABLED_CLUSTERS_PROPERTY, "");
         fixedProps.put(SuiteProperties.DISABLED_MODULES_PROPERTY, "");
         fixedProps.put(BrandingSupport.BRANDING_DIR_PROPERTY, "branding"); // NOI18N
+        fixedProps.put("suite.build.dir", "build"); // NOI18N
+        fixedProps.put("cluster", "${suite.build.dir}/cluster"); // NOI18N
         fixedProps.put("dist.dir", "dist"); // NOI18N
-        fixedProps.put("test.user.dir", "build/testuserdir"); // NOI18N
+        fixedProps.put("test.user.dir", "${suite.build.dir}/testuserdir"); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(fixedProps));
         return PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
     }
@@ -371,12 +374,8 @@ public final class SuiteProject implements Project {
             return getProjectDirectoryFile();
         }
 
-        private static final String CLUSTER_PROP = "${cluster}";
         public File getClusterDirectory() {
-            String clusterName = getEvaluator().evaluate(CLUSTER_PROP);
-            if (CLUSTER_PROP.equals(clusterName))
-                // not overriden, use default
-                clusterName = SuiteProperties.CLUSTER_DIR;
+            String clusterName = getEvaluator().evaluate("${cluster}");
             return getHelper().resolveFile(clusterName).getAbsoluteFile();
         }
     }

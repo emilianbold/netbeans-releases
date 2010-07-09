@@ -55,6 +55,7 @@ import javax.enterprise.deploy.spi.DConfigBeanRoot;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
+import org.netbeans.modules.glassfish.eecommon.api.config.J2eeModuleHelper;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
 import org.netbeans.modules.glassfish.javaee.db.ResourcesHelper;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -75,8 +76,13 @@ public class Hk2Configuration extends GlassfishConfiguration implements Deployme
         super(module);
     }
 
+    public Hk2Configuration(J2eeModule module, J2eeModuleHelper jmh) throws ConfigurationException {
+        super(module, jmh);
+    }
+
     @Deprecated
-    public Hk2Configuration(DeployableObject dObj) {
+    public Hk2Configuration(DeployableObject dObj)  {
+        throw new IllegalArgumentException("deprecated constructor called");
     }
 
     // ------------------------------------------------------------------------
@@ -138,30 +144,37 @@ public class Hk2Configuration extends GlassfishConfiguration implements Deployme
     // Implementation (or lack thereof) of JSR-88 DeploymentConfiguration interface
     // Here to make the deployment manager class happy.
     // ------------------------------------------------------------------------
+    @Override
     public DeployableObject getDeployableObject() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public DConfigBeanRoot getDConfigBeanRoot(DDBeanRoot ddbeanRoot) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void removeDConfigBean(DConfigBeanRoot dconfigBeanRoot) throws BeanNotFoundException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public DConfigBeanRoot restoreDConfigBean(InputStream is, DDBeanRoot ddbeanRoot) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void saveDConfigBean(OutputStream os, DConfigBeanRoot dconfigBeanRoot) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void restore(InputStream is) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void save(OutputStream os) throws javax.enterprise.deploy.spi.exceptions.ConfigurationException {
         throw new UnsupportedOperationException("Not supported yet.");
     }

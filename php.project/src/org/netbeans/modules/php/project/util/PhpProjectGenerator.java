@@ -48,6 +48,8 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -77,6 +79,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public final class PhpProjectGenerator {
+    private static final Logger LOGGER = Logger.getLogger(PhpProjectGenerator.class.getName());
+
     public static final Monitor DEV_NULL = new Monitor() {
         public void starting() {
         }
@@ -128,7 +132,7 @@ public final class PhpProjectGenerator {
             } else {
                 switch (runAsType) {
                     case SCRIPT:
-                        template = FileUtil.getConfigFile("Templates/Scripting/EmptyPHP"); // NOI18N
+                        template = FileUtil.getConfigFile("Templates/Scripting/EmptyPHP.php"); // NOI18N
                         break;
                     default:
                         template = Templates.getTemplate(projectPropertiesCopy.getDescriptor());
@@ -284,12 +288,19 @@ public final class PhpProjectGenerator {
         privateProperties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
     }
 
-    private static DataObject createIndexFile(FileObject template, FileObject sourceDir, String indexFile) throws IOException {
+    private static void createIndexFile(FileObject template, FileObject sourceDir, String indexFile) throws IOException {
         String indexFileName = getIndexFileName(indexFile, template.getExt());
 
         DataFolder dataFolder = DataFolder.findFolder(sourceDir);
         DataObject dataTemplate = DataObject.find(template);
-        return dataTemplate.createFromTemplate(dataFolder, indexFileName);
+        DataObject index = dataTemplate.createFromTemplate(dataFolder, indexFileName);
+
+        // #187374
+        try {
+            PhpProjectUtils.reformatFile(index);
+        } catch (IOException exc) {
+            LOGGER.log(Level.WARNING, exc.getMessage(), exc);
+        }
     }
 
     private static String getIndexFileName(String indexFile, String plannedExt) {

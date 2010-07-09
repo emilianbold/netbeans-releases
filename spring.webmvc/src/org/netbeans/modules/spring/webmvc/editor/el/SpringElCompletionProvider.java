@@ -64,32 +64,34 @@ public class SpringElCompletionProvider implements CompletionProvider{
                         case SpringElExpression.EL_START:
                             final String replace = elExpr.getReplace();
                             SpringScope scope = SpringScope.getSpringScope(fObject);
-                            for (SpringConfigModel model : scope.getAllConfigModels()) {
-                                try {
-                                    final boolean[] isDone = new boolean[]{false};
-                                    model.runReadAction(new Action<SpringBeans>() {
+                            if (scope != null) {
+                                for (SpringConfigModel model : scope.getAllConfigModels()) {
+                                    try {
+                                        final boolean[] isDone = new boolean[]{false};
+                                        model.runReadAction(new Action<SpringBeans>() {
 
-                                        @Override
-                                        public void run(SpringBeans beans) {
-                                            for (SpringBean bean : beans.getBeans()) {
-                                                String beanName = null;
-                                                for (String name : bean.getNames()) {
-                                                    beanName = name;
-                                                    break;
+                                            @Override
+                                            public void run(SpringBeans beans) {
+                                                for (SpringBean bean : beans.getBeans()) {
+                                                    String beanName = null;
+                                                    for (String name : bean.getNames()) {
+                                                        beanName = name;
+                                                        break;
+                                                    }
+                                                    if (beanName == null) {
+                                                        beanName = bean.getId();
+                                                    }
+                                                    String className = bean.getClassName();
+                                                    if ((beanName != null) && beanName.startsWith(replace)) {
+                                                        complItems.add(new SpringBeanCompletionItem(beanName, anchor, className));
+                                                    }
                                                 }
-                                                if (beanName == null) {
-                                                    beanName = bean.getId();
-                                                }
-                                                String className = bean.getClassName();
-                                                if ((beanName != null) && beanName.startsWith(replace)) {
-                                                    complItems.add(new SpringBeanCompletionItem(beanName, anchor, className));
-                                                }
+                                                isDone[0] = true;
                                             }
-                                            isDone[0] = true;
-                                        }
-                                    });
-                                } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
+                                        });
+                                    } catch (IOException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
                                 }
                             }
                             break;

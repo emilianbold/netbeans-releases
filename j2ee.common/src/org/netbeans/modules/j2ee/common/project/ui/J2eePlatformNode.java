@@ -45,6 +45,7 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
@@ -53,6 +54,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -61,6 +64,7 @@ import org.netbeans.api.project.Project;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.WeakListeners;
 import org.netbeans.api.project.SourceGroup;
@@ -85,6 +89,8 @@ import org.openide.util.actions.SystemAction;
  * @author Andrei Badea
  */
 class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, InstanceListener {
+
+    private static final Logger LOGGER = Logger.getLogger(J2eePlatformNode.class.getName());
 
     private static final String ARCHIVE_ICON = "org/netbeans/modules/j2ee/common/project/ui/resources/jar.gif"; //NOI18N
     private static final String DEFAULT_ICON = "org/netbeans/modules/j2ee/common/project/ui/resources/j2eeServer.gif"; //NOI18N
@@ -115,7 +121,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
     private PropertyChangeListener weakPlatformListener;
 
     private J2eePlatformNode(Project project, PropertyEvaluator evaluator, String platformPropName, ClassPathSupport cs) {
-        super(new PlatformContentChildren(cs));
+        super(new PlatformContentChildren(project, cs));
         this.evaluator = evaluator;
         this.platformPropName = platformPropName;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
@@ -234,7 +240,10 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
 
     private static class PlatformContentChildren extends Children.Keys<SourceGroup> {
 
-        PlatformContentChildren (ClassPathSupport cs) {
+        private final J2eeModuleProvider j2eeModuleProvider;
+
+        PlatformContentChildren(Project project, ClassPathSupport cs) {
+            j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         }
 
         @Override
@@ -256,16 +265,18 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
             
             J2eePlatform j2eePlatform = ((J2eePlatformNode)this.getNode()).getPlatform();
             if (j2eePlatform != null) {
-                File[] classpathEntries = j2eePlatform.getClasspathEntries();
-                result = new ArrayList<SourceGroup>(classpathEntries.length);
-                for (int i = 0; i < classpathEntries.length; i++) {
-                    FileObject file = FileUtil.toFileObject(classpathEntries[i]);
-                    if (file != null) {
-                        FileObject archiveFile = FileUtil.getArchiveRoot(file);
-                        if (archiveFile != null) {
-                            result.add(ProjectUISupport.createLibrariesSourceGroup(archiveFile, file.getNameExt(), icon, icon));
-                        }
+                result = new ArrayList<SourceGroup>();
+                if (j2eeModuleProvider != null) {
+                    try {
+                        File[] classpathEntries = j2eePlatform.getClasspathEntries(j2eeModuleProvider.getConfigSupport().getLibraries());
+                        addToSourceGroups(classpathEntries, result);
+                    } catch (ConfigurationException ex) {
+                        // noop
+                        LOGGER.log(Level.INFO, null, ex);
                     }
+                } else {
+                    File[] classpathEntries = j2eePlatform.getClasspathEntries();
+                    addToSourceGroups(classpathEntries, result);
                 }
             } else {
                 result = Collections.<SourceGroup>emptyList();
@@ -273,5 +284,18 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
             
             return result;
         }
+
+        private void addToSourceGroups(File[] classpathEntries, List<SourceGroup> sourceGroups) {
+            for (int i = 0; i < classpathEntries.length; i++) {
+                FileObject file = FileUtil.toFileObject(classpathEntries[i]);
+                if (file != null) {
+                    FileObject archiveFile = FileUtil.getArchiveRoot(file);
+                    if (archiveFile != null) {
+                        sourceGroups.add(ProjectUISupport.createLibrariesSourceGroup(archiveFile, file.getNameExt(), icon, icon));
+                    }
+                }
+            }
+        }
     }
+
 }

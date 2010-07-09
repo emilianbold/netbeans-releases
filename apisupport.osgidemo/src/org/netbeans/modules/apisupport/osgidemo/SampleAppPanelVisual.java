@@ -147,6 +147,13 @@ public class SampleAppPanelVisual extends JPanel implements DocumentListener {
                     .addComponent(createdFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(213, Short.MAX_VALUE))
         );
+
+        projectNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SampleAppPanelVisual.class, "SampleAppPanelVisual.project_name", new Object[] {})); // NOI18N
+        projectNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SampleAppPanelVisual.class, "SampleAppPanelVisual.project_name", new Object[] {})); // NOI18N
+        projectLocationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SampleAppPanelVisual.class, "SampleAppPanelVisual.project_location", new Object[] {})); // NOI18N
+        projectLocationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SampleAppPanelVisual.class, "SampleAppPanelVisual.project_location", new Object[] {})); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SampleAppPanelVisual.class, "SampleAppPanelVisual.browse", new Object[] {})); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SampleAppPanelVisual.class, "SampleAppPanelVisual.browse", new Object[] {})); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed

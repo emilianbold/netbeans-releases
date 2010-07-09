@@ -88,6 +88,8 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new FieldGroupTest("testRenameInVariableGroupInFor175866a"));
 //        suite.addTest(new FieldGroupTest("testRenameInVariableGroupInFor175866b"));
 //        suite.addTest(new FieldGroupTest("testRenameInVariableGroupInFor175866c"));
+//        suite.addTest(new FieldGroupTest("testRenameInVariableGroupInFor175866f"));
+//        suite.addTest(new FieldGroupTest("testRemoveFirstVariable"));
         return suite;
     }
     
@@ -924,7 +926,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "class UserTask {\n" +
             "\n" +
             "    public void method() {\n" +
-            "        for (int l=0, j = 0; j<1; j++);\n" +
+            "        for (int l = 0, j=0; j<1; j++);\n" +
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
@@ -1061,6 +1063,45 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                 BlockTree block = method.getBody();
                 ForLoopTree flt = (ForLoopTree) block.getStatements().get(0);
                 workingCopy.rewrite(flt, make.removeForLoopInitializer(flt, 0));
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testRemoveFirstVariable() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public void method() {\n" +
+            "        int i,j,k;\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public void method() {\n" +
+            "        int j,k;\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                workingCopy.rewrite(block, make.removeBlockStatement(block, 0));
             }
         };
         testSource.runModificationTask(task).commit();

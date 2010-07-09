@@ -226,6 +226,11 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.cnd.asm</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.cnd.completion</code-name-base>
                         <recursive/>
                         <compile-dependency/>
@@ -287,6 +292,10 @@
             <friend-packages>
                 <friend>com.microchip.mdbcore</friend>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
+                <friend>com.microchip.mplab.nbide.embedded</friend>
+                <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
+                <friend>com.microchip.mplab.nbide.programmer</friend>
+                <friend>com.microchip.mplab.nbide.toolchains</friend>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.dlight</friend>

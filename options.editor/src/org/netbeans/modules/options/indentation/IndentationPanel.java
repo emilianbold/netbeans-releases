@@ -194,8 +194,8 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         if (lineWrapOn) {
             cboLineWrap.addActionListener(this);
         } else {
-            cboLineWrap.setEnabled(false);
-            lLineWrap.setEnabled(false);
+            ((ControlledComboBox) cboLineWrap).setEnabledInternal(false);
+            ((ControlledLabel) lLineWrap).setEnabledInternal(false);
         }
     }
 

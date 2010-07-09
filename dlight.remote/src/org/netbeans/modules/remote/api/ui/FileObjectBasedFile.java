@@ -66,23 +66,72 @@ import org.openide.util.Utilities;
     final ExecutionEnvironment env;
 
     private final FileObject fo;
+    /** to be used ONLY when fo is null !!! */
+    private final String path;
     private File[] NO_CHILDREN = new File[0];
 
     public FileObjectBasedFile(ExecutionEnvironment env, String path) {
         super(path);
         this.fo = null;
+        this.path = toUnix(super.getPath());
         this.env = env;
     }
 
     public FileObjectBasedFile(ExecutionEnvironment env, FileObject fo) {
         super( fo == null || "".equals(fo.getPath()) ? "/" : fo.getPath()); // NOI18N
         this.fo = fo;
+        this.path = fo.getPath();
         this.env = env;
     }
 
     @Override
     public boolean isDirectory() {
         return fo == null ? false : fo.isFolder();
+    }
+
+    @Override
+    public boolean isAbsolute() {
+        String p = getPath();
+        if (p.length() != 0) {
+            return p.charAt(0) == '/';
+        } else {
+            if (fo != null) {
+                // the path is empty => it is absolute only if it is root
+                return fo.getParent() == null;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FileObjectBasedFile other = (FileObjectBasedFile) obj;
+        if (this.env != other.env && (this.env == null || !this.env.equals(other.env))) {
+            return false;
+        }
+        if (this.fo != other.fo && (this.fo == null || !this.fo.equals(other.fo))) {
+            return false;
+        }
+        if ((this.path == null) ? (other.path != null) : !this.path.equals(other.path)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 17 * hash + (this.env != null ? this.env.hashCode() : 0);
+        hash = 17 * hash + (this.fo != null ? this.fo.hashCode() : 0);
+        hash = 17 * hash + (this.path != null ? this.path.hashCode() : 0);
+        return hash;
     }
 
     @Override
@@ -111,9 +160,10 @@ import org.openide.util.Utilities;
             Future<Integer> result = CommonTasksSupport.mkDir(env, getPath(), new StringWriter());
             try {
                 return result.get() == 0;
-
             } catch (InterruptedException ex) {
+                // don't log interrupted exception
             } catch (ExecutionException ex) {
+                ex.printStackTrace();
             }
             return false;
         }
@@ -130,12 +180,9 @@ import org.openide.util.Utilities;
        return false;
     }
 
-
-
-
     @Override
     public String getPath() {
-        return fo == null ? super.getPath() : fo.getPath();
+        return fo == null ? path : fo.getPath();
     }
 
     @Override
@@ -148,20 +195,41 @@ import org.openide.util.Utilities;
     }
 
     @Override
+    public String getParent() {
+	int index = path.lastIndexOf('/');
+	return (index < 0) ? null : path.substring(0, index);
+    }
+
+    @Override
     public boolean isFile() {
         return !isDirectory();
     }
 
     @Override
     public String getAbsolutePath() {
-        String res = fo == null ? super.getAbsolutePath() : fo.getPath();
-        if (res != null && Utilities.isWindows()) {
-            res = res.replace('\\', '/'); // NOI18N
-            while (res.startsWith("//")) { // NOI18N
-                res = res.substring(1);
+        if (fo != null) {
+            return fo.getPath();
+        } else {
+            if (isAbsolute(path)) {
+                return path;
+            } else {
+                return toUnix(super.getAbsolutePath());
             }
         }
-        return res;
+    }
+
+    private static boolean isAbsolute(String fileName) {
+        return fileName.length() > 0 && fileName.charAt(0) == '/';
+    }
+
+    private static String toUnix(String path) {
+        if (path != null && Utilities.isWindows()) {
+            path = path.replace('\\', '/'); // NOI18N
+            while (path.startsWith("//")) { // NOI18N
+                path = path.substring(1);
+            }
+        }
+        return path;
     }
 
     @Override

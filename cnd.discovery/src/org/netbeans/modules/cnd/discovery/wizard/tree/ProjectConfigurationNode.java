@@ -71,6 +71,8 @@ public class ProjectConfigurationNode extends DefaultMutableTreeNode {
             return getString("ConfigurationLanguageC",""+count);  // NOI18N
         } else if (getProject().getLanguageKind() == ItemProperties.LanguageKind.CPP){
             return getString("ConfigurationLanguageCPP",""+count);  // NOI18N
+        } else if (getProject().getLanguageKind() == ItemProperties.LanguageKind.Fortran){
+            return getString("ConfigurationLanguageFortran",""+count);  // NOI18N
         }
          return getString("ConfigurationLanguageUnknown",""+count);  // NOI18N
     }

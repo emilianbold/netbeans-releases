@@ -183,7 +183,7 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="PHP">
         <folder name="RuntimeLibraries">
-            <file name="pdo_mysql.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/pdo_mysql.php"/>
+            <!-- part of PHP Platform (SFS folder for signature files from other modules) -->
         </folder>
     </folder>
     <folder name="Loaders">

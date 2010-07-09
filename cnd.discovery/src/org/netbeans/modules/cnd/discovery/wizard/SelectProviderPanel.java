@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.prefs.Preferences;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -97,6 +96,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     
     private void addListeners(){
         rootFolder.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 update();
             }
@@ -105,12 +105,15 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         Component component = editor.getEditorComponent();
         if (component instanceof JTextField) {
             ((JTextField)component).getDocument().addDocumentListener(new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     update();
                 }
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     update();
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     update();
                 }
@@ -319,25 +322,31 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         DefaultComboBoxModel model = (DefaultComboBoxModel)prividersComboBox.getModel();
         model.removeAllElements();
         ProjectProxy proxy = new ProjectProxy() {
+            @Override
             public boolean createSubProjects() {
                 return false;
             }
+            @Override
             public Project getProject() {
                 return wizardDescriptor.getProject();
             }
 
+            @Override
             public String getMakefile() {
                 return null;
             }
 
+            @Override
             public String getSourceRoot() {
                 return wizardDescriptor.getRootFolder();
             }
 
+            @Override
             public String getExecutable() {
                 return wizardDescriptor.getBuildResult();
             }
 
+            @Override
             public String getWorkingFolder() {
                 return null;
             }
@@ -413,7 +422,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             } else if ("dwarf-folder".equals(item.getID())){ // NOI18N
                 item.getProvider().getProperty("folder").setValue(wizardDescriptor.getRootFolder()); // NOI18N
             }
-            int i = item.getProvider().canAnalyze(proxy);
+            int i = item.getProvider().canAnalyze(proxy).getPriority();
             if (i > assurance) {
                 def = item;
                 assurance = i;
@@ -498,36 +507,46 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         return NbBundle.getBundle(SelectProviderPanel.class).getString(key);
     }
 
+    @Override
     public void projectParsingStarted(CsmProject project) {
     }
 
+    @Override
     public void projectFilesCounted(CsmProject project, int filesCount) {
     }
 
+    @Override
     public void projectParsingFinished(CsmProject project) {
         wizard.stateChanged(null);
     }
     
+    @Override
     public void projectLoaded(CsmProject project) {
         wizard.stateChanged(null);
     }
     
 
+    @Override
     public void projectParsingCancelled(CsmProject project) {
     }
 
+    @Override
     public void fileInvalidated(CsmFile file) {
     }
 
+    @Override
     public void fileAddedToParse(CsmFile file) {
     }
 
+    @Override
     public void fileParsingStarted(CsmFile file) {
     }
 
+    @Override
     public void fileParsingFinished(CsmFile file) {
     }
 
+    @Override
     public void parserIdle() {
     }
 
@@ -550,6 +569,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             return provider;
         }
         
+        @Override
         public int compareTo(ProviderItem o) {
             return toString().compareTo( o.toString() );
         }

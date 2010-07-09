@@ -49,6 +49,7 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -599,6 +600,21 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         params[1] = project.getClass().getName();
         params[2] = "SERVICE"; // NOI18N
         LogUtils.logWsDetect(params);
+    }
+
+    @Override
+    protected String getProjectJavaEEVersion() {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            if (Profile.JAVA_EE_6_WEB.equals(webModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_16;
+            } else if (Profile.JAVA_EE_6_FULL.equals(webModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_16;
+            } else if (Profile.JAVA_EE_5.equals(webModule.getJ2eeProfile())) {
+                return JAVA_EE_VERSION_15;
+            }
+        }
+        return JAVA_EE_VERSION_NONE;
     }
     
 }

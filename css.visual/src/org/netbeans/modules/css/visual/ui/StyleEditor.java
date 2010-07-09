@@ -56,10 +56,13 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.editor.CssEditorSupport;
 import org.netbeans.modules.css.editor.model.CssRuleContent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JPanel;
@@ -85,6 +88,8 @@ abstract public class StyleEditor extends JPanel {
     private final Object LOCK = new Object();
     private Executor EXECUTOR = Executors.newSingleThreadExecutor();
 
+    private final AtomicBoolean IN_PROPERTY_VALUES_INITIALIZATION = new AtomicBoolean(false);
+
     protected StyleEditor(String name, String dispName) {
         setName(name); //NOI18N
         setDisplayName(dispName);
@@ -103,7 +108,28 @@ abstract public class StyleEditor extends JPanel {
 
                     @Override
                     public void run() {
+                        //Bug 187818 - CSS Style Editor sometimes broken after update to 6.9
+                        //
+                        //The CssEditorSupport.updateSelectedRule() method calls setContent() on the
+                        //StyleBuilderTopComponent which then triggers this code.
+                        //In the StyleEditor.setCssPropertyValues() method there might be the
+                        //aggregated events handling which then causes the CssEditorSupport to stop listening
+                        //on the UI.
+                        //It is caused by the lazy call of this Runnable. First the
+                        //CssEditorSupport.updateSelectedRule()
+                        //triggers the StyleEditor.setContent() method, then adds the listener to the
+                        //selected rule in the same thread. Then after some time this Runnable lazily runs
+                        //and possibly (for example in the MarginStyleEditor) calls
+                        //the CssEditorSupport.lastAggregatedEventFired
+                        //which detaches the property change listener.
+                        //
+                        //The workaround is not to call the CssEditorSupport.firstAggregatedEventWillFire() and
+                        //CssEditorSupport.lastAggregatedEventFired() during the panel initialization but only
+                        //upon the UI modifications
+                        //
+                        IN_PROPERTY_VALUES_INITIALIZATION.set(true);
                         setCssPropertyValues(content.selectedRuleContent());
+                        IN_PROPERTY_VALUES_INITIALIZATION.set(false);
                         //once the instance executor is used, we can release it and run the code directly
                         EXECUTOR = null;
                     }
@@ -118,6 +144,18 @@ abstract public class StyleEditor extends JPanel {
             task.run();
         }
 
+    }
+
+    protected void startAggregatedEventsSession() {
+        if(!IN_PROPERTY_VALUES_INITIALIZATION.get()) {
+            CssEditorSupport.getDefault().firstAggregatedEventWillFire();
+        }
+    }
+
+    protected void closeAggregatedEventsSession() {
+        if(!IN_PROPERTY_VALUES_INITIALIZATION.get()) {
+            CssEditorSupport.getDefault().lastAggregatedEventFired();
+        }
     }
     
     protected CssRuleContext content() {

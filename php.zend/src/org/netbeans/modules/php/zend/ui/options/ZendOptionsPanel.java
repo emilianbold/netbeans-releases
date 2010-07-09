@@ -94,7 +94,7 @@ public final class ZendOptionsPanel extends JPanel {
         defaultParametersForProjectTextField.setVisible(false);
 
         // not set in Design because of windows (panel too wide then)
-        zendScriptUsageLabel.setText(NbBundle.getMessage(ZendOptionsPanel.class, "LBL_ZendUsage"));
+        zendScriptUsageLabel.setText(NbBundle.getMessage(ZendOptionsPanel.class, "LBL_ZendUsage", ZendScript.SCRIPT_NAME_LONG));
         errorLabel.setText(" "); // NOI18N
 
         zendTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -373,7 +373,7 @@ public final class ZendOptionsPanel extends JPanel {
          String zendScript = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
             @Override
             public List<String> detect() {
-                return FileUtils.findFileOnUsersPath(ZendScript.SCRIPT_NAME);
+                return FileUtils.findFileOnUsersPath(ZendScript.SCRIPT_NAME, ZendScript.SCRIPT_NAME_LONG);
             }
 
             @Override

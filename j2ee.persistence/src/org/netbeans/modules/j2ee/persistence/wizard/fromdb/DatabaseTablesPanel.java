@@ -107,6 +107,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private TableClosure tableClosure;
 
     private boolean sourceSchemaUpdateEnabled;
+    private boolean allowUpdateRecreate = true;
 
     private Project project;
 
@@ -517,19 +518,22 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         removeButton.setEnabled(tableClosure.canRemoveAllTables(tables));
 
         removeAllButton.setEnabled(tableClosure.getSelectedTables().size() > 0);
-        tableError.setText("");
+        String problems = "";
         for (Table t : addTables) {
             if (t.isDisabled()) {
                 if (t.getDisabledReason() instanceof Table.ExistingDisabledReason) {
                     String existingClass = ((Table.ExistingDisabledReason) t.getDisabledReason()).getFQClassName();
-                    tableError.setText(NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_Already_Mapped", new Object[] {t.getName(), existingClass}));
-                    break;
+                    if(allowUpdateRecreate){
+                        problems += (problems.length()>0 ? "\n" : "") + NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_Already_Mapped_UpdateAllowed", new Object[] {t.getName(), existingClass});
+                    } else {
+                        problems += (problems.length()>0 ? "\n" : "") + NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_Already_Mapped_UpdateAllowed", new Object[] {t.getName(), existingClass});
+                    }
                 } else if (t.getDisabledReason() instanceof Table.NoPrimaryKeyDisabledReason) {
-                    tableError.setText(NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_No_Primary_Key", new Object[] {t.getName()}));
-                    break;
+                    problems += (problems.length()>0 ? "\n" : "") + NbBundle.getMessage(DatabaseTablesPanel.class, "MSG_No_Primary_Key", new Object[] {t.getName()});
                 }
             }
         }
+        tableError.setText(problems);tableError.setCaretPosition(0);
     }
 
     /** This method is called from within the constructor to
@@ -559,7 +563,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         addAllButton = new javax.swing.JButton();
         removeAllButton = new javax.swing.JButton();
         tableClosureCheckBox = new javax.swing.JCheckBox();
-        jScrollPane3 = new javax.swing.JScrollPane();
+        tableErrorScroll = new javax.swing.JScrollPane();
         tableError = new javax.swing.JTextPane();
 
         setName(org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_DatabaseTables")); // NOI18N
@@ -715,11 +719,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         tablesPanel.add(tableClosureCheckBox, gridBagConstraints);
 
-        jScrollPane3.setBorder(null);
+        tableErrorScroll.setBorder(null);
 
         tableError.setEditable(false);
+        tableError.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         tableError.setOpaque(false);
-        jScrollPane3.setViewportView(tableError);
+        tableErrorScroll.setViewportView(tableError);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -734,7 +739,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                     .add(dbschemaComboBox, 0, 387, Short.MAX_VALUE)
                     .add(datasourceComboBox, 0, 387, Short.MAX_VALUE)))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tablesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, tableErrorScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -749,7 +754,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 6, Short.MAX_VALUE)
                 .add(tablesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 235, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(tableErrorScroll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 48, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -822,7 +827,6 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton datasourceRadioButton;
     private javax.swing.JComboBox dbschemaComboBox;
     private javax.swing.JRadioButton dbschemaRadioButton;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JButton removeAllButton;
     private javax.swing.JButton removeButton;
     private javax.swing.ButtonGroup schemaSource;
@@ -831,6 +835,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane selectedTablesScrollPane;
     private javax.swing.JCheckBox tableClosureCheckBox;
     private javax.swing.JTextPane tableError;
+    private javax.swing.JScrollPane tableErrorScroll;
     private javax.swing.JPanel tablesPanel;
     // End of variables declaration//GEN-END:variables
 

@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
@@ -78,6 +79,28 @@ public class DwarfSourceReaderTest extends NbTestCase {
     @Override
     protected int timeOut() {
         return 500000;
+    }
+
+    public void testDllReader(){
+        File dataDir = getDataDir();
+        String objFileName = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo";
+        Dwarf dump = null;
+        try {
+            dump = new Dwarf(objFileName);
+            for(String dll : dump.readPubNames()) {
+                assertEquals(dll, "libc.so.1"); // NOI18N
+            }
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (WrongFileFormatException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            if (dump != null) {
+                dump.dispose();
+            }
+        }
     }
 
     public void testSunStudioCompiler(){
@@ -752,12 +775,12 @@ public class DwarfSourceReaderTest extends NbTestCase {
                         public String getWorkingFolder() { return null; }
                     }){
                         @Override
-                        public Map<String, String> getSystemMacroDefinitions(boolean isCPP) {
+                        public Map<String, String> getSystemMacroDefinitions(ItemProperties.LanguageKind lang) {
                             return ignore;
                         }
 
                         @Override
-                        public List<String> getSystemIncludePaths(boolean isCPP) {
+                        public List<String> getSystemIncludePaths(ItemProperties.LanguageKind lang) {
                             return systemPath;
                         }
 
@@ -805,7 +828,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
                         }
 
                     };
-                    DwarfSource source = new DwarfSource(cu, false, settings, grepBase);
+                    DwarfSource source = new DwarfSource(cu, ItemProperties.LanguageKind.C, settings, grepBase);
                     source.process(cu);
                     return source;
                 }

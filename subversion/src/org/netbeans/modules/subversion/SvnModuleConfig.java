@@ -258,11 +258,11 @@ public class SvnModuleConfig {
             } else {
                 if(getUrlCredentials().containsKey(rc.getUrl())) {
                     Object[] creds = getUrlCredentials().get(rc.getUrl());
-                    if(creds.length < 2) continue; //skip garbage
-                    rc = new RepositoryConnection(rc.getUrl(), (String)creds[0], (char[])creds[1], rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), rc.getCertPassword());
+                    if(creds.length < 3) continue; //skip garbage
+                    rc = new RepositoryConnection(rc.getUrl(), (String)creds[0], (char[])creds[1], rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), (char[])creds[2]);
                 } else if (!EventQueue.isDispatchThread()) {
-                    char[] password = KeyringSupport.read(KEY_PASSWORD, rc.getUrl().toString());
-                    char[] certPassword = KeyringSupport.read(KEY_CERT_PASSWORD, rc.getUrl().toString());
+                    char[] password = rc.getSavePassword() ? KeyringSupport.read(KEY_PASSWORD, rc.getUrl().toString()) : null;
+                    char[] certPassword = rc.getCertFile().isEmpty() ? null : KeyringSupport.read(KEY_CERT_PASSWORD, rc.getUrl().toString());
                     rc = new RepositoryConnection(rc.getUrl(), rc.getUsername(), password, rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), certPassword);
                 }
                 ret.add(rc);
@@ -434,10 +434,20 @@ public class SvnModuleConfig {
     }
     
     private void handleCredentials(RepositoryConnection rc) {
+        String url;
+        try {
+            url = rc.getSvnUrl().toString();
+        } catch (MalformedURLException ex) {
+            url = rc.getUrl();
+        }
         if(!rc.getSavePassword()) {
-            getUrlCredentials().put(rc.getUrl(), new Object[]{rc.getUsername(), rc.getPassword()});
+            getUrlCredentials().put(rc.getUrl(), new Object[]{rc.getUsername(), rc.getPassword(), rc.getCertPassword()});
+            if (!url.equals(rc.getUrl())) {
+                getUrlCredentials().put(url, new Object[]{rc.getUsername(), rc.getPassword(), rc.getCertPassword()});
+            }
         } else {
             getUrlCredentials().remove(rc.getUrl());
+            getUrlCredentials().remove(url);
         }                      
     }    
     
@@ -473,12 +483,19 @@ public class SvnModuleConfig {
     private void storeCredentials (final RepositoryConnection rc) {
         if ((rc.getSavePassword() && rc.getPassword() != null) || rc.getCertPassword() != null) {
             Runnable outOfAWT = new Runnable() {
+                @Override
                 public void run() {
+                    String url;
+                    try {
+                        url = rc.getSvnUrl().toString();
+                    } catch (MalformedURLException ex) {
+                        url = rc.getUrl();
+                    }
                     if (rc.getSavePassword() && rc.getPassword() != null) {
-                        KeyringSupport.save(KEY_PASSWORD, rc.getUrl().toString(), rc.getPassword().clone(), null);
+                        KeyringSupport.save(KEY_PASSWORD, url, rc.getPassword().clone(), null);
                     }
                     if (rc.getCertPassword() != null) {
-                        KeyringSupport.save(KEY_CERT_PASSWORD, rc.getUrl().toString(), rc.getCertPassword().clone(), null);
+                        KeyringSupport.save(KEY_CERT_PASSWORD, url, rc.getCertPassword().clone(), null);
                     }
                 }
             };

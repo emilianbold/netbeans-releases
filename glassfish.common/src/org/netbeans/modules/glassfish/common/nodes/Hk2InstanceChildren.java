@@ -78,6 +78,7 @@ public class Hk2InstanceChildren extends Children.Keys<Node> implements Refresha
         serverInstance.addChangeListener(WeakListeners.change(this, serverInstance));
     }
 
+    @Override
     public void updateKeys(){
         Vector<Node> keys = new Vector<Node>();
         serverInstance.getCommonSupport().refresh();
@@ -109,12 +110,15 @@ public class Hk2InstanceChildren extends Children.Keys<Node> implements Refresha
         setKeys(noKeys);
     }
     
+    @Override
     protected org.openide.nodes.Node[] createNodes(Node key) {
         return new Node [] { key };
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 updateKeys();
             }

@@ -80,7 +80,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 85;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 87;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -288,21 +288,21 @@ public final class RepositoryUtils {
         repository.debugClear();
     }
 
-    public static void closeUnit(CsmUID uid, Set<String> requiredUnits, boolean cleanRepository) {
+    public static void closeUnit(CsmUID uid, Set<CharSequence> requiredUnits, boolean cleanRepository) {
         closeUnit(UIDtoKey(uid), requiredUnits, cleanRepository);
     }
 
-    public static void closeUnit(String unitName, Set<String> requiredUnits, boolean cleanRepository) {
+    public static void closeUnit(CharSequence unitName, Set<CharSequence> requiredUnits, boolean cleanRepository) {
         RepositoryListenerImpl.instance().onExplicitClose(unitName);
         _closeUnit(unitName, requiredUnits, cleanRepository);
     }
 
-    public static void closeUnit(Key key, Set<String> requiredUnits, boolean cleanRepository) {
+    public static void closeUnit(Key key, Set<CharSequence> requiredUnits, boolean cleanRepository) {
         assert key != null;
-        _closeUnit(key.getUnit().toString(), requiredUnits, cleanRepository);
+        _closeUnit(key.getUnit(), requiredUnits, cleanRepository);
     }
 
-    private static void _closeUnit(String unit, Set<String> requiredUnits, boolean cleanRepository) {
+    private static void _closeUnit(CharSequence unit, Set<CharSequence> requiredUnits, boolean cleanRepository) {
         assert unit != null;
         if (!cleanRepository) {
             int errors = myRepositoryListenerProxy.getErrorCount(unit);
@@ -316,12 +316,12 @@ public final class RepositoryUtils {
     }
 
     public static int getRepositoryErrorCount(ProjectBase project){
-        return getRepositoryListenerProxy().getErrorCount(project.getUniqueName().toString());
+        return getRepositoryListenerProxy().getErrorCount(project.getUniqueName());
     }
 
     public static void onProjectDeleted(NativeProject nativeProject) {
         Key key = KeyUtilities.createProjectKey(nativeProject);
-        repository.removeUnit(key.getUnit().toString());
+        repository.removeUnit(key.getUnit());
     }
 
     public static void openUnit(ProjectBase project) {
@@ -332,10 +332,10 @@ public final class RepositoryUtils {
     }
 
     public static void openUnit(Key key) {
-        openUnit(key.getUnitId(), key.getUnit().toString());
+        openUnit(key.getUnitId(), key.getUnit());
     }
 
-    private static void openUnit(int unitId, String unitName) {
+    private static void openUnit(int unitId, CharSequence unitName) {
         // TODO explicit open should be called here:
         RepositoryListenerImpl.instance().onExplicitOpen(unitName);
         repository.openUnit(unitId, unitName);
@@ -345,23 +345,23 @@ public final class RepositoryUtils {
         repository.unregisterRepositoryListener(listener);
     }
 
-    static int getUnitId(String unitName) {
+    static int getUnitId(CharSequence unitName) {
         return RepositoryAccessor.getTranslator().getUnitId(unitName);
     }
 
-    static String getUnitName(int unitIndex) {
+    static CharSequence getUnitName(int unitIndex) {
         return RepositoryAccessor.getTranslator().getUnitName(unitIndex);
     }
 
-    static int getFileIdByName(int unitId, String fileName) {
+    static int getFileIdByName(int unitId, CharSequence fileName) {
         return RepositoryAccessor.getTranslator().getFileIdByName(unitId, fileName);
     }
 
-    static String getFileNameByIdSafe(int unitId, int fileId) {
+    static CharSequence getFileNameByIdSafe(int unitId, int fileId) {
         return RepositoryAccessor.getTranslator().getFileNameByIdSafe(unitId, fileId);
     }
 
-    static String getFileNameById(int unitId, int fileId) {
+    static CharSequence getFileNameById(int unitId, int fileId) {
         return RepositoryAccessor.getTranslator().getFileNameById(unitId, fileId);
     }
 
@@ -380,10 +380,10 @@ public final class RepositoryUtils {
 
     private static class RepositoryListenerProxy implements RepositoryListener {
         private RepositoryListener parent = RepositoryListenerImpl.instance();
-        private Map<String,Integer> wasErrors = new ConcurrentHashMap<String,Integer>();
+        private Map<CharSequence,Integer> wasErrors = new ConcurrentHashMap<CharSequence,Integer>();
         private RepositoryListenerProxy(){
         }
-        public int getErrorCount(String unitName) {
+        public int getErrorCount(CharSequence unitName) {
             Integer i = wasErrors.get(unitName);
             if (i == null) {
                 return 0;
@@ -391,19 +391,19 @@ public final class RepositoryUtils {
                 return i.intValue();
             }
         }
-        public void cleanErrorCount(String unitName) {
+        public void cleanErrorCount(CharSequence unitName) {
             wasErrors.remove(unitName);
         }
         @Override
-        public boolean unitOpened(String unitName) {
+        public boolean unitOpened(CharSequence unitName) {
             return parent.unitOpened(unitName);
         }
         @Override
-        public void unitClosed(String unitName) {
+        public void unitClosed(CharSequence unitName) {
             parent.unitClosed(unitName);
         }
         @Override
-        public void anExceptionHappened(String unitName, RepositoryException exc) {
+        public void anExceptionHappened(CharSequence unitName, RepositoryException exc) {
             primitiveErrorStrategy(unitName, exc);
             parent.anExceptionHappened(unitName, exc);
         }
@@ -414,7 +414,7 @@ public final class RepositoryUtils {
          * Provide intelligence logic that take into account possibility to "fixing" errors.
          * For example error in "file" segment can be fixed by file reparse.
          */
-        private void primitiveErrorStrategy(String unitName, RepositoryException exc){
+        private void primitiveErrorStrategy(CharSequence unitName, RepositoryException exc){
             Integer i = wasErrors.get(unitName);
             if (i == null) {
                 i = Integer.valueOf(1);
