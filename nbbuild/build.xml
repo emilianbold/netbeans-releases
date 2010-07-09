@@ -1503,6 +1503,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <output type="group-dependencies" file="${generated.files.dir}/cluster-deps.txt" />
       <output type="group-implementation-dependencies" file="${generated.files.dir}/cluster-impl-deps.txt" />
       <output type="modules" file="${generated.files.dir}/modules.txt" />
+      <output type="disabled-autoloads" file="${generated.files.dir}/disabled-autoloads.txt"/>
       <output type="dependencies" file="${generated.files.dir}/deps.txt" />
       <output type="implementation-dependencies" file="${generated.files.dir}/impl-deps.txt" />
       <output type="public-packages" file="${generated.files.dir}/public-packages.txt" />
