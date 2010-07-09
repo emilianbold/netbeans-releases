@@ -261,7 +261,11 @@ public final class ConnectionManager {
     private void reconnect(ExecutionEnvironment env) throws IOException {
         synchronized (channelsSupport) {
             if (channelsSupport.containsKey(env)) {
-                channelsSupport.get(env).reconnect(env);
+                try {
+                    channelsSupport.get(env).reconnect(env);
+                } catch (JSchException ex) {
+                    throw new IOException(ex);
+                }
             }
         }
     }
