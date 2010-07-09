@@ -76,6 +76,13 @@ public class DocRendererTest extends NbTestCase {
         testCases.put(
                 "<input>",
                 "&lt;input>");
+        // #183594
+        testCases.put(
+                "List:\n- minus\n+ plus\n# hash\no circle\n3 number\n3. number with dot",
+                "List:<br>&nbsp;&nbsp;&nbsp;&nbsp;- minus<br>&nbsp;&nbsp;&nbsp;&nbsp;+ plus<br>&nbsp;&nbsp;&nbsp;&nbsp;# hash<br>&nbsp;&nbsp;&nbsp;&nbsp;o circle<br>&nbsp;&nbsp;&nbsp;&nbsp;3 number<br>&nbsp;&nbsp;&nbsp;&nbsp;3. number with dot");
+        testCases.put(
+                "NoList:\n-minus\n+plus\n#hash\nocircle\n3-number\n3.number with dot",
+                "NoList:\n-minus\n+plus\n#hash\nocircle\n3-number\n3.number with dot");
 
         for (Map.Entry<String, String> entry : testCases.entrySet()) {
             String expected = entry.getValue();
