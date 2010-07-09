@@ -159,7 +159,7 @@ public final class JaxWsModelImpl implements JaxWsModel {
     
     @Override
     public Boolean getJsr109() {
-        return jaxws == null ? Boolean.FALSE : jaxws.getJsr109();
+        return jaxws == null ? null : jaxws.getJsr109();
     }
     
     @Override
