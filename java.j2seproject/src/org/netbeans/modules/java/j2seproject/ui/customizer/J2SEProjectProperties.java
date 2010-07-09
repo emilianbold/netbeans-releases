@@ -804,7 +804,10 @@ public class J2SEProjectProperties {
         Map<String,String> def = configs.get(null);
         for (String prop : new String[] {ProjectProperties.MAIN_CLASS, ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_JVM_ARGS, ProjectProperties.RUN_WORK_DIR}) {
             String v = def.get(prop);
-            EditableProperties ep = (prop.equals(ProjectProperties.APPLICATION_ARGS) || prop.equals(ProjectProperties.RUN_WORK_DIR)) ?
+            EditableProperties ep =
+                    (prop.equals(ProjectProperties.APPLICATION_ARGS) ||
+                    prop.equals(ProjectProperties.RUN_WORK_DIR)  ||
+                    privateProperties.containsKey(prop)) ?
                 privateProperties : projectProperties;
             if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                 if (v != null && v.length() > 0) {
@@ -812,9 +815,6 @@ public class J2SEProjectProperties {
                 } else {
                     ep.remove(prop);
                 }
-            }
-            if (ep == projectProperties) {  //Remove old value from private props (higher priority) when storing to  project props
-                privateProperties.remove(prop);
             }
         }
         for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
@@ -830,23 +830,30 @@ public class J2SEProjectProperties {
                 updateHelper.putProperties(privatePath, null);
                 continue;
             }
+            final EditableProperties sharedCfgProps = updateHelper.getProperties(sharedPath);
+            final EditableProperties privateCfgProps = updateHelper.getProperties(privatePath);
+            boolean privatePropsChanged = false;
             for (Map.Entry<String,String> entry2 : c.entrySet()) {
                 String prop = entry2.getKey();
                 String v = entry2.getValue();
-                String path = (prop.equals(ProjectProperties.APPLICATION_ARGS) || prop.equals(ProjectProperties.RUN_WORK_DIR)) ?
-                    privatePath : sharedPath;
-                EditableProperties ep = updateHelper.getProperties(path);
+                EditableProperties ep =
+                        (prop.equals(ProjectProperties.APPLICATION_ARGS) ||
+                         prop.equals(ProjectProperties.RUN_WORK_DIR) ||
+                         privateCfgProps.containsKey(prop)) ?
+                    privateCfgProps : sharedCfgProps;
                 if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                     if (v != null && (v.length() > 0 || (def.get(prop) != null && def.get(prop).length() > 0))) {
                         ep.setProperty(prop, v);
                     } else {
                         ep.remove(prop);
                     }
-                    updateHelper.putProperties(path, ep);
+                    privatePropsChanged |= ep == privateCfgProps;
                 }
             }
-            // Make sure the definition file is always created, even if it is empty.
-            updateHelper.putProperties(sharedPath, updateHelper.getProperties(sharedPath));
+            updateHelper.putProperties(sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
+            if (privatePropsChanged) {                              //Definition file is written, only when changed
+                updateHelper.putProperties(privatePath, privateCfgProps);
+            }
         }
     }
     
