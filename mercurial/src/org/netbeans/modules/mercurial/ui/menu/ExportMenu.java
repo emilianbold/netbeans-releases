@@ -42,64 +42,42 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.mercurial;
+package org.netbeans.modules.mercurial.ui.menu;
 
-import org.openide.util.actions.SystemAction;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import org.openide.util.NbBundle;
-import org.openide.awt.DynamicMenuContent;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.mercurial.ui.merge.MergeAction;
-import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
-import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
-import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.mercurial.ui.diff.ExportBundleAction;
+import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
+import org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.openide.util.actions.SystemAction;
 
 /**
- * Container menu for branch actions.
+ * Container menu for export actions.
  *
- * @author Maros Sandor
+ * @author Ondra
  */
-public class MergeMenu extends AbstractAction implements DynamicMenuContent {
-    private VCSContext ctx;
-    private boolean bShowMarkAsResolved;
+public final class ExportMenu extends DynamicMenu {
 
-    public MergeMenu(VCSContext ctx, boolean bShowMarkAsResolved) {
-        super(NbBundle.getMessage(MergeMenu.class, "CTL_MenuItem_MergeMenu"));
-        this.ctx = ctx;
-        this.bShowMarkAsResolved = bShowMarkAsResolved;
+    public ExportMenu () {
+        super(null, NbBundle.getMessage(ExportMenu.class, "CTL_MenuItem_ExportMenu"));
     }
 
-    public JComponent[] getMenuPresenters() {
-        return new JComponent [] { createMenu() };
-    }
-
-    public JComponent[] synchMenuPresenters(JComponent[] items) {
-        return new JComponent [] { createMenu() };
-    }
-
-    public boolean isEnabled() {
-        return true;
-    }
-
-    public void actionPerformed(ActionEvent ev) {
-        // no operation
-    }
-
-    private JMenu createMenu() {
+    @Override
+    protected JMenu createMenu() {
         JMenu menu = new JMenu(this);
-        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(MergeMenu.class, "CTL_MenuItem_MergeMenu"));
+        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ExportMenu.class, "CTL_MenuItem_ExportMenu")); // NOI18N
         
-        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(MergeAction.class), NbBundle.getMessage(MergeMenu.class, "CTL_PopupMenuItem_Merge"))); //NOI18N
+        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(ExportDiffAction.class), NbBundle.getMessage(ExportDiffAction.class, "CTL_MenuItem_ExportDiff"))); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
-        item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), NbBundle.getMessage(MergeMenu.class, "CTL_PopupMenuItem_Resolve"))); //NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(ExportDiffChangesAction.class), NbBundle.getMessage(ExportDiffChangesAction.class, "CTL_MenuItem_ExportDiffChanges"))); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        if(bShowMarkAsResolved){
-            item = menu.add(new SystemActionBridge(SystemAction.get(ConflictResolvedAction.class), NbBundle.getMessage(MergeMenu.class, "CTL_PopupMenuItem_MarkResolved"))); //NOI18N
-            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        }
+        
+        item = menu.add(new SystemActionBridge(SystemAction.get(ExportBundleAction.class), NbBundle.getMessage(ExportBundleAction.class, "CTL_MenuItem_ExportBundle"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+        
         return menu;
     }
 }

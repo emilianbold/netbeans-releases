@@ -42,63 +42,48 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.mercurial.ui.diff;
+package org.netbeans.modules.mercurial.ui.menu;
 
-import org.openide.util.NbBundle;
-import org.openide.awt.DynamicMenuContent;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.mercurial.ui.pull.PullAction;
-import org.netbeans.modules.mercurial.ui.push.PushAction;
-import org.netbeans.modules.mercurial.ui.push.PushOtherAction;
-import org.netbeans.modules.versioning.util.SystemActionBridge;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
+import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
+import org.netbeans.modules.mercurial.ui.rollback.RollbackAction;
+import org.netbeans.modules.mercurial.ui.rollback.StripAction;
+import org.netbeans.modules.mercurial.ui.rollback.VerifyAction;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 
 /**
- * Container menu for export actions.
+ * Container menu for branch actions.
  *
- * @author Ondra
+ * @author Maros Sandor
  */
-public final class ExportMenu extends AbstractAction implements DynamicMenuContent {
+public class RecoverMenu extends DynamicMenu {
 
-    public ExportMenu() {
-        super(NbBundle.getMessage(ExportMenu.class, "CTL_MenuItem_ExportMenu"));
+    public RecoverMenu(VCSContext ctx) {
+        super(ctx, NbBundle.getMessage(RecoverMenu.class, "CTL_MenuItem_RecoverMenu"));
     }
 
     @Override
-    public JComponent[] getMenuPresenters() {
-        return new JComponent [] { createMenu() };
-    }
-
-    @Override
-    public JComponent[] synchMenuPresenters(JComponent[] items) {
-        return new JComponent [] { createMenu() };
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent ev) {
-        // no operation
-    }
-
-    private JMenu createMenu() {
+    protected JMenu createMenu() {
         JMenu menu = new JMenu(this);
-        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ExportMenu.class, "CTL_MenuItem_ExportMenu")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(RecoverMenu.class, "CTL_MenuItem_RecoverMenu"));
         
-        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(ExportDiffAction.class), NbBundle.getMessage(ExportDiffAction.class, "CTL_MenuItem_ExportDiff"))); //NOI18N
+        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(StripAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Strip"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+        
+        item = menu.add(new SystemActionBridge(SystemAction.get(BackoutAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Backout"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+        
+        item = menu.add(new SystemActionBridge(SystemAction.get(RollbackAction.class), SystemAction.get(RollbackAction.class).getName()));
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+        
+        item = menu.add(new SystemActionBridge(SystemAction.get(VerifyAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Verify"))); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
-        item = menu.add(new SystemActionBridge(SystemAction.get(ExportDiffChangesAction.class), NbBundle.getMessage(ExportDiffChangesAction.class, "CTL_MenuItem_ExportDiffChanges"))); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        
-        item = menu.add(new SystemActionBridge(SystemAction.get(ExportBundleAction.class), NbBundle.getMessage(ExportBundleAction.class, "CTL_MenuItem_ExportBundle"))); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-        
         return menu;
     }
 }

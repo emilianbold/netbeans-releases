@@ -42,77 +42,46 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.mercurial;
+package org.netbeans.modules.mercurial.ui.menu;
 
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.netbeans.modules.mercurial.MercurialAnnotator;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
-import org.openide.awt.DynamicMenuContent;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
-import org.netbeans.modules.mercurial.ui.log.IncomingAction;
-import org.netbeans.modules.mercurial.ui.log.OutAction;
-import org.netbeans.modules.mercurial.ui.view.ViewAction;
+import org.netbeans.modules.mercurial.ui.merge.MergeAction;
+import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
+import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
-import org.openide.util.actions.SystemAction;
 
 /**
  * Container menu for branch actions.
  *
  * @author Maros Sandor
  */
-public class ShowMenu extends AbstractAction implements DynamicMenuContent {
-    private VCSContext ctx;
-    private boolean bShowAnnotationMenu;
-    private boolean bShowAnnotation;
+public class MergeMenu extends DynamicMenu {
+    private boolean bShowMarkAsResolved;
 
-    public ShowMenu(VCSContext ctx, boolean bShowAnnotationMenu,boolean bShowAnnotation) {
-        super(NbBundle.getMessage(ShowMenu.class, "CTL_MenuItem_ShowMenu"));
-        this.ctx = ctx;
-        this.bShowAnnotationMenu = bShowAnnotationMenu;
-        this.bShowAnnotation = bShowAnnotation;
+    public MergeMenu(VCSContext ctx, boolean bShowMarkAsResolved) {
+        super(ctx, NbBundle.getMessage(MergeMenu.class, "CTL_MenuItem_MergeMenu"));
+        this.bShowMarkAsResolved = bShowMarkAsResolved;
     }
 
-    public JComponent[] getMenuPresenters() {
-        return new JComponent [] { createMenu() };
-    }
-
-    public JComponent[] synchMenuPresenters(JComponent[] items) {
-        return new JComponent [] { createMenu() };
-    }
-
-    public boolean isEnabled() {
-        return true;
-    }
-
-    public void actionPerformed(ActionEvent ev) {
-        // no operation
-    }
-
-    private JMenu createMenu() {
+    @Override
+    protected JMenu createMenu() {
         JMenu menu = new JMenu(this);
-        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ShowMenu.class, "CTL_MenuItem_ShowMenu"));
+        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(MergeMenu.class, "CTL_MenuItem_MergeMenu"));
+        
+        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(MergeAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Merge"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
-        JMenuItem item;
-        if(bShowAnnotationMenu){
-            if (!bShowAnnotation) {
-                item = menu.add(new SystemActionBridge(SystemAction.get(AnnotateAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowAnnotations"))); //NOI18N
-                org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            } else {
-                item = menu.add(new SystemActionBridge(SystemAction.get(AnnotateAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_HideAnnotations"))); //NOI18N
-                org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-            }
+        item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Resolve"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+        if(bShowMarkAsResolved){
+            item = menu.add(new SystemActionBridge(SystemAction.get(ConflictResolvedAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_MarkResolved"))); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }
-        item = menu.add(new SystemActionBridge(SystemAction.get(IncomingAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowIncoming"))); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-
-        item = menu.add(new SystemActionBridge(SystemAction.get(OutAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"))); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-
-        item = menu.add(new SystemActionBridge(SystemAction.get(ViewAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_View"))); //NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
-
         return menu;
     }
 }
