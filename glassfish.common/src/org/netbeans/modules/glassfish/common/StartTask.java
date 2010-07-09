@@ -146,7 +146,7 @@ public class StartTask extends BasicTask<OperationState> {
     public OperationState call() {
         // Save the current time so that we can deduct that the startup
         // Failed due to timeout
-        Logger.getLogger("glassfish").log(Level.FINEST, "StartTask.call() called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
+        Logger.getLogger("glassfish").log(Level.FINEST, "StartTask.call() called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
         long start = System.currentTimeMillis();
 
         String host;
@@ -266,8 +266,7 @@ public class StartTask extends BasicTask<OperationState> {
         
         // If the server did not start in the designated time limits
         // We consider the startup as failed and warn the user
-        Logger.getLogger("glassfish").log(Level.INFO, "V3 Failed to start, killing process: " + serverProcess+" after "+  // NOI18N
-                (System.currentTimeMillis() - start));
+        Logger.getLogger("glassfish").log(Level.INFO, "V3 Failed to start, killing process: {0} after {1}", new Object[]{serverProcess, System.currentTimeMillis() - start});
         serverProcess.destroy();
         logger.stopReaders();
         return fireOperationStateChanged(OperationState.FAILED,
@@ -393,11 +392,11 @@ public class StartTask extends BasicTask<OperationState> {
             argumentBuf.append(" -jar "); // NOI18N
             argumentBuf.append(Util.quote(bootstrapJar.getAbsolutePath()));
         }
-        argumentBuf.append(" --domain " + getDomainName()); // NOI18N
-        argumentBuf.append(" --domaindir " + Util.quote(domainDir.getAbsolutePath())); // NOI18N
+        argumentBuf.append(" --domain ").append(getDomainName()); // NOI18N
+        argumentBuf.append(" --domaindir ").append(Util.quote(domainDir.getAbsolutePath())); // NOI18N
         
         String arguments = argumentBuf.toString();
-        Logger.getLogger("glassfish").log(Level.FINE, "V3 JVM Command: " + startScript + " " + arguments); // NOI18N
+        Logger.getLogger("glassfish").log(Level.FINE, "V3 JVM Command: {0} {1}", new Object[]{startScript, arguments}); // NOI18N
         return new NbProcessDescriptor(startScript, arguments);
     }
 
@@ -567,7 +566,7 @@ public class StartTask extends BasicTask<OperationState> {
         return new File(support.getDomainsRoot()+ File.separatorChar + getDomainName());
     }
     
-    private final String getDomainName() {
+    private String getDomainName() {
         return ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
     }
     
