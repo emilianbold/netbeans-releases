@@ -154,21 +154,9 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
         return antProjectHelper;
     }
     
-    public void addService(String serviceName, String serviceImpl, boolean isJsr109) {
-        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-        if (jaxWsModel!=null) {           
-            Boolean value = jaxWsModel.getJsr109();
-            if((value == null || Boolean.TRUE.equals(value)) && !isJsr109){
-                jaxWsModel.setJsr109(Boolean.FALSE);
-                writeJaxWsModel(jaxWsModel);
-            } else if (Boolean.FALSE.equals(value) && isJsr109) {
-                jaxWsModel.setJsr109(Boolean.TRUE);
-                writeJaxWsModel(jaxWsModel);
-            }
-        }
-        
+    public void addService(String serviceName, String serviceImpl, boolean isJsr109) {  
         if(!isJsr109 ){
-            try{
+            try {
                 addJaxwsArtifacts(project, serviceName, serviceImpl);
             } catch(Exception e){
                 ErrorManager.getDefault().notify(e); //TODO handle this
@@ -242,7 +230,9 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                     }
 
                     Boolean value = jaxWsModel.getJsr109();
-                    if((value == null || Boolean.TRUE.equals(value)) && !isJsr109){
+                    if (value == null) {
+                        jaxWsModel.setJsr109(isJsr109);
+                    } else if (Boolean.TRUE.equals(value) && !isJsr109) {
                         jaxWsModel.setJsr109(Boolean.FALSE);
                     } else if (Boolean.FALSE.equals(value) && isJsr109) {
                         jaxWsModel.setJsr109(Boolean.TRUE);
