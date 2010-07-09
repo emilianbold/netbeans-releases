@@ -74,10 +74,12 @@ import org.openide.filesystems.FileUtil;
  */
 public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
 
+    @Override
     public JMenuItem getPopupPresenter() {
         return new DynamicDummyItem();
     }
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         // dummy, not used
     }
@@ -134,7 +136,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                 owners.add(fileOwner);
             }
         }
-        if (owners.size() == 0 && someUnversioned) {
+        if (owners.isEmpty() && someUnversioned) {
             // all rootfiles were unversioned, return a null owner for them
             owners.add(null);
         }
@@ -164,6 +166,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         if (action instanceof SystemAction) {
             final SystemAction sa = (SystemAction) action;
             item = new JMenuItem(new AbstractAction(sa.getName()) {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     sa.actionPerformed(e);
                 }
@@ -182,10 +185,12 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
     }
 
     private class DynamicDummyItem extends JMenuItem implements DynamicMenuContent {
+        @Override
         public JComponent[] getMenuPresenters() {
             return createItems();
         }
 
+        @Override
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             return createItems();
         }

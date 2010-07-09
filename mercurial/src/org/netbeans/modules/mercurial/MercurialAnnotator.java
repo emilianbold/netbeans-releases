@@ -130,11 +130,11 @@ public class MercurialAnnotator extends VCSAnnotator {
     private String emptyFormat;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    private static String badgeModified = "org/netbeans/modules/mercurial/resources/icons/modified-badge.png";
-    private static String badgeConflicts = "org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png";
-    private static String toolTipModified = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
+    private static final String badgeModified = "org/netbeans/modules/mercurial/resources/icons/modified-badge.png";
+    private static final String badgeConflicts = "org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png";
+    private static final String toolTipModified = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Modified_Locally");
-    private static String toolTipConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
+    private static final String toolTipConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
 
     public MercurialAnnotator() {
@@ -165,6 +165,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         return new MessageFormat(format);
     }
     
+    @Override
     public String annotateName(String name, VCSContext context) {
         FileInformation mostImportantInfo = null;
         File mostImportantFile = null;
@@ -192,6 +193,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             annotateNameHtml(name, mostImportantInfo, mostImportantFile);
     }
                 
+    @Override
     public Image annotateIcon(Image icon, VCSContext context) {
         boolean folderAnnotation = false;
         for (File file : context.getRootFiles()) {
@@ -292,13 +294,14 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
     }
 
+    @Override
     public Action[] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         // TODO: get resource strings for all actions:
         ResourceBundle loc = NbBundle.getBundle(MercurialAnnotator.class);
         Node [] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
         File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
         Set<File> roots = HgUtils.getRepositoryRoots(ctx);
-        boolean noneVersioned = (roots == null || roots.size() == 0);
+        boolean noneVersioned = (roots == null || roots.isEmpty());
         boolean onlyFolders = onlyFolders(files);
         boolean onlyProjects = onlyProjects(nodes);
 
