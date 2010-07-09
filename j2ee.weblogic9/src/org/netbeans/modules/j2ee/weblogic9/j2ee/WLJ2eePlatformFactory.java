@@ -52,7 +52,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -80,6 +82,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
+import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -148,14 +151,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 PROFILES.add(Profile.JAVA_EE_5);
             }
 
-            domainChangeListener = new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    // XXX check whether something relevant changed
-                    firePropertyChange(PROP_SERVER_LIBRARIES, null, null);
-                }
-            };
-
+            domainChangeListener = new DomainChangeListener(this);
             dm.addDomainChangeListener(WeakListeners.change(domainChangeListener, dm));
         }
         
@@ -436,7 +432,52 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()));
             return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
         }
-
-
     }
+
+    private static class DomainChangeListener implements ChangeListener {
+
+        private final J2eePlatformImplImpl platform;
+
+        private Set<WLServerLibrary> oldLibraries = Collections.emptySet();
+
+        public DomainChangeListener(J2eePlatformImplImpl platform) {
+            this.platform = platform;
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            Set<WLServerLibrary> tmpNewLibraries =
+                    new WLServerLibrarySupport(platform.dm).getDeployedLibraries();
+            Set<WLServerLibrary> tmpOldLibraries = null;
+            synchronized (this) {
+                tmpOldLibraries = new HashSet<WLServerLibrary>(oldLibraries);
+                oldLibraries = tmpNewLibraries;
+            }
+
+            if (fireChange(tmpOldLibraries, tmpNewLibraries)) {
+                LOGGER.log(Level.FINE, "Firing server libraries change");
+                platform.firePropertyChange(J2eePlatformImpl.PROP_SERVER_LIBRARIES, null, null);
+            }
+        }
+
+        private boolean fireChange(Set<WLServerLibrary> paramOldLibraries, Set<WLServerLibrary> paramNewLibraries) {
+            if (paramOldLibraries.size() != paramNewLibraries.size()) {
+                return true;
+            }
+
+            Set<WLServerLibrary> newLibraries = new HashSet<WLServerLibrary>(paramNewLibraries);
+            for (Iterator<WLServerLibrary> it = newLibraries.iterator(); it.hasNext();) {
+                WLServerLibrary newLib = it.next();
+                for (WLServerLibrary oldLib : paramOldLibraries) {
+                    if (WLServerLibrarySupport.sameLibraries(newLib, oldLib)) {
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+
+            return !newLibraries.isEmpty();
+        }
+    }
+
 }
