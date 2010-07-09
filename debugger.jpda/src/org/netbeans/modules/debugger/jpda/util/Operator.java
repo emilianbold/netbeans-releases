@@ -186,7 +186,7 @@ public class Operator {
                                 try {
                                     logger.fine("HAVE EVENT(s) in the Queue: "+eventSet);
                                 } catch (ObjectCollectedException ocex) {
-                                    ErrorManager.getDefault().notify(ocex);
+                                    logger.log(Level.FINE, "HAVE EVENT(s) in the Queue with something collected:", ocex);
                                 }
                             }
                         } catch (InterruptedException iexc) {
