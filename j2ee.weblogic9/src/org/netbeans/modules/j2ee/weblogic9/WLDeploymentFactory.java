@@ -196,6 +196,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
             mutableState = new WLMutableState(props);
             stateCache.put(props, mutableState);
         }
+        mutableState.configure();
         return mutableState;
     }
 }

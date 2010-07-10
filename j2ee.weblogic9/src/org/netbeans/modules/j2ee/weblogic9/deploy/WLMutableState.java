@@ -62,17 +62,32 @@ public class WLMutableState {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private final DomainChangeListener domainListener = new DomainChangeListener();
+    private final InstanceProperties ip;
+
+    /** <i>GuardedBy("this")</i> */
+    private DomainChangeListener domainListener;
 
     /* <i>GuardedBy("this")</i> */
     private boolean restartNeeded;
 
-    public WLMutableState(InstanceProperties props) {
-        String domainDir = props.getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
-        assert domainDir != null;
-        File domainXML = new File(domainDir + File.separator + "config" + File.separator + "config.xml");
-        // weak reference
-        FileUtil.addFileChangeListener(domainListener, domainXML);
+
+    public WLMutableState(InstanceProperties ip) {
+        this.ip = ip;
+    }
+
+    public synchronized void configure() {
+        if (domainListener != null) {
+            return;
+        }
+
+        String domainDir = ip.getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+        // null may happen during the registration
+        if (domainDir != null) {
+            File domainXML = new File(domainDir + File.separator + "config" + File.separator + "config.xml");
+            domainListener = new DomainChangeListener();
+            // weak reference
+            FileUtil.addFileChangeListener(domainListener, domainXML);
+        }
     }
 
     public void addDomainChangeListener(ChangeListener listener) {
