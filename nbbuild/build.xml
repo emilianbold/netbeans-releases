@@ -1163,40 +1163,59 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </antcall>
   </target>
 
-    <target name="localtest" depends="bootstrap">
-        <mkdir dir="build/test/unit/classes"/>
-        <javac srcdir="test/unit/src" destdir="build/test/unit/classes" debug="true" source="1.6">
-            <classpath path="${test.unit.cp}"/>
-            <compilerarg line="-Xlint -Xlint:-serial"/>
-        </javac>
-        <copy todir="build/test/unit/classes">
-            <fileset dir="test/unit/src" excludes="**/*.java"/>
-        </copy>
-        <mkdir dir="build/test/unit/results"/>
-        <property name="includes" value="**/*Test"/>
-        <property name="junit.vm.args" value=""/>
-        <junit showoutput="true" fork="true" tempdir="build/test/unit/results" filtertrace="false" includeantruntime="false">
+    <target name="-localtest-macrodef">
+        <macrodef name="localtest">
+            <element name="test" implicit="true"/>
+            <sequential>
+                <mkdir dir="build/test/unit/classes"/>
+                <javac srcdir="test/unit/src" destdir="build/test/unit/classes" debug="true" source="1.6">
+                    <classpath path="${test.unit.cp}"/>
+                    <compilerarg line="-Xlint -Xlint:-serial"/>
+                </javac>
+                <copy todir="build/test/unit/classes">
+                    <fileset dir="test/unit/src" excludes="**/*.java"/>
+                </copy>
+                <mkdir dir="build/test/unit/results"/>
+                <property name="junit.vm.args" value=""/>
+                <junit showoutput="true" fork="true" tempdir="build/test/unit/results" filtertrace="false" includeantruntime="false">
+                    <test/>
+                    <classpath>
+                        <pathelement path="${test.unit.cp}"/>
+                        <pathelement location="build/test/unit/classes"/>
+                    </classpath>
+                    <sysproperty key="nb_all" file=".."/>
+                    <sysproperty key="netbeans.dest.dir.work" file="${netbeans.dest.dir}"/>
+                    <sysproperty key="nbjunit.workdir" file="build/test/unit/work"/>
+                    <syspropertyset>
+                        <propertyref prefix="test-unit-sys-prop."/>
+                        <mapper type="glob" from="test-unit-sys-prop.*" to="*"/>
+                    </syspropertyset>
+                    <formatter type="brief" usefile="false"/>
+                    <formatter type="xml"/>
+                    <jvmarg value="-ea"/>
+                    <jvmarg line="${junit.vm.args}"/>
+                </junit>
+            </sequential>
+        </macrodef>
+    </target>
+    <target name="localtest" depends="bootstrap,-localtest-macrodef">
+        <property name="includes" value="**/*Test.class"/>
+        <localtest>
             <batchtest todir="build/test/unit/results">
-                <fileset dir="build/test/unit/classes">
-                    <include name="${includes}.class"/>
-                </fileset>
+                <fileset dir="build/test/unit/classes" includes="${includes}"/>
             </batchtest>
-            <classpath>
-                <pathelement path="${test.unit.cp}"/>
-                <pathelement location="build/test/unit/classes"/>
-            </classpath>
-            <sysproperty key="nb_all" file=".."/>
-            <sysproperty key="netbeans.dest.dir.work" file="${netbeans.dest.dir}"/>
-            <sysproperty key="nbjunit.workdir" file="build/test/unit/work"/>
-            <syspropertyset>
-                <propertyref prefix="test-unit-sys-prop."/>
-                <mapper type="glob" from="test-unit-sys-prop.*" to="*"/>
-            </syspropertyset>
-            <formatter type="brief" usefile="false"/>
-            <formatter type="xml"/>
-            <jvmarg value="-ea"/>
-            <jvmarg line="${junit.vm.args}"/>
-        </junit>
+        </localtest>
+    </target>
+    <target name="localtest-single" depends="bootstrap,-localtest-macrodef,-localtest-single-nomethod,-localtest-single-method"/>
+    <target name="-localtest-single-nomethod" unless="method">
+        <localtest>
+            <test name="${test.class}" todir="build/test/unit/results"/>
+        </localtest>
+    </target>
+    <target name="-localtest-single-method" if="method">
+        <localtest>
+            <test name="${test.class}" methods="${method}" todir="build/test/unit/results"/>
+        </localtest>
     </target>
     <target name="localtest-single-nb-debug" depends="bootstrap,-jdk-presetdef-nbjpdastart">
         <nbjpdastart addressproperty="jpda.address" name="nbbuild" transport="dt_socket">
@@ -1205,7 +1224,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
                 <pathelement location="build/test/unit/classes"/>
             </classpath>
         </nbjpdastart>
-        <antcall target="localtest">
+        <antcall target="localtest-single">
             <param name="junit.vm.args" value="-Xdebug -Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
         </antcall>
     </target>
