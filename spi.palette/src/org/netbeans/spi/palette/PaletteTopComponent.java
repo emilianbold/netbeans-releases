@@ -49,12 +49,14 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.palette.Utils;
 import org.netbeans.modules.palette.ui.PalettePanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 
@@ -71,7 +73,7 @@ final class PaletteTopComponent extends TopComponent implements PropertyChangeLi
     static final long serialVersionUID = 4248268998485315735L;
 
     private static PaletteTopComponent instance;
-    
+
     /** Creates new PaletteTopComponent */
     private PaletteTopComponent() {
         setName(Utils.getBundleString("CTL_Component_palette"));  // NOI18N
@@ -163,6 +165,27 @@ final class PaletteTopComponent extends TopComponent implements PropertyChangeLi
     @Override
     public HelpCtx getHelpCtx() {
         return PalettePanel.getDefault().getHelpCtx();
+    }
+
+    static void showPalette() {
+        WindowManager wm = WindowManager.getDefault();
+        TopComponent palette = wm.findTopComponent("CommonPalette"); // NOI18N
+        if (null == palette) {
+            Logger.getLogger(PaletteSwitch.class.getName()).log(Level.INFO, "Cannot find CommonPalette component."); // NOI18N
+
+            //for unit-testing
+            palette = getDefault();
+        }
+        if (!palette.isOpened()) {
+            palette.open();
+        }
+    }
+    
+    static void hidePalette() {
+        TopComponent palette = instance;
+        if (palette != null && palette.isOpened()) {
+            palette.close();
+        }
     }
     
     final static class ResolvableHelper implements java.io.Serializable {
