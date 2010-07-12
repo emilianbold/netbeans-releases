@@ -66,6 +66,7 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.phpdoc.PhpDocScript;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -150,46 +151,55 @@ public final class PhpDocOptionsPanel extends JPanel {
     private void initComponents() {
 
 
+
+
+
+
         phpDocLabel = new JLabel();
         phpDocTextField = new JTextField();
         browseButton = new JButton();
         searchButton = new JButton();
         phpDocUsageLabel = new JLabel();
         installationInfoLabel = new JLabel();
-        learnMoreLabel = new JLabel();
+        installationLearnMoreLabel = new JLabel();
+        configInfoLabel = new JLabel();
+        configLearnMoreLabel = new JLabel();
         errorLabel = new JLabel();
-
-        org.openide.awt.Mnemonics.setLocalizedText(phpDocLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.phpDocLabel.text")); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.browseButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(phpDocLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.phpDocLabel.text"));
+        Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.browseButton.text"));
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
-
-        org.openide.awt.Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.searchButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.searchButton.text"));
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 searchButtonActionPerformed(evt);
             }
         });
-
-        org.openide.awt.Mnemonics.setLocalizedText(phpDocUsageLabel, "HINT"); // NOI18N
-
-
-        org.openide.awt.Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.installationInfoLabel.text")); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.learnMoreLabel.text")); // NOI18N
-        learnMoreLabel.addMouseListener(new MouseAdapter() {
+        Mnemonics.setLocalizedText(phpDocUsageLabel, "HINT");
+        Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.installationInfoLabel.text"));
+        Mnemonics.setLocalizedText(installationLearnMoreLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.installationLearnMoreLabel.text"));
+        installationLearnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
-                learnMoreLabelMouseEntered(evt);
+                installationLearnMoreLabelMouseEntered(evt);
             }
             public void mousePressed(MouseEvent evt) {
-                learnMoreLabelMousePressed(evt);
+                installationLearnMoreLabelMousePressed(evt);
             }
         });
-
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
-
+        Mnemonics.setLocalizedText(configInfoLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.configInfoLabel.text"));
+        Mnemonics.setLocalizedText(configLearnMoreLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.configLearnMoreLabel.text"));
+        configLearnMoreLabel.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                configLearnMoreLabelMouseEntered(evt);
+            }
+            public void mousePressed(MouseEvent evt) {
+                configLearnMoreLabelMousePressed(evt);
+            }
+        });
+        Mnemonics.setLocalizedText(errorLabel, "ERROR");
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -205,7 +215,7 @@ public final class PhpDocOptionsPanel extends JPanel {
                         .addComponent(phpDocUsageLabel)
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(phpDocTextField, GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                        .addComponent(phpDocTextField, GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(browseButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
@@ -214,7 +224,13 @@ public final class PhpDocOptionsPanel extends JPanel {
                 .addComponent(installationInfoLabel)
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
-                .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(installationLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(configInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(configLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -230,8 +246,12 @@ public final class PhpDocOptionsPanel extends JPanel {
                 .addGap(18, 18, 18)
                 .addComponent(installationInfoLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
+                .addComponent(installationLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(configInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(configLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -279,25 +299,39 @@ public final class PhpDocOptionsPanel extends JPanel {
         }
     }//GEN-LAST:event_searchButtonActionPerformed
 
-    private void learnMoreLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMouseEntered
+    private void installationLearnMoreLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_installationLearnMoreLabelMouseEntered
         evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_learnMoreLabelMouseEntered
+    }//GEN-LAST:event_installationLearnMoreLabelMouseEntered
 
-    private void learnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMousePressed
+    private void installationLearnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_installationLearnMoreLabelMousePressed
         try {
             URL url = new URL("http://manual.phpdoc.org/HTMLSmartyConverter/HandS/ric_INSTALL.html"); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }//GEN-LAST:event_learnMoreLabelMousePressed
+    }//GEN-LAST:event_installationLearnMoreLabelMousePressed
 
+    private void configLearnMoreLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_configLearnMoreLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_configLearnMoreLabelMouseEntered
+
+    private void configLearnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_configLearnMoreLabelMousePressed
+        try {
+            URL url = new URL("http://manual.phpdoc.org/HTMLframesConverter/default/phpDocumentor/tutorial_phpDocumentor.howto.pkg.html#using.command-line"); // NOI18N
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }//GEN-LAST:event_configLearnMoreLabelMousePressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton browseButton;
+    private JLabel configInfoLabel;
+    private JLabel configLearnMoreLabel;
     private JLabel errorLabel;
     private JLabel installationInfoLabel;
-    private JLabel learnMoreLabel;
+    private JLabel installationLearnMoreLabel;
     private JLabel phpDocLabel;
     private JTextField phpDocTextField;
     private JLabel phpDocUsageLabel;
