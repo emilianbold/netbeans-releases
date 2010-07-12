@@ -181,7 +181,6 @@ public final class PhpProject implements Project {
 
     // project's property changes
     public static final String PROP_FRAMEWORKS = "frameworks"; // NOI18N
-    public static final String PROP_CONFIG_FILES = "configFiles"; // NOI18N
     final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
 
@@ -591,11 +590,17 @@ public final class PhpProject implements Project {
     }
 
     public void resetFrameworks() {
+        boolean fire = false;
         synchronized (frameworksLock) {
+            List<PhpFrameworkProvider> oldFrameworkProviders = getFrameworks();
             frameworks = null;
+            List<PhpFrameworkProvider> newFrameworkProviders = getFrameworks();
+            fire = !oldFrameworkProviders.equals(newFrameworkProviders);
         }
-        propertyChangeSupport.firePropertyChange(PROP_FRAMEWORKS, null, null);
-        propertyChangeSupport.firePropertyChange(PROP_CONFIG_FILES, null, null);
+
+        if (fire) {
+            propertyChangeSupport.firePropertyChange(PROP_FRAMEWORKS, null, null);
+        }
     }
 
     public String getName() {
