@@ -223,7 +223,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private List<JavaCompletionItem> results;
         private byte hasAdditionalItems = 0; //no additional items
-        private JToolTip toolTip;
+        private MethodParamsTipPaintComponent toolTip;
         private CompletionDocumentation documentation;
         private int anchorOffset;
         private int toolTipOffset;
@@ -259,6 +259,9 @@ public class JavaCompletionProvider implements CompletionProvider {
         @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
+            if (queryType == TOOLTIP_QUERY_TYPE) {
+                this.toolTip = new MethodParamsTipPaintComponent(component);
+            }
         }
         
         @Override
@@ -268,7 +271,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (queryType == TOOLTIP_QUERY_TYPE || Utilities.isJavaContext(component, caretOffset)) {
                     results = null;
                     documentation = null;
-                    toolTip = null;
+                    if (toolTip != null)
+                        toolTip.clearData();
                     anchorOffset = -1;
                     Source source = null;
                     if (queryType == DOCUMENTATION_QUERY_TYPE && element != null) {
@@ -297,7 +301,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (hasAdditionalItems == 2)
                                 resultSet.setHasAdditionalItemsText(NbBundle.getMessage(JavaCompletionProvider.class, "JCP-instance-members")); //NOI18N
                         } else if (queryType == TOOLTIP_QUERY_TYPE) {
-                            if (toolTip != null)
+                            if (toolTip != null && toolTip.hasData())
                                 resultSet.setToolTip(toolTip);
                         } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
                             if (documentation != null)
@@ -471,7 +475,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                         }
                         if (params != null)
-                            toolTip = new MethodParamsTipPaintComponent(params, types.length, component);
+                            toolTip.setData(params, types.length);
                         startPos = (int)sourcePositions.getEndPosition(env.getRoot(), mi.getMethodSelect());
                         String text = controller.getText().substring(startPos, offset);
                         int idx = text.indexOf('('); //NOI18N
@@ -509,7 +513,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         };
                         List<List<String>> params = getMatchingParams(controller, type, controller.getElementUtilities().getMembers(type, acceptor), INIT, types, controller.getTypes());
                         if (params != null)
-                            toolTip = new MethodParamsTipPaintComponent(params, types.length, component);
+                            toolTip.setData(params, types.length);
                         if (pos < 0) {
                             path = path.getParentPath();
                             pos = (int)sourcePositions.getStartPosition(root, path.getLeaf());
