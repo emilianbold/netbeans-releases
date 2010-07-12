@@ -4080,7 +4080,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             }
                         }
                     });
-                } catch (Exception e) {
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable e) {
                     // ignore
                     LOGGER.log(Level.FINE, null, e);
                 }
@@ -4091,7 +4093,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             if (useRecursiveListeners) {
                 try {
                     FileUtil.removeRecursiveListener(listener, path);
-                } catch (Exception e) {
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable e) {
                     // ignore
                     LOGGER.log(Level.FINE, null, e);
                 }
@@ -4101,7 +4105,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private void safeAddFileChangeListener(FileChangeListener listener, File path) {
             try {
                 FileUtil.addFileChangeListener(listener, path);
-            } catch (Exception e) {
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable e) {
                 // ignore
                 LOGGER.log(Level.FINE, null, e);
             }
@@ -4110,7 +4116,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private void safeRemoveFileChangeListener(FileChangeListener listener, File path) {
             try {
                 FileUtil.removeFileChangeListener(listener, path);
-            } catch (Exception e) {
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable e) {
                 // ignore
                 LOGGER.log(Level.FINE, null, e);
             }
