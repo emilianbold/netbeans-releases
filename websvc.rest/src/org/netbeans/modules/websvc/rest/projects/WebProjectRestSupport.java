@@ -158,6 +158,7 @@ public class WebProjectRestSupport extends WebRestSupport {
         new AntFilesHelper(this).initRestBuildExtension();
     }
 
+    @Override
     public void ensureRestDevelopmentReady() throws IOException {
         boolean needsRefresh = false;
         String resourceUrl = null;

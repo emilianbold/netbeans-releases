@@ -175,7 +175,7 @@ public final class ConnectionManager {
             throw new IllegalThreadStateException("Should never be called from AWT thread"); // NOI18N
         }
 
-        synchronized (channelsSupport) {
+//        synchronized (channelsSupport) {
             if (isConnectedTo(env)) {
                 return;
             }
@@ -225,7 +225,7 @@ public final class ConnectionManager {
             } finally {
                 ph.finish();
             }
-        }
+//        }
     }
 
     public static ConnectionManager getInstance() {

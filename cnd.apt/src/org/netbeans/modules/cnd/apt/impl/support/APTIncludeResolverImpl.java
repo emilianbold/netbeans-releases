@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
+import java.io.File;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
+import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
@@ -63,20 +65,25 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final CharSequence baseFile;
     private final List<IncludeDirEntry> systemIncludePaths;
     private final List<IncludeDirEntry> userIncludePaths;
+    private final APTFileSearch fileSearch;
     
     public APTIncludeResolverImpl(CharSequence path, int baseFileIncludeDirIndex,
                                     List<IncludeDirEntry> systemIncludePaths,
-                                    List<IncludeDirEntry> userIncludePaths) {
+                                    List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch) {
         this.baseFile = FilePathCache.getManager().getString(path);
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
         this.baseFileIncludeDirIndex = baseFileIncludeDirIndex;
+        this.fileSearch = fileSearch;
     }       
 
+
+    @Override
     public ResolvedPath resolveInclude(APTInclude apt, APTMacroCallback callback) {
         return resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), false);
     }
 
+    @Override
     public ResolvedPath resolveIncludeNext(APTIncludeNext apt, APTMacroCallback callback) {
         return resolveFilePath(apt.getFileName(callback), apt.isSystem(callback), true);
     }
@@ -106,6 +113,13 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
             if ( result == null && system && !includeNext) {
                 // <system> was skipped above, check now, but not for #include_next
                 result = APTIncludeUtils.resolveFilePath(includedFile, baseFile);
+            }
+        }
+        if (result == null && fileSearch != null) {
+            String path = fileSearch.searchInclude(includedFile, baseFile);
+            if (path != null) {
+                File file = new File(path);
+                result = APTIncludeUtils.resolveFilePath(file.getName(), path);
             }
         }
         return result;

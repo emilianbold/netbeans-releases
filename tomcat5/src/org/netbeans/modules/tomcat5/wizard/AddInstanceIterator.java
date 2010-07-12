@@ -151,6 +151,10 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
                     case TOMCAT_55:
                         manager = (TomcatManager) TomcatFactory.create55().getDeploymentManager(url, username, password);
                         break;
+                    // not the default for now
+                    case TOMCAT_70 :
+                        manager = (TomcatManager) TomcatFactory.create70().getDeploymentManager(url, username, password);
+                        break;
                     case TOMCAT_60:
                     default:
                         manager = (TomcatManager) TomcatFactory.create60().getDeploymentManager(url, username, password);
@@ -163,7 +167,7 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
             manager.ensureCatalinaBaseReady();
             if (panel.getVisual().createUserEnabled()) {
                 File tomcatUsersXml = new File(manager.getTomcatProperties().getCatalinaDir(), "conf/tomcat-users.xml"); // NOI18N
-                TomcatUsers.createUser(tomcatUsersXml, username, password);
+                TomcatUsers.createUser(tomcatUsersXml, username, password, manager.getTomcatVersion());
             }
         } catch (IOException e) {
             // TODO: remove this catch as soon as the ensureCatalinaBaseReady method is refactored

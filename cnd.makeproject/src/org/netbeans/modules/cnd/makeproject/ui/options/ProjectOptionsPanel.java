@@ -82,14 +82,17 @@ public class ProjectOptionsPanel extends JPanel {
 
         documentListener = new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 validateFields();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 validateFields();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 validateFields();
             }
@@ -124,6 +127,7 @@ public class ProjectOptionsPanel extends JPanel {
         showProfilerCheckBox.setSelected(makeOptions.getShowProfiling());
         showConfigurationWarningCheckBox.setSelected(makeOptions.getShowConfigurationWarning());
         fullFileIndexer.setSelected(makeOptions.isFullFileIndexer());
+        fixUnresolvedInclude.setSelected(makeOptions.isFixUnresolvedInclude());
 
         listen = true;
         changed = false;
@@ -143,6 +147,7 @@ public class ProjectOptionsPanel extends JPanel {
         makeOptions.setShowProfiling(showProfilerCheckBox.isSelected());
         makeOptions.setShowConfigurationWarning(showConfigurationWarningCheckBox.isSelected());
         makeOptions.setFullFileIndexer(fullFileIndexer.isSelected());
+        makeOptions.setFixUnresolvedInclude(fixUnresolvedInclude.isSelected());
 
         changed = false;
     }
@@ -206,11 +211,12 @@ public class ProjectOptionsPanel extends JPanel {
         reuseCheckBox = new javax.swing.JCheckBox();
         dependencyCheckingCheckBox = new javax.swing.JCheckBox();
         viewBinaryFilesCheckBox = new javax.swing.JCheckBox();
-        jSeparator1 = new javax.swing.JSeparator();
         showProfilerCheckBox = new javax.swing.JCheckBox();
         showConfigurationWarningCheckBox = new javax.swing.JCheckBox();
         fullFileIndexer = new javax.swing.JCheckBox();
+        fixUnresolvedInclude = new javax.swing.JCheckBox();
         rebuildPropsChangedCheckBox = new javax.swing.JCheckBox();
+        jSeparator1 = new javax.swing.JSeparator();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -229,7 +235,6 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 6);
@@ -239,7 +244,7 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 12);
@@ -259,7 +264,6 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 4, 0, 6);
@@ -273,7 +277,7 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 10.0;
@@ -295,6 +299,7 @@ public class ProjectOptionsPanel extends JPanel {
         reuseCheckBox.setText(bundle.getString("REUSE_CHECKBOX_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -332,14 +337,6 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(viewBinaryFilesCheckBox, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 14;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jSeparator1, gridBagConstraints);
 
         showProfilerCheckBox.setMnemonic('j');
         showProfilerCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "SHOW_PROFILER_CHECKBOX_TXT")); // NOI18N
@@ -373,8 +370,7 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(fullFileIndexer, gridBagConstraints);
 
-        rebuildPropsChangedCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("REBUILD_PROP_CHANGED_MN").charAt(0));
-        rebuildPropsChangedCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "REBUILD_PROP_CHANGED_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(fixUnresolvedInclude, org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "fixUnresolvedInclude")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 13;
@@ -382,7 +378,26 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
+        add(fixUnresolvedInclude, gridBagConstraints);
+
+        rebuildPropsChangedCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("REBUILD_PROP_CHANGED_MN").charAt(0));
+        rebuildPropsChangedCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "REBUILD_PROP_CHANGED_TXT")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(rebuildPropsChangedCheckBox, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jSeparator1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void dependencyCheckingCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependencyCheckingCheckBoxActionPerformed
@@ -403,6 +418,7 @@ public class ProjectOptionsPanel extends JPanel {
     private javax.swing.JLabel filePathLabel;
     private javax.swing.JTextArea filePathTxt;
     private javax.swing.JComboBox filePathcomboBox;
+    private javax.swing.JCheckBox fixUnresolvedInclude;
     private javax.swing.JCheckBox fullFileIndexer;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel makeOptionsLabel;
