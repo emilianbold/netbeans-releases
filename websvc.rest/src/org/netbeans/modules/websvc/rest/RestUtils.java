@@ -92,17 +92,6 @@ public class RestUtils {
     
     /**
      *  Makes sure project is ready for REST development.
-     *  @param source source file or directory as part of REST application project.
-     */
-    public static void ensureRestDevelopmentReady(FileObject source) throws IOException {
-        Project p = FileOwnerQuery.getOwner(source);
-        if (p != null) {
-            ensureRestDevelopmentReady(p);
-        }
-    }
-    
-    /**
-     *  Makes sure project is ready for REST development.
      *  @param project project to make REST development ready
      */
     public static void ensureRestDevelopmentReady(Project project) throws IOException {
