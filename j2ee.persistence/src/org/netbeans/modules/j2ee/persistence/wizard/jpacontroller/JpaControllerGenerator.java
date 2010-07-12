@@ -421,9 +421,10 @@ public class JpaControllerGenerator {
                             }
                             
                             ExecutableElement relIdGetterElement = JpaControllerUtil.getIdGetter(workingCopy, isFieldAccess, relClass);
-                            String refOrMergeString = getRefOrMergeString(relIdGetterElement, relFieldToAttach);
+                            String refOrMergeString = null;
                             
                             if (isCollection) {
+                                refOrMergeString = getRefOrMergeString(relIdGetterElement, relFieldToAttach);
                                 initCollectionsInCreate.append("if (" + fieldName + "." + mName + "() == null) {\n" +
                                         fieldName + ".s" + mName.substring(1) + "(new " + simpleCollectionImplementationTypeName + "<" + relTypeReference + ">());\n" +
                                         "}\n");
@@ -440,6 +441,7 @@ public class JpaControllerGenerator {
                                         );
                             }
                             else {
+                                refOrMergeString = getRefOrMergeString(relIdGetterElement, scalarRelFieldName);
                                 initRelatedInCreate.append(relTypeReference + " " + scalarRelFieldName + " = " + fieldName + "." + mName +"();\n" +
                                     "if (" + scalarRelFieldName + " != null) {\n" +
                                     scalarRelFieldName + " = " + refOrMergeString +
