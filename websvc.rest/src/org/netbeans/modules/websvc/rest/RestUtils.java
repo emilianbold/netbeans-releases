@@ -101,38 +101,6 @@ public class RestUtils {
         }
     }
     
-    /**
-     *  Makes sure project is ready for REST development.
-     *  @param project project to make REST development ready
-     */
-    public static void removeRestDevelopmentReadiness(Project project) throws IOException {
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null && restSupport.isRestSupportOn()) {
-            restSupport.removeRestDevelopmentReadiness();
-        }
-    }
-    
-    /**
-     *  Returns true if the project supports REST framework.
-     *  @param project project to make REST development ready
-     */
-    public static boolean supportsRestDevelopment(Project project) {
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        return restSupport != null;
-    }
-    
-    public static boolean isRestEnabled(Project project) {
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        return restSupport != null && restSupport.isRestSupportOn();
-    }
-    
-    public static void setRestEnabled(Project project, Boolean v) {
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null) {
-            restSupport.setRestSupport(v);
-        }
-    }
-    
     public static RestSupport getRestSupport(Project project) {
         return project.getLookup().lookup(RestSupport.class);
     }
