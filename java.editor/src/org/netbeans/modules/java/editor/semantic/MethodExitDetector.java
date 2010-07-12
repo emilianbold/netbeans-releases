@@ -87,7 +87,7 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
     private Collection<TypeMirror> exceptions;
     private Stack<Map<TypeMirror, List<Tree>>> exceptions2HighlightsStack;
     
-    public List<int[]> process(CompilationInfo info, Document document, MethodTree methoddecl, Collection<Tree> excs) {
+    public List<int[]> process(CompilationInfo info, Document document, Tree methoddeclorblock, Collection<Tree> excs) {
         this.info = info;
         this.doc  = document;
         this.highlights = new ArrayList<int[]>();
@@ -100,13 +100,13 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
             //"return" exit point only if not searching for exceptions:
             doExitPoints = excs == null;
             
-            Boolean wasReturn = scan(TreePath.getPath(cu, methoddecl), null);
+            Boolean wasReturn = scan(TreePath.getPath(cu, methoddeclorblock), null);
             
             if (isCanceled())
                 return null;
             
             if (doExitPoints && wasReturn != Boolean.TRUE) {
-                int lastBracket = Utilities.findLastBracket(methoddecl, cu, info.getTrees().getSourcePositions(), document);
+                int lastBracket = Utilities.findLastBracket(methoddeclorblock, cu, info.getTrees().getSourcePositions(), document);
                 
                 if (lastBracket != (-1)) {
                     //highlight the "fall over" exitpoint:
