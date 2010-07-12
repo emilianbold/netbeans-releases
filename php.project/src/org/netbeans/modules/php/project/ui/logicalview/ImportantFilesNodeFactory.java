@@ -143,7 +143,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (PhpProject.PROP_CONFIG_FILES.equals(evt.getPropertyName())) {
+            if (PhpProject.PROP_FRAMEWORKS.equals(evt.getPropertyName())) {
                 // avoid deadlocks
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
