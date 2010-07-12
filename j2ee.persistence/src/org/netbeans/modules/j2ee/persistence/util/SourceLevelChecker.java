@@ -44,9 +44,9 @@
 
 package org.netbeans.modules.j2ee.persistence.util;
 
-import java.math.BigDecimal;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
 
 /**
  * A helper class for checking the source level of projects.
@@ -66,8 +66,7 @@ public class SourceLevelChecker {
      * otherwise.
      */
     public static boolean isSourceLevel14orLower(Project project) {
-        SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
-        String srcLevel = sl.getSourceLevel(project.getProjectDirectory());
+        String srcLevel = getSourceLevel(project);
         return srcLevel != null ? Double.parseDouble(srcLevel) <= 1.4 : false;
     }
     
@@ -77,8 +76,17 @@ public class SourceLevelChecker {
      * @return source level for the project
      */
     public static String getSourceLevel(Project project) {
-        SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
-        String srcLevel = sl.getSourceLevel(project.getProjectDirectory());
+        String srcLevel = null;
+        SourceLevelQueryImplementation2 sl2 = project.getLookup().lookup(SourceLevelQueryImplementation2.class);
+        if(sl2 != null){
+            srcLevel = sl2.getSourceLevel(project.getProjectDirectory()).getSourceLevel();
+        } else {
+            //backward compartibility
+            SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
+            if(sl != null){
+                srcLevel = sl.getSourceLevel(project.getProjectDirectory());
+            }
+        }
         return srcLevel;
     }
 }

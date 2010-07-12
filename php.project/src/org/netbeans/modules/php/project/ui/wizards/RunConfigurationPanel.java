@@ -112,7 +112,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private WizardDescriptor descriptor = null;
     private PropertyChangeListener phpInterpreterListener;
 
-    private ConfigManager.ConfigProvider configProvider;
     private ConfigManager configManager;
 
     private RunConfigurationPanelVisual runConfigurationPanelVisual = null;
@@ -138,8 +137,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     @Override
     public Component getComponent() {
         if (runConfigurationPanelVisual == null) {
-            configProvider = new WizardConfigProvider();
-            configManager = new ConfigManager(configProvider);
+            configManager = new ConfigManager(new WizardConfigProvider());
 
             runAsLocalWeb = new RunAsLocalWeb(configManager, sourcesFolderProvider);
             runAsRemoteWeb = new RunAsRemoteWeb(configManager, sourcesFolderProvider);
@@ -439,8 +437,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private PhpProjectProperties.RunAsType getRunAsType() {
-        String activeConfig = configProvider.getActiveConfig();
-        String runAs = configManager.configurationFor(activeConfig).getValue(RUN_AS);
+        String runAs = configManager.currentConfiguration().getValue(RUN_AS);
         if (runAs == null) {
             switch (wizardType) {
                 case REMOTE:
@@ -729,15 +726,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         @Override
         public Map<String, Map<String, String>> getConfigs() {
             return configs;
-        }
-
-        @Override
-        public String getActiveConfig() {
-            return null;
-        }
-
-        @Override
-        public void setActiveConfig(String configName) {
         }
     }
 }
