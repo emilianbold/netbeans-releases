@@ -127,9 +127,9 @@ public final class JsfElParser extends Parser {
                 OffsetRange range = new OffsetRange(startOffset, endOffset);
                 try {
                     Node node = parse(expression);
-                    parseResult.add(ELElement.valid(node, range, expression));
+                    parseResult.addValidElement(node, expression, range);
                 } catch (ELException ex) {
-                    parseResult.add(ELElement.error(ex, range, expression));
+                    parseResult.addErrorElement(ex, expression, range);
                 }
             }
         }
@@ -149,12 +149,15 @@ public final class JsfElParser extends Parser {
            int startOffset = embeddedOffset;
            int endOffset = startOffset + expression.length();
            embeddedOffset += (expression.length() + expressionSeparator.length());
-           OffsetRange range = new OffsetRange(startOffset, endOffset);
+           OffsetRange embeddedRange = new OffsetRange(startOffset, endOffset);
+           OffsetRange originalRange = new OffsetRange(
+                   snapshot.getOriginalOffset(startOffset),
+                   snapshot.getOriginalOffset(endOffset));
            try {
                Node node = parse(expression);
-               result.add(ELElement.valid(node, range, expression));
+               result.addValidElement(node, expression, embeddedRange);
            } catch (ELException ex) {
-               result.add(ELElement.error(ex, range, expression));
+               result.addErrorElement(ex, expression, embeddedRange);
            }
        }
 

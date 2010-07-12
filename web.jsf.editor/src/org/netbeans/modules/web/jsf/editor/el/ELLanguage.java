@@ -55,9 +55,11 @@ import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
  *
  * @author Erno Mononen
  */
-@LanguageRegistration(mimeType="text/x-el") //NOI18N
-@PathRecognizerRegistration(mimeTypes="text/x-el", libraryPathIds={}, binaryLibraryPathIds={}) //NOI18N
+@LanguageRegistration(mimeType=ELLanguage.MIME_TYPE)
+@PathRecognizerRegistration(mimeTypes=ELLanguage.MIME_TYPE, libraryPathIds={}, binaryLibraryPathIds={})
 public class ELLanguage extends DefaultLanguageConfig {
+
+    public static final String MIME_TYPE = "text/x-el"; //NOI18N
 
     @Override
     public Language getLexerLanguage() {

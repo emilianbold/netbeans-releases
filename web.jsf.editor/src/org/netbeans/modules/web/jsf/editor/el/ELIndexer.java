@@ -98,7 +98,7 @@ public final class ELIndexer extends EmbeddingIndexer {
         }
 
         void analyze() {
-            for (ELElement each : parserResult.getElements()) {
+            for (final ELElement each : parserResult.getElements()) {
                 if (each.isValid()) {
                     // indexes bean identifiers
                     each.getNode().accept(new NodeVisitor() {
@@ -108,6 +108,7 @@ public final class ELIndexer extends EmbeddingIndexer {
                             if (node instanceof AstIdentifier) {
                                 String identifier = ((AstIdentifier) node).getImage();
                                 document.addPair(Fields.IDENTIFIER, identifier, true, true);
+                                document.addPair(Fields.FULL_EXPRESSION, each.getExpression(), false, true);
                             }
                         }
                     });
@@ -118,6 +119,7 @@ public final class ELIndexer extends EmbeddingIndexer {
 
     public static final class Fields {
         public static final String IDENTIFIER = "identifier";
+        public static final String FULL_EXPRESSION = "full_expression";
     }
 
     public static final class Factory extends EmbeddingIndexerFactory {

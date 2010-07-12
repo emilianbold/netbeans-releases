@@ -75,7 +75,7 @@ final class ELSyntaxChecker extends HintsProvider {
             Hint hint = new Hint(HintsProvider.DEFAULT_ERROR_RULE,
                     each.getError().getLocalizedMessage(),
                     parserResult.getFileObject(),
-                    each.getOffset(),
+                    each.getEmbeddedOffset(),
                     Collections.<HintFix>emptyList(),
                     HintsProvider.DEFAULT_ERROR_HINT_PRIORITY);
             result.add(hint);

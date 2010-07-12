@@ -42,16 +42,28 @@
 
 package org.netbeans.modules.web.jsf.editor.refactoring;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.editor.el.ELLanguage;
+import org.netbeans.modules.web.jsf.editor.el.ELParserResult;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -112,5 +124,37 @@ public class JsfELRefactoringPlugin implements RefactoringPlugin {
             }
         }
         return null;
+    }
+
+    protected static ParserResultHolder getParserResult(FileObject fo) {
+        try {
+            final Source source = Source.create(fo);
+            final AtomicReference<ELParserResult> result = new AtomicReference<ELParserResult>();
+            final AtomicReference<Snapshot> snapshot = new AtomicReference<Snapshot>();
+            ParserManager.parse(Collections.singletonList(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    ResultIterator ri = WebUtils.getResultIterator(resultIterator, ELLanguage.MIME_TYPE);
+                    snapshot.set(resultIterator.getSnapshot());
+                    result.set(ri == null ? null : (ELParserResult) ri.getParserResult());
+                }
+            });
+            return new ParserResultHolder(result.get(), snapshot.get());
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    protected static final class ParserResultHolder {
+
+        final ELParserResult parserResult;
+        final Snapshot topLevelSnapshot;
+
+        public ParserResultHolder(ELParserResult parserResult, Snapshot topLevelSnapshot) {
+            this.parserResult = parserResult;
+            this.topLevelSnapshot = topLevelSnapshot;
+        }
+
     }
 }

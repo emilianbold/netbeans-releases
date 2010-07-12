@@ -46,7 +46,9 @@ import com.sun.el.parser.Node;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.el.ELException;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -73,11 +75,23 @@ public final class ELParserResult extends ParserResult {
         this.file = fo;
     }
 
+    public ELElement addValidElement(Node node, String expression, OffsetRange embeddedOffset) {
+        ELElement element = ELElement.valid(node, expression, embeddedOffset, this);
+        add(element);
+        return element;
+    }
+
+    public ELElement addErrorElement(ELException error, String expression, OffsetRange embeddedOffset) {
+        ELElement element = ELElement.error(error, expression, embeddedOffset, this);
+        add(element);
+        return element;
+    }
+    
     public List<ELElement> getElements() {
         return Collections.unmodifiableList(elements);
     }
 
-    boolean add(ELElement element) {
+    private boolean add(ELElement element) {
         return elements.add(element);
     }
 
@@ -150,12 +164,12 @@ public final class ELParserResult extends ParserResult {
 
         @Override
         public int getStartPosition() {
-            return errorElement.getOffset().getStart();
+            return errorElement.getEmbeddedOffset().getStart();
         }
 
         @Override
         public int getEndPosition() {
-            return errorElement.getOffset().getEnd();
+            return errorElement.getEmbeddedOffset().getEnd();
         }
 
         @Override

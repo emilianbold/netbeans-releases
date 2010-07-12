@@ -89,5 +89,13 @@ public final class RefactoringUtil {
         }
         return refactoring.getContext().lookup(CompilationInfo.class);
     }
+
+    private static String encodeAngleBrackets(String str) {
+        return str.replaceAll("<", "&lt;").replaceAll(">", "&gt;"); //NOI18N
+    }
+
+    static String encodeAndHighlight(String toHighlight, String text) {
+        return encodeAngleBrackets(text).replaceAll(toHighlight, "<b>" + toHighlight + "</b>"); //NOI18N
+    }
     
 }

@@ -42,24 +42,37 @@
 package org.netbeans.modules.web.jsf.editor.refactoring;
 
 import com.sun.source.tree.Tree.Kind;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.editor.el.ELElement;
 import org.netbeans.modules.web.jsf.editor.el.ELIndex;
 import org.netbeans.modules.web.jsf.editor.el.ELIndexer.Fields;
 import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
+import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
+ * Finds usages of managed beans in Expression Language.
  *
  * @author Erno Mononen
  */
@@ -85,14 +98,39 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
         FacesManagedBean managedBean = findManagedBeanByClass(clazz);
         ELIndex index = ELIndex.get(handle.getFileObject());
         Collection<? extends IndexResult> references = index.findManagedBeanReferences(managedBean.getManagedBeanName());
-        for (IndexResult each : references) {
-            for (String value : each.getValues(Fields.IDENTIFIER)) {
-                if (managedBean.getManagedBeanName().equals(value)) {
-                    refactoringElementsBag.add(whereUsedQuery, new WhereUsedQueryElement(each.getFile(), value));
+        for (IndexResult indexResult : references) {
+            for (WhereUsedQueryElement elem : createElements(indexResult.getFile(), managedBean.getManagedBeanName(), indexResult)) {
+                refactoringElementsBag.add(whereUsedQuery, elem);
+            }
+        }
+        return result;
+    }
+
+    private static List<WhereUsedQueryElement> createElements(FileObject file, String reference, IndexResult indexResult) {
+        String[] identifiers = indexResult.getValues(Fields.IDENTIFIER);
+        String[] expressions = indexResult.getValues(Fields.FULL_EXPRESSION);
+        assert identifiers.length == expressions.length;
+
+        ParserResultHolder parserResultHolder = getParserResult(file);
+        // XXX: happens due to x-el lexing bug
+        if (parserResultHolder.parserResult == null) {
+            return Collections.emptyList();
+        }
+        List<ELElement> elements = new ArrayList(parserResultHolder.parserResult.getElements());
+        List<WhereUsedQueryElement> result = new ArrayList<WhereUsedQueryElement>();
+        for (int i = 0; i < identifiers.length; i++) {
+            if (reference.equals(identifiers[i])) {
+                String expression = expressions[i];
+                for (Iterator<ELElement> it = elements.iterator(); it.hasNext();) {
+                    ELElement eLElement = it.next();
+                    if (expression.equals(eLElement.getExpression())) {
+                        WhereUsedQueryElement wuqe = new WhereUsedQueryElement(file, reference, eLElement, parserResultHolder);
+                        result.add(wuqe);
+                        it.remove();
+                    }
                 }
             }
         }
-
         return result;
     }
 
@@ -100,10 +138,14 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
 
         private final FileObject file;
         private final String reference;
+        private final ELElement eLElement;
+        private final ParserResultHolder parserResult;
 
-        public WhereUsedQueryElement(FileObject file, String reference) {
+        public WhereUsedQueryElement(FileObject file, String reference, ELElement eLElement, ParserResultHolder parserResult) {
             this.file = file;
             this.reference = reference;
+            this.eLElement = eLElement;
+            this.parserResult = parserResult;
         }
 
         @Override
@@ -113,7 +155,17 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
 
         @Override
         public String getDisplayText() {
-            return reference;
+            try {
+                CharSequence text = parserResult.topLevelSnapshot.getText();
+                OffsetRange orig = eLElement.getOriginalOffset();
+                int astLineStart = GsfUtilities.getRowStart(text, orig.getStart());
+                int astLineEnd = GsfUtilities.getRowEnd(text, orig.getStart());
+                // TODO: this is not accurate, need to do highlighning based on AST offsets
+                return RefactoringUtil.encodeAndHighlight(reference, text.subSequence(astLineStart, astLineEnd).toString()).trim();
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+                return eLElement.getExpression();
+            }
         }
 
         @Override
@@ -132,7 +184,10 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
 
         @Override
         public PositionBounds getPosition() {
-            return null;
+            CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
+            PositionRef start = editor.createPositionRef(eLElement.getOriginalOffset().getStart(), Bias.Forward);
+            PositionRef end = editor.createPositionRef(eLElement.getOriginalOffset().getEnd(), Bias.Backward);
+            return new PositionBounds(start, end);
         }
     }
 }
