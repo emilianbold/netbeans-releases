@@ -63,6 +63,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.project.NativeExitStatus;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -91,7 +92,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.spi.jumpto.file.FileProvider;
+import org.netbeans.spi.jumpto.file.FileProviderFactory;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -863,5 +867,17 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     private static String getString(String s, String s2) {
         return NbBundle.getMessage(NativeProjectProvider.class, s, s2);
+    }
+
+    @Override
+    public NativeFileSearch getNativeFileSearch() {
+        NativeFileSearch search = null;
+        for (FileProviderFactory fpf : Lookup.getDefault().lookupAll(FileProviderFactory.class)) {
+            FileProvider provider = fpf.createFileProvider();
+            if (provider instanceof NativeFileSearch) {
+                search = (NativeFileSearch) provider;
+            }
+        }
+        return search;
     }
 }

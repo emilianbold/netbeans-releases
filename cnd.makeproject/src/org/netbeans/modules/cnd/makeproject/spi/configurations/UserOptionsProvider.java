@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
 import java.util.List;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 
@@ -57,4 +58,5 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 public interface UserOptionsProvider {
     List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
     List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
+    NativeFileSearch getPackageFileSearch();
 }
