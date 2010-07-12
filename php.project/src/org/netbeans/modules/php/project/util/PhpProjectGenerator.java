@@ -318,7 +318,7 @@ public final class PhpProjectGenerator {
         assert sourceDir != null;
 
         PhpProjectUtils.logUsage(PhpProjectGenerator.class, "USG_PROJECT_CREATE_PHP", Arrays.asList(
-                FileUtil.isParentOf(projectDir, sourceDir) ? "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
+                projectDir.equals(sourceDir) ? "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
                 runAs != null ? runAs.name() : "", // NOI18N
                 "1", // NOI18N
                 (copyFiles != null && copyFiles == Boolean.TRUE) ? "COPY_FILES_YES" : "COPY_FILES_NO", // NOI18N

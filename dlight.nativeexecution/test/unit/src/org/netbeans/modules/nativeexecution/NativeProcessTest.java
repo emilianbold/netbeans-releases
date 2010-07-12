@@ -420,7 +420,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
             if (info == null || info.getOSFamily() != HostInfo.OSFamily.WINDOWS) {
                 npb.setExecutable("sleep").setArguments("10000"); // NOI18N
             } else {
-                npb.setExecutable("cmd").setArguments("/C", "pause"); // NOI18N
+                npb.setExecutable("cmd"); // NOI18N
             }
         }
 
