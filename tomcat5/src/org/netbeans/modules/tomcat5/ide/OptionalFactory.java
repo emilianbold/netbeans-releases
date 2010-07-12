@@ -89,6 +89,10 @@ public class OptionalFactory extends OptionalDeploymentManagerFactory {
     public static OptionalFactory create60() {
         return new OptionalFactory(TomcatVersion.TOMCAT_60);
     }
+
+    public static OptionalFactory create70() {
+        return new OptionalFactory(TomcatVersion.TOMCAT_70);
+    }
     
     public FindJSPServlet getFindJSPServlet (javax.enterprise.deploy.spi.DeploymentManager dm) {
         return new FindJSPServletImpl (dm);

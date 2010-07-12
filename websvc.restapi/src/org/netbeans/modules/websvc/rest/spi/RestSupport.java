@@ -468,7 +468,7 @@ public abstract class RestSupport {
      *  @param source source file object for which the libraries is added.
      *  @param classPathTypes types of class path to add ("javac.compile",...)
      */
-    public void addSwdpLibrary(String[] classPathTypes) throws IOException {
+    protected void addSwdpLibrary(String[] classPathTypes) throws IOException {
         Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
         if (swdpLibrary == null) {
             return;
@@ -488,7 +488,7 @@ public abstract class RestSupport {
      *  @param source source file object for which the libraries is added.
      *  @param classPathTypes types of class path to add ("javac.compile",...)
      */
-    public void addSwdpLibrary(String[] classPathTypes, Library lib) throws IOException {
+    protected void addSwdpLibrary(String[] classPathTypes, Library lib) throws IOException {
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sgs == null || sgs.length < 1) {
             throw new IOException("Project has no Java sources"); //NOI18N
