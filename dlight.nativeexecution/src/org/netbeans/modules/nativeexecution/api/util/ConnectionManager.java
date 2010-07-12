@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -86,7 +87,8 @@ public final class ConnectionManager {
     private static HashMap<ExecutionEnvironment, ConnectToAction> connectionActions = new HashMap<ExecutionEnvironment, ConnectToAction>();
     // Instance of the ConnectionManager
     private static final ConnectionManager instance = new ConnectionManager();
-    private static final HashMap<ExecutionEnvironment, JSch> jschPool = new HashMap<ExecutionEnvironment, JSch>();
+    private static final ConcurrentHashMap<ExecutionEnvironment, JSch> jschPool =
+            new ConcurrentHashMap<ExecutionEnvironment, JSch>();
 
     static {
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
@@ -173,54 +175,56 @@ public final class ConnectionManager {
             throw new IllegalThreadStateException("Should never be called from AWT thread"); // NOI18N
         }
 
-        if (isConnectedTo(env)) {
-            return;
-        }
-
-        JSch jsch = jschPool.get(env);
-
-        if (jsch == null) {
-            jsch = new JSch();
-            jschPool.put(env, jsch);
-        }
-
-        final JSchConnectionTask connectionTask = new JSchConnectionTask(jsch, env);
-        final Future<JSchChannelsSupport> connectionTaskResult = connectorThread.submit(connectionTask);
-
-        final ProgressHandle ph = ProgressHandleFactory.createHandle(
-                loc("ConnectionManager.Connecting", // NOI18N
-                env.toString()), connectionTask);
-
-        ph.start();
-
-        try {
-            JSchChannelsSupport cs = connectionTaskResult.get();
-
-            if (cs != null) {
-                channelsSupport.put(env, cs);
-            } else {
-                JSchConnectionTask.Problem problem = connectionTask.getProblem();
-                switch (problem.type) {
-                    case CONNECTION_CANCELLED:
-                        throw new CancellationException("Connection cancelled for " + env); // NOI18N
-                    default:
-                        // Note that AUTH_FAIL is generated not only on bad password,
-                        // but on socket timeout as well. These cases are
-                        // indistinguishable based on information from JSch.
-                        throw new IOException(env.getDisplayName() + ": " + problem.type.name(), problem.cause); // NOI18N
-                }
+        synchronized (channelsSupport) {
+            if (isConnectedTo(env)) {
+                return;
             }
 
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
-            log.log(Level.FINE, "New connection established: {0} - {1}", new String[]{env.toString(), hostInfo.getOS().getName()}); // NOI18N
+            JSch jsch = jschPool.get(env);
 
-            fireConnected(env);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            ph.finish();
+            if (jsch == null) {
+                jsch = new JSch();
+                jschPool.put(env, jsch);
+            }
+
+            final JSchConnectionTask connectionTask = new JSchConnectionTask(jsch, env);
+            final Future<JSchChannelsSupport> connectionTaskResult = connectorThread.submit(connectionTask);
+
+            final ProgressHandle ph = ProgressHandleFactory.createHandle(
+                    loc("ConnectionManager.Connecting", // NOI18N
+                    env.toString()), connectionTask);
+
+            ph.start();
+
+            try {
+                JSchChannelsSupport cs = connectionTaskResult.get();
+
+                if (cs != null) {
+                    channelsSupport.put(env, cs);
+                } else {
+                    JSchConnectionTask.Problem problem = connectionTask.getProblem();
+                    switch (problem.type) {
+                        case CONNECTION_CANCELLED:
+                            throw new CancellationException("Connection cancelled for " + env); // NOI18N
+                        default:
+                            // Note that AUTH_FAIL is generated not only on bad password,
+                            // but on socket timeout as well. These cases are
+                            // indistinguishable based on information from JSch.
+                            throw new IOException(env.getDisplayName() + ": " + problem.type.name(), problem.cause); // NOI18N
+                    }
+                }
+
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                log.log(Level.FINE, "New connection established: {0} - {1}", new String[]{env.toString(), hostInfo.getOS().getName()}); // NOI18N
+
+                fireConnected(env);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                ph.finish();
+            }
         }
     }
 
