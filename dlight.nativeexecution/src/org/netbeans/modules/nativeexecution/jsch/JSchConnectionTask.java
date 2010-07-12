@@ -39,34 +39,43 @@
 package org.netbeans.modules.nativeexecution.jsch;
 
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.jsch.JSchConnectionTask.Problem;
 import org.netbeans.modules.nativeexecution.support.Authentication;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.support.ui.AuthTypeSelectorDlg;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
- * not thread safe. but always is executed in a single-thread executor
+ * Thread safe. Started only once.
  * @author ak119685
  */
-public final class JSchConnectionTask implements Callable<JSchChannelsSupport>, Cancellable {
+public final class JSchConnectionTask implements Cancellable {
 
+    // Connections are always established sequently in connectorThread
+    private static final RequestProcessor connectorThread = new RequestProcessor("ConnectionManager queue", 1); // NOI18N
     private static final int SOCKET_CREATION_TIMEOUT = Integer.getInteger("socket.connection.timeout", 10000); // NOI18N
+    private static final java.util.logging.Logger log = Logger.getInstance();
     // ------------------------------------------------------------------------
     private final JSch jsch;
     private final ExecutionEnvironment env;
-    private Problem problem;
+    private AtomicReference<Future<JSchConnectionTask.Result>> resultRef =
+            new AtomicReference<Future<JSchConnectionTask.Result>>();
     private volatile boolean cancelled;
 
     public JSchConnectionTask(final JSch jsch, final ExecutionEnvironment env) {
@@ -75,34 +84,41 @@ public final class JSchConnectionTask implements Callable<JSchChannelsSupport>, 
         cancelled = false;
     }
 
-    @Override
-    public JSchChannelsSupport call() throws Exception {
+    public void start() {
+        if (!resultRef.compareAndSet(null,
+                connectorThread.submit(new Callable<JSchConnectionTask.Result>() {
+
+            @Override
+            public Result call() throws Exception {
+                return connect();
+            }
+        }))) {
+            return;
+        }
+    }
+
+    private JSchConnectionTask.Result connect() throws Exception {
         try {
             try {
                 env.prepareForConnection();
             } catch (Throwable th) {
-                problem = new Problem(ProblemType.ENV_PREPARE_ERROR, th);
-                return null;
+                return new Result(null, new Problem(ProblemType.ENV_PREPARE_ERROR, th));
             }
 
             if (cancelled) {
-                problem = new Problem(ProblemType.CONNECTION_CANCELLED);
-                return null;
+                return new Result(null, new Problem(ProblemType.CONNECTION_CANCELLED));
             }
 
             if (!isReachable()) {
-                problem = new Problem(ProblemType.HOST_UNREACHABLE);
-                return null;
+                return new Result(null, new Problem(ProblemType.HOST_UNREACHABLE));
             }
 
             if (cancelled) {
-                problem = new Problem(ProblemType.CONNECTION_CANCELLED);
-                return null;
+                return new Result(null, new Problem(ProblemType.CONNECTION_CANCELLED));
             }
 
             if (!initJsch(env)) {
-                problem = new Problem(ProblemType.CONNECTION_CANCELLED);
-                return null;
+                return new Result(null, new Problem(ProblemType.CONNECTION_CANCELLED));
             }
 
             // Start special shell session that will serve administrative tasks
@@ -113,13 +129,25 @@ public final class JSchConnectionTask implements Callable<JSchChannelsSupport>, 
 
             // OK. Connection established.
 
-            return cs;
-        } catch (Throwable th) {
-            Exceptions.printStackTrace(th);
-            problem = new Problem(ProblemType.CONNECTION_FAILED, th);
-        }
+            return new Result(cs, null);
+        } catch (JSchException e) {
+            log.log(Level.FINE, "JSchException connecting to " + env, e); // NOI18N
 
-        return null;
+            if (e.getMessage().equals("Auth cancel")) { // NOI18N
+                return new Result(null, new Problem(ProblemType.CONNECTION_CANCELLED));
+            } else if (e.getMessage().contains("java.net.SocketTimeoutException") // NOI18N
+                    || e.getMessage().contains("timeout")) { // NOI18N
+                return new Result(null, new Problem(ProblemType.CONNECTION_TIMEOUT, e));
+            }
+            return new Result(null, new Problem(ProblemType.CONNECTION_FAILED, e));
+        } catch (CancellationException ex) {
+            log.log(Level.FINE, "CancellationException", ex); // NOI18N
+            return new Result(null, new Problem(ProblemType.CONNECTION_CANCELLED));
+
+
+        } catch (Throwable th) {
+            return new Result(null, new Problem(ProblemType.CONNECTION_FAILED, th));
+        }
     }
 
     private static boolean initJsch(ExecutionEnvironment env) {
@@ -137,8 +165,24 @@ public final class JSchConnectionTask implements Callable<JSchChannelsSupport>, 
         return true;
     }
 
-    public Problem getProblem() {
-        return problem;
+    public Problem getProblem() throws InterruptedException, ExecutionException {
+        Future<JSchConnectionTask.Result> result = resultRef.get();
+
+        if (result == null) {
+            throw new IllegalStateException("Not started yet"); // NOI18N
+        }
+
+        return result.get().problem;
+    }
+
+    public JSchChannelsSupport getResult() throws InterruptedException, ExecutionException {
+        Future<JSchConnectionTask.Result> result = resultRef.get();
+
+        if (result == null) {
+            throw new IllegalStateException("Not started yet"); // NOI18N
+        }
+
+        return result.get().cs;
     }
 
     private boolean isReachable() throws IOException {
@@ -227,5 +271,16 @@ public final class JSchConnectionTask implements Callable<JSchChannelsSupport>, 
         CONNECTION_CANCELLED,
         CONNECTION_FAILED,
         CONNECTION_TIMEOUT,
+    }
+
+    private final static class Result {
+
+        public final JSchChannelsSupport cs;
+        public final Problem problem;
+
+        public Result(JSchChannelsSupport cs, Problem problem) {
+            this.cs = cs;
+            this.problem = problem;
+        }
     }
 }

@@ -55,6 +55,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
 
@@ -175,16 +176,29 @@ public final class JSchChannelsSupport {
     }
 
     private Session startNewSession(boolean acquireChannel) throws JSchException {
-        Session newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());
-        newSession.setUserInfo(userInfo);
+        Session newSession;
+        
+        while (true) {
+            try {
+                newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());
+                newSession.setUserInfo(userInfo);
 
-        if (USE_JZLIB) {
-            newSession.setConfig("compression.s2c", "zlib@openssh.com,zlib,none"); // NOI18N
-            newSession.setConfig("compression.c2s", "zlib@openssh.com,zlib,none"); // NOI18N
-            newSession.setConfig("compression_level", "9"); // NOI18N
+                if (USE_JZLIB) {
+                    newSession.setConfig("compression.s2c", "zlib@openssh.com,zlib,none"); // NOI18N
+                    newSession.setConfig("compression.c2s", "zlib@openssh.com,zlib,none"); // NOI18N
+                    newSession.setConfig("compression_level", "9"); // NOI18N
+                }
+
+                newSession.connect(JSCH_CONNECTION_TIMEOUT);
+                break;
+            } catch (JSchException ex) {
+                if (!UNIT_TEST_MODE && "Auth fail".equals(ex.getMessage())) { // NOI18N
+                    PasswordManager.getInstance().clearPassword(env);
+                } else {
+                    throw ex;
+                }
+            }
         }
-
-        newSession.connect(JSCH_CONNECTION_TIMEOUT);
 
         sessions.put(newSession, new AtomicInteger(JSCH_CHANNELS_PER_SESSION - (acquireChannel ? 1 : 0)));
 
