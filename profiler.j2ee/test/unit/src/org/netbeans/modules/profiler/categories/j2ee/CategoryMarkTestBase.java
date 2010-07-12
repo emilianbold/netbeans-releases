@@ -88,6 +88,68 @@ public class CategoryMarkTestBase extends TestBase {
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
         builder.methodEntry( 1 , 0, 2, 0, 0);
         plainIds.add(1);
+        
+        status.updateInstrMethodsInfo("com.sun.xml.ws.encoding.MtomCodec.MtomStreamWriter", 0,
+                "flush", "()V");
+        builder.methodEntry( 2 , 0, 3, 0, 0);
+        markedIds.add( 2 );
+        
+        builder.methodExit( 2,0,3,0,0);
+
+        status.updateInstrMethodsInfo("pack.CustomClass", 0,
+                "method", "()V");
+
+        builder.methodEntry( 3 , 0, 1, 0, 0);
+        plainIds.add(3);
+        
+        builder.methodExit( 3,0,1,0,0);
+        
+        status.updateInstrMethodsInfo("com.sun.xml.ws.encoding.MtomCodec.MtomStreamWriter", 0,
+                "close", "()V");
+
+        builder.methodEntry( 4 , 0, 3, 0, 0);
+        markedIds.add(4);
+        
+        status.updateInstrMethodsInfo("pack.CustomClass1", 0,
+                "method", "()V");
+
+        builder.methodEntry( 5 , 0, 1, 0, 0);
+        markedIds.add(5);
+        
+        builder.methodExit( 5,0,1,0,0);
+        
+        builder.methodExit( 4,0,3,0,0);
+        
+        status.updateInstrMethodsInfo("pack.CustomClass2", 0,
+                "method", "()V");
+
+        builder.methodEntry( 6 , 0, 1, 0, 0);
+        plainIds.add(6);
+
+        builder.newThread( 1 , "Thread-1", "java.lang.Thread");
+        status.updateInstrMethodsInfo("pack.CustomClass1", 0,
+                "<init>", "()V");
+
+        builder.methodEntry( 7 , 1, 2, 0, 0);
+        plainIds.add(7);
+
+        status.updateInstrMethodsInfo("com.sun.xml.ws.encoding.MtomCodec.MtomXMLStreamReaderEx", 0,
+                "close", "()V");
+        builder.methodEntry( 8 , 1, 3, 0, 0);
+        markedIds.add( 8 );
+        
+        status.updateInstrMethodsInfo("pack.CustomClass2", 0,
+                "method", "()V");
+
+        builder.methodEntry( 9 , 1, 1, 0, 0);
+        markedIds.add(9);
+        
+        SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
+
+        Map<Integer, Mark> methodMarks = getMethodMarks(root );
+        Mark codecMark = category.getAssignedMark();
+
+        checkMarks(status, markedIds, plainIds, methodMarks, codecMark, category);
     }
     
     protected void doTestEndpointInvocation( Category category ){
@@ -107,6 +169,65 @@ public class CategoryMarkTestBase extends TestBase {
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
         builder.methodEntry( 1 , 0, 2, 0, 0);
         plainIds.add(1);
+        
+        status.updateInstrMethodsInfo("pack.CustomClass", 0,
+                "method", "()V");
+
+        builder.methodEntry( 2 , 0, 1, 0, 0);
+        plainIds.add(2);
+        
+        builder.methodExit( 2,0,1,0,0);
+        
+        status.updateInstrMethodsInfo("com.sun.xml.ws.api.pipe.helper.AbstractTubeImpl", 0,
+                "process", "(Lcom/sun/xml/ws/api/message/Packet;)Lcom/sun/xml/ws/api/message/Packet;");
+
+        builder.methodEntry( 3 , 0, 3, 0, 0);
+        markedIds.add(3);
+        
+        status.updateInstrMethodsInfo("pack.CustomClass1", 0,
+                "method", "()V");
+
+        builder.methodEntry( 4 , 0, 1, 0, 0);
+        markedIds.add(4);
+        
+        builder.methodExit( 4,0,1,0,0);
+        
+        builder.methodExit( 3,0,3,0,0);
+        
+        status.updateInstrMethodsInfo("pack.CustomClass2", 0,
+                "method", "()V");
+
+        builder.methodEntry( 5 , 0, 1, 0, 0);
+        plainIds.add(5);
+
+        builder.newThread( 1 , "Thread-1", "java.lang.Thread");
+
+        status.updateInstrMethodsInfo("com.sun.xml.ws.api.pipe.helper.AbstractTubeImpl", 0,
+                "process", "(Lcom/sun/xml/ws/api/message/Packet;)Lcom/sun/xml/ws/api/message/Packet;");
+        builder.methodEntry( 6 , 1, 2, 0, 0);
+        markedIds.add( 6 );
+        
+        status.updateInstrMethodsInfo("pack.CustomClass3", 0,
+                "method", "()V");
+
+        builder.methodEntry( 7 , 1, 1, 0, 0);
+        markedIds.add(7);
+        
+        builder.methodExit( 7,1,1,0,0);
+        builder.methodExit( 6,1,2,0,0);
+        
+        status.updateInstrMethodsInfo("pack.CustomClass4", 0,
+                "method", "()V");
+
+        builder.methodEntry( 8 , 1, 1, 0, 0);
+        plainIds.add(8);
+        
+        SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
+
+        Map<Integer, Mark> methodMarks = getMethodMarks(root );
+        Mark endpointInvocationMark = category.getAssignedMark();
+
+        checkMarks(status, markedIds, plainIds, methodMarks, endpointInvocationMark, category);
     }
     
     protected void doTestHttpTransport( Category category ){
@@ -126,6 +247,68 @@ public class CategoryMarkTestBase extends TestBase {
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
         builder.methodEntry( 1 , 0, 2, 0, 0);
         plainIds.add(1);
+        
+        status.updateInstrMethodsInfo("com.sun.xml.ws.transport.http.servlet.WSServlet", 0,
+                "doGet", "(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;)V");
+
+        builder.methodEntry( 2 , 0, 3, 0, 0);
+        markedIds.add(2);
+        
+        status.updateInstrMethodsInfo("pack.CustomClass1", 0,
+                "method", "()V");
+
+        builder.methodEntry( 3 , 0, 1, 0, 0);
+        markedIds.add(3);
+        
+        builder.methodExit( 3,0,1,0,0);
+        
+        builder.methodExit( 2,0,3,0,0);
+        
+        status.updateInstrMethodsInfo("pack.CustomClass2", 0,
+                "method", "()V");
+
+        builder.methodEntry( 4 , 0, 1, 0, 0);
+        plainIds.add(4);
+
+        builder.newThread( 1 , "Thread-1", "java.lang.Thread");
+        
+        status.updateInstrMethodsInfo("pack.CustomClass3", 0,
+                "method", "()V");
+
+        builder.methodEntry( 5 , 1, 2, 0, 0);
+        plainIds.add(5);
+
+        status.updateInstrMethodsInfo("com.sun.xml.ws.transport.http.servlet.WSServlet", 0,
+                "doPut", "(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;)V");
+        builder.methodEntry( 6 , 1, 3, 0, 0);
+        markedIds.add( 6 );
+        
+        status.updateInstrMethodsInfo("pack.CustomClass3", 0,
+                "method", "()V");
+
+        builder.methodEntry( 7 , 1, 1, 0, 0);
+        markedIds.add(7);
+        
+        builder.methodExit( 7,1,1,0,0);
+        builder.methodExit( 6,1,2,0,0);
+        
+        status.updateInstrMethodsInfo("com.sun.xml.ws.transport.http.servlet.WSServlet", 0,
+                "doDelete", "(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;)V");
+        builder.methodEntry( 8 , 1, 2, 0, 0);
+        markedIds.add( 8 );
+        
+        status.updateInstrMethodsInfo("pack.CustomClass4", 0,
+                "method", "()V");
+
+        builder.methodEntry( 9 , 1, 1, 0, 0);
+        markedIds.add(9);
+        
+        SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
+
+        Map<Integer, Mark> methodMarks = getMethodMarks(root );
+        Mark mark = category.getAssignedMark();
+
+        checkMarks(status, markedIds, plainIds, methodMarks, mark, category);
     }
     
     protected void doTestMessageProcessing( Category category ){
@@ -145,6 +328,56 @@ public class CategoryMarkTestBase extends TestBase {
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
         builder.methodEntry( 1 , 0, 2, 0, 0);
         plainIds.add(1);
+        
+        status.updateInstrMethodsInfo("pack.CustomClass", 0,
+                "method", "()V");
+
+        builder.methodEntry( 2 , 0, 1, 0, 0);
+        plainIds.add(2);
+        
+        builder.methodExit( 2,0,3,0,0);
+        
+        status.updateInstrMethodsInfo("com.sun.xml.ws.message.AttachmentSetImpl", 0,
+                "add", "(Lcom/sun/xml/ws/api/message/Attachment;)V");
+
+        builder.methodEntry( 3 , 0, 3, 0, 0);
+        markedIds.add(3);
+        
+        status.updateInstrMethodsInfo("pack.CustomClass2", 0,
+                "method", "()V");
+
+        builder.methodEntry( 4 , 0, 1, 0, 0);
+        markedIds.add(4);
+
+        builder.newThread( 1 , "Thread-1", "java.lang.Thread");
+        
+        status.updateInstrMethodsInfo("com.sun.xml.ws.message.JAXBAttachment", 0,
+                "writeTo", "(Ljava/io/OutputStream;)V");
+        builder.methodEntry( 5 , 1, 2, 0, 0);
+        markedIds.add( 5 );
+        
+        status.updateInstrMethodsInfo("pack.CustomClass3", 0,
+                "method", "()V");
+
+        builder.methodEntry( 6 , 1, 1, 0, 0);
+        markedIds.add(6);
+        
+        builder.methodExit( 6,1,1,0,0);
+        builder.methodExit( 5,1,2,0,0);
+        
+        
+        status.updateInstrMethodsInfo("pack.CustomClass4", 0,
+                "method", "()V");
+
+        builder.methodEntry( 7 , 1, 1, 0, 0);
+        plainIds.add(7);
+        
+        SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
+
+        Map<Integer, Mark> methodMarks = getMethodMarks(root );
+        Mark mark = category.getAssignedMark();
+
+        checkMarks(status, markedIds, plainIds, methodMarks, mark, category);
     }
     
     protected void doTestStreaming(Category category ){
@@ -164,6 +397,52 @@ public class CategoryMarkTestBase extends TestBase {
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
         builder.methodEntry( 1 , 0, 2, 0, 0);
         plainIds.add(1);
+        
+        status.updateInstrMethodsInfo("com.sun.xml.ws.streaming.XMLStreamReaderUtil", 0,
+                "close", "(Ljavax/xml/stream/XMLStreamReader;)V");
+
+        builder.methodEntry( 2 , 0, 3, 0, 0);
+        markedIds.add(2);
+        builder.methodExit( 2,0,3,0,0);
+        
+        status.updateInstrMethodsInfo("pack.CustomClass", 0,
+                "method", "()V");
+
+        builder.methodEntry( 3 , 0, 1, 0, 0);
+        plainIds.add(3);
+        
+        status.updateInstrMethodsInfo("com.sun.xml.ws.streaming.XMLStreamReaderUtil", 0,
+                "readRest", "(Ljavax/xml/stream/XMLStreamReader;)V");
+
+        builder.methodEntry( 4 , 0, 3, 0, 0);
+        markedIds.add(4);
+        
+        status.updateInstrMethodsInfo("pack.CustomClass1", 0,
+                "method", "()V");
+
+        builder.methodEntry( 5 , 0, 1, 0, 0);
+        markedIds.add(5);
+
+        builder.newThread( 1 , "Thread-1", "java.lang.Thread");
+        
+        status.updateInstrMethodsInfo("com.sun.xml.ws.streaming.TidyXMLStreamReader ", 0,
+                "close", "()V");
+
+        builder.methodEntry( 6 , 1, 2, 0, 0);
+        markedIds.add(6);
+        
+        status.updateInstrMethodsInfo("pack.CustomClass2", 0,
+                "method", "()V");
+
+        builder.methodEntry( 7 , 1, 1, 0, 0);
+        markedIds.add(7);
+        
+        SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
+
+        Map<Integer, Mark> methodMarks = getMethodMarks(root );
+        Mark mark = category.getAssignedMark();
+
+        checkMarks(status, markedIds, plainIds, methodMarks, mark, category);
     }
     
     protected void checkMarks( ProfilingSessionStatus status, Set<Integer> ids,
