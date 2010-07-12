@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -70,6 +71,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -80,6 +82,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Tomas Mysik
@@ -157,11 +160,9 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     }
 
     private static class ImportantFilesRootNode extends AbstractNode implements PropertyChangeListener {
-        private final PhpProject project;
 
         public ImportantFilesRootNode(PhpProject project) {
-            super(createChildren(project));
-            this.project = project;
+            super(new ImportantFilesChildFactory(project));
 
             ProjectPropertiesSupport.addWeakPropertyChangeListener(project, this);
         }
@@ -193,22 +194,27 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        setChildren(createChildren(project));
+                        ((ImportantFilesChildFactory) getChildren()).refreshNodes();
                     }
                 });
             }
         }
-
-        private static Children createChildren(PhpProject project) {
-            return new ImportantFilesChildFactory(project);
-        }
     }
 
     private static class ImportantFilesChildFactory extends Children.Keys<Pair<PhpFrameworkProvider, FileObject>> {
+        private static final RequestProcessor RP = new RequestProcessor(ImportantFilesChildFactory.class.getName(), Runtime.getRuntime().availableProcessors());
+        static final int FILE_CHANGE_DELAY = 300; // ms
+
         private final PhpProject project;
-        private volatile FileChangeListener fileChangeListener;
+        private final FileChangeListener fileChangeListener = new ImportantFilesListener();
         // @GuardedBy(files)
         final List<Pair<PhpFrameworkProvider, FileObject>> files = new LinkedList<Pair<PhpFrameworkProvider, FileObject>>();
+        final RequestProcessor.Task fsChange = RP.create(new Runnable() {
+            @Override
+            public void run() {
+                refreshNodesImpl();
+            }
+        });
 
         public ImportantFilesChildFactory(PhpProject project) {
             this.project = project;
@@ -225,7 +231,6 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         protected void removeNotify() {
             setKeys(Collections.<Pair<PhpFrameworkProvider, FileObject>>emptyList());
             clearFiles();
-            removeListener();
             super.removeNotify();
         }
 
@@ -269,7 +274,6 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                     }
                 }
 
-                assert !files.isEmpty();
                 return new ArrayList<Pair<PhpFrameworkProvider, FileObject>>(files);
             }
         }
@@ -281,40 +285,37 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
 
         private void attachListener() {
-            if (fileChangeListener == null) {
-                fileChangeListener = new ImportantFilesListener();
-                try {
-                    ProjectPropertiesSupport.getSourcesDirectory(project).getFileSystem().addFileChangeListener(fileChangeListener);
-                } catch (FileStateInvalidException exc) {
-                    LOGGER.log(Level.WARNING, exc.getMessage(), exc);
-                }
+            try {
+                FileSystem fileSystem = ProjectPropertiesSupport.getSourcesDirectory(project).getFileSystem();
+                fileSystem.addFileChangeListener(FileUtil.weakFileChangeListener(fileChangeListener, fileSystem));
+            } catch (FileStateInvalidException exc) {
+                LOGGER.log(Level.WARNING, exc.getMessage(), exc);
             }
         }
 
-        private void removeListener() {
-            if (fileChangeListener != null) {
-                try {
-                    ProjectPropertiesSupport.getSourcesDirectory(project).getFileSystem().removeFileChangeListener(fileChangeListener);
-                } catch (FileStateInvalidException exc) {
-                    LOGGER.log(Level.WARNING, exc.getMessage(), exc);
-                }
-                fileChangeListener = null;
-            }
+        void refreshNodes() {
+            fsChange.schedule(FILE_CHANGE_DELAY);
         }
 
-        void fileChange() {
-            final List<Pair<PhpFrameworkProvider, FileObject>> oldFiles = getFiles();
-            clearFiles();
-            final List<Pair<PhpFrameworkProvider, FileObject>> newFiles = getFiles();
-            if (!oldFiles.equals(newFiles)) {
-                // avoid deadlocks
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        setKeys(newFiles);
+        void refreshNodesImpl() {
+            // avoid deadlocks (during project delete)
+            ProjectManager.mutex().readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    final List<Pair<PhpFrameworkProvider, FileObject>> oldFiles = getFiles();
+                    clearFiles();
+                    final List<Pair<PhpFrameworkProvider, FileObject>> newFiles = getFiles();
+                    if (!oldFiles.equals(newFiles)) {
+                        // avoid deadlocks
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                setKeys(newFiles);
+                            }
+                        });
                     }
-                });
-            }
+                }
+            });
         }
 
         private class ImportantFilesListener extends FileChangeAdapter {
@@ -331,7 +332,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 fileChange();
             }
             private void fileChange() {
-                ImportantFilesChildFactory.this.fileChange();
+                refreshNodes();
             }
         };
     }
