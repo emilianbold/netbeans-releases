@@ -111,21 +111,23 @@ public class MethodParamsTipPaintComponent extends JToolTip {
 
         int startX = drawX;
         drawWidth = drawX;
-        for (List<String> p : params) {
-            int i = 0;
-            int plen = p.size() - 1;
-            for (String s : p) {
-                if (getWidth(s, i == idx || i == plen && idx > plen ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont()) + drawX > screenWidth) {
-                    drawY += fontHeight;
-                    drawX = startX + getWidth("        ", drawFont); //NOI18N
+        if (params != null) {
+            for (List<String> p : params) {
+                int i = 0;
+                int plen = p.size() - 1;
+                for (String s : p) {
+                    if (getWidth(s, i == idx || i == plen && idx > plen ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont()) + drawX > screenWidth) {
+                        drawY += fontHeight;
+                        drawX = startX + getWidth("        ", drawFont); //NOI18N
+                    }
+                    drawString(g, s, i == idx || i == plen && idx > plen ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont());
+                    if (drawWidth < drawX)
+                        drawWidth = drawX;
+                    i++;
                 }
-                drawString(g, s, i == idx || i == plen && idx > plen ? getDrawFont().deriveFont(Font.BOLD) : getDrawFont());
-                if (drawWidth < drawX)
-                    drawWidth = drawX;
-                i++;
+                drawY += fontHeight;
+                drawX = startX;
             }
-            drawY += fontHeight;
-            drawX = startX;
         }
         drawHeight = drawY - fontHeight + descent;
         if (in != null) {

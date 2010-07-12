@@ -370,7 +370,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                     }
                 } else if (queryType == TOOLTIP_QUERY_TYPE) {
-                    resultSet.setToolTip(toolTip);
+                    resultSet.setToolTip(toolTip != null && toolTip.hasData() ? toolTip : null);
                 }
                 resultSet.setAnchorOffset(anchorOffset);
             } catch (Exception ex) {
