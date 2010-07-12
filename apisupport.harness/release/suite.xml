@@ -271,7 +271,7 @@ made subject to such option by the copyright holder.
                 <selector refid="zip.platform.included.files"/>
             </pathfileset>
             <chainedmapper>
-                <mapper type="regexp" from="(^.+)[/\\](config[/\\]Modules[/\\]|lib[/\\]|core[/\\])" to="\1"/> <!-- #71849, #185047 -->
+                <mapper type="regexp" from="(^.+)[/\\](config[/\\]Modules|(?&lt;=[/\\]platform\d{0,2}[/\\])(lib|core))[/\\]" to="\1"/> <!-- #71849, #185047, #188601 -->
                 <filtermapper>
                     <linecontainsregexp negate="true">
                         <regexp pattern="update[/\\]backup[/\\]netbeans[/\\]?$"/>
