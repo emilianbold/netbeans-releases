@@ -88,6 +88,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -207,6 +208,15 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
     private static class PhpLogicalViewRootNode extends AbstractNode {
 
         final PhpProject project;
+        private final PropertyChangeListener propertyChangeListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (PhpProject.PROP_FRAMEWORKS.equals(evt.getPropertyName())) {
+                    fireIconChange();
+                    fireOpenedIconChange();
+                }
+            }
+        };
 
         public PhpLogicalViewRootNode(PhpProject project) {
             super(createChildren(project), Lookups.singleton(project));
@@ -214,15 +224,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             setIconBaseWithExtension("org/netbeans/modules/php/project/ui/resources/phpProject.png"); // NOI18N
             setName(ProjectUtils.getInformation(project).getDisplayName());
 
-            ProjectUtils.getInformation(project).addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (ProjectInformation.PROP_ICON.equals(evt.getPropertyName())) {
-                        fireIconChange();
-                        fireOpenedIconChange();
-                    }
-                }
-            });
+            ProjectPropertiesSupport.addWeakPropertyChangeListener(project, propertyChangeListener);
         }
 
         @Override

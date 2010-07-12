@@ -47,6 +47,7 @@ package org.netbeans.modules.tomcat5.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -88,7 +89,8 @@ public class TomcatUsers {
      * @throws IOException if the file does not exist or an error occurs during 
      *         parsing it.
      */
-    public static void createUser(File tomcatUsersFile, String username, String password) throws IOException {
+    public static void createUser(File tomcatUsersFile, String username, String password,
+            TomcatVersion version) throws IOException {
         Document doc = getDocument(tomcatUsersFile);
         Element root = doc.getDocumentElement();
         Element userElement = findUserByName(root, username);
@@ -102,11 +104,20 @@ public class TomcatUsers {
             roles = ""; // NOI18N
         }
         StringBuilder newRoles = new StringBuilder(roles.trim());
-        if (!hasRole(roles, "manager")) { // NOI18N
-            if (newRoles.length() > 0 && !newRoles.toString().endsWith(",")) { // NOI18N
-                newRoles.append(',');
+            if (TomcatVersion.TOMCAT_70.equals(version)) {
+            if (!hasRole(roles, "manager-script")) { // NOI18N
+                if (newRoles.length() > 0 && !newRoles.toString().endsWith(",")) { // NOI18N
+                    newRoles.append(',');
+                }
+                newRoles.append("manager-script"); // NOI18N
             }
-            newRoles.append("manager"); // NOI18N
+        } else {
+            if (!hasRole(roles, "manager")) { // NOI18N
+                if (newRoles.length() > 0 && !newRoles.toString().endsWith(",")) { // NOI18N
+                    newRoles.append(',');
+                }
+                newRoles.append("manager"); // NOI18N
+            }
         }
         if (!hasRole(roles, "admin")) { // NOI18N
             if (!newRoles.toString().endsWith(",")) { // NOI18N
