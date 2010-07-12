@@ -329,15 +329,6 @@ public final class RemoteConnections {
             return configs;
         }
 
-        @Override
-        public String getActiveConfig() {
-            return null;
-        }
-
-        @Override
-        public void setActiveConfig(String configName) {
-        }
-
         private void readConfigs() {
             Preferences remoteConnections = getPreferences();
             try {
