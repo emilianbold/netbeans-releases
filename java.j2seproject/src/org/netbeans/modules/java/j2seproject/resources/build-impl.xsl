@@ -657,9 +657,11 @@ is divided into following sections:
                         <xsl:attribute name="default">**</xsl:attribute>
                     </attribute>
                     <sequential>
+                        <property name="junit.forkmode" value="perTest"/>
                         <junit>
                             <xsl:attribute name="showoutput">true</xsl:attribute>
                             <xsl:attribute name="fork">true</xsl:attribute>
+                            <xsl:attribute name="forkmode">${junit.forkmode}</xsl:attribute>
                             <xsl:attribute name="dir">${work.dir}</xsl:attribute> <!-- #47474: match <java> --> 
                             <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
                             <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
