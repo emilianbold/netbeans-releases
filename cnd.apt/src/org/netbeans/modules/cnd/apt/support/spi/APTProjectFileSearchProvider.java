@@ -37,26 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.spi.configurations;
+package org.netbeans.modules.cnd.apt.support.spi;
 
-import java.util.List;
-import org.netbeans.modules.cnd.api.project.NativeFileSearch;
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
- * Detect additional include paths and macros from compiler options.
- * For example:
- * Convert `pkg-config --cflags gtk-2.0` to list of paths and macros
- * Convert -xopenmp to _OPENMP macro
- * 
+ *
  * @author Alexander Simon
  */
-public interface UserOptionsProvider {
-    List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    NativeFileSearch getPackageFileSearch();
+public interface APTProjectFileSearchProvider {
+
+    public APTFileSearchImplementation getSearchImplementation(Key prjKey);
 }
