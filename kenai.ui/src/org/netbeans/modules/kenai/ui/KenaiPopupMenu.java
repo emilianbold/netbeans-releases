@@ -267,6 +267,8 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                         sa.actionPerformed(e);
                     }
                 });
+            } else if (action instanceof Presenter.Menu) {
+                item = ((Presenter.Menu) action).getMenuPresenter();
             } else {
                 item = new JMenuItem(action);
             }
