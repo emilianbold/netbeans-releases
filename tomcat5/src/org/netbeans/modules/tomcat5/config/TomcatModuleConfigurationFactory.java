@@ -75,6 +75,10 @@ public class TomcatModuleConfigurationFactory implements ModuleConfigurationFact
     public static TomcatModuleConfigurationFactory create60() {
         return new TomcatModuleConfigurationFactory(TomcatVersion.TOMCAT_60);
     }
+
+    public static TomcatModuleConfigurationFactory create70() {
+        return new TomcatModuleConfigurationFactory(TomcatVersion.TOMCAT_70);
+    }
     
     public ModuleConfiguration create(J2eeModule j2eeModule) throws ConfigurationException {
         return new TomcatModuleConfiguration(j2eeModule, version);
