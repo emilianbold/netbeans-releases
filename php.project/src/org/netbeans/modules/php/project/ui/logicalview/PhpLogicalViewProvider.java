@@ -334,6 +334,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                 assert name != null;
                 assert frameworkActions != null;
 
+                putValue(SHORT_DESCRIPTION, name);
                 this.name = name;
                 this.frameworkActions = frameworkActions;
             }
@@ -386,13 +387,15 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         private final String category;
 
         CustomizeProjectAction(PhpProject project, String category) {
-            super(NbBundle.getMessage(PhpLogicalViewProvider.class, "LBL_Customize"));
-
             assert project != null;
             assert category != null;
 
             this.project = project;
             this.category = category;
+
+            String name = NbBundle.getMessage(PhpLogicalViewProvider.class, "LBL_Customize");
+            putValue(NAME, name);
+            putValue(SHORT_DESCRIPTION, name);
         }
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -408,10 +411,12 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         private final PhpDocProvider docProvider;
 
         public PhpDocAction(PhpModule phpModule, PhpDocProvider docProvider) {
-            super(NbBundle.getMessage(PhpLogicalViewProvider.class, "LBL_Generate", docProvider.getDisplayName()));
-
             this.phpModule = phpModule;
             this.docProvider = docProvider;
+
+            String name = NbBundle.getMessage(PhpLogicalViewProvider.class, "LBL_Generate", docProvider.getDisplayName());
+            putValue(NAME, name);
+            putValue(SHORT_DESCRIPTION, name);
         }
 
         @Override

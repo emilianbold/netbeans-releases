@@ -79,7 +79,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private final RunAsPanel.InsidePanel[] insidePanels;
 
     public CustomizerRun(PhpProjectProperties properties, final Category category) {
-        manager = new ConfigManager(properties);
+        manager = properties.getConfigManager();
         insidePanels = new RunAsPanel.InsidePanel[] {
             new RunAsLocalWeb(properties, manager, category),
             new RunAsRemoteWeb(properties, manager, category),

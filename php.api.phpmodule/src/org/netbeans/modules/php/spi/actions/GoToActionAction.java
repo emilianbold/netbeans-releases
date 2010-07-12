@@ -66,7 +66,9 @@ public abstract class GoToActionAction extends AbstractAction {
     private static final RequestProcessor RP = new RequestProcessor(GoToActionAction.class);
 
     public GoToActionAction() {
-        super(NbBundle.getMessage(GoToActionAction.class, "LBL_GoToAction"));
+        String name = NbBundle.getMessage(GoToActionAction.class, "LBL_GoToAction");
+        putValue(NAME, name);
+        putValue(SHORT_DESCRIPTION, name);
     }
 
     /**
