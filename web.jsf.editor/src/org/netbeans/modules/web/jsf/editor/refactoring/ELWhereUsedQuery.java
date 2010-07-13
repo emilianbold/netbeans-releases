@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -63,6 +64,8 @@ import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.editor.el.ELElement;
 import org.netbeans.modules.web.jsf.editor.el.ELIndex;
 import org.netbeans.modules.web.jsf.editor.el.ELIndexer.Fields;
+import org.netbeans.modules.web.jsf.editor.el.IndexedIdentifier;
+import org.netbeans.modules.web.jsf.editor.el.IndexedProperty;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
@@ -87,107 +90,71 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
 
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElementsBag) {
-        Problem result = null;
         TreePathHandle handle = getHandle();
-        if (handle == null || Kind.CLASS != handle.getKind()) {
+        if (handle == null) {
             return null;
         }
-        Element resElement = handle.resolveElement(RefactoringUtil.getCompilationInfo(handle, whereUsedQuery));
-        TypeElement type = (TypeElement) resElement;
+        Element element = handle.resolveElement(RefactoringUtil.getCompilationInfo(handle, whereUsedQuery));
+        if (Kind.METHOD == handle.getKind()) {
+            return handleProperty(refactoringElementsBag, handle, element);
+        }
+        if (Kind.CLASS == handle.getKind()) {
+            return handleClass(refactoringElementsBag, handle, element);
+        }
+        return null;
+    }
+
+    private Problem handleClass(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element element) {
+        TypeElement type = (TypeElement) element;
         String clazz = type.getQualifiedName().toString();
         FacesManagedBean managedBean = findManagedBeanByClass(clazz);
         ELIndex index = ELIndex.get(handle.getFileObject());
-        Collection<? extends IndexResult> references = index.findManagedBeanReferences(managedBean.getManagedBeanName());
-        for (IndexResult indexResult : references) {
-            for (WhereUsedQueryElement elem : createElements(indexResult.getFile(), managedBean.getManagedBeanName(), indexResult)) {
-                refactoringElementsBag.add(whereUsedQuery, elem);
-            }
+        List<IndexedIdentifier> identifiers = index.findManagedBeanReferences(managedBean.getManagedBeanName());
+        for (WhereUsedQueryElement elem : createElements(identifiers, managedBean.getManagedBeanName())) {
+            refactoringElementsBag.add(whereUsedQuery, elem);
         }
-        return result;
+        return null;
     }
 
-    private static List<WhereUsedQueryElement> createElements(FileObject file, String reference, IndexResult indexResult) {
-        String[] identifiers = indexResult.getValues(Fields.IDENTIFIER);
-        String[] expressions = indexResult.getValues(Fields.FULL_EXPRESSION);
-        assert identifiers.length == expressions.length;
+    private Problem handleProperty(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element element) {
+        String clazz = element.getEnclosingElement().asType().toString();
+        FacesManagedBean managedBean = findManagedBeanByClass(clazz);
+        if (managedBean == null) {
+            return null;
+        }
+        String propertyName = RefactoringUtil.getPropertyName(element.getSimpleName().toString());
+        ELIndex index = ELIndex.get(handle.getFileObject());
+        List<IndexedProperty> properties = index.findPropertyReferences(propertyName, managedBean.getManagedBeanName());
+        for (WhereUsedQueryElement elem : createElements(properties, propertyName)) {
+            refactoringElementsBag.add(whereUsedQuery, elem);
+        }
+        return null;
+    }
 
-        ParserResultHolder parserResultHolder = getParserResult(file);
-        // XXX: happens due to x-el lexing bug
-        if (parserResultHolder.parserResult == null) {
+
+    private static List<WhereUsedQueryElement> createElements(List<? extends IndexedIdentifier> identifiers, String reference) {
+
+        if (identifiers.isEmpty()) {
             return Collections.emptyList();
         }
-        List<ELElement> elements = new ArrayList(parserResultHolder.parserResult.getElements());
-        List<WhereUsedQueryElement> result = new ArrayList<WhereUsedQueryElement>();
-        for (int i = 0; i < identifiers.length; i++) {
-            if (reference.equals(identifiers[i])) {
-                String expression = expressions[i];
-                for (Iterator<ELElement> it = elements.iterator(); it.hasNext();) {
-                    ELElement eLElement = it.next();
-                    if (expression.equals(eLElement.getExpression())) {
-                        WhereUsedQueryElement wuqe = new WhereUsedQueryElement(file, reference, eLElement, parserResultHolder);
-                        result.add(wuqe);
-                        it.remove();
-                    }
+        
+        List<WhereUsedQueryElement> result = new ArrayList<WhereUsedQueryElement>(identifiers.size());
+        for (IndexedIdentifier identifier : identifiers) {
+            ParserResultHolder parserResultHolder = getParserResult(identifier.getFile());
+            if (parserResultHolder.parserResult == null) {
+                continue;
+            }
+            List<ELElement> elements = new ArrayList(parserResultHolder.parserResult.getElements());
+            for (Iterator<ELElement> it = elements.iterator(); it.hasNext();) {
+                ELElement eLElement = it.next();
+                if (identifier.getExpression().equals(eLElement.getExpression())) {
+                    WhereUsedQueryElement wuqe =
+                            new WhereUsedQueryElement(identifier.getFile(), reference, eLElement, parserResultHolder);
+                    result.add(wuqe);
+                    it.remove();
                 }
             }
         }
         return result;
-    }
-
-    private static class WhereUsedQueryElement extends SimpleRefactoringElementImplementation {
-
-        private final FileObject file;
-        private final String reference;
-        private final ELElement eLElement;
-        private final ParserResultHolder parserResult;
-
-        public WhereUsedQueryElement(FileObject file, String reference, ELElement eLElement, ParserResultHolder parserResult) {
-            this.file = file;
-            this.reference = reference;
-            this.eLElement = eLElement;
-            this.parserResult = parserResult;
-        }
-
-        @Override
-        public String getText() {
-            return reference;
-        }
-
-        @Override
-        public String getDisplayText() {
-            try {
-                CharSequence text = parserResult.topLevelSnapshot.getText();
-                OffsetRange orig = eLElement.getOriginalOffset();
-                int astLineStart = GsfUtilities.getRowStart(text, orig.getStart());
-                int astLineEnd = GsfUtilities.getRowEnd(text, orig.getStart());
-                // TODO: this is not accurate, need to do highlighning based on AST offsets
-                return RefactoringUtil.encodeAndHighlight(reference, text.subSequence(astLineStart, astLineEnd).toString()).trim();
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-                return eLElement.getExpression();
-            }
-        }
-
-        @Override
-        public void performChange() {
-        }
-
-        @Override
-        public Lookup getLookup() {
-            return Lookups.singleton(file);
-        }
-
-        @Override
-        public FileObject getParentFile() {
-            return file;
-        }
-
-        @Override
-        public PositionBounds getPosition() {
-            CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
-            PositionRef start = editor.createPositionRef(eLElement.getOriginalOffset().getStart(), Bias.Forward);
-            PositionRef end = editor.createPositionRef(eLElement.getOriginalOffset().getEnd(), Bias.Backward);
-            return new PositionBounds(start, end);
-        }
     }
 }

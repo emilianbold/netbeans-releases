@@ -54,6 +54,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * XXX: need a common module for sharing code with refactorings, same stuff here
@@ -97,5 +98,44 @@ public final class RefactoringUtil {
     static String encodeAndHighlight(String toHighlight, String text) {
         return encodeAngleBrackets(text).replaceAll(toHighlight, "<b>" + toHighlight + "</b>"); //NOI18N
     }
+
+    /**
+     * Gets the name of the property associated with the given accessor.
+     *
+     * @param accessor the name of the accessor method of the property. Must follow the JavaBeans
+     * naming conventions, i.e. start with 'get/set/is' followed by an uppercase letter,
+     * otherwise it is assumed that the name of the property directly matches with
+     * the getter. Must not be null or empty.
+     *
+     * @return the property name resolved from the given <code>getter</code>, i.e.
+     * if the given arg was <code>getProperty</code>, this method will return
+     * <code>property</code>.
+     */
+    public static String getPropertyName(String accessor){
+        Parameters.notEmpty("accessor", accessor); //NO18N
+
+        int prefixLength = getPrefixLength(accessor);
+        String withoutPrefix = accessor.substring(prefixLength);
+        char firstChar = withoutPrefix.charAt(0);
+
+        if (!Character.isUpperCase(firstChar)){
+            return accessor;
+        }
+
+        return Character.toLowerCase(firstChar) + withoutPrefix.substring(1);
+    }
+
+    private static int getPrefixLength(String accessor){
+        //XXX: leaving out 'set' for now, need more clever AST analysis to be able to
+        // tell apart getters and setters in EL
+        String[] accessorPrefixes = new String[]{"get", /*"set",*/ "is"};
+        for (String prefix : accessorPrefixes){
+            if (accessor.startsWith(prefix)){
+                return prefix.length();
+            }
+        }
+        return 0;
+    }
+
     
 }

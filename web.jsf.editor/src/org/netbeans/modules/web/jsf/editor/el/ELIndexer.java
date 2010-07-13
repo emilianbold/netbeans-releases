@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.jsf.editor.el;
 
 import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstMethodSuffix;
+import com.sun.el.parser.AstPropertySuffix;
 import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import java.io.IOException;
@@ -100,16 +102,42 @@ public final class ELIndexer extends EmbeddingIndexer {
         void analyze() {
             for (final ELElement each : parserResult.getElements()) {
                 if (each.isValid()) {
-                    // indexes bean identifiers
+                    // indexes useages of managed beans and their properties
                     each.getNode().accept(new NodeVisitor() {
 
                         @Override
                         public void visit(Node node) throws ELException {
                             if (node instanceof AstIdentifier) {
                                 String identifier = ((AstIdentifier) node).getImage();
-                                document.addPair(Fields.IDENTIFIER, identifier, true, true);
-                                document.addPair(Fields.FULL_EXPRESSION, each.getExpression(), false, true);
+                                document.addPair(Fields.IDENTIFIER, 
+                                        IndexedIdentifier.encode(identifier, each.getExpression())
+                                        , true, true);
+                            } else if (node instanceof AstPropertySuffix) {
+                                Node parent = node.jjtGetParent();
+                                // check whether the preceding node was AstIdentifier and 
+                                // index this only that was the case
+                                for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
+                                    Node child = parent.jjtGetChild(i);
+                                    if (node.equals(child) && i > 0) {
+                                        Node previous = parent.jjtGetChild(i - 1);
+                                        if (previous instanceof AstIdentifier) {
+                                            String property = ((AstPropertySuffix) node).getImage();
+                                            String identifier = ((AstIdentifier) previous).getImage();
+                                            document.addPair(Fields.PROPERTY,
+                                                    IndexedProperty.encode(property, identifier, each.getExpression()),
+                                                    true, true);
+                                            break;
+                                        }
+                                    }
+                                    
+                                }
                             }
+//                            else if (node instanceof AstMethodSuffix) {
+//                                String method = ((AstMethodSuffix) node).getImage();
+//                                document.addPair(Fields.METHOD,
+//                                        IndexedProperty.encode(method, identifier, each.getExpression()),
+//                                        true, true);
+//                            }
                         }
                     });
                 }
@@ -118,8 +146,30 @@ public final class ELIndexer extends EmbeddingIndexer {
     }
 
     public static final class Fields {
+        public static final String SEPARATOR = "|";
         public static final String IDENTIFIER = "identifier";
-        public static final String FULL_EXPRESSION = "full_expression";
+        public static final String IDENTIFIER_FULL_EXPRESSION = "identifier_full_expression";
+        public static final String PROPERTY = "property";
+        public static final String PROPERTY_OWNER = "property_owner";
+        public static final String PROPERTY_FULL_EXPRESSION = "property_full_expression";
+        public static final String METHOD = "method";
+        public static final String METHOD_FULL_EXPRESSION = "method_full_expression";
+
+        static String encode(String... values) {
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < values.length; i++) {
+                result.append(values[i]);
+                if (i + 1 < values.length) {
+                    result.append(SEPARATOR);
+                }
+
+            }
+            return result.toString();
+        }
+
+        public static String[] split(String field) {
+            return field.split("\\"+SEPARATOR);
+        }
     }
 
     public static final class Factory extends EmbeddingIndexerFactory {

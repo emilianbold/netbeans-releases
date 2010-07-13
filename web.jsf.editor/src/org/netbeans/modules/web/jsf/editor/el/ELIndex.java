@@ -39,12 +39,13 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.editor.el;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -76,7 +77,7 @@ public final class ELIndex {
             QuerySupport support = QuerySupport.forRoots(ELIndexer.Factory.NAME,
                     ELIndexer.Factory.VERSION,
                     sourceRoots.toArray(new FileObject[]{}));
-            
+
             return new ELIndex(support);
 
         } catch (IOException ex) {
@@ -85,9 +86,52 @@ public final class ELIndex {
         return null;
     }
 
-    public Collection<? extends IndexResult> findManagedBeanReferences(String managedBeanName) {
+    public List<IndexedIdentifier> findManagedBeanReferences(String managedBeanName) {
+        Collection<? extends IndexResult> queryResults = query(Fields.IDENTIFIER, managedBeanName, QuerySupport.Kind.PREFIX);
+        List<IndexedIdentifier> result = new ArrayList<IndexedIdentifier>();
+        for (IndexResult ir : queryResults) {
+            for (String value : ir.getValues(Fields.IDENTIFIER)) {
+                IndexedIdentifier identifier = IndexedIdentifier.decode(value, ir);
+                if (identifier.getIdentifier().equals(managedBeanName)) {
+                    result.add(identifier);
+                }
+            }
+        }
+        return result;
+    }
+
+    public List<IndexedProperty> findPropertyReferences(String propertyName, String identifier) {
+        Collection<? extends IndexResult> queryResults = query(Fields.PROPERTY, propertyName, QuerySupport.Kind.PREFIX);
+        List<IndexedProperty> result = new ArrayList<IndexedProperty>();
+        for (IndexResult ir : queryResults) {
+            for (String value : ir.getValues(Fields.PROPERTY)) {
+                IndexedProperty property = IndexedProperty.decode(value, ir);
+                if (property.getIdentifier().equals(identifier) && property.getProperty().equals(propertyName)) {
+                    result.add(property);
+                }
+            }
+        }
+        return result;
+    }
+
+    public List<IndexedProperty> findMethodReferences(String methodName, String identifier) {
+        Collection<? extends IndexResult> queryResults = query(Fields.METHOD, methodName, QuerySupport.Kind.PREFIX);
+        List<IndexedProperty> result = new ArrayList<IndexedProperty>();
+        for (IndexResult ir : queryResults) {
+            for (String value : ir.getValues(Fields.METHOD)) {
+                IndexedProperty property = IndexedProperty.decode(value, ir);
+                if (property.getIdentifier().equals(identifier) && property.getProperty().equals(methodName)) {
+                    result.add(property);
+                }
+            }
+        }
+        return result;
+    }
+
+
+    private Collection<? extends IndexResult> query(String field, String value, QuerySupport.Kind kind) {
         try {
-            return querySupport.query(ELIndexer.Fields.IDENTIFIER, managedBeanName, QuerySupport.Kind.EXACT);
+            return querySupport.query(field, value, kind);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
