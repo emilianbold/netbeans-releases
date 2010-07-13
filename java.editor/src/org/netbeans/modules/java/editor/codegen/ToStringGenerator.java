@@ -122,10 +122,10 @@ public class ToStringGenerator implements CodeGenerator {
                         break;
                     case FIELD:
                         if (!ERROR.contentEquals(element.getSimpleName()) && !element.getModifiers().contains(Modifier.STATIC))
-                            descriptions.add(ElementNode.Description.create(element, null, true, true));
+                            descriptions.add(ElementNode.Description.create(controller, element, null, true, true));
                 }
             }
-            ret.add(new ToStringGenerator(component, ElementNode.Description.create(typeElement, descriptions, false, false)));
+            ret.add(new ToStringGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false)));
             return ret;
         }
     }

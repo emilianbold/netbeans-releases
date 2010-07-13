@@ -43,7 +43,6 @@ package org.netbeans.modules.nativeexecution.api.util;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 import java.io.File;
 import java.io.IOException;
@@ -139,7 +138,8 @@ class SftpSupport {
         // requestProcessor = new RequestProcessor("SFTP request processor for " + execEnv, 1); // NOI18N
     }
 
-    private ChannelSftp getChannel() throws IOException, CancellationException, JSchException, ExecutionException {
+    private ChannelSftp getChannel() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException {
+
         synchronized (channelLock) {
             if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                 channel = null;
@@ -153,11 +153,13 @@ class SftpSupport {
                 if (cmAccess == null) { // is it a paranoja?
                     throw new ExecutionException("Error getting ConnectionManagerAccessor", new NullPointerException()); //NOI18N
                 }
-                Session session = cmAccess.getConnectionSession(execEnv, true);
-                if (session == null) {
-                    throw new ExecutionException("Error getting connection session", new NullPointerException()); //NOI18N
+                
+                channel = (ChannelSftp) cmAccess.openAndAcquireChannel(execEnv, "sftp", true); // NOI18N
+
+                if (channel == null) {
+                    return null;
                 }
-                channel = (ChannelSftp) session.openChannel("sftp"); // NOI18N
+
                 channel.connect();
             }
         }
@@ -334,7 +336,7 @@ class SftpSupport {
         }
 
         @Override
-        protected void work() throws IOException, CancellationException, JSchException, SftpException, ExecutionException {
+        protected void work() throws IOException, CancellationException, JSchException, SftpException, ExecutionException, InterruptedException {
             LOG.log(Level.FINE, "{0} started", getTraceName());
             ChannelSftp cftp = getChannel();
             cftp.get(srcFileName, dstFileName);

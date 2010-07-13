@@ -37,52 +37,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony.ui.actions;
-
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.apt.support.spi;
 
 /**
- * @author Tomas Mysik
+ *
+ * @author Alexander Simom
  */
-public abstract class BaseAction extends AbstractAction implements HelpCtx.Provider {
-
-    protected BaseAction() {
-        putValue("noIconInMenu", true); // NOI18N
-        putValue(NAME, getFullName());
-        putValue("menuText", getPureName()); // NOI18N
-    }
-
-    @Override
-    public final void actionPerformed(ActionEvent e) {
-        PhpModule phpModule = PhpModule.inferPhpModule();
-
-        if (phpModule == null) {
-            return;
-        }
-        if (!SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
-            return;
-        }
-
-        actionPerformed(phpModule);
-    }
-
-    protected String getFullName() {
-        return NbBundle.getMessage(BaseAction.class, "LBL_SymfonyAction", getPureName());
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    protected abstract String getPureName();
-    protected abstract void actionPerformed(PhpModule phpModule);
+public interface APTFileSearchImplementation {
+    public String searchInclude(String include, CharSequence basePath);
 }

@@ -77,10 +77,12 @@ public final class TomcatFactory implements DeploymentFactory {
     public static final String SERVER_ID_50 = "Tomcat";     // NOI18N
     public static final String SERVER_ID_55 = "Tomcat55";   // NOI18N
     public static final String SERVER_ID_60 = "Tomcat60";   // NOI18N
+    public static final String SERVER_ID_70 = "Tomcat70";   // NOI18N
     
     public static final String TOMCAT_URI_PREFIX_50 = "tomcat:";    // NOI18N
     public static final String TOMCAT_URI_PREFIX_55 = "tomcat55:";  // NOI18N
     public static final String TOMCAT_URI_PREFIX_60 = "tomcat60:";  // NOI18N
+    public static final String TOMCAT_URI_PREFIX_70 = "tomcat70:";  // NOI18N
     
     public static final String TOMCAT_URI_HOME_PREFIX = "home=";    // NOI18N
     public static final String TOMCAT_URI_BASE_PREFIX = ":base=";   // NOI18N
@@ -88,10 +90,12 @@ public final class TomcatFactory implements DeploymentFactory {
     private static final String DISCONNECTED_URI_50 = "tomcat:jakarta-tomcat-5.0.x";    // NOI18N
     private static final String DISCONNECTED_URI_55 = "tomcat55:jakarta-tomcat-5.5.x";  // NOI18N
     private static final String DISCONNECTED_URI_60 = "tomcat60:apache-tomcat-6.0.x";   // NOI18N
+    private static final String DISCONNECTED_URI_70 = "tomcat60:apache-tomcat-7.0.x";   // NOI18N
     
     private static TomcatFactory instance;
     private static TomcatFactory instance55;
     private static TomcatFactory instance60;
+    private static TomcatFactory instance70;
     
     private static final WeakHashMap managerCache = new WeakHashMap();
     
@@ -111,6 +115,11 @@ public final class TomcatFactory implements DeploymentFactory {
             case TOMCAT_55 :
                 tomcatUriPrefix = TOMCAT_URI_PREFIX_55;
                 disconnectedUri = DISCONNECTED_URI_55;
+                break;
+            // not the default for now
+            case TOMCAT_70 :
+                tomcatUriPrefix = TOMCAT_URI_PREFIX_70;
+                disconnectedUri = DISCONNECTED_URI_70;
                 break;
             case TOMCAT_60 :
             default:
@@ -154,6 +163,18 @@ public final class TomcatFactory implements DeploymentFactory {
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance60);
         }
         return instance60;
+    }
+
+    /**
+     * Factory method to create DeploymentFactory for Tomcat 6.0.x
+     */
+    public static synchronized TomcatFactory create70() {
+        if (instance70 == null) {
+            if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "Creating TomcatFactory"); // NOI18N
+            instance70 = new TomcatFactory(TomcatVersion.TOMCAT_70);
+            DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance70);
+        }
+        return instance70;
     }
     
     /** Factory method to create DeploymentManager.
@@ -203,6 +224,9 @@ public final class TomcatFactory implements DeploymentFactory {
                 return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory");
             case TOMCAT_55 :
                 return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory55");
+            // not the default for now
+            case TOMCAT_70 :
+                return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory70");
             case TOMCAT_60 :
             default:
                 return NbBundle.getMessage(TomcatFactory.class, "LBL_TomcatFactory60");

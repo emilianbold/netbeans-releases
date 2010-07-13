@@ -1382,6 +1382,10 @@ public final class VeryPretty extends JCTree.Visitor {
                 print(' ');
             } else {
                 print(opname);
+                if (   (tree.getTag() == JCTree.POS && (tree.arg.getTag() == JCTree.POS || tree.arg.getTag() == JCTree.PREINC))
+                    || (tree.getTag() == JCTree.NEG && (tree.arg.getTag() == JCTree.NEG || tree.arg.getTag() == JCTree.PREDEC))) {
+                    print(' ');
+                }
             }
 	    printExpr(tree.arg, ownprec);
 	} else {
@@ -1405,11 +1409,14 @@ public final class VeryPretty extends JCTree.Visitor {
 	if(cs.spaceAroundBinaryOps())
             print(' ');
 	print(opname);
+        boolean needsSpace =    cs.spaceAroundBinaryOps()
+                             || (tree.getTag() == JCTree.PLUS  && (tree.rhs.getTag() == JCTree.POS || tree.rhs.getTag() == JCTree.PREINC))
+                             || (tree.getTag() == JCTree.MINUS && (tree.rhs.getTag() == JCTree.NEG || tree.rhs.getTag() == JCTree.PREDEC));
 	int rm = cs.getRightMargin();
         switch(cs.wrapBinaryOps()) {
         case WRAP_IF_LONG:
             if (widthEstimator.estimateWidth(tree.rhs, rm - out.col) + out.col <= cs.getRightMargin()) {
-                if(cs.spaceAroundBinaryOps())
+                if(needsSpace)
                     print(' ');
                 break;
             }
@@ -1418,7 +1425,7 @@ public final class VeryPretty extends JCTree.Visitor {
             toColExactly(cs.alignMultilineBinaryOp() ? col : out.leftMargin + cs.getContinuationIndentSize());
             break;
         case WRAP_NEVER:
-            if(cs.spaceAroundBinaryOps())
+            if(needsSpace)
                 print(' ');
             break;
         }

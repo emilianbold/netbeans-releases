@@ -5567,3 +5567,7 @@ org.openide.awt.AcceleratorBinding$Iter
 org.openide.awt.Actions$ButtonActionConnectorGetter
 org.openide.awt.MenuBar$LazySeparator
 org.openide.util.CharSequences
+
+# OK on Jun 30, 2010:
+org.openide.actions.UndoRedoAction
+org.openide.awt.UndoRedo$Provider

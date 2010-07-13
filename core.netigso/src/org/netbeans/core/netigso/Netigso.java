@@ -208,13 +208,17 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             if (knownPkgs == EMPTY) {
                 try {
                     SELF_QUERY.set(true);
-                    Enumeration en = b.findEntries("", "", true);
-                    while (en.hasMoreElements()) {
-                        URL url = (URL) en.nextElement();
-                        if (url.getFile().startsWith("/META-INF")) {
-                            continue;
+                    Enumeration en = b.findEntries("", null, true);
+                    if (en == null) {
+                        LOG.log(Level.INFO, "Bundle {0}: {1} is empty", new Object[] { b.getBundleId(), b.getSymbolicName() });
+                    } else {
+                        while (en.hasMoreElements()) {
+                            URL url = (URL) en.nextElement();
+                            if (url.getFile().startsWith("/META-INF")) {
+                                continue;
+                            }
+                            pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                         }
-                        pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                     }
                 } finally {
                     SELF_QUERY.set(false);
