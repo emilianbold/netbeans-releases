@@ -46,6 +46,7 @@ package org.netbeans.modules.tomcat5.util;
 import java.io.File;
 import java.io.FileWriter;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 
 /**
  *
@@ -84,18 +85,18 @@ public class TomcatUsersTest extends NbTestCase {
     public void testCreateUser() throws Exception {
         File file = createTomcatUsersXml("tomcat-users.xml", CONTENT);
         assertFalse(TomcatUsers.hasManagerRole(file, "ide"));
-        TomcatUsers.createUser(file, "ide", "tomcat");
+        TomcatUsers.createUser(file, "ide", "tomcat", TomcatVersion.TOMCAT_60);
         assertTrue(TomcatUsers.hasManagerRole(file, "ide"));
         assertFalse(TomcatUsers.hasManagerRole(file, "nonexisting"));
-        TomcatUsers.createUser(file, "new", "tomcat");
+        TomcatUsers.createUser(file, "new", "tomcat", TomcatVersion.TOMCAT_60);
         assertTrue(TomcatUsers.hasManagerRole(file, "new"));
         
         file = createTomcatUsersXml("tomcat-users2.xml", CONTENT2);
         assertFalse(TomcatUsers.hasManagerRole(file, "ide"));
-        TomcatUsers.createUser(file, "ide", "tomcat");
+        TomcatUsers.createUser(file, "ide", "tomcat", TomcatVersion.TOMCAT_60);
         assertTrue(TomcatUsers.hasManagerRole(file, "ide"));
         assertFalse(TomcatUsers.hasManagerRole(file, "nonexisting"));
-        TomcatUsers.createUser(file, "new", "tomcat");
+        TomcatUsers.createUser(file, "new", "tomcat", TomcatVersion.TOMCAT_60);
         assertTrue(TomcatUsers.hasManagerRole(file, "new"));
     }
     

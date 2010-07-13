@@ -82,7 +82,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
 
     @Override
     protected Level logLevel() {
-        return Level.FINE;
+        return Level.FINER;
     }
     
     protected FileSystem createFS(String... resources) throws IOException {
@@ -126,13 +126,17 @@ public class DataLoaderInLayerTest extends NbTestCase {
         for (int i = 0; i < 100; i++) {
             Object f = Lookups.forPath("Loaders/" + mime + "/Factories").lookup(clazz);
             FolderLookup.ProxyLkp.DISPATCH.waitFinished();
-            LOG.log(Level.INFO, "waiting for {0} result: {1}", new Object[]{i, f});
+            LOG.log(Level.INFO, "waiting for {0} at #{1} result: {2}", new Object[]{add ? "add" : "remove", i, f});
             if (add == (f != null)) {
                 break;
             }
             Thread.sleep(100);
         }
         LOG.info("OK, addRemove finished");
+        // XXX: Probably DataLoaderPool shall listen on changes under Loaders/.../.../Factories and revalidate
+        // automatically
+        DataObjectPool.getPOOL().revalidate();
+        LOG.info("revalidating finished");
     }
     private static <F extends DataObject.Factory> void addRemove(String mime, F factory, boolean add) throws IOException {
         String res = "Loaders/" + mime + "/Factories/" + factory.getClass().getSimpleName().replace('.', '-') + ".instance";
@@ -307,15 +311,21 @@ public class DataLoaderInLayerTest extends NbTestCase {
     }
 
     public void testSimpleLoader() throws Exception {
+        FileSystem lfs = createFS("folder/file.simple");
+        FileObject fo = lfs.findResource("folder/file.simple");
+        assertNotNull(fo);
+        DataObject first = DataObject.find(fo);
+        LOG.log(Level.INFO, "default data object created: {0}", first);
+        assertEquals("Realy default", DefaultDataObject.class, first.getClass());
         DataLoader l = DataLoader.getLoader(SimpleUniFileLoader.class);
         addRemoveLoader(l, true);
         try {
-            FileSystem lfs = createFS("folder/file.simple");
-            FileObject fo = lfs.findResource("folder/file.simple");
-            assertNotNull(fo);
             DataObject dob = DataObject.find(fo);
-            assertEquals(SimpleDataObject.class, dob.getClass());
+            LOG.log(Level.INFO, "Object created: {0}", dob);
+            assertEquals("Checking the right type", SimpleDataObject.class, dob.getClass());
+            LOG.info("Check ok");
         } finally {
+            LOG.warning("Check failed, removing loader");
             addRemoveLoader(l, false);
         }
     }
