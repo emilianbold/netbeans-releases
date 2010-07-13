@@ -52,6 +52,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
@@ -69,9 +70,13 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
         super(name);
     }
     
+    protected @Override Level logLevel() {
+        return Level.ALL;
+    }
+    
     private File scratch, nbhome, nbuser, nbdir1, nbdir2;
     private InstalledFileLocator ifl;
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
         scratch = getWorkDir();
