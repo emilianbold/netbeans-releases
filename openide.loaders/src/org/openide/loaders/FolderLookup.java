@@ -285,11 +285,14 @@ public class FolderLookup extends FolderInstance {
 
     static final class Dispatch implements Executor, Runnable {
         private static final RequestProcessor DISPATCH = new RequestProcessor("Lookup Dispatch Thread"); // NOI18N
+        private static final Logger LOG = Logger.getLogger(Dispatch.class.getName());
         
         private final Queue<Runnable> queue = new ConcurrentLinkedQueue<Runnable>();
         private final RequestProcessor.Task task = DISPATCH.create(this, true);
 
+        @Override
         public void execute(Runnable command) {
+            LOG.log(Level.FINER, "Enqueued: {0}", command);
             queue.add(command);
             task.schedule(0);
         }
@@ -298,12 +301,16 @@ public class FolderLookup extends FolderInstance {
             task.waitFinished();
         }
         
+        @Override
         public void run() {
+            LOG.finer("Processing dispatched commands");
             for (;;) {
                 Runnable r = queue.poll();
                 if (r == null) {
+                    LOG.log(Level.FINER, "Processing done. Queue: {0}", queue.isEmpty());
                     return;
                 }
+                LOG.log(Level.FINER, "Processing {0}", r);
                 r.run();
             }
         }
