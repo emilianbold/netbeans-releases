@@ -50,8 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
@@ -62,6 +60,9 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
+import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -100,7 +101,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
     public static Future<Integer> performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project, final InputOutput inputOutput) {
         if (SwingUtilities.isEventDispatchThread()){
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
-                private ExecutionService es;
+                private NativeExecutionService es;
                 @Override
                 public void doWork() {
                     es = QMakeAction.prepare(node, listener, outputListener, project, inputOutput);
@@ -117,7 +118,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
             String msg = getString("MSG_TITLE_Prepare","qmake"); // NOI18N
             ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
         } else {
-            ExecutionService es = prepare(node, listener, outputListener, project, inputOutput);
+            NativeExecutionService es = prepare(node, listener, outputListener, project, inputOutput);
             if (es != null) {
                 return es.run();
             }
@@ -125,7 +126,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         return null;
     }
 
-    private static ExecutionService prepare(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
+    private static NativeExecutionService prepare(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
         //Save file
         saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
@@ -169,11 +170,13 @@ public class QMakeAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
-        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, inputOutput, "QMake", syncWorker); // NOI18N
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-        .setWorkingDirectory(buildDir)
-        .unbufferOutput(false)
-        .addNativeProcessListener(processChangeListener);
+
+        ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, syncWorker);
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
+                setWorkingDirectory(buildDir).
+                unbufferOutput(false).
+                addNativeProcessListener(processChangeListener);
+
         npb.getEnvironment().putAll(envMap);
         npb.redirectError();
         List<String> list = ImportUtils.parseArgs(argsFlat.toString());
@@ -181,15 +184,16 @@ public class QMakeAction extends AbstractExecutorRunAction {
         npb.setExecutable(executable);
         npb.setArguments(list.toArray(new String[list.size()]));
 
-        ExecutionDescriptor descr = new ExecutionDescriptor()
-        .controllable(true)
-        .frontWindow(true)
-        .inputVisible(true)
-        .inputOutput(inputOutput)
-        .outLineBased(true)
-        .showProgress(true)
-        .postExecution(processChangeListener)
-        .outConvertorFactory(processChangeListener);
-        return ExecutionService.newService(npb, descr, "qmake"); // NOI18N
+        NativeExecutionDescriptor descr = new NativeExecutionDescriptor().controllable(true).
+                frontWindow(true).
+                inputVisible(true).
+                inputOutput(inputOutput).
+                outLineBased(true).
+                showProgress(true).
+                postExecution(processChangeListener).
+                postMessageDisplayer(new PostMessageDisplayer.Default("QMake")). // NOI18N
+                outConvertorFactory(processChangeListener);
+        
+        return NativeExecutionService.newService(npb, descr, "qmake"); // NOI18N
     }
 }
