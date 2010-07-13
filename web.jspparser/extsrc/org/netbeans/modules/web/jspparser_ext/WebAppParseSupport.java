@@ -93,7 +93,7 @@ import org.apache.jasper.JasperException;
 import org.apache.jasper.compiler.ExtractPageData;
 import org.apache.jasper.compiler.GetParseData;
 import org.apache.jasper.compiler.JspRuntimeContext;
-import org.apache.jasper.compiler.TldLocationsCache;
+import org.apache.jasper.runtime.TldScanner;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.jspparser.ContextUtil;
 import org.netbeans.modules.web.jspparser.JspParserImpl;
@@ -701,9 +701,9 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         assert Thread.holdsLock(this);
         try {
             // editor options
-            TldLocationsCache lc = editorOptions.getTldLocationsCache();
+            TldScanner lc = editorOptions.getTldScanner();
 
-            Field mappingsField = TldLocationsCache.class.getDeclaredField("mappings"); //NOI18N
+            Field mappingsField = TldScanner.class.getDeclaredField("mappings"); //NOI18N
             mappingsField.setAccessible(true);
             // Before new parsing, the old mappings in the TldLocationCache has to be cleared. Else there are
             // stored the old mappings.
@@ -713,39 +713,42 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 tmpMappings.clear();
             }
 
-            Thread compThread = new WebAppParseSupport.InitTldLocationCacheThread(lc);
-            compThread.setContextClassLoader(waContextClassLoader);
-            long start = 0;
-            if (LOG.isLoggable(Level.FINE)) {
-                start = System.currentTimeMillis();
-                LOG.fine("InitTldLocationCacheThread start");
-            }
-            compThread.start();
-
-            try {
-                compThread.join();
-                if (LOG.isLoggable(Level.FINE)) {
-                    long end = System.currentTimeMillis();
-                    LOG.fine("InitTldLocationCacheThread finished in " + (end - start) + " ms");
-                }
-            } catch (InterruptedException e) {
-                LOG.log(Level.INFO, null, e);
-            }
+//            Thread compThread = new WebAppParseSupport.InitTldLocationCacheThread(lc);
+//            compThread.setContextClassLoader(waContextClassLoader);
+//            long start = 0;
+//            if (LOG.isLoggable(Level.FINE)) {
+//                start = System.currentTimeMillis();
+//                LOG.fine("InitTldLocationCacheThread start");
+//            }
+//            compThread.start();
+//
+//            try {
+//                compThread.join();
+//                if (LOG.isLoggable(Level.FINE)) {
+//                    long end = System.currentTimeMillis();
+//                    LOG.fine("InitTldLocationCacheThread finished in " + (end - start) + " ms");
+//                }
+//            } catch (InterruptedException e) {
+//                LOG.log(Level.INFO, null, e);
+//            }
 
             // obtain the current mappings after parsing
             tmpMappings = (Map<String, String[]>) mappingsField.get(lc);
 
             // disk options
-            lc = diskOptions.getTldLocationsCache();
+            lc = editorOptions.getTldScanner();
 
-            mappingsField = TldLocationsCache.class.getDeclaredField("mappings"); //NOI18N
+            mappingsField = TldScanner.class.getDeclaredField("mappings"); //NOI18N
             mappingsField.setAccessible(true);
             // store the same tld cache into disk options as well
             mappingsField.set(lc, tmpMappings);
 
             // update cache
             mappings.clear();
-            mappings.putAll(tmpMappings);
+            if (tmpMappings != null){ //TODO it was never null before the migration to the GF3 jsp parser
+                System.err.println("****** tmpMappings != null");
+                mappings.putAll(tmpMappings);
+            }
             // cache tld files under WEB-INF directory as well
             mappings.putAll(getImplicitLocation());
         } catch (NoSuchFieldException e) {
@@ -1043,31 +1046,31 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
     }
 
-    private static class InitTldLocationCacheThread extends Thread {
-
-        private final TldLocationsCache cache;
-
-        InitTldLocationCacheThread(TldLocationsCache lc) {
-            super("Init TldLocationCache"); // NOI18N
-            cache = lc;
-        }
-
-        @Override
-        public void run() {
-            try {
-                Field initialized = TldLocationsCache.class.getDeclaredField("initialized"); // NOI18N
-                initialized.setAccessible(true);
-                initialized.setBoolean(cache, false);
-                cache.getLocation(""); // NOI18N
-            } catch (JasperException e) {
-                LOG.log(Level.INFO, null, e);
-            } catch (NoSuchFieldException e) {
-                LOG.log(Level.INFO, null, e);
-            } catch (IllegalAccessException e) {
-                LOG.log(Level.INFO, null, e);
-            }
-        }
-    }
+//    private static class InitTldLocationCacheThread extends Thread {
+//
+//        private final TldScanner cache;
+//
+//        InitTldLocationCacheThread(TldScanner lc) {
+//            super("Init TldLocationCache"); // NOI18N
+//            cache = lc;
+//        }
+//
+//        @Override
+//        public void run() {
+//            try {
+//                Field initialized = TldScanner.class.getDeclaredField("initialized"); // NOI18N
+//                initialized.setAccessible(true);
+//                initialized.setBoolean(cache, false);
+//                cache.getLocation(""); // NOI18N
+//            } catch (JasperException e) {
+//                LOG.log(Level.INFO, null, e);
+//            } catch (NoSuchFieldException e) {
+//                LOG.log(Level.INFO, null, e);
+//            } catch (IllegalAccessException e) {
+//                LOG.log(Level.INFO, null, e);
+//            }
+//        }
+//    }
 
     final class FileSystemListener extends FileChangeAdapter {
 

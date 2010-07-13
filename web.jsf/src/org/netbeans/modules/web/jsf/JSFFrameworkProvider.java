@@ -82,6 +82,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
@@ -219,6 +220,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 ServerLibraryDependency.minimalVersion(serverLibrary.getName(),
                                     serverLibrary.getSpecificationVersion(),
                                     serverLibrary.getImplementationVersion()));
+
+                        Preferences prefs = ProjectUtils.getPreferences(prj, ProjectUtils.class, true);
+                        prefs.put(BrokenServerLibrarySupport.OFFER_LIBRARY_DEPLOYMENT, Boolean.TRUE.toString());
                     }
                 }
             }

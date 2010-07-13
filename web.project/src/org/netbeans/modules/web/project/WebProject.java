@@ -55,6 +55,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -934,7 +935,16 @@ public final class WebProject implements Project {
             });
 
             if (BrokenServerLibrarySupport.isBroken(WebProject.this)) {
-                BrokenServerLibrarySupport.showAlert();
+                BrokenServerLibrarySupport.fixOrShowAlert(WebProject.this, new Runnable() {
+                    @Override
+                    public void run() {
+                        WebLogicalViewProvider viewProvider = WebProject.this.getLookup().lookup(
+                                WebLogicalViewProvider.class);
+                        if (viewProvider != null) {
+                            viewProvider.testBroken();
+                        }
+                    }
+                });
             }
             
             // register project's classpaths to GlobalPathRegistry
