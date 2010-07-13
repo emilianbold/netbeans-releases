@@ -50,6 +50,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.ButtonModel;
@@ -71,6 +72,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JCheckBoxMenuItem;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
 import javax.swing.event.ChangeListener;
@@ -83,6 +85,7 @@ import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -101,6 +104,9 @@ import org.openide.util.actions.Presenter;
 
 public class ActionFactory {
 
+    // -J-Dorg.netbeans.editor.ActionFactory.level=FINE
+    private static final Logger LOG = Logger.getLogger(ActionFactory.class.getName());
+    
     private ActionFactory() {
         // no instantiation
     }
@@ -2223,7 +2229,12 @@ public class ActionFactory {
         }
     }
     
-    /** Starts a new line in code. */
+    /** 
+     * Starts a new line in code.
+     * 
+     * @deprecated Please do not subclass this class. Use Typing Hooks instead, for details see
+     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+     */
     public static class StartNewLine extends LocalBaseAction {
         public StartNewLine(){
             super( BaseKit.startNewLineAction, ABBREV_RESET
@@ -2237,40 +2248,112 @@ public class ActionFactory {
                 return;
             }
             
+            final int caretOffset;
+            final int insertionOffset;
+            
+            try {
+                caretOffset = target.getCaretPosition();
+                insertionOffset = Utilities.getRowEnd(target, caretOffset);
+            } catch (BadLocationException ble) {
+                LOG.log(Level.FINE, null, ble);
+                return;
+            }
             
             final BaseDocument doc = (BaseDocument)target.getDocument();
-            final Indent formatter = Indent.get(doc);
-            formatter.lock();
-            doc.runAtomicAsUser (new Runnable () {
-                public void run () {
+            final TypedBreakInterceptorsManager.Transaction transaction = TypedBreakInterceptorsManager.getInstance().openTransaction(
+                    target, caretOffset, insertionOffset);
+
+            try {
+                if (!transaction.beforeInsertion()) {
+                    final Boolean [] result = new Boolean [] { Boolean.FALSE }; //NOI18N
+                    final Indent indenter = Indent.get(doc);
+                    indenter.lock();
                     try {
-                        //target.replaceSelection(""); //NOI18N -fix of issue #52485
-                        Caret caret = target.getCaret();
+                        doc.runAtomicAsUser (new Runnable () {
+                            public void run () {
+                                Object [] r = transaction.textTyped();
+                                String insertionText = r == null ? "\n" : (String) r[0]; //NOI18N
+                                int breakInsertPosition = r == null ? -1 : (Integer) r[1];
+                                int caretPosition = r == null ? -1 : (Integer) r[2];
+                                int [] reindentBlocks = r == null ? null : (int []) r[3];
 
-                        // insert and remove '-' to remember caret
-                        // position
-                        int dotpos = caret.getDot();
-                        doc.insertString(dotpos,"-",null); //NOI18N
-                        doc.remove(dotpos,1);
-
-                        // insert new line, caret moves to the new line
-                        int eolDot = Utilities.getRowEnd(target, caret.getDot());
-                        doc.insertString(eolDot, "\n", null); //NOI18N
-
-                        // reindent the new line
-                        Position newDotPos = doc.createPosition(eolDot + 1);
-                        formatter.reindent(eolDot + 1);
-                        
-                        caret.setDot(newDotPos.getOffset());
-                    } catch (BadLocationException ex) {
-                        ex.printStackTrace();
-                    } finally{
-                        formatter.unlock();
+                                try {
+                                    performLineBreakInsertion(target, insertionOffset, insertionText, breakInsertPosition, caretPosition, reindentBlocks, indenter);
+                                    result[0] = Boolean.TRUE;
+                                } catch (BadLocationException ble) {
+                                    LOG.log(Level.FINE, null, ble);
+                                    target.getToolkit().beep();
+                                }
+                            }
+                        });
+                    } finally {
+                        indenter.unlock();
                     }
+
+                    if (result[0].booleanValue()) {
+                        transaction.afterInsertion();
+                    } // else line-break insertion failed
+
                 }
-            });
+            } finally {
+                transaction.close();
+            }
         }
-    }
+        
+        // --------------------------------------------------------------------
+        // Private implementation
+        // --------------------------------------------------------------------
+
+        private void performLineBreakInsertion(
+                JTextComponent target, 
+                int insertionOffset, 
+                String insertionText, 
+                int breakInsertPosition, 
+                int caretPosition, 
+                int [] reindentBlocks,
+                Indent indenter) throws BadLocationException
+        {
+            BaseDocument doc = (BaseDocument) target.getDocument();
+            DocumentUtilities.setTypingModification(doc, true);
+            try {
+                //target.replaceSelection(""); //NOI18N -fix of issue #52485
+                Caret caret = target.getCaret();
+
+                // XXX: WTF is this?
+                // insert and remove '-' to remember caret
+                // position
+                int dotPos = caret.getDot();
+                doc.insertString(dotPos, "-", null); //NOI18N
+                doc.remove(dotPos, 1);
+
+                // insert new line, caret moves to the new line
+//                int eolDot = Utilities.getRowEnd(target, caret.getDot());
+//                doc.insertString(eolDot, "\n", null); //NOI18N
+                doc.insertString(insertionOffset, insertionText, null);
+                dotPos = insertionOffset;
+                dotPos += caretPosition != -1 ? caretPosition :
+                          breakInsertPosition != -1 ? breakInsertPosition + 1 :
+                          insertionText.indexOf('\n') + 1; //NOI18N
+
+                // reindent the new line
+                Position newDotPos = doc.createPosition(dotPos);
+                if (reindentBlocks != null && reindentBlocks.length > 0) {
+                    for(int i = 0; i < reindentBlocks.length / 2; i++) {
+                        int startOffset = insertionOffset + reindentBlocks[2 * i];
+                        int endOffset = insertionOffset + reindentBlocks[2 * i + 1];
+                        indenter.reindent(startOffset, endOffset);
+                    }
+                } else {
+                    indenter.reindent(dotPos);
+                }
+
+                caret.setDot(newDotPos.getOffset());
+            } finally {
+                DocumentUtilities.setTypingModification(doc, false);
+            }
+        }
+        
+    } // End of StartNewLine class
     
     /**
      * Cut text from the caret position to either begining or end

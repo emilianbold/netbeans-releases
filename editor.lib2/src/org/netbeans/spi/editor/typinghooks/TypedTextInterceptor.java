@@ -196,7 +196,7 @@ public interface TypedTextInterceptor {
 
         /**
          * Gets the editor component where the currently processed key typed event
-         * occured.
+         * occurred.
          *
          * @return The editor pane that contains the edited <code>Document</code>.
          */
@@ -309,7 +309,7 @@ public interface TypedTextInterceptor {
         private String insertionText = null;
         private int caretPosition = -1;
         
-        /* package */ MutableContext(JTextComponent c, int offset, String typedText) {
+        private MutableContext(JTextComponent c, int offset, String typedText) {
             super(c, offset, typedText);
         }
 
@@ -338,6 +338,20 @@ public interface TypedTextInterceptor {
                 return new DeletedTextInterceptor.Context(c, offset, removedText, backwardDelete);
             }
             
+            @Override
+            public TypedBreakInterceptor.MutableContext createTbiContext(JTextComponent c, int caretOffset, int insertBreakOffset) {
+                return new TypedBreakInterceptor.MutableContext(c, caretOffset, insertBreakOffset);
+            }
+            
+            @Override
+            public Object [] getTbiContextData(TypedBreakInterceptor.MutableContext context) {
+                return context.getData();
+            }
+            
+            @Override
+            public void resetTbiContextData(TypedBreakInterceptor.MutableContext context) {
+                context.resetData();
+            }
         } // End of Accessor class
 
         static {

@@ -91,6 +91,7 @@ import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib2.typinghooks.DeletedTextInterceptorsManager;
+import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedTextInterceptorsManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
@@ -1246,6 +1247,10 @@ public class BaseKit extends DefaultEditorKit {
         }
     } // End of DefaultKeyTypedAction class
 
+    /** 
+     * @deprecated Please do not subclass this class. Use Typing Hooks instead, for details see
+     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+     */
     public static class InsertBreakAction extends LocalBaseAction {
 
         static final long serialVersionUID =7966576342334158659L;
@@ -1262,59 +1267,138 @@ public class BaseKit extends DefaultEditorKit {
                 }
 
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                final Indent formatter = Indent.get(doc);
-                formatter.lock();
+                final int insertionOffset = computeInsertionOffset(target.getCaret());
+                final TypedBreakInterceptorsManager.Transaction transaction = TypedBreakInterceptorsManager.getInstance().openTransaction(
+                        target, insertionOffset, insertionOffset);
+                
                 try {
-                    doc.runAtomicAsUser (new Runnable () {
-                        public void run () {
-                            DocumentUtilities.setTypingModification(doc, true);
-                            try {
-                                target.replaceSelection(""); // NOI18N
-                                Caret caret = target.getCaret();
-                                Object cookie = beforeBreak(target, doc, caret);
+                    if (!transaction.beforeInsertion()) {
+                        final Boolean [] result = new Boolean [] { Boolean.FALSE }; //NOI18N
+                        final Indent indenter = Indent.get(doc);
+                        indenter.lock();
+                        try {
+                            doc.runAtomicAsUser (new Runnable () {
+                                public void run () {
+                                    Object [] r = transaction.textTyped();
+                                    String insertionText = r == null ? "\n" : (String) r[0]; //NOI18N
+                                    int breakInsertPosition = r == null ? -1 : (Integer) r[1];
+                                    int caretPosition = r == null ? -1 : (Integer) r[2];
+                                    int [] reindentBlocks = r == null ? null : (int []) r[3];
 
-                                // insert new line, caret moves to the new line
-                                int dotPos = caret.getDot();
-                                doc.insertString(dotPos, "\n", null); //NOI18N
-                                dotPos++;
-
-                                // reindent the new line
-                                Position newDotPos = doc.createPosition(dotPos);
-                                formatter.reindent(dotPos);
-
-                                // adjust the caret
-                                caret.setDot(newDotPos.getOffset());
-
-                                afterBreak(target, doc, caret, cookie);
-                            } catch (BadLocationException ble) {
-                                LOG.log(Level.WARNING, null, ble);
-                            } finally {
-                                DocumentUtilities.setTypingModification(doc, false);
-                            }
+                                    try {
+                                        performLineBreakInsertion(target, insertionOffset, insertionText, breakInsertPosition, caretPosition, reindentBlocks, indenter);
+                                        result[0] = Boolean.TRUE;
+                                    } catch (BadLocationException ble) {
+                                        LOG.log(Level.FINE, null, ble);
+                                        target.getToolkit().beep();
+                                    }
+                                }
+                            });
+                        } finally {
+                            indenter.unlock();
                         }
-                    });
+                        
+                        if (result[0].booleanValue()) {
+                            transaction.afterInsertion();
+                        } // else line-break insertion failed
+                        
+                    }
                 } finally {
-                    formatter.unlock();
+                    transaction.close();
                 }
+                
             }
         }
 
-      /**
-       * Hook called before any changes to the document. The value
-       * returned is passed intact to the other hook.
-       */
-      protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) { 
-	return null;
-      }
+        // --------------------------------------------------------------------
+        // SPI
+        // --------------------------------------------------------------------
 
-      /**
-       * Hook called after the enter was inserted and cursor
-       * repositioned. *data* is the object returned previously by
-       * *beforeBreak* hook. By default null.
-       */
-      protected void afterBreak(JTextComponent target, BaseDocument doc, Caret caret, Object data) {
-      }
-    }
+        /**
+         * Hook called before any changes to the document. The value
+         * returned is passed intact to the other hook.
+         * 
+         * @deprecated Please use Typing Hooks instead, for details see
+         *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+         */
+        protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
+            return null;
+        }
+
+        /**
+         * Hook called after the enter was inserted and cursor
+         * repositioned.
+         *
+         * @param data the object returned from previously called 
+         * {@link #beforeBreak(javax.swing.text.JTextComponent, org.netbeans.editor.BaseDocument, javax.swing.text.Caret)} hook.
+         * By default <code>null</code>.
+         * 
+         * @deprecated Please use Typing Hooks instead, for details see
+         *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+         */
+        protected void afterBreak(JTextComponent target, BaseDocument doc, Caret caret, Object data) {
+        }
+        
+        // --------------------------------------------------------------------
+        // Private implementation
+        // --------------------------------------------------------------------
+
+        private void performLineBreakInsertion(
+                JTextComponent target, 
+                int insertionOffset, 
+                String insertionText, 
+                int breakInsertPosition, 
+                int caretPosition, 
+                int [] reindentBlocks,
+                Indent indenter) throws BadLocationException
+        {
+            BaseDocument doc = (BaseDocument) target.getDocument();
+            DocumentUtilities.setTypingModification(doc, true);
+            try {
+                target.replaceSelection(""); // NOI18N
+                Caret caret = target.getCaret();
+                Object cookie = beforeBreak(target, doc, caret);
+
+                // insert new line, caret moves to the new line
+                int dotPos = caret.getDot();
+                assert dotPos == insertionOffset : "dotPos=" + dotPos + " != " + "insertionOffset=" + insertionOffset; //NOI18N
+//                doc.insertString(dotPos, "\n", null); //NOI18N
+//                dotPos++;
+                doc.insertString(dotPos, insertionText, null);
+                dotPos += caretPosition != -1 ? caretPosition :
+                          breakInsertPosition != -1 ? breakInsertPosition + 1 :
+                          insertionText.indexOf('\n') + 1; //NOI18N
+
+                // reindent the new line
+                Position newDotPos = doc.createPosition(dotPos);
+                if (reindentBlocks != null && reindentBlocks.length > 0) {
+                    for(int i = 0; i < reindentBlocks.length / 2; i++) {
+                        int startOffset = insertionOffset + reindentBlocks[2 * i];
+                        int endOffset = insertionOffset + reindentBlocks[2 * i + 1];
+                        indenter.reindent(startOffset, endOffset);
+                    }
+                } else {
+                    indenter.reindent(dotPos);
+                }
+
+                // adjust the caret
+                caret.setDot(newDotPos.getOffset());
+
+                afterBreak(target, doc, caret, cookie);
+            } finally {
+                DocumentUtilities.setTypingModification(doc, false);
+            }
+        }
+        
+        private int computeInsertionOffset(Caret caret) {
+            if (Utilities.isSelectionShowing(caret)) {
+                return Math.min(caret.getMark(), caret.getDot());
+            } else {
+                return caret.getDot();
+            }
+        }
+        
+    } // End of InsertBreakAction class
 
     public static class SplitLineAction extends LocalBaseAction {
 

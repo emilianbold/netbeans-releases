@@ -41,6 +41,7 @@ package org.netbeans.modules.editor.lib2.typinghooks;
 
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
+import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
 import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 
 /**
@@ -77,4 +78,8 @@ public abstract class TypingHooksSpiAccessor {
     public abstract void resetTtiContextData(TypedTextInterceptor.MutableContext context);
     
     public abstract DeletedTextInterceptor.Context createDtiContext(JTextComponent c, int offset, String removedText, boolean backwardDelete);
+    
+    public abstract TypedBreakInterceptor.MutableContext createTbiContext(JTextComponent c, int caretOffset, int insertBreakOffset);
+    public abstract Object [] getTbiContextData(TypedBreakInterceptor.MutableContext context);
+    public abstract void resetTbiContextData(TypedBreakInterceptor.MutableContext context);
 }
