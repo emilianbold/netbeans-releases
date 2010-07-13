@@ -49,9 +49,11 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -74,6 +76,8 @@ import org.openide.util.RequestProcessor;
  * removed.
  */
 public final class BrokenServerLibrarySupport {
+
+    public static String OFFER_LIBRARY_DEPLOYMENT = "offerLibraryDeployment";
 
     private static final Logger LOGGER = Logger.getLogger(BrokenServerLibrarySupport.class.getName());
 
@@ -106,6 +110,7 @@ public final class BrokenServerLibrarySupport {
                     fixServerLibraries(project, post);
                 }
             });
+            return;
         }
 
         String title = NbBundle.getMessage(BrokenServerLibrarySupport.class, "LBL_Resolve_Broken_Server_Library_Title");
@@ -132,7 +137,9 @@ public final class BrokenServerLibrarySupport {
                     } catch(InstanceRemovedException ex) {
                         LOGGER.log(Level.FINE, null, ex);
                     } finally {
-                        post.run();
+                        if (post != null) {
+                            post.run();
+                        }
                     }
                 }
 
@@ -189,6 +196,18 @@ public final class BrokenServerLibrarySupport {
         }
     }
 
+    public static synchronized void fixOrShowAlert(Project project, Runnable postFix) {
+        Preferences prefs = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+        boolean offerLibraryDeployment = prefs.getBoolean(
+                BrokenServerLibrarySupport.OFFER_LIBRARY_DEPLOYMENT, false);
+        if (offerLibraryDeployment) {
+            prefs.remove(BrokenServerLibrarySupport.OFFER_LIBRARY_DEPLOYMENT);
+            fixServerLibraries(project, postFix);
+        } else {
+            showAlert();
+        }
+    }
+
     /**
      * Show alert message box informing user that a project has missing
      * server. This method can be safely called from any thread, e.g. during
@@ -196,7 +215,7 @@ public final class BrokenServerLibrarySupport {
      * once for several subsequent calls during a timeout.
      * The alert box has also "show this warning again" check box.
      */
-    public static synchronized void showAlert() {
+    private static void showAlert() {
         // Do not show alert if it is already shown or if it was shown
         // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
         if (brokenAlertShown
