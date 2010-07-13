@@ -322,6 +322,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        tableActionsPopup = new javax.swing.JPopupMenu();
         specifyNamesLabel = new javax.swing.JLabel();
         classNamesLabel = new javax.swing.JLabel();
         classNamesScrollPane = new javax.swing.JScrollPane();
@@ -335,6 +336,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         generateFinderMethodsCheckBox = new javax.swing.JCheckBox();
         cmpFieldsInInterfaceCheckBox = new javax.swing.JCheckBox();
         spacerPanel = new javax.swing.JPanel();
+        tableActionsButton = new javax.swing.JButton();
         createPUWarningLabel = new ShyLabel();
         createPUCheckbox = new javax.swing.JCheckBox();
 
@@ -370,15 +372,31 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(cmpFieldsInInterfaceCheckBox, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "TXT_AddFieldsToInterface")); // NOI18N
         cmpFieldsInInterfaceCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
+        spacerPanel.setPreferredSize(new java.awt.Dimension(377, 24));
+
+        org.openide.awt.Mnemonics.setLocalizedText(tableActionsButton, "...");
+        tableActionsButton.setMaximumSize(new java.awt.Dimension(24, 24));
+        tableActionsButton.setMinimumSize(new java.awt.Dimension(24, 24));
+        tableActionsButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        tableActionsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tableActionsButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout spacerPanelLayout = new org.jdesktop.layout.GroupLayout(spacerPanel);
         spacerPanel.setLayout(spacerPanelLayout);
         spacerPanelLayout.setHorizontalGroup(
             spacerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 383, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, spacerPanelLayout.createSequentialGroup()
+                .addContainerGap(353, Short.MAX_VALUE)
+                .add(tableActionsButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         spacerPanelLayout.setVerticalGroup(
             spacerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 9, Short.MAX_VALUE)
+            .add(spacerPanelLayout.createSequentialGroup()
+                .add(tableActionsButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(createPUWarningLabel, "  ");
@@ -405,20 +423,20 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                     .add(projectLabel)
                     .add(locationLabel)
                     .add(packageLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(spacerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(packageComboBox, 0, 383, Short.MAX_VALUE)
-                    .add(locationComboBox, 0, 383, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)))
+                    .add(packageComboBox, 0, 377, Short.MAX_VALUE)
+                    .add(locationComboBox, 0, 377, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)))
             .add(cmpFieldsInInterfaceCheckBox)
             .add(generateFinderMethodsCheckBox)
             .add(layout.createSequentialGroup()
                 .add(createPUCheckbox)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
-                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -428,9 +446,9 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .add(11, 11, 11)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(classNamesLabel)
-                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE))
+                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(spacerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(spacerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(projectTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -466,6 +484,10 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         updatePersistenceUnitButton(false);
     }//GEN-LAST:event_createPUCheckboxItemStateChanged
 
+    private void tableActionsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tableActionsButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tableActionsButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel classNamesLabel;
     private javax.swing.JScrollPane classNamesScrollPane;
@@ -482,6 +504,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
     private javax.swing.JTextField projectTextField;
     private javax.swing.JPanel spacerPanel;
     private javax.swing.JLabel specifyNamesLabel;
+    private javax.swing.JButton tableActionsButton;
+    private javax.swing.JPopupMenu tableActionsPopup;
     // End of variables declaration//GEN-END:variables
 
     public static final class WizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
