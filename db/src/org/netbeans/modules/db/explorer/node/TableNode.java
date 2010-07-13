@@ -113,6 +113,10 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
                     new Action<Metadata>() {
                         public void run(Metadata metaData) {
                             Table table = tableHandle.resolve(metaData);
+                            if (table == null) {
+                                Logger.getLogger(TableNode.class.getName()).log(Level.INFO, "Cannot get table name for " + tableHandle);
+                                return ;
+                            }
                             name = table.getName();
 
                             updateProperties(table);
