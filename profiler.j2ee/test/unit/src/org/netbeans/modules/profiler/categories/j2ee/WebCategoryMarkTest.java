@@ -229,7 +229,6 @@ public class WebCategoryMarkTest extends CategoryMarkTestBase {
                 "getMoreResults", "()Z");
         builder.methodEntry( 6 , 0, 3, 0, 0);
         statementsIds.add( 6 );
-        statementsIds.add(6);
         
         builder.methodExit( 6 , 0, 3, 0, 0);
         
@@ -296,7 +295,7 @@ public class WebCategoryMarkTest extends CategoryMarkTestBase {
                 "method", "()V");
         
         builder.methodEntry( 15 , 0, 1, 0, 0);
-        jpaIds.add(15);
+        plainIds.add(15);
         
         status.updateInstrMethodsInfo("listeners.TestHttpSessionListener", 0, 
                 "sessionCreated", "(Ljavax/servlet/http/HttpSessionEvent;)V");
@@ -507,15 +506,62 @@ public class WebCategoryMarkTest extends CategoryMarkTestBase {
             }
         }
         if ( !hibernateIds.isEmpty()){
-            fail( hibernateIds, status);
+            fail( hibernateIds, status, hibernate.getLabel());
+        }
+        if ( !connectionIds.isEmpty()){
+            fail( connectionIds, status, connection.getLabel());
+        }
+        if ( !statementsIds.isEmpty()){
+            fail( statementsIds, status, statements.getLabel());
+        }
+        if ( !jpaIds.isEmpty()){
+            fail( jpaIds, status, jpa.getLabel());
+        }
+        if ( !filtersLifecycleIds.isEmpty()){
+            fail( filtersLifecycleIds, status, "Filters/Life Cycle");
+        }
+        if ( !filtersIds.isEmpty()){
+            fail( filtersIds, status, filters.getLabel());
+        }
+        if ( !jstlIds.isEmpty()){
+            fail( jstlIds, status, jstl.getLabel());
+        }
+        if ( !listenersIds.isEmpty()){
+            fail( listenersIds, status, listeners.getLabel());
+        }
+        if ( !servletsLifecycleIds.isEmpty()){
+            fail( servletsLifecycleIds, status, "Servlets/Life Cycle");
+        }
+        if ( !servletsIds.isEmpty()){
+            fail( servletsIds, status, servlets.getLabel());
+        }
+        if ( !jspsIds.isEmpty()){
+            fail( jspsIds, status, jsps.getLabel());
+        }
+        if ( !codecIds.isEmpty()){
+            fail( codecIds, status, codec.getLabel());
+        }
+        if ( !endpointInvocationIds.isEmpty()){
+            fail( endpointInvocationIds, status, endpointInvocation.getLabel());
+        }
+        if ( !httpTransportIds.isEmpty()){
+            fail( httpTransportIds, status, httpTransport.getLabel());
+        }
+        if ( !messageProcessingIds.isEmpty()){
+            fail( messageProcessingIds, status, messageProcessing.getLabel());
+        }
+        if ( !streamingIds.isEmpty()){
+            fail( streamingIds, status, streaming.getLabel());
         }
     }
     
-    private void fail(Set<Integer> set, ProfilingSessionStatus status){
+    private void fail(Set<Integer> set, ProfilingSessionStatus status,
+            String categoryName )
+    {
         int id = set.iterator().next();
         assertTrue( "There is a method  '"+status.getInstrMethodClasses()[id]+"."+
                 status.getInstrMethodNames()[id]+
-                "' which is not marked", false);
+                "' which is not marked. It should be in "+categoryName, false);
     }
             
     private void check(ProfilingSessionStatus status,  int id, 
@@ -535,7 +581,7 @@ public class WebCategoryMarkTest extends CategoryMarkTestBase {
     
     @Override
     protected String getProjectName() {
-        return "WebApp";
+        return BaseMarkTest.APP_NAME;
     }
 
 }

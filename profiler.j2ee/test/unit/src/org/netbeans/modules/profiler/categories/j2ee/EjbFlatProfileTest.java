@@ -42,26 +42,29 @@
  */
 package org.netbeans.modules.profiler.categories.j2ee;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.netbeans.lib.profiler.ProfilerClient;
 import org.netbeans.lib.profiler.ProfilerEngineSettings;
 import org.netbeans.lib.profiler.global.ProfilingSessionStatus;
-import org.netbeans.lib.profiler.marker.Mark;
+import org.netbeans.lib.profiler.results.cpu.FlatProfileBuilder;
+import org.netbeans.lib.profiler.results.cpu.FlatProfileContainer;
+import org.netbeans.lib.profiler.results.cpu.cct.CCTResultsFilter;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.SimpleCPUCCTNode;
 import org.netbeans.modules.profiler.categories.Category;
+import org.netbeans.modules.profiler.ui.stats.drilldown.DrillDown;
+import org.openide.util.Lookup;
 
 
 /**
  * @author ads
  *
  */
-public class EjbCategoryMarkTest extends CategoryMarkTestBase {
+public class EjbFlatProfileTest extends FlatProfileTestBase {
 
-    public EjbCategoryMarkTest( String name ) {
+    public EjbFlatProfileTest( String name ) {
         super(name);
     }
     
@@ -72,16 +75,30 @@ public class EjbCategoryMarkTest extends CategoryMarkTestBase {
         ProfilerEngineSettings settings = new ProfilerEngineSettings();
         ProfilingSessionStatus status = new ProfilingSessionStatus();
         ProfilerClient client = new ProfilerClient(settings, status , null, null); 
+        
+        CCTResultsFilter filter = Lookup.getDefault().lookup(CCTResultsFilter.class);
+
+        if (filter != null) {
+            filter.reset(); 
+        }
+
+        FlatProfileBuilder flatProfileBuilder = Lookup.getDefault().lookup(
+                FlatProfileBuilder.class);
+        flatProfileBuilder.setContext(client, null, filter);
+        
+        flatProfileBuilder.cctReset();
+        
+        CCTResultsFilter.EvaluatorProvider factory = new TestDrillDownFactory(client);
+        
+        filter.setEvaluators(Collections.singleton( factory ));
+        
         builder.startup( client );
         
-        Set<Integer> markedIds = new HashSet<Integer>();
-        Set<Integer> plainIds = new HashSet<Integer>();
+        List<Integer> markedIds = new LinkedList<Integer>() ;
         
         builder.newThread( 0 , "main", "java.lang.Thread");
-        plainIds.add(0);
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
         builder.methodEntry( 1 , 0, 2, 0, 0);
-        plainIds.add(1);
         
         status.updateInstrMethodsInfo("pack.NewMessageBean", 0,
                 "onMessage", "(Ljavax/jms/Message;)V");
@@ -94,7 +111,6 @@ public class EjbCategoryMarkTest extends CategoryMarkTestBase {
                 "method", "()V");
 
         builder.methodEntry( 3 , 0, 1, 0, 0);
-        plainIds.add(3);
         
         status.updateInstrMethodsInfo("pack.NewSessionBean", 0,
                 "businessMethod", "()V");
@@ -129,48 +145,69 @@ public class EjbCategoryMarkTest extends CategoryMarkTestBase {
                 "method", "()V");
 
         builder.methodEntry( 8 , 1, 1, 0, 0);
-        plainIds.add(8);
         
-        status.updateInstrMethodsInfo("pack.NewMessageBean", 0,
-                "ejbRemove", "()V");
-        
-        builder.methodEntry( 9 , 1, 3, 0, 0);
-        markedIds.add(9);
         
         SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
 
-        Map<Integer, Mark> methodMarks = getMethodMarks(root );
         Category ejbContainer = getCategory("Enterprise Beans");
         Category lifeCycle = findCategory(ejbContainer, "Lifecycle");
-        Mark lifecycleMark = lifeCycle.getAssignedMark();
 
-        checkMarks(status, markedIds, plainIds, methodMarks, lifecycleMark, lifeCycle);
+        DrillDown drillDown = (DrillDown)factory.getEvaluators().iterator().next();
+
+        drillDown.drilldown( ejbContainer.getId());
+        
+        flatProfileBuilder.cctEstablished( root , false );
+        FlatProfileContainer flatProfile = flatProfileBuilder.createFlatProfile();
+
+        assertEquals(markedIds.size()+" methods expected in Enterprise Beans category",
+                markedIds.size() ,  flatProfile.getNRows());
+        
+        drillDown.drilldown( lifeCycle.getId());
+        
+        flatProfileBuilder.cctEstablished( root , false );
+        flatProfile = flatProfileBuilder.createFlatProfile();
+
+        assertEquals(markedIds.size()+" methods expected in Lifecycle category",
+                markedIds.size() ,  flatProfile.getNRows());
+        checkCategory(status, flatProfile, "Lifecycle", markedIds);
     }
     
     public void testPersistence(){
-        
         resetMarkMappings();
         
         TestGraphBuilder builder = new TestGraphBuilder();
         ProfilerEngineSettings settings = new ProfilerEngineSettings();
         ProfilingSessionStatus status = new ProfilingSessionStatus();
         ProfilerClient client = new ProfilerClient(settings, status , null, null); 
+        
+        CCTResultsFilter filter = Lookup.getDefault().lookup(CCTResultsFilter.class);
+
+        if (filter != null) {
+            filter.reset(); 
+        }
+
+        FlatProfileBuilder flatProfileBuilder = Lookup.getDefault().lookup(
+                FlatProfileBuilder.class);
+        flatProfileBuilder.setContext(client, null, filter);
+        
+        flatProfileBuilder.cctReset();
+        
+        CCTResultsFilter.EvaluatorProvider factory = new TestDrillDownFactory(client);
+        
+        filter.setEvaluators(Collections.singleton( factory ));
+        
         builder.startup( client );
         
-        Set<Integer> markedIds = new HashSet<Integer>();
-        Set<Integer> plainIds = new HashSet<Integer>();
+        List<Integer> markedIds = new LinkedList<Integer>() ;
         
         builder.newThread( 0 , "main", "java.lang.Thread");
-        plainIds.add(0);
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
         builder.methodEntry( 1 , 0, 2, 0, 0);
-        plainIds.add(1);
         
         status.updateInstrMethodsInfo("pack.CustomClass", 0,
                 "method", "()V");
 
         builder.methodEntry( 2 , 0, 1, 0, 0);
-        plainIds.add(2);
         
         status.updateInstrMethodsInfo("pack.StatefulBean", 0,
                 "ejbStore", "()V");
@@ -208,12 +245,27 @@ public class EjbCategoryMarkTest extends CategoryMarkTestBase {
         
         SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
 
-        Map<Integer, Mark> methodMarks = getMethodMarks(root );
         Category ejbContainer = getCategory("Enterprise Beans");
         Category persistence = findCategory(ejbContainer, "Persistence");
-        Mark persistenceMark = persistence.getAssignedMark();
 
-        checkMarks(status, markedIds, plainIds, methodMarks, persistenceMark, persistence);
+        DrillDown drillDown = (DrillDown)factory.getEvaluators().iterator().next();
+
+        drillDown.drilldown( ejbContainer.getId());
+        
+        flatProfileBuilder.cctEstablished( root , false );
+        FlatProfileContainer flatProfile = flatProfileBuilder.createFlatProfile();
+
+        assertEquals(markedIds.size()+" methods expected in Enterprise Beans category",
+                markedIds.size() ,  flatProfile.getNRows());
+        checkCategory(status, flatProfile, "Enterprise Beans", markedIds);
+        
+        drillDown.drilldown( persistence.getId());
+        
+        flatProfileBuilder.cctEstablished( root , false );
+
+        assertEquals(markedIds.size()+" methods expected in Persistence category",
+                markedIds.size() ,  flatProfile.getNRows());
+        checkCategory(status, flatProfile, "Persistence", markedIds);
     }
     
     public void testEjbContainer(){
@@ -223,16 +275,30 @@ public class EjbCategoryMarkTest extends CategoryMarkTestBase {
         ProfilerEngineSettings settings = new ProfilerEngineSettings();
         ProfilingSessionStatus status = new ProfilingSessionStatus();
         ProfilerClient client = new ProfilerClient(settings, status , null, null); 
+        
+        CCTResultsFilter filter = Lookup.getDefault().lookup(CCTResultsFilter.class);
+
+        if (filter != null) {
+            filter.reset(); 
+        }
+
+        FlatProfileBuilder flatProfileBuilder = Lookup.getDefault().lookup(
+                FlatProfileBuilder.class);
+        flatProfileBuilder.setContext(client, null, filter);
+        
+        flatProfileBuilder.cctReset();
+        
+        CCTResultsFilter.EvaluatorProvider factory = new TestDrillDownFactory(client);
+        
+        filter.setEvaluators(Collections.singleton( factory ));
+        
         builder.startup( client );
         
-        Set<Integer> markedIds = new HashSet<Integer>();
-        Set<Integer> plainIds = new HashSet<Integer>();
+        List<Integer> markedIds = new LinkedList<Integer>() ;
         
         builder.newThread( 0 , "main", "java.lang.Thread");
-        plainIds.add(0);
         status.updateInstrMethodsInfo("Main", 0, "main", "([Ljava/lang/String;)V");
         builder.methodEntry( 1 , 0, 2, 0, 0);
-        plainIds.add(1);
         
         status.updateInstrMethodsInfo("pack.NewMessageBean", 0,
                 "wait", "()V");
@@ -246,7 +312,6 @@ public class EjbCategoryMarkTest extends CategoryMarkTestBase {
                 "method", "()V");
 
         builder.methodEntry( 3 , 0, 1, 0, 0);
-        plainIds.add(3);
         
         status.updateInstrMethodsInfo("pack.NewMessageBean", 0,
                 "notify", "()V");
@@ -266,7 +331,6 @@ public class EjbCategoryMarkTest extends CategoryMarkTestBase {
                 "method", "()V");
 
         builder.methodEntry( 6 , 1, 2, 0, 0);
-        plainIds.add(6);
         
         status.updateInstrMethodsInfo("pack.StatefulBean", 0,
                 "method", "()V");
@@ -283,67 +347,24 @@ public class EjbCategoryMarkTest extends CategoryMarkTestBase {
         
         SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
 
-        Map<Integer, Mark> methodMarks = getMethodMarks(root );
         Category ejbContainer = getCategory("Enterprise Beans");
 
-        checkMarks(status, markedIds, plainIds, methodMarks, 
-                ejbContainer.getAssignedMark(), ejbContainer);
+        DrillDown drillDown = (DrillDown)factory.getEvaluators().iterator().next();
+
+        drillDown.drilldown( ejbContainer.getId());
+        
+        flatProfileBuilder.cctEstablished( root , false );
+        FlatProfileContainer flatProfile = flatProfileBuilder.createFlatProfile();
+
+        assertEquals(markedIds.size()+" methods expected in Enterprise Beans category",
+                markedIds.size() ,  flatProfile.getNRows());
+        checkCategory(status, flatProfile, "Enterprise Beans", markedIds);
+        
     }
     
-    /*
-     * This test performs checks of presence Persistence category with all 
-     * its subcategories for EjbProject type.
-     * Correctness of marks is not checked because Web Project has Persistence
-     * category also and it was completely checked for it.
-     * No need to duplicate these checks for Ejb project.
-     * One just need to be sure that all required categories present.  
-     */
-    public void testCategoriesPresence(){
-        Category root = getCategorization().getRoot();
-        boolean persistence = false;
-        boolean hibernate = false;
-        boolean jdbc = false;
-        boolean statements = false;
-        boolean jpa = false;
-        boolean connection = false;
-        
-        Stack<Category> stack = new Stack<Category>();
-        stack.push( root);
-        while ( !stack.isEmpty() ){
-            Category current = stack.pop();
-            String label = current.getLabel();
-            if ( label.equals("Hibernate")){
-                hibernate = true;
-            }
-            else if ( label.equals("JDBC")){
-                jdbc = true;
-            }
-            else if (label.equals("Persistence")){
-                persistence = true;
-            }
-            else if (label.equals("Connection")){
-                connection = true;
-            }
-            else if (label.equals("JPA")){ 
-                jpa = true;
-            }
-            else if (label.equals("Statements")){
-                statements = true;
-            }
-            for (Category category : current.getSubcategories()) {
-                stack.push(category);
-            }
-        }
-        assertTrue(persistence);
-        assertTrue(hibernate);
-        assertTrue(jdbc);
-        assertTrue(connection);
-        assertTrue(jpa);
-        assertTrue(statements);
-    }
-
     @Override
     protected String getProjectName() {
         return EjbMarkTest.APP_NAME;
     }
+
 }
