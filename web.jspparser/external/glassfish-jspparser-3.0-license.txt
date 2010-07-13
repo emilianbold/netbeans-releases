@@ -4,7 +4,7 @@ OSR: 4101
 Description: GlassFish JSP Parser
 Origin: https://glassfish.dev.java.net/
 Source: https://glassfish.dev.java.net/
-Version: 2.0
+Version: 3.0
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 
