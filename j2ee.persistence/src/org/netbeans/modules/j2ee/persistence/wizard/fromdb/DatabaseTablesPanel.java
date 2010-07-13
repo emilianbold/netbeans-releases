@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
@@ -53,6 +54,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -563,6 +567,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         addAllButton = new javax.swing.JButton();
         removeAllButton = new javax.swing.JButton();
         tableClosureCheckBox = new javax.swing.JCheckBox();
+        addAllTypeCombo = new javax.swing.JComboBox();
         tableErrorScroll = new javax.swing.JScrollPane();
         tableError = new javax.swing.JTextPane();
 
@@ -618,6 +623,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         tablesPanel.add(availableTablesScrollPane, gridBagConstraints);
@@ -677,7 +683,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(17, 0, 0, 0);
         buttonPanel.add(addAllButton, gridBagConstraints);
@@ -690,7 +696,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         buttonPanel.add(removeAllButton, gridBagConstraints);
@@ -715,9 +721,22 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 4, 0);
         tablesPanel.add(tableClosureCheckBox, gridBagConstraints);
+
+        addAllTypeCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Any", "New Only", "Update Only" }));
+        addAllTypeCombo.setEditor(null);
+        addAllTypeCombo.setRenderer(new ItemListCellRenderer());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 4, 0);
+        tablesPanel.add(addAllTypeCombo, gridBagConstraints);
+        addAllTypeCombo.getAccessibleContext().setAccessibleName("Tables filter");
+        addAllTypeCombo.getAccessibleContext().setAccessibleDescription("Tables filter");
 
         tableErrorScroll.setBorder(null);
 
@@ -818,6 +837,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addAllButton;
+    private javax.swing.JComboBox addAllTypeCombo;
     private javax.swing.JButton addButton;
     private javax.swing.JLabel availableTablesLabel;
     private javax.swing.JList availableTablesList;
@@ -856,6 +876,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
                 availableBounds.width = equalWidth;
                 availableTablesScrollPane.setBounds(availableBounds);
+
+                Rectangle addAllCmbRec = addAllTypeCombo.getBounds();
+                if((addAllCmbRec.x+addAllCmbRec.width)!=(availableBounds.x+availableBounds.width)){
+                    addAllCmbRec.x=(availableBounds.x+availableBounds.width)-addAllCmbRec.width;
+                    addAllTypeCombo.setBounds(addAllCmbRec);
+                }
 
                 Rectangle buttonBounds = buttonPanel.getBounds();
                 buttonBounds.x += xOffset;
@@ -1029,6 +1055,17 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         private void setWarningMessage(String warningMessage) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warningMessage);
+        }
+    }
+    private class ItemListCellRenderer extends DefaultListCellRenderer {
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+
+            Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            JLabel label = (JLabel)component;
+
+                label.setText(value.toString());
+             return label;
         }
     }
 }
