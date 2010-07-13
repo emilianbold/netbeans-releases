@@ -53,7 +53,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
@@ -70,7 +69,6 @@ import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.support.ui.AuthenticationSettingsPanel;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -79,8 +77,6 @@ import org.openide.util.RequestProcessor;
 public final class ConnectionManager {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
-    // Connections are always established sequently in connectorThread
-    private static final RequestProcessor connectorThread = new RequestProcessor("ConnectionManager queue", 1); // NOI18N
     // Actual sessions pools. One per host
     private static final HashMap<ExecutionEnvironment, JSchChannelsSupport> channelsSupport = new HashMap<ExecutionEnvironment, JSchChannelsSupport>();
     private static List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
@@ -89,6 +85,8 @@ public final class ConnectionManager {
     private static final ConnectionManager instance = new ConnectionManager();
     private static final ConcurrentHashMap<ExecutionEnvironment, JSch> jschPool =
             new ConcurrentHashMap<ExecutionEnvironment, JSch>();
+    private static final ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask> connectionTasks =
+            new ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask>();
 
     static {
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
@@ -175,57 +173,68 @@ public final class ConnectionManager {
             throw new IllegalThreadStateException("Should never be called from AWT thread"); // NOI18N
         }
 
-//        synchronized (channelsSupport) {
-            if (isConnectedTo(env)) {
-                return;
+        if (isConnectedTo(env)) {
+            return;
+        }
+
+        JSch jsch = jschPool.get(env);
+
+        if (jsch == null) {
+            jsch = new JSch();
+            JSch old = jschPool.putIfAbsent(env, jsch);
+            if (old != null) {
+                jsch = old;
             }
+        }
 
-            JSch jsch = jschPool.get(env);
+        JSchConnectionTask connectionTask;
 
-            if (jsch == null) {
-                jsch = new JSch();
-                jschPool.put(env, jsch);
+        synchronized (connectionTasks) {
+            connectionTask = connectionTasks.get(env);
+
+            if (connectionTask == null) {
+                connectionTask = new JSchConnectionTask(jsch, env);
+                connectionTask.start();
+                connectionTasks.put(env, connectionTask);
             }
+        }
 
-            final JSchConnectionTask connectionTask = new JSchConnectionTask(jsch, env);
-            final Future<JSchChannelsSupport> connectionTaskResult = connectorThread.submit(connectionTask);
+        final ProgressHandle ph = ProgressHandleFactory.createHandle(
+                loc("ConnectionManager.Connecting", // NOI18N
+                env.toString()), connectionTask);
 
-            final ProgressHandle ph = ProgressHandleFactory.createHandle(
-                    loc("ConnectionManager.Connecting", // NOI18N
-                    env.toString()), connectionTask);
+        ph.start();
 
-            ph.start();
+        try {
+            JSchChannelsSupport cs = connectionTask.getResult();
 
-            try {
-                JSchChannelsSupport cs = connectionTaskResult.get();
-
-                if (cs != null) {
-                    channelsSupport.put(env, cs);
-                } else {
-                    JSchConnectionTask.Problem problem = connectionTask.getProblem();
-                    switch (problem.type) {
-                        case CONNECTION_CANCELLED:
-                            throw new CancellationException("Connection cancelled for " + env); // NOI18N
-                        default:
-                            // Note that AUTH_FAIL is generated not only on bad password,
-                            // but on socket timeout as well. These cases are
-                            // indistinguishable based on information from JSch.
-                            throw new IOException(env.getDisplayName() + ": " + problem.type.name(), problem.cause); // NOI18N
+            if (cs != null) {
+                channelsSupport.put(env, cs);
+            } else {
+                JSchConnectionTask.Problem problem = connectionTask.getProblem();
+                switch (problem.type) {
+                    case CONNECTION_CANCELLED:
+                        throw new CancellationException("Connection cancelled for " + env); // NOI18N
+                    default:
+                        // Note that AUTH_FAIL is generated not only on bad password,
+                        // but on socket timeout as well. These cases are
+                        // indistinguishable based on information from JSch.
+                        throw new IOException(env.getDisplayName() + ": " + problem.type.name(), problem.cause); // NOI18N
                     }
-                }
-
-                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
-                log.log(Level.FINE, "New connection established: {0} - {1}", new String[]{env.toString(), hostInfo.getOS().getName()}); // NOI18N
-
-                fireConnected(env);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                ph.finish();
             }
-//        }
+
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+            log.log(Level.FINE, "New connection established: {0} - {1}", new String[]{env.toString(), hostInfo.getOS().getName()}); // NOI18N
+
+            fireConnected(env);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            ph.finish();
+            connectionTasks.remove(env);
+        }
     }
 
     public static ConnectionManager getInstance() {
