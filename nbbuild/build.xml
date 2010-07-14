@@ -1539,23 +1539,18 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
   
   <target name="generate-files-layout" depends="generate-golden-files-init" description="Generate summary of installed files.">
-    
+    <taskdef name="generate-files-layout" classname="org.netbeans.nbbuild.GenerateFilesLayout" classpath="nbantext.jar"/>
     <property name="check.files.layout.generated" location="${generated.files.dir}/files-layout.txt" />
   
     <property name="check-file-layout-root" location="${netbeans.dest.dir}" />
-    <fileset id="check-file-layout" dir="${check-file-layout-root}" casesensitive="yes" >
-        <exclude name="*"/> <!-- i.e. files at top level -->
+    <generate-files-layout output="${check.files.layout.generated}">
+      <files dir="${check-file-layout-root}" casesensitive="yes" >
         <exclude name="bin/"/>
         <exclude name="etc/"/>
         <exclude name="mobility*/emulators-inst/wtk22_*.zip"/> <!-- XXX #110820 -->
-    </fileset>
-    
-    <pathconvert property="check-file-layout" refid="check-file-layout" dirsep="/" pathsep="," >
-        <map from="${check-file-layout-root}${file.separator}" to="" />
-    </pathconvert>
-    <echo message="${check-file-layout}${line.separator}" file="${check.files.layout.generated}" />
-    <replace file="${check.files.layout.generated}" token="," value="${line.separator}" />
-    <replace file="${check.files.layout.generated}" token="\" value="/" />
+        <exclude name="*/.lastModified"/>
+      </files>
+    </generate-files-layout>
   </target>
 
   <target name="index-layer-paths" depends="generate-golden-files-init" description="Create index of layer paths.">

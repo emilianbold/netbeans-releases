@@ -52,14 +52,14 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.mobility.databindingme.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/netbeans_databindingme_svg.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.mobility.databindingme/modules/ext/netbeans_databindingme_svg.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
-        <resource>jar:nbinst:///sources/netbeans_midp_databindingme_svg-src.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.mobility.databindingme/sources/netbeans_databindingme_svg-src.zip!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///modules/docs/netbeans_databindingme_svg-api.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.mobility.databindingme/modules/docs/netbeans_databindingme_svg-api.zip!/</resource>
     </volume>
 </library>
