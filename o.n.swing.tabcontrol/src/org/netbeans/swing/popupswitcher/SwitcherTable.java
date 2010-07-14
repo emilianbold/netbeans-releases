@@ -55,6 +55,7 @@ import java.awt.image.BufferedImage;
 import java.lang.ref.SoftReference;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -149,14 +150,18 @@ public class SwitcherTable extends JTable {
         boolean selected = row == getSelectedRow() &&
                 column == getSelectedColumn() && item != null;
         
-        DefaultTableCellRenderer ren = (DefaultTableCellRenderer)
-        renderer.getTableCellRendererComponent(this, item,
+        Component ren = renderer.getTableCellRendererComponent(this, item,
                 selected, selected, row, column);
+        JLabel lbl = null;
+        if( ren instanceof JLabel )
+            lbl = (JLabel) ren;
         
         if (item == null) {
             // it's a filler space, we're done
-            ren.setOpaque(false);
-            ren.setIcon(null);
+            if( null != lbl ) {
+                lbl.setOpaque(false);
+                lbl.setIcon(null);
+            }
             return ren;
         }
         
@@ -165,14 +170,17 @@ public class SwitcherTable extends JTable {
             icon = nullIcon;
         }
         boolean active = item.isActive();
-        ren.setText((selected || active) && !TABNAMES_HTML ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
-        ren.setIcon(icon);
-        ren.setBorder(rendererBorder);
-        ren.setIconTextGap(26 - icon.getIconWidth());
+        if( null != lbl ) {
+            lbl.setText((selected || active) && !TABNAMES_HTML ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
+            lbl.setIcon(icon);
+            lbl.setBorder(rendererBorder);
+            lbl.setIconTextGap(26 - icon.getIconWidth());
+        }
         
         if (active) {
             if (TABNAMES_HTML) {
-                ren.setText(ren.getText() + " ←"); // NOI18N
+                if( null != lbl )
+                    lbl.setText(lbl.getText() + " ←"); // NOI18N
             } else if (Utilities.isWindows()) {
                 ren.setFont(getFont().deriveFont(Font.BOLD, getFont().getSize()));
             } else {
@@ -180,8 +188,9 @@ public class SwitcherTable extends JTable {
                 ren.setFont(new Font(getFont().getName(), Font.BOLD, getFont().getSize()));
             }
         }
-        
-        ren.setOpaque(true);
+
+        if( null != lbl )
+            lbl.setOpaque(true);
         
         return ren;
     }
