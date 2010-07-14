@@ -166,9 +166,9 @@ public class MavenProjectRestSupport extends WebRestSupport {
     public void ensureRestDevelopmentReady() throws IOException {
         String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
         if (configType == null && getApplicationPathFromDD() == null) {
-            String resourceUrl = setApplicationConfigProperty(false);
-            if (resourceUrl != null) {
-                addResourceConfigToWebApp(resourceUrl);
+            WebRestSupport.RestConfig restConfig = setApplicationConfigProperty(false);
+            if (restConfig == WebRestSupport.RestConfig.DD) {
+                addResourceConfigToWebApp(restConfig.getResourcePath());
             }
         }
 
