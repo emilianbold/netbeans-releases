@@ -328,6 +328,21 @@ public class PHPFormatterTestTemplate extends PHPTestBase {
         reformatFileContents("testfiles/formatting/templates/issue187665_02.php", options, true);
     }
 
+    public void testIssue188656_01() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue188656_01.php", options, true);
+    }
+
+    public void testIssue188656_02() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue188656_02.php", options, true);
+    }
+
+    public void testIssue188656_03() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue188656_03.php", options, true);
+    }
+
     protected void reformatFileContents(String file, Map<String, Object> options, boolean isTemplate) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
