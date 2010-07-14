@@ -44,12 +44,17 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import javax.swing.ComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JLabel;
@@ -109,6 +114,9 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         this.puRequired = puRequired;
 
         initComponents();
+
+        tableActionsPopup.add(new AllToUpdateAction());
+        tableActionsPopup.add(new AllToRecreateAction());
 
         classNamesTable.getParent().setBackground(classNamesTable.getBackground());
         classNamesTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
@@ -340,6 +348,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         createPUWarningLabel = new ShyLabel();
         createPUCheckbox = new javax.swing.JCheckBox();
 
+        tableActionsPopup.setInvoker(tableActionsButton);
+
         setName(org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "LBL_EntityClasses")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(specifyNamesLabel, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "LBL_SpecifyEntityClassNames")); // NOI18N
@@ -485,7 +495,12 @@ public class EntityClassesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_createPUCheckboxItemStateChanged
 
     private void tableActionsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tableActionsButtonActionPerformed
-        // TODO add your handling code here:
+        Component component = ((Component)evt.getSource());
+        Point loc = component.getLocationOnScreen();
+        loc.y += component.getHeight()/2;
+        loc.x += component.getWidth()/2;
+        tableActionsPopup.setLocation(loc);
+        tableActionsPopup.setVisible(true);
     }//GEN-LAST:event_tableActionsButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -704,5 +719,78 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             size.width = 0;
             return size;
         }
+    }
+
+    private class AllToUpdateAction implements Action {
+
+        @Override
+        public Object getValue(String key) {
+            if(Action.NAME.equals(key)){
+                return "All to Update";
+            }
+            return null;
+        }
+
+        @Override
+        public void putValue(String key, Object value) {
+        }
+
+        @Override
+        public void setEnabled(boolean b) {
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+
+    }
+    private class AllToRecreateAction implements Action{
+
+        @Override
+        public Object getValue(String key) {
+            if(Action.NAME.equals(key)){
+                return "All to Recreate";
+            }
+            return null;
+        }
+
+        @Override
+        public void putValue(String key, Object value) {
+        }
+
+        @Override
+        public void setEnabled(boolean b) {
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+
     }
 }
