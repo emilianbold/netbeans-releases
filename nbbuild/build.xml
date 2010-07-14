@@ -1549,6 +1549,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <exclude name="bin/"/>
         <exclude name="etc/"/>
         <exclude name="mobility*/emulators-inst/wtk22_*.zip"/> <!-- XXX #110820 -->
+        <exclude name="*/.lastModified"/>
       </files>
     </generate-files-layout>
   </target>
