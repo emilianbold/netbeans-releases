@@ -113,6 +113,13 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private boolean sourceSchemaUpdateEnabled;
     private boolean allowUpdateRecreate = true;
 
+    private String[] filterComboTxts = {
+        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_ALL"),
+        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_NEW"),
+        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_UPDATE")
+    };
+    private TableUISupport.FilterAvailable filterAvailable = TableUISupport.FilterAvailable.ANY;
+
     private Project project;
 
     public DatabaseTablesPanel() {
@@ -425,6 +432,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         return tableClosure;
     }
 
+
     private void updateSourceSchema() {
         if (!sourceSchemaUpdateEnabled) {
             return;
@@ -494,7 +502,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         tableClosure = new TableClosure(tableProvider);
         tableClosure.setClosureEnabled(tableClosureCheckBox.isSelected());
 
-        TableUISupport.connectAvailable(availableTablesList, tableClosure);
+        TableUISupport.connectAvailable(availableTablesList, tableClosure, filterAvailable);
         TableUISupport.connectSelected(selectedTablesList, tableClosure);
 
         updateButtons();
@@ -513,10 +521,10 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     }
 
     private void updateButtons() {
-        Set<Table> addTables = TableUISupport.getSelectedTables(availableTablesList);
+        Set<Table> addTables = TableUISupport.getSelectedTables(availableTablesList, true);
         addButton.setEnabled(tableClosure.canAddAllTables(addTables));
 
-        addAllButton.setEnabled(tableClosure.canAddSomeTables(tableClosure.getAvailableTables()));
+        addAllButton.setEnabled(TableUISupport.getEnabledTables(availableTablesList).size()>0);
 
         Set<Table> tables = TableUISupport.getSelectedTables(selectedTablesList);
         removeButton.setEnabled(tableClosure.canRemoveAllTables(tables));
@@ -725,9 +733,14 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 4, 0);
         tablesPanel.add(tableClosureCheckBox, gridBagConstraints);
 
-        addAllTypeCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Any", "New Only", "Update Only" }));
+        addAllTypeCombo.setModel(new javax.swing.DefaultComboBoxModel(filterComboTxts));
         addAllTypeCombo.setEditor(null);
         addAllTypeCombo.setRenderer(new ItemListCellRenderer());
+        addAllTypeCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addAllTypeComboActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -790,7 +803,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_removeAllButtonActionPerformed
 
     private void addAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllButtonActionPerformed
-        tableClosure.addAllTables();
+        Set<Table> tables = TableUISupport.getEnabledTables(availableTablesList);
+        tableClosure.addTables(tables);
         availableTablesList.clearSelection();
         updateButtons();
 
@@ -807,7 +821,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        Set<Table> tables = TableUISupport.getSelectedTables(availableTablesList);
+        Set<Table> tables = TableUISupport.getSelectedTables(availableTablesList, true);
         tableClosure.addTables(tables);
         availableTablesList.clearSelection();
         updateButtons();
@@ -833,6 +847,17 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         updateSourceSchemaComboBoxes();
         updateSourceSchema();
     }//GEN-LAST:event_datasourceRadioButtonItemStateChanged
+
+    private void addAllTypeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllTypeComboActionPerformed
+        if(filterComboTxts[0].equals(addAllTypeCombo.getSelectedItem().toString())){
+            filterAvailable = filterAvailable.ANY;
+        } else if (filterComboTxts[1].equals(addAllTypeCombo.getSelectedItem().toString())){
+            filterAvailable = filterAvailable.NEW;
+        } else {
+            filterAvailable = filterAvailable.UPDATE;
+        }
+        TableUISupport.connectAvailable(availableTablesList, tableClosure, filterAvailable);
+    }//GEN-LAST:event_addAllTypeComboActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

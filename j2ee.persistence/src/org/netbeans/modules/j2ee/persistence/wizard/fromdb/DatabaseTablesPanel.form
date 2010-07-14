@@ -305,12 +305,8 @@
         </Component>
         <Component class="javax.swing.JComboBox" name="addAllTypeCombo">
           <Properties>
-            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="3">
-                <StringItem index="0" value="Any"/>
-                <StringItem index="1" value="New Only"/>
-                <StringItem index="2" value="Update Only"/>
-              </StringArray>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="new javax.swing.DefaultComboBoxModel(filterComboTxts)" type="code"/>
             </Property>
             <Property name="editor" type="javax.swing.ComboBoxEditor" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="null"/>
@@ -323,6 +319,9 @@
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Tables filter"/>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Tables filter"/>
           </AccessibilityProperties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addAllTypeComboActionPerformed"/>
+          </Events>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="0" gridY="2" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="1" insetsLeft="0" insetsBottom="4" insetsRight="0" anchor="13" weightX="1.0" weightY="0.0"/>
