@@ -108,12 +108,11 @@ public class ApplicationConfigPanel extends javax.swing.JPanel {
                 jLabel1.setEnabled(true);
                 jTextField1.setEnabled(true);
                 jCheckBox1.setEnabled(true);
-            }
-            if (jRadioButton2.isSelected()) {
+            } else if (jRadioButton2.isSelected()) {
                 jLabel1.setEnabled(false);
                 jTextField1.setEnabled(false);
                 jCheckBox1.setEnabled(true);
-            } else {
+            } else if (jRadioButton3.isSelected()){
                 jLabel1.setEnabled(true);
                 jTextField1.setEnabled(true);
                 jCheckBox1.setSelected(true);

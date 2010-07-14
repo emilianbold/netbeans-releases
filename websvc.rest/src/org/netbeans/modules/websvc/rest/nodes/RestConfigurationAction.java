@@ -108,7 +108,7 @@ public class RestConfigurationAction extends NodeAction  {
                 oldApplicationPath="/"+oldApplicationPath;
             }
             // needs detect if Jersey Lib is present
-            boolean isJerseyLib = isJerseyOnClasspath(project);
+            boolean isJerseyLib = isOnClasspath(project,"com/sun/jersey/spi/container/servlet/ServletContainer.class"); //NOI18N
             try {
                 ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
                         oldConfigType,
@@ -122,7 +122,7 @@ public class RestConfigurationAction extends NodeAction  {
                 if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
                     String newConfigType = configPanel.getConfigType();
                     String newApplicationPath = configPanel.getApplicationPath();
-                    boolean isJersey = configPanel.isJerseyLibSelected();
+                    boolean addJersey = configPanel.isJerseyLibSelected();
                     if (!oldConfigType.equals(newConfigType) || !oldApplicationPath.equals(newApplicationPath)) {
 
                         if (!oldConfigType.equals(newConfigType)) {
@@ -147,6 +147,20 @@ public class RestConfigurationAction extends NodeAction  {
                             } catch (IOException ex) {
                                 ex.printStackTrace();
                             }
+                            if (!isOnClasspath(project,"javax/ws/rs/ApplicationPath.class")) {
+                                // add jsr311 library
+                                Library restApiLibrary = LibraryManager.getDefault().getLibrary(WebRestSupport.RESTAPI_LIBRARY);
+                                if (restApiLibrary != null) {
+                                    FileObject srcRoot = WebRestSupport.findSourceRoot(project);
+                                    if (srcRoot != null) {
+                                        try {
+                                            ProjectClassPathModifier.addLibraries(new Library[] {restApiLibrary}, srcRoot, ClassPath.COMPILE);
+                                        } catch(UnsupportedOperationException ex) {
+                                            Logger.getLogger(getClass().getName()).info("Can not add JSR311 Library.");
+                                        }
+                                    }
+                                }
+                            }
                         } else if (WebRestSupport.CONFIG_TYPE_DD.equals(newConfigType)) { // Deployment Descriptor
                             // add entries to dd
                             try {
@@ -156,7 +170,8 @@ public class RestConfigurationAction extends NodeAction  {
                             }
                         }
                     }
-                    if (isJersey && !isJerseyOnClasspath(project)) {
+                    if (addJersey && !isOnClasspath(project,"com/sun/jersey/spi/container/servlet/ServletContainer.class")) {
+                        // add jersey library
                         Library swdpLibrary = LibraryManager.getDefault().getLibrary(WebRestSupport.SWDP_LIBRARY);
                         if (swdpLibrary != null) {
                             FileObject srcRoot = WebRestSupport.findSourceRoot(project);
@@ -168,7 +183,6 @@ public class RestConfigurationAction extends NodeAction  {
                                 }
                             }
                         }
-                        // add jersey library
                     }
                  }
             } catch (IOException ex) {
@@ -189,11 +203,11 @@ public class RestConfigurationAction extends NodeAction  {
         return true;
     }
 
-    private boolean isJerseyOnClasspath(Project project) {
+    private boolean isOnClasspath(Project project, String classResource) {
         FileObject srcRoot = WebRestSupport.findSourceRoot(project);
         if (srcRoot != null) {
             ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
-            if (cp.findResource("com/sun/jersey/spi/container/servlet/ServletContainer.class") != null) {
+            if (cp.findResource(classResource) != null) {
                 return true;
             }
         }
