@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -87,7 +87,6 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
-import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -99,15 +98,16 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
-import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Sergey Grinev
  */
 public abstract class AbstractExecutorRunAction extends NodeAction {
-    private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
+
+    private static final boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.actions.AbstractExecutorRunAction"); // NOI18N
+
     static {
         if (TRACE) {
             logger.setLevel(Level.ALL);
@@ -161,14 +161,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return developmentHost;
     }
 
-    private static Project findInOpenedProject(FileObject fileObject){
+    private static Project findInOpenedProject(FileObject fileObject) {
         // First platform provider uses simplified algorithm for search that finds project in parent folder.
         // Fixed algorithm try to find opened project by second make project provider.
         //return FileOwnerQuery.getOwner(fileObject);
-        Collection<? extends FileOwnerQueryImplementation> instances =  Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
-        for(FileOwnerQueryImplementation provider : instances){
+        Collection<? extends FileOwnerQueryImplementation> instances = Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
+        for (FileOwnerQueryImplementation provider : instances) {
             Project project = provider.getOwner(fileObject);
-            if (project != null){
+            if (project != null) {
                 for (Project p : OpenProjects.getDefault().getOpenProjects()) {
                     if (project == p) {
                         return project;
@@ -179,15 +179,15 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return null;
     }
 
-    private static Project findProject(Node node){
+    private static Project findProject(Node node) {
         Node parent = node;
         while (true) {
             Project project = parent.getLookup().lookup(Project.class);
-            if (project != null){
+            if (project != null) {
                 return project;
             }
             Node p = parent.getParentNode();
-            if (p != null && p != parent){
+            if (p != null && p != parent) {
                 parent = p;
             } else {
                 return null;
@@ -195,7 +195,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    protected static boolean isSunStudio(Node node, Project project){
+    protected static boolean isSunStudio(Node node, Project project) {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         if (project == null) {
@@ -220,7 +220,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return set.getCompilerFlavor().isSunStudioCompiler();
     }
 
-    protected static CompilerSet getCompilerSet(Node node ){
+    protected static CompilerSet getCompilerSet(Node node) {
         Project project;
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
@@ -241,7 +241,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return set;
     }
 
-    protected static String getCommand(Node node, Project project, PredefinedToolKind tool, String defaultName){
+    protected static String getCommand(Node node, Project project, PredefinedToolKind tool, String defaultName) {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         if (project == null) {
@@ -267,7 +267,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 command = aTool.getPath();
             }
         }
-        if (command == null || command.length()==0) {
+        if (command == null || command.length() == 0) {
             if (tool == PredefinedToolKind.MakeTool) {
                 MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
                 if (mes != null) {
@@ -285,13 +285,13 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 }
             }
         }
-        if (command == null || command.length()==0) {
+        if (command == null || command.length() == 0) {
             command = findTools(defaultName);
         }
         return command;
     }
 
-    protected static String getBuildDirectory(Node node, PredefinedToolKind tool){
+    protected static String getBuildDirectory(Node node, PredefinedToolKind tool) {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
@@ -339,14 +339,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return args;
     }
 
-    public static String findTools(String toolName){
+    public static String findTools(String toolName) {
         for (String path : Path.getPath()) {
-            String task = path+File.separatorChar+toolName;
+            String task = path + File.separatorChar + toolName;
             File tool = new File(task);
             if (tool.exists() && tool.isFile()) {
                 return tool.getAbsolutePath();
             } else if (Utilities.isWindows()) {
-                task = task+".exe"; // NOI18N
+                task = task + ".exe"; // NOI18N
                 tool = new File(task);
                 if (tool.exists() && tool.isFile()) {
                     return tool.getAbsolutePath();
@@ -376,6 +376,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             return envMap;
         }
     }
+
     private static Map<String, String> getDefaultEnvironment(ExecutionEnvironment execEnv, Node node) {
         PlatformInfo pi = PlatformInfo.getDefault(execEnv);
         String defaultPath = pi.getPathAsString();
@@ -392,7 +393,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return Collections.singletonMap(pi.getPathName(), defaultPath);
     }
 
-    private static Map<String, String> getExecCookieEnvironment(Node node){
+    private static Map<String, String> getExecCookieEnvironment(Node node) {
         ExecutionSupport execSupport = node.getCookie(ExecutionSupport.class);
         if (execSupport == null) {
             return Collections.emptyMap();
@@ -419,28 +420,8 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return NbBundle.getBundle(AbstractExecutorRunAction.class).getString(key);
     }
 
-    protected static String getString(String key, String ... a1) {
+    protected static String getString(String key, String... a1) {
         return NbBundle.getMessage(AbstractExecutorRunAction.class, key, a1);
-    }
-
-    protected static String formatTime(long millis) {
-        StringBuilder buf = new StringBuilder();
-        long seconds = millis / 1000;
-        long minutes = seconds / 60;
-        long hours = minutes / 60;
-        if (hours > 0) {
-            buf.append(' ').append(hours).append(getString("Time.Hour")); // NOI18N
-        }
-        if (minutes > 0) {
-            buf.append(' ').append(minutes % 60).append(getString("Time.Minute")); // NOI18N
-        }
-        if (seconds > 0) {
-            buf.append(' ').append(seconds % 60).append(getString("Time.Second")); // NOI18N
-        }
-        if (hours == 0 && minutes == 0 && seconds == 0) {
-            buf.append(' ').append(millis).append(getString("Time.Millisecond")); // NOI18N
-        }
-        return buf.toString();
     }
 
     protected static String quoteExecutable(String orig) {
@@ -503,7 +484,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             for (Map.Entry<String, String> v : envMap.entrySet()) {
                 buf.append("\n\t\t").append(v.getKey()).append("=").append(v.getValue()); // NOI18N
             }
-             buf.append("\n"); // NOI18N
+            buf.append("\n"); // NOI18N
             logger.log(Level.INFO, buf.toString());
         }
     }
@@ -558,21 +539,17 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     }
 
     protected static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
+
+        private final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
         private final ExecutionListener listener;
         private Writer outputListener;
         private final LineConvertor lineConvertor;
-        private final InputOutput tab;
-        private final String resourceKey;
         private final RemoteSyncWorker syncWorker;
-        private long startTimeMillis;
-        private Runnable postRunnable;
 
-        public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor, InputOutput tab, String resourceKey, RemoteSyncWorker syncWorker) {
+        public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor, RemoteSyncWorker syncWorker) {
             this.listener = listener;
             this.outputListener = outputListener;
             this.lineConvertor = lineConvertor;
-            this.tab = tab;
-            this.resourceKey = resourceKey;
             this.syncWorker = syncWorker;
         }
 
@@ -581,113 +558,37 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             if (!(e instanceof NativeProcessChangeEvent)) {
                 return;
             }
+
             final NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
-            final NativeProcess process = (NativeProcess) event.getSource();
-            switch (event.state) {
-                case INITIAL:
-                    break;
-                case STARTING:
-                    startTimeMillis = System.currentTimeMillis();
-                    if (listener != null) {
-                        listener.executionStarted(event.pid);
-                    }
-                    break;
-                case RUNNING:
-                    break;
-                case CANCELLED:
-                {
-                    closeOutputListener();
-                    if (listener != null) {
-                        listener.executionFinished(-1);
-                    }
-                    shutdownSyncWorker();
-                    postRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            String message = getString("Output."+resourceKey+"Terminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
-                            String statusMessage = getString("Status."+resourceKey+"Terminated"); // NOI18N
-                            tab.getErr().println();
-                            tab.getErr().println(message);
-                            tab.getErr().flush();
-                            closeIO();
-                            StatusDisplayer.getDefault().setStatusText(statusMessage);
-                        }
-                    };
-                    break;
-                }
-                case ERROR:
-                {
-                    closeOutputListener();
-                    if (listener != null) {
-                        listener.executionFinished(-1);
-                    }
-                    shutdownSyncWorker();
-                    postRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            String message = getString("Output."+resourceKey+"FailedToStart"); // NOI18N
-                            String statusMessage = getString("Status."+resourceKey+"FailedToStart"); // NOI18N
-                            tab.getErr().println();
-                            tab.getErr().println(message);
-                            tab.getErr().flush();
-                            closeIO();
-                            StatusDisplayer.getDefault().setStatusText(statusMessage);
-                        }
-                    };
-                    break;
-                }
-                case FINISHED:
-                {
-                    closeOutputListener();
-                    if (listener != null) {
-                        listener.executionFinished(process.exitValue());
-                    }
-                    shutdownSyncWorker();
-                    postRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            String message;
-                            String statusMessage;
-                            if (process.exitValue() != 0) {
-                                message = getString("Output."+resourceKey+"Failed", ""+process.exitValue(), formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
-                                statusMessage = getString("Status."+resourceKey+"Failed"); // NOI18N
-                            } else {
-                                message = getString("Output."+resourceKey+"Successful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
-                                statusMessage = getString("Status."+resourceKey+"Successful"); // NOI18N
-                            }
-                            PrintWriter wr = process.exitValue() == 0 ? tab.getOut(): tab.getErr();
-                            wr.println();
-                            wr.println(message);
-                            wr.flush();
-                            closeIO();
-                            StatusDisplayer.getDefault().setStatusText(statusMessage);
-                        }
-                    };
-                    break;
+            processRef.compareAndSet(null, (NativeProcess) event.getSource());
+
+            if (NativeProcess.State.RUNNING == event.state) {
+                if (listener != null) {
+                    listener.executionStarted(event.pid);
                 }
             }
         }
 
         @Override
         public void run() {
-            if (postRunnable != null) {
-                postRunnable.run();
-            }
-        }
+            closeOutputListener();
 
-        private void closeIO(){
-            tab.getErr().close();
-            tab.getOut().close();
+            NativeProcess process = processRef.get();
             try {
-                tab.getIn().close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
+                if (process != null && listener != null) {
+                    listener.executionFinished(process.exitValue());
+                }
+            } finally {
+                if (syncWorker != null) {
+                    syncWorker.shutdown();
+                }
             }
         }
 
         @Override
         public LineConvertor newLineConvertor() {
             return new LineConvertor() {
+
                 @Override
                 public List<ConvertedLine> convert(String line) {
                     return ProcessChangeListener.this.convert(line);
@@ -695,13 +596,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             };
         }
 
-        private void shutdownSyncWorker() {
-            if (syncWorker != null) {
-                syncWorker.shutdown();
-            }
-        }
-
-        private synchronized void closeOutputListener(){
+        private synchronized void closeOutputListener() {
             if (outputListener != null) {
                 try {
                     outputListener.flush();
