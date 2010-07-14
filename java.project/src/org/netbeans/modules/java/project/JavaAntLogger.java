@@ -354,7 +354,10 @@ public final class JavaAntLogger extends AntLogger {
         if (data.classpath == null) {
             return Collections.emptySet();
         }
-        Collection<FileObject> result = data.classpathSourceRoots;
+        Collection<FileObject> result;
+        synchronized (data) {
+            result = data.classpathSourceRoots;
+        }
         if (result == null) {
             result = new LinkedHashSet<FileObject>();
             StringTokenizer tok = new StringTokenizer(data.classpath, File.pathSeparator);
@@ -379,7 +382,9 @@ public final class JavaAntLogger extends AntLogger {
                 }
             }
             result = Collections.unmodifiableCollection(result);
-            data.classpathSourceRoots = result;
+            synchronized (data) {
+                data.classpathSourceRoots = result;
+            }
         }
         return result;
     }
