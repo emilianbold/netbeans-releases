@@ -1664,14 +1664,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         // Wait while files are created. Otherwise project file will be recognized as library file.
         ensureFilesCreated();
         File file = new File(absPath.toString());
-        if (getFile(file, false) != null) {
+        if (getFileUID(file, false) != null) {
             return this;
         } else {
             // else check in libs
             for (CsmProject prj : getLibraries()) {
                 // Wait while files are created. Otherwise project file will be recognized as library file.
                 ((ProjectBase) prj).ensureFilesCreated();
-                if (((ProjectBase) prj).getFile(file, false) != null) {
+                if (((ProjectBase) prj).getFileUID(file, false) != null) {
                     return (ProjectBase) prj;
                 }
             }
@@ -1869,6 +1869,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public final FileImpl getFile(File file, boolean treatSymlinkAsSeparateFile) {
         return getFileContainer().getFile(file, treatSymlinkAsSeparateFile);
+    }
+
+    public final CsmUID<CsmFile> getFileUID(File file, boolean treatSymlinkAsSeparateFile) {
+        return getFileContainer().getFileUID(file, treatSymlinkAsSeparateFile);
     }
 
     protected final void removeFile(CharSequence file) {
