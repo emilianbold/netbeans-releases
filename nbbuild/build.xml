@@ -1545,7 +1545,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <property name="check-file-layout-root" location="${netbeans.dest.dir}" />
     <generate-files-layout output="${check.files.layout.generated}">
       <files dir="${check-file-layout-root}" casesensitive="yes" >
-        <exclude name="*"/> <!-- i.e. files at top level -->
         <exclude name="bin/"/>
         <exclude name="etc/"/>
         <exclude name="mobility*/emulators-inst/wtk22_*.zip"/> <!-- XXX #110820 -->

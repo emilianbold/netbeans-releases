@@ -47,10 +47,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Creates a list of files in the distribution.
@@ -73,12 +81,50 @@ public class GenerateFilesLayout extends Task {
         }
         DirectoryScanner ds = fs.getDirectoryScanner();
         try {
+            Map</*cluster*/String,Map</*path*/String,/*cnb*/String>> ownersByCluster = new HashMap<String,Map<String,String>>();
+            int maxlength = 0;
+            for (String cluster : ds.getIncludedDirectories()) {
+                if (cluster.isEmpty() || cluster.indexOf(File.separatorChar) != -1) {
+                    continue;
+                }
+                Map<String,String> owners = new HashMap<String,String>();
+                File updateTracking = new File(ds.getBasedir(), cluster + "/update_tracking");
+                if (!updateTracking.isDirectory()) {
+                    log("No such dir: " + updateTracking, Project.MSG_WARN);
+                    continue;
+                }
+                for (File xml : updateTracking.listFiles()) {
+                    Document doc = XMLUtil.parse(new InputSource(xml.toURI().toString()), false, false, null, null);
+                    String cnb = LayerIndex.shortenCNB(doc.getDocumentElement().getAttribute("codename").replaceFirst("/[0-9]+$", ""));
+                    maxlength = Math.max(maxlength, cnb.length());
+                    NodeList nl = doc.getElementsByTagName("file");
+                    for (int i = 0; i < nl.getLength(); i++) {
+                        String file = ((Element) nl.item(i)).getAttribute("name");
+                        owners.put(file, cnb);
+                    }
+                }
+                ownersByCluster.put(cluster, owners);
+            }
             Writer w = new FileWriter(output);
             try {
                 PrintWriter pw = new PrintWriter(w);
                 for (String incl : ds.getIncludedFiles()) {
-                    // XXX prepend shortened owner name
-                    pw.println(incl.replace(File.separatorChar, '/'));
+                    String inclSlash = incl.replace(File.separatorChar, '/');
+                    int slash = inclSlash.indexOf('/');
+                    if (slash == -1) {
+                        // Files at top level are ignored.
+                        continue;
+                    }
+                    if (inclSlash.matches("[^/]+/update_tracking/[^/]+[.]xml")) {
+                        // Not considered an actual part of the cluster, but rather its metadata.
+                        continue;
+                    }
+                    Map<String,String> owners = ownersByCluster.get(inclSlash.substring(0, slash));
+                    String owner = owners != null ? owners.get(inclSlash.substring(slash + 1)) : null;
+                    if (owner == null) {
+                        owner = "???";
+                    }
+                    pw.printf("%-" + maxlength + "s %s\n", owner, inclSlash);
                 }
                 pw.flush();
                 pw.close();
@@ -86,6 +132,8 @@ public class GenerateFilesLayout extends Task {
                 w.close();
             }
         } catch (IOException x) {
+            throw new BuildException(x, getLocation());
+        } catch (SAXException x) {
             throw new BuildException(x, getLocation());
         }
         log(output + ": generated");
