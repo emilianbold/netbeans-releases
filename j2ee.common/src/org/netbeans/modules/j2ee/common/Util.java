@@ -74,6 +74,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -216,8 +217,21 @@ public class Util {
      * @return source level string representation, e.g. "1.6"
      */
     public static String getSourceLevel(Project project) {
-        SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
-        return sl.getSourceLevel(project.getProjectDirectory());
+        // XXX clients should never request source level for a project, as it may differ
+        // from file to file. Source root file object should be used instead (just use
+        // org.netbeans.api.java.queries.SourceLevelQuery).
+        String srcLevel = null;
+        SourceLevelQueryImplementation2 sl2 = project.getLookup().lookup(SourceLevelQueryImplementation2.class);
+        if(sl2 != null){
+            srcLevel = sl2.getSourceLevel(project.getProjectDirectory()).getSourceLevel();
+        } else {
+            //backward compartibility
+            SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
+            if(sl != null){
+                srcLevel = sl.getSourceLevel(project.getProjectDirectory());
+            }
+        }
+        return srcLevel;
     }
     
     /**
