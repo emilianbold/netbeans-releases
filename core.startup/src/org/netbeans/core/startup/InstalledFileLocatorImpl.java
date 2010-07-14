@@ -338,7 +338,19 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
             ownershipByModule.put(codeNameBase, ownership);
         }
         if (!ownership.contains(path)) {
-            LOG.log(Level.WARNING, "module {0} in {1} does not own {2}", new Object[] {codeNameBase, dir, path});
+            boolean found = false;
+            if (makeFile(dir, prefix, name).isDirectory()) {
+                String pathSlash = path + "/"; // NOI18N
+                for (String owned : ownership) {
+                    if (owned.startsWith(pathSlash)) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                LOG.log(Level.WARNING, "module {0} in {1} does not own {2}", new Object[] {codeNameBase, dir, path});
+            }
         }
         return true;
     }

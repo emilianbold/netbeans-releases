@@ -942,7 +942,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 NodeList nl = doc.getElementsByTagName("resource");
                 for (int i = 0; i < nl.getLength(); i++) {
                     Element resource = (Element) nl.item(i);
-                    validateNbinstURL(new URL(XMLUtil.findText(resource)));
+                    validateNbinstURL(new URL(XMLUtil.findText(resource)), handler, lib);
                 }
             }
         }
@@ -950,19 +950,28 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             for (String attr : NbCollections.iterable(f.getAttributes())) {
                 Object val = f.getAttribute(attr);
                 if (val instanceof URL) {
-                    validateNbinstURL((URL) val);
+                    validateNbinstURL((URL) val, handler, f);
                 }
             }
         }
         assertNoErrors("No improper nbinst URLs", handler.errors());
     }
-    private void validateNbinstURL(URL u) throws Exception {
+    private void validateNbinstURL(URL u, TestHandler handler, FileObject f) {
         URL u2 = FileUtil.getArchiveFile(u);
         if (u2 != null) {
             u = u2;
         }
         if ("nbinst".equals(u.getProtocol())) {
-            u.openStream().close();
+            List<String> errors = handler.errors();
+            try {
+                int len = errors.size();
+                u.openStream().close();
+                if (errors.size() == len + 1) {
+                    errors.set(len, errors.get(len) + " from " + f.getPath());
+                }
+            } catch (IOException x) {
+                errors.add("Cannot open " + u + " from " + f.getPath() + ": " + x);
+            }
         }
     }
 
