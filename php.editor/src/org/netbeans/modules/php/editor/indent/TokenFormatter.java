@@ -1164,7 +1164,8 @@ public class TokenFormatter {
                                     if (realOffset <= caretPosition && caretPosition <= realOffset + oldText.length() + 1) {
                                         int positionOldText = caretPosition - realOffset - 1;
                                         if (positionOldText > -1 && positionOldText < oldText.length()
-                                                && oldText.charAt(positionOldText) == ' ') {
+                                                && oldText.charAt(positionOldText) == ' '
+                                                && newText.charAt(0) != ' ') {
                                             newText = ' ' + newText;   // templates like public, return ...
                                         }
                                         caretInTemplateSolved = true;
