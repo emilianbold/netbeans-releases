@@ -62,33 +62,19 @@ public interface DLightToolkitManager {
 //
 //  DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration, String sessionName);
 
-  DLightSessionHandler open(String sessionID);
-
-  /**
-   * @param reference dlight session to save
-   * @return session ID that can be used later to open session using #open(String) method
-   */
-  String save(DLightSessionHandler reference);
+  DLightSessionHandler open(String filePath);
 
 
   /**
    * Saves DLight session, the session can be opened later using session ID returned in this method,
    * will store all session related information into the <param>dir</param> directory
-   * @param dir directory to store all session related info into
-   * @param reference dlight session to save
-   * @return session ID that can be used later to open session using #open(String) method
+   * @param sourceDir directory to store all session related info into
+   * @param sessionName session name
+   * @param reference DLight session to save
    */
-  String save(String dir, DLightSessionHandler reference);
+  void save(String sourceDir, String sessionName, DLightSessionHandler reference);
 
-  /**
-   * Saves DLight session, the session can be opened later using session ID returned in this method,
-   * will store all session related information into the <param>dir</param> directory
-   * @param env execution environment
-   * @param dir directory to store all session related info into
-   * @param reference dlight session to save
-   * @return session ID that can be used later to open session using #open(String) method
-   */
-  String save(ExecutionEnvironment env, String dir, DLightSessionHandler reference);
+
   
   void startSession(DLightSessionHandler reference);
 
