@@ -204,7 +204,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 //            public void run() {
                 synchronized (this) {
                     boolean serverLib = false;
-                    if (serverInstanceID != null && !"".equals(serverInstanceID)) {
+                    if (isServerRegistered(serverInstanceID)) {
                         try {
                             ServerInstance.LibraryManager libManager = Deployment.getDefault().getServerInstance(serverInstanceID).getLibraryManager();
                             if (libManager != null) {
@@ -238,7 +238,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         File[] cp;
                         J2eePlatform platform = null;
                         try {
-                            if (serverInstanceID != null) {
+                            if (isServerRegistered(serverInstanceID)) { //NOI18N
                                 platform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
                             }
                         } catch (InstanceRemovedException ex) {
@@ -289,6 +289,13 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 //        RequestProcessor.getDefault().post(libraryFinder);
     }
 
+    private static boolean isServerRegistered(String serverInstanceID) {
+        if (serverInstanceID != null && !"".equals(serverInstanceID) && !"DEV-NULL".equals(serverInstanceID)) {
+            return true;
+        }
+        return false;
+    }
+    
     private void setRegisteredLibraryModel(Vector<String> items) {
         long time = System.currentTimeMillis();
         cbLibraries.setModel(new DefaultComboBoxModel(items));
@@ -362,12 +369,16 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             }
         }
         if (jsfLibrary != null) {
-            List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
-            try {
-                faceletsPresent = Util.containsClass(content, "com.sun.facelets.Facelet") ||        //NOI18N
-                                  Util.containsClass(content, "com.sun.faces.facelets.Facelet");    //NOI18N
-            }catch(Exception e) {
-                e.printStackTrace();
+            if (jsfLibraries.get(cbLibraries.getSelectedIndex()).getVersion() == JSFVersion.JSF_2_0) {
+                faceletsPresent = true;
+            } else {
+                List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
+                try {
+                    faceletsPresent = Util.containsClass(content, "com.sun.facelets.Facelet") ||        //NOI18N
+                                      Util.containsClass(content, "com.sun.faces.facelets.Facelet");    //NOI18N
+                }catch(Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -772,7 +783,6 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             if (newLibraryName.length() <= 0) {
                 controller.setErrorMessage(null);
                 controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName"));
-//                controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName")); //NOI18N
                 return false;
             }
             
@@ -787,7 +797,9 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 return false;
             }
         }
-                
+        if (!isServerRegistered(serverInstanceID)) {   //NOI18N
+            controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ERR_MissingTargetServer"));
+        }
         controller.setErrorMessage(null);
         return true;
     }
@@ -814,7 +826,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     }
 
     private boolean isWebLogic(String serverInstanceID) {
-        if (serverInstanceID == null || "".equals(serverInstanceID)) {
+        if (!isServerRegistered(serverInstanceID)) {
             return false;
         }
         String shortName;
@@ -834,6 +846,10 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         String j2eeLevel = (String)properties.getProperty("j2eeLevel"); // NOI18N
         Profile prof = j2eeLevel == null ? Profile.JAVA_EE_6_FULL : Profile.fromPropertiesString(j2eeLevel);
         serverInstanceID = (String)properties.getProperty("serverInstanceID"); //NOI18N
+        Boolean isMaven = (Boolean) properties.getProperty("maven");
+        if (isMaven != null && isMaven.booleanValue()) {
+            setNewLibraryOptionVisible(false);
+        }
         initLibSettings(prof, serverInstanceID);
     }
     
@@ -912,6 +928,15 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         return false;
     }
 
+    private void setNewLibraryOptionVisible(boolean visible) {
+        rbNewLibrary.setVisible(visible);
+        lDirectory.setVisible(visible);
+        lVersion.setVisible(visible);
+        jtFolder.setVisible(visible);
+        jbBrowse.setVisible(visible);
+        jtNewLibraryName.setVisible(visible);
+    }
+    
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
@@ -983,6 +1008,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             panel.setLibraryType(JSFConfigurationPanel.LibraryType.USED);
             if (jsfLibraries.size() > 0){
                 panel.setLibrary(jsfLibraries.get(cbLibraries.getSelectedIndex()).getLibrary());
+                panel.setServerLibrary(null);
             }
             panel.getController().setErrorMessage(null);
         } else if (rbNewLibrary.isSelected()){
@@ -990,6 +1016,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             enableDefinedLibraryComponent(false);
             enableServerLibraryComponent(false);
             panel.setLibraryType(JSFConfigurationPanel.LibraryType.NEW);
+            panel.setServerLibrary(null);
             setNewLibraryFolder();
         }
         updatePreferredLanguages();

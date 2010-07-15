@@ -64,6 +64,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
@@ -158,7 +159,7 @@ public class POHImpl extends ProjectOpenedHook {
         if (eeVersion == null) {
             eeVersion = NbBundle.getMessage(POHImpl.class, "TXT_UnknownEEVersion"); //NOI18N
         }
-
+        
         LogRecord record = new LogRecord(Level.INFO, "USG_PROJECT_OPEN_MAVEN_EE");  //NOI18N
         record.setLoggerName(USG_LOGGER_NAME);
         record.setParameters(new Object[] { serverName, eeVersion });
@@ -172,6 +173,14 @@ public class POHImpl extends ProjectOpenedHook {
         String instanceFound = ids[0];
         String server = ids[1];
 
+        ProblemReporter report = project.getLookup().lookup(ProblemReporter.class);
+        for (ProblemReport problem: report.getReports()) {
+            if (problem.getCorrectiveAction() instanceof ServerLibraryAction) {
+                if (((ServerLibraryAction)problem.getCorrectiveAction()).isPerformed()) {
+                    report.removeReport(problem);
+                }
+            }
+        }
         if (instanceFound != null) {
             WebModuleProviderImpl impl = project.getLookup().lookup(WebModuleProviderImpl.class);
             if (impl != null) {
@@ -192,7 +201,6 @@ public class POHImpl extends ProjectOpenedHook {
                 ear.getConfigSupport().ensureConfigurationReady();
             }
         } else if (server != null) {
-            ProblemReporter report = project.getLookup().lookup(ProblemReporter.class);
             String tit = Deployment.getDefault().getServerDisplayName(server);
             if (tit == null) {
                 tit = server;
@@ -207,6 +215,14 @@ public class POHImpl extends ProjectOpenedHook {
         J2eeModuleProvider prv = project.getLookup().lookup(J2eeModuleProvider.class);
         if (prv != null) {
             lastJ2eeProvider = prv;
+            if (BrokenServerLibrarySupport.isBroken(project)) {
+                ProblemReport libProblem =  new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                        NbBundle.getMessage(POHImpl.class, "MSG_LibProblem"),
+                        NbBundle.getMessage(POHImpl.class, "MSG_LibProblem_Description"),
+                        new ServerLibraryAction(project));
+                report.addReport(libProblem);
+                BrokenServerLibrarySupport.fixOrShowAlert(project, null);
+            }
             if (RunUtils.hasApplicationCompileOnSaveEnabled(project)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(prv);
             } else {
@@ -359,4 +375,27 @@ public class POHImpl extends ProjectOpenedHook {
         }
     }
 
+    private class ServerLibraryAction extends AbstractAction {
+
+        private Project project;
+        private boolean performed = false;
+        public ServerLibraryAction(Project project) {
+            putValue(NAME, NbBundle.getMessage(POHImpl.class, "LBL_LibProblem_ActionName"));
+            this.project = project;
+        }
+
+        public boolean isPerformed() {
+            return performed;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            BrokenServerLibrarySupport.fixServerLibraries(project, new Runnable() {
+                @Override
+                public void run() {
+                }
+            });
+            performed = true;
+        }
+    }
 }

@@ -53,6 +53,9 @@ made subject to such option by the copyright holder.
       <file name="jsf12.xml" url="jsf12.xml">
         <attr name="displayName" bundlevalue="org/netbeans/modules/web/jsf12/Bundle#jsf12"/>
       </file>
+      <file name="jsf12ri.xml" url="jsf12ri.xml">
+        <attr name="displayName" bundlevalue="org/netbeans/modules/web/jsf12ri/Bundle#jsf12ri"/>
+      </file>
     </folder>
   </folder>
 </filesystem>
