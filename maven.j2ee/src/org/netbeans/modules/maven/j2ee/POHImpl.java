@@ -174,13 +174,7 @@ public class POHImpl extends ProjectOpenedHook {
         String server = ids[1];
 
         ProblemReporter report = project.getLookup().lookup(ProblemReporter.class);
-        for (ProblemReport problem: report.getReports()) {
-            if (problem.getCorrectiveAction() instanceof ServerLibraryAction) {
-                if (((ServerLibraryAction)problem.getCorrectiveAction()).isPerformed()) {
-                    report.removeReport(problem);
-                }
-            }
-        }
+
         if (instanceFound != null) {
             WebModuleProviderImpl impl = project.getLookup().lookup(WebModuleProviderImpl.class);
             if (impl != null) {
@@ -378,14 +372,9 @@ public class POHImpl extends ProjectOpenedHook {
     private class ServerLibraryAction extends AbstractAction {
 
         private Project project;
-        private boolean performed = false;
         public ServerLibraryAction(Project project) {
             putValue(NAME, NbBundle.getMessage(POHImpl.class, "LBL_LibProblem_ActionName"));
             this.project = project;
-        }
-
-        public boolean isPerformed() {
-            return performed;
         }
 
         @Override
@@ -393,9 +382,9 @@ public class POHImpl extends ProjectOpenedHook {
             BrokenServerLibrarySupport.fixServerLibraries(project, new Runnable() {
                 @Override
                 public void run() {
+                    NbMavenProject.fireMavenProjectReload(project);
                 }
             });
-            performed = true;
         }
     }
 }
