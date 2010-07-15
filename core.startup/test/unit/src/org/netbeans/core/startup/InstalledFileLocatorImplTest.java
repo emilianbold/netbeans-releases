@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
+import org.openide.util.test.TestFileUtils;
 /**
  * Test functionality of InstalledFileLocatorImpl.
  * @author Jesse Glick
@@ -173,6 +174,23 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
         assertEquals(Collections.emptySet(), ifl.locateAll("nonexistent", null, true));
         assertEquals(new HashSet<File>(Arrays.asList(file(nbhome, "loc/y.html"), file(nbdir2, "loc/y_foo.html"))), ifl.locateAll("loc/y.html", null, true));
         assertEquals(new HashSet<File>(Arrays.asList(file(nbdir1, "e/f"), file(nbhome, "e/f"))), ifl.locateAll("e/f", null, false));
+    }
+    
+    public void testLocateParallel() throws Exception {
+        File x1 = new File(nbdir1, "x");
+        touch(x1);
+        File x2 = new File(nbdir2, "x");
+        touch(x2);
+        TestFileUtils.writeFile(new File(nbdir1, "update_tracking/mod-a.xml"), "<module codename=\"mod.a\">\n<file name=\"x\"/>\n</module>\n");
+        TestFileUtils.writeFile(new File(nbdir2, "update_tracking/mod-b.xml"), "<module codename=\"mod.b\">\n<file name=\"x\"/>\n</module>\n");
+        InstalledFileLocatorImpl.prepareCache();
+        assertEquals(x1, ifl.locate("x", "mod.a", false));
+        assertEquals(x2, ifl.locate("x", "mod.b", false));
+        assertEquals(x1, ifl.locate("x", null, false));
+        InstalledFileLocatorImpl.discardCache();
+        assertEquals(x1, ifl.locate("x", "mod.a", false));
+        assertEquals(x2, ifl.locate("x", "mod.b", false));
+        assertEquals(x1, ifl.locate("x", null, false));
     }
     
 }

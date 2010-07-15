@@ -111,6 +111,12 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
      * and values are unqualified file names which exist in that dir.
      */
     private static Map<String,Map<File,Set<String>>> fileCache = null;
+    /**
+     * Cache of cluster location(s) of modules.
+     * Keys are code name bases; values are subsets of {@link #dirs}
+     * in which the module appears to be installed.
+     */
+    private static Map<String,List<File>> clusterCache = null;
     
     /**
      * Called from <code>Main.run</code> early in the startup sequence to indicate
@@ -121,6 +127,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     public static synchronized void prepareCache() {
         assert fileCache == null;
         fileCache = new HashMap<String,Map<File,Set<String>>>();
+        clusterCache = new HashMap<String,List<File>>();
     }
     
     /**
@@ -129,10 +136,15 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
      * cached, since they might change due to dynamic NBM installation.
      * Anyway the heaviest uses of {@link InstalledFileLocator} are
      * during startup so that is when the cache has the most effect.
+     * XXX called somewhat too late, before all libraries are initialized.
+     * Better might be to wait until a few seconds have passed since the last call.
+     * Or check for changes in .lastModified files since these should change if
+     * any NBM activity happens.
      */
     public static synchronized void discardCache() {
         assert fileCache != null;
         fileCache = null;
+        clusterCache = null;
     }
     
     /**
@@ -188,13 +200,14 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     private Set<File> locateExactPath(String prefix, String name, boolean single, String codeNameBase) {
         assert Thread.holdsLock(InstalledFileLocatorImpl.class);
         Set<File> files = null;
+        String path = prefix + name;
         if (fileCache != null) {
             Map<File,Set<String>> fileCachePerPrefix = fileCachePerPrefix(prefix);
-            for (int i = 0; i < dirs.length; i++) {
-                Set<String> names = fileCachePerPrefix.get(dirs[i]);
+            for (File dir : clustersFor(codeNameBase, path)) {
+                Set<String> names = fileCachePerPrefix.get(dir);
                 if (names != null && names.contains(name)) {
-                    assert owned(codeNameBase, dirs[i], prefix, name);
-                    File f = makeFile(dirs[i], prefix, name);
+                    assert owned(codeNameBase, dir, path);
+                    File f = makeFile(dir, path);
                     if (single) {
                         return Collections.singleton(f);
                     } else if (files == null) {
@@ -206,10 +219,10 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                 }
             }
         } else {
-            for (int i = 0; i < dirs.length; i++) {
-                File f = makeFile(dirs[i], prefix, name);
+            for (File dir : clustersFor(codeNameBase, path)) {
+                File f = makeFile(dir, path);
                 if (f.exists()) {
-                    assert owned(codeNameBase, dirs[i], prefix, name);
+                    assert owned(codeNameBase, dir, path);
                     if (single) {
                         return Collections.singleton(f);
                     } else if (files == null) {
@@ -222,6 +235,39 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
             }
         }
         return files != null ? files : Collections.<File>emptySet();
+    }
+    
+    private List<File> clustersFor(String codeNameBase, String path) {
+        assert Thread.holdsLock(InstalledFileLocatorImpl.class);
+        if (codeNameBase == null) {
+            return Arrays.asList(dirs);
+        }
+        String codeNameBaseDashes = codeNameBase.replace('.', '-');
+        if (path.matches("(modules/(locale/)?)?" + codeNameBaseDashes + "(_[^/]+)?[.]jar")) { // NOI18N
+            // Called very commonly during startup; cannot afford to do exact check each time.
+            // Anyway if the module is there it is almost certainly installed in the same cluster.
+            return Arrays.asList(dirs);
+        }
+        List<File> clusters = clusterCache != null ? clusterCache.get(codeNameBase) : null;
+        if (clusters == null) {
+            clusters = new ArrayList<File>(1);
+            String rel = "update_tracking/" + codeNameBaseDashes + ".xml"; // NOI18N
+            for (File dir : dirs) {
+                File tracking = new File(dir, rel);
+                LOG.log(Level.FINE, "checking {0} due to {1} cache={2}", new Object[] {tracking, path, clusterCache != null});
+                if (tracking.isFile()) {
+                    clusters.add(dir);
+                }
+            }
+            if (clusterCache != null) {
+                clusterCache.put(codeNameBase, clusters);
+            }
+        }
+        if (clusters.isEmpty()) {
+            // Perhaps running without update_tracking, so just search everything.
+            return Arrays.asList(dirs);
+        }
+        return clusters;
     }
 
     private static String[] prefixAndName(String relativePath) {
@@ -276,17 +322,16 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
         return fileCachePerPrefix;
     }
     
-    private static File makeFile(File dir, String prefix, String name) {
-        return new File(dir, prefix.replace('/', File.separatorChar) + name);
+    private static File makeFile(File dir, String path) {
+        return new File(dir, path.replace('/', File.separatorChar));
     }
     
-    private static synchronized boolean owned(String codeNameBase, File dir, String prefix, String name) {
-        String path = prefix + name;
+    private static synchronized boolean owned(String codeNameBase, File dir, String path) {
         if (codeNameBase == null) {
             LOG.log(Level.WARNING, "no code name base passed when looking up {0}", path);
             return true;
         }
-        if (name.indexOf('_') != -1) {
+        if (path.lastIndexOf('_') > path.lastIndexOf('/')) {
             // Probably a locale variant. Permit these to be owned by any module -
             // otherwise it would be difficult to contribute branding.
             return true;
@@ -322,6 +367,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
             ownership = new HashSet<String>();
             try {
                 // Could do a proper XML parse but likely too slow.
+                LOG.log(Level.FINE, "Parsing {0} due to {1}", new Object[] {list, path});
                 Reader r = new FileReader(list);
                 try {
                     BufferedReader br = new BufferedReader(r);
@@ -340,12 +386,12 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                 LOG.log(Level.INFO, "could not parse " + list, x);
                 return true;
             }
-            LOG.log(Level.FINE, "parsed {0} -> {1}", new Object[] {list, ownership});
+            LOG.log(Level.FINER, "parsed {0} -> {1}", new Object[] {list, ownership});
             ownershipByModule.put(codeNameBase, ownership);
         }
         if (!ownership.contains(path)) {
             boolean found = false;
-            if (makeFile(dir, prefix, name).isDirectory()) {
+            if (makeFile(dir, path).isDirectory()) {
                 String pathSlash = path + "/"; // NOI18N
                 for (String owned : ownership) {
                     if (owned.startsWith(pathSlash)) {
