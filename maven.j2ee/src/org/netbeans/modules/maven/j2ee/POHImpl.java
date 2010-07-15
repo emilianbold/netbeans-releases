@@ -209,7 +209,7 @@ public class POHImpl extends ProjectOpenedHook {
         J2eeModuleProvider prv = project.getLookup().lookup(J2eeModuleProvider.class);
         if (prv != null) {
             lastJ2eeProvider = prv;
-            if (BrokenServerLibrarySupport.isBroken(project)) {
+            if (!BrokenServerLibrarySupport.getMissingServerLibraries(project).isEmpty()) {
                 ProblemReport libProblem =  new ProblemReport(ProblemReport.SEVERITY_HIGH,
                         NbBundle.getMessage(POHImpl.class, "MSG_LibProblem"),
                         NbBundle.getMessage(POHImpl.class, "MSG_LibProblem_Description"),
