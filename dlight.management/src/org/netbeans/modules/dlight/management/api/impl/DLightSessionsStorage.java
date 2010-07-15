@@ -46,7 +46,7 @@ import org.netbeans.modules.dlight.management.api.DLightSession;
 
 /**
  * This class is a storage for the sessions
- * We will keep here sessionId+ dir + env
+ * We will keep here  dir + env
  * @author Maria Tishkova
  */
 public final class DLightSessionsStorage {
@@ -63,7 +63,7 @@ public final class DLightSessionsStorage {
         return DLightSessionsStorageHolder.instance;
     }
 
-    public final DLightSession openSession(String sessionID){
+    public final DLightSession openSession(String filePath){
         //it will open the session and set its state to analyze
         return null;
     }
