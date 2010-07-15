@@ -73,6 +73,10 @@ public class RestartAction extends NodeAction {
             GlassfishModule commonSupport = 
                     node.getLookup().lookup(GlassfishModule.class);
             if(commonSupport != null) {
+                if (commonSupport.isRemote()) {
+                    // always restart remote instances in NORMAL mode
+                    commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE, true);
+                }
                 performActionImpl(commonSupport);
             }
         }
