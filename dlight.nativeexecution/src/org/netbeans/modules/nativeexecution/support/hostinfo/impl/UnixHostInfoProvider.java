@@ -59,7 +59,6 @@ import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.JschSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.EnvReader;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
@@ -79,7 +78,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
     static {
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
-        hostinfoScript = fl.locate("bin/nativeexecution/hostinfo.sh", null, false); // NOI18N
+        hostinfoScript = fl.locate("bin/nativeexecution/hostinfo.sh", "org.netbeans.modules.dlight.nativeexecution", false); // NOI18N
 
         if (hostinfoScript == null) {
             log.severe("Unable to find hostinfo.sh script!"); // NOI18N

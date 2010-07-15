@@ -932,7 +932,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         assertNoErrors("Some shortcuts were overridden by keymaps", warnings);
     }
     
-    public void DISABLEtestNbinstHost() throws Exception {
+    public void testNbinstHost() throws Exception {
         TestHandler handler = new TestHandler();
         Logger.getLogger("org.netbeans.core.startup.InstalledFileLocatorImpl").addHandler(handler);
         FileObject libs = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries");
