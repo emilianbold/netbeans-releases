@@ -967,10 +967,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 int len = errors.size();
                 u.openStream().close();
                 if (errors.size() == len + 1) {
-                    errors.set(len, errors.get(len) + " from " + f.getPath());
+                    errors.set(len, f.getPath() + ": " + errors.get(len));
                 }
             } catch (IOException x) {
-                errors.add("Cannot open " + u + " from " + f.getPath() + ": " + x);
+                errors.add(f.getPath() + ": cannot open " + u + ": " + x);
             }
         }
     }
