@@ -380,17 +380,11 @@
         <antcall target="do-module"><param name="module" value="wsdlextensions.file"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.ftp"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.hl7"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.ims"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.jdbc"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.jms"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.ldap"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.mq"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.rest"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.sap"/></antcall>
         <antcall target="do-module"><param name="module" value="wsdlextensions.scheduler"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.smtp"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.snmp"/></antcall>
-        <antcall target="do-module"><param name="module" value="wsdlextensions.swift"/></antcall>
     </target>
 
     <!-- kit -->

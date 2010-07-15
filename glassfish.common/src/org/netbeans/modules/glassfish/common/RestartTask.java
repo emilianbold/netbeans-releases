@@ -92,7 +92,7 @@ public class RestartTask extends BasicTask<OperationState> {
      */
     @Override
     public OperationState call() {
-        Logger.getLogger("glassfish").log(Level.FINEST, "RestartTask.call() called on thread \"" + Thread.currentThread().getName() + "\""); // NOI18N
+        Logger.getLogger("glassfish").log(Level.FINEST, "RestartTask.call() called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
         fireOperationStateChanged(OperationState.RUNNING, "MSG_RESTART_SERVER_IN_PROGRESS", instanceName); // NOI18N
 
         ServerState state = support.getServerState();
@@ -118,36 +118,6 @@ public class RestartTask extends BasicTask<OperationState> {
         } else {
             boolean postStopDelay = true;
             if (state == ServerState.RUNNING) {
-                if (support.isRemote()) {
-                    support.setServerState(ServerState.STARTING);
-                    support.refresh();
-                    // !PW Can we have a single manager instance per instance, available on
-                    // demand through lookup?
-                    // !PW FIXME this uses doubly nested runnables.  Can we fix?
-                    CommandRunner mgr = new CommandRunner(true, support.getCommandFactory(), ip, new OperationStateListener() {
-                        // if the http command is successful, we are not done yet...
-                        // The server still has to stop. If we signal success to the 'stateListener'
-                        // for the task, it may be premature.
-
-                        @Override
-                        public void operationStateChanged(OperationState newState, String message) {
-                            if (newState == OperationState.FAILED) {
-                                fireOperationStateChanged(newState, message, instanceName);
-                                support.setServerState(ServerState.STOPPED);
-                                support.refresh();
-                            } else if (newState == OperationState.COMPLETED) {
-                                support.setServerState(ServerState.RUNNING);
-                                try {
-                                    Thread.sleep(10000);
-                                } catch (InterruptedException ex) {
-                                    //Exceptions.printStackTrace(ex);
-                                }
-                                support.refresh();
-                            }
-                        }
-                    });
-                    mgr.restartServer();
-                } else {
                     Future<OperationState> stopTask = support.stopServer(null);
                     OperationState stopResult = OperationState.FAILED;
                     try {
@@ -160,7 +130,6 @@ public class RestartTask extends BasicTask<OperationState> {
                         return fireOperationStateChanged(OperationState.FAILED,
                                 "MSG_RESTART_SERVER_FAILED_WONT_STOP", instanceName); // NOI18N
                     }
-                }
             } else if (state == ServerState.STOPPING) {
                 // wait for server to stop.
                 ServerState currentState = state;
@@ -183,7 +152,6 @@ public class RestartTask extends BasicTask<OperationState> {
                 postStopDelay = false;
             }
 
-            if (!support.isRemote()) {
                 if (postStopDelay) {
                     // If we stopped the server (or it was already stopping), delay
                     // start for a few seconds to let system clean up ports.
@@ -213,11 +181,10 @@ public class RestartTask extends BasicTask<OperationState> {
                             "MSG_RESTART_SERVER_FAILED_WONT_START", instanceName); // NOI18N
                 }
 
-                if (support.getServerState() != ServerState.RUNNING) {
+                if (!support.isRemote() && support.getServerState() != ServerState.RUNNING) {
                     return fireOperationStateChanged(OperationState.FAILED,
                             "MSG_RESTART_SERVER_FAILED_REASON_UNKNOWN", instanceName); // NOI18N
                 }
-            }
         }
 
         return fireOperationStateChanged(OperationState.COMPLETED, "MSG_SERVER_RESTARTED", instanceName); // NOI18N

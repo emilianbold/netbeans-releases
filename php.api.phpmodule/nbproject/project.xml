@@ -138,6 +138,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>cz.swiz.netbeans</friend>
+                <friend>org.cakephp.netbeans</friend>
                 <friend>org.netbeans.modules.php.dbgp</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.fuse</friend>
