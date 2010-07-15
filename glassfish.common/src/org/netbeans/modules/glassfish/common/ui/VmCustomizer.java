@@ -53,6 +53,7 @@ import org.netbeans.modules.glassfish.spi.JrePicker;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class VmCustomizer extends javax.swing.JPanel  {
     GlassfishModule gm;
@@ -85,11 +86,12 @@ public class VmCustomizer extends javax.swing.JPanel  {
             addressValue.setText(address);
 
         }
-        if (!"/".equals(File.separator)) {
+        if (Utilities.isWindows() && !gm.isRemote()) {
             useSharedMemRB.setSelected("true".equals(gm.getInstanceProperties().get(GlassfishModule.USE_SHARED_MEM_ATTR)));
             useSocketRB.setSelected(!("true".equals(gm.getInstanceProperties().get(GlassfishModule.USE_SHARED_MEM_ATTR))));
         } else {
             // not windows -- disable shared mem and correct it if it was set...
+            // or remote instance....
             useSharedMemRB.setEnabled(false);
             useSharedMemRB.setSelected(false);
             useSocketRB.setSelected(true);
