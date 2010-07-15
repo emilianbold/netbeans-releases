@@ -114,9 +114,9 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
     private boolean allowUpdateRecreate = true;
 
     private String[] filterComboTxts = {
-        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_ALL"),
-        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_NEW"),
-        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_UPDATE")
+        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_ALL"),//NOI18N
+        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_NEW"),//NOI18N
+        org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_FILTERCOMBOBOX_UPDATE")//NOI18N
     };
     private TableUISupport.FilterAvailable filterAvailable = TableUISupport.FilterAvailable.ANY;
 

@@ -726,7 +726,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         @Override
         public Object getValue(String key) {
             if(Action.NAME.equals(key)){
-                return "All to Update";
+                return NbBundle.getMessage(EntityClassesPanel.class, "LBL_UpdateAction");//NOI18N
             }
             return null;
         }
@@ -754,6 +754,12 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            for(Table table: selectedTables.getTables()){
+                if(UpdateType.RECREATE.equals(selectedTables.getUpdateType(table))){
+                    selectedTables.setUpdateType(table, UpdateType.UPDATE);
+                }
+            }
+            TableUISupport.connectClassNames(classNamesTable, selectedTables);
         }
 
     }
@@ -762,7 +768,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         @Override
         public Object getValue(String key) {
             if(Action.NAME.equals(key)){
-                return "All to Recreate";
+                return NbBundle.getMessage(EntityClassesPanel.class, "LBL_RecreateAction");//NOI18N
             }
             return null;
         }
@@ -790,6 +796,12 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            for(Table table: selectedTables.getTables()){
+                if(UpdateType.UPDATE.equals(selectedTables.getUpdateType(table))){
+                    selectedTables.setUpdateType(table, UpdateType.RECREATE);
+                }
+            }
+            TableUISupport.connectClassNames(classNamesTable, selectedTables);
         }
 
     }
