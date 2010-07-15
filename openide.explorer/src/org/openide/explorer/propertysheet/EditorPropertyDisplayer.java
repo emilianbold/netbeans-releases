@@ -77,7 +77,8 @@ import javax.swing.*;
  *
  * @author  Tim Boudreau
  */
-class EditorPropertyDisplayer extends JComponent implements PropertyDisplayer_Inline {
+class EditorPropertyDisplayer extends JComponent implements PropertyDisplayer_Inline,
+                                                            InplaceEditor.Factory {
     private Property prop = null;
     private InplaceEditor inplace = null;
     private JComponent inner = null;
@@ -447,7 +448,7 @@ class EditorPropertyDisplayer extends JComponent implements PropertyDisplayer_In
         return env;
     }
 
-    protected final InplaceEditor getInplaceEditor() {
+    public final InplaceEditor getInplaceEditor() {
         return inplace;
     }
 
