@@ -685,9 +685,28 @@ public final class CsmTracer {
             print("<no macros>"); // NOI18N
             unindent();
         }
-        Collection/*CsmDeclaration*/ objects = file.getDeclarations();
-        for (Iterator iter = objects.iterator(); iter.hasNext();) {
-            dumpModel((CsmDeclaration) iter.next());
+        TreeMap<SortedKey,CsmOffsetableDeclaration> sorted = new TreeMap<SortedKey,CsmOffsetableDeclaration>();
+        for(CsmOffsetableDeclaration decl : file.getDeclarations()){
+            sorted.put(new SortedKey(decl), decl);
+        }
+        for(CsmOffsetableDeclaration decl :sorted.values()) {
+            dumpModel(decl);
+        }
+    }
+
+    private static final class SortedKey implements Comparable<SortedKey>{
+        private final CsmOffsetableDeclaration decl;
+        private SortedKey(CsmOffsetableDeclaration decl){
+            this.decl = decl;
+        }
+
+        @Override
+        public int compareTo(SortedKey o) {
+            int i = decl.getStartOffset() - o.decl.getStartOffset();
+            if (i == 0) {
+                i = decl.getName().toString().compareTo(o.decl.getName().toString());
+            }
+            return i;
         }
     }
 
