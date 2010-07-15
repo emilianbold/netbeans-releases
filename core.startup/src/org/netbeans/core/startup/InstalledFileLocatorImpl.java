@@ -296,6 +296,12 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
             // Very common case, no need to waste time checking this.
             return true;
         }
+        if (path.equals("update_tracking/" + codeNameBaseDashes + ".xml")) { // NOI18N
+            // Technically illegitimate - no one owns this metadata - but used by
+            // org.netbeans.modules.autoupdate.services.Utilities.locateUpdateTracking
+            // and probably harmless since this module would not be used with other impls.
+            return true;
+        }
         Map<String,Set<String>> ownershipByModule = ownershipByModuleByCluster.get(dir);
         File updateDir = new File(dir, "update_tracking");
         if (ownershipByModule == null) {
