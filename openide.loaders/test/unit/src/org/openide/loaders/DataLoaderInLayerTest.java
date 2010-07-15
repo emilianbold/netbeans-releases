@@ -221,11 +221,11 @@ public class DataLoaderInLayerTest extends NbTestCase {
         
         addRemove("text/plain", f, true);
         try {
-            FileSystem lfs = createFS("folderF/file.simple");
-            FileObject fo = lfs.findResource("folderF");
+            FileSystem lfs = createFS("folderFKK/file.simple");
+            FileObject fo = lfs.findResource("folderFKK");
             DataFolder df = DataFolder.findFolder(fo);
             DataObject[] arr = df.getChildren();
-            assertEquals("One object", 1, arr.length);
+            assertEquals("One object: " + Arrays.toString(arr), 1, arr.length);
             DataObject dob = arr[0];
             assertEquals(SimpleDataObject.class, dob.getClass());
             
@@ -460,13 +460,15 @@ public class DataLoaderInLayerTest extends NbTestCase {
         protected String displayName() {
             return "Simple";
         }
+        @Override
         protected MultiDataObject createMultiObject(FileObject pf) throws IOException {
             return new SimpleDataObject(pf, this);
         }
     }
     public static final class SimpleFactory implements DataObject.Factory {
+        @Override
         public DataObject findDataObject(FileObject fo, Set<? super FileObject> recognized) throws IOException {
-            return SimpleUniFileLoader.findObject(SimpleUniFileLoader.class).findDataObject(fo, recognized);
+            return SimpleUniFileLoader.findObject(SimpleUniFileLoader.class, true).findDataObject(fo, recognized);
         }
     }
     
@@ -505,6 +507,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
 
     private static void assertImage(String msg, Image img1, Image img2) {
         ImageObserver obs = new ImageObserver() {
+            @Override
             public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
                 fail("Already updated, hopefully");
                 return true;
