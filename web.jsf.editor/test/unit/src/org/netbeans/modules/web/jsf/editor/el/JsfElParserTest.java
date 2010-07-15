@@ -41,14 +41,11 @@
  */
 package org.netbeans.modules.web.jsf.editor.el;
 
-import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
-import com.sun.el.ValueExpressionImpl;
 import com.sun.el.lang.EvaluationContext;
 import java.beans.FeatureDescriptor;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Collection;
 import java.util.Collections;
 import javax.el.ELContext;
 import javax.el.ELResolver;
@@ -63,8 +60,6 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.jsf.editor.JsfHtmlExtension;
-import org.netbeans.modules.web.jsf.editor.JsfSupport;
-import java.io.IOException;
 import javax.swing.text.Document;
 import org.openide.filesystems.FileObject;
 import com.sun.el.parser.Node;

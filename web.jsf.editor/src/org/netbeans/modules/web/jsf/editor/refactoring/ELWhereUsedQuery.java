@@ -41,38 +41,35 @@
  */
 package org.netbeans.modules.web.jsf.editor.refactoring;
 
+import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstPropertySuffix;
+import com.sun.el.parser.Node;
+import com.sun.el.parser.NodeVisitor;
 import com.sun.source.tree.Tree.Kind;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import javax.el.ELException;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Position.Bias;
+import javax.lang.model.type.ExecutableType;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.editor.el.ELElement;
 import org.netbeans.modules.web.jsf.editor.el.ELIndex;
 import org.netbeans.modules.web.jsf.editor.el.ELIndexer.Fields;
-import org.netbeans.modules.web.jsf.editor.el.IndexedIdentifier;
-import org.netbeans.modules.web.jsf.editor.el.IndexedProperty;
 import org.openide.filesystems.FileObject;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.PositionBounds;
-import org.openide.text.PositionRef;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Finds usages of managed beans in Expression Language.
@@ -82,6 +79,7 @@ import org.openide.util.lookup.Lookups;
 public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
 
     private final WhereUsedQuery whereUsedQuery;
+    private CompilationInfo info;
 
     ELWhereUsedQuery(WhereUsedQuery whereUsedQuery) {
         super(whereUsedQuery);
@@ -94,7 +92,8 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
         if (handle == null) {
             return null;
         }
-        Element element = handle.resolveElement(RefactoringUtil.getCompilationInfo(handle, whereUsedQuery));
+        this.info = RefactoringUtil.getCompilationInfo(handle, whereUsedQuery);
+        Element element = handle.resolveElement(info);
         if (Kind.METHOD == handle.getKind()) {
             return handleProperty(refactoringElementsBag, handle, element);
         }
@@ -109,7 +108,7 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
         String clazz = type.getQualifiedName().toString();
         FacesManagedBean managedBean = findManagedBeanByClass(clazz);
         ELIndex index = ELIndex.get(handle.getFileObject());
-        List<IndexedIdentifier> identifiers = index.findManagedBeanReferences(managedBean.getManagedBeanName());
+        Collection<? extends IndexResult> identifiers = index.findManagedBeanReferences(managedBean.getManagedBeanName());
         for (WhereUsedQueryElement elem : createElements(identifiers, managedBean.getManagedBeanName())) {
             refactoringElementsBag.add(whereUsedQuery, elem);
         }
@@ -117,39 +116,120 @@ public class ELWhereUsedQuery extends JsfELRefactoringPlugin {
     }
 
     private Problem handleProperty(RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, Element element) {
-        String clazz = element.getEnclosingElement().asType().toString();
-        FacesManagedBean managedBean = findManagedBeanByClass(clazz);
-        if (managedBean == null) {
-            return null;
-        }
         String propertyName = RefactoringUtil.getPropertyName(element.getSimpleName().toString());
         ELIndex index = ELIndex.get(handle.getFileObject());
-        List<IndexedProperty> properties = index.findPropertyReferences(propertyName, managedBean.getManagedBeanName());
-        for (WhereUsedQueryElement elem : createElements(properties, propertyName)) {
-            refactoringElementsBag.add(whereUsedQuery, elem);
+        final Set<IndexResult> result = new HashSet<IndexResult>();
+        result.addAll(index.findPropertyReferences(propertyName));
+
+        for (ELElement e : getMatchingElements(result)) {
+            Node node = findMatchingNode(e.getNode(), propertyName, element.getEnclosingElement());
+            if (node != null) {
+                WhereUsedQueryElement wuqe =
+                        new WhereUsedQueryElement(e.getParserResult().getFileObject(), propertyName, e, node, getParserResult(e.getParserResult().getFileObject()));
+                refactoringElementsBag.add(whereUsedQuery, wuqe);
+            }
+
         }
         return null;
     }
 
+    private Node findMatchingNode(Node root, final String targetName, final Element targetType) {
+        final Node[] result = new Node[1];
+        root.accept(new NodeVisitor() {
 
-    private static List<WhereUsedQueryElement> createElements(List<? extends IndexedIdentifier> identifiers, String reference) {
+            @Override
+            public void visit(Node node) throws ELException {
+                if (node instanceof AstIdentifier) {
+                    Node parent = node.jjtGetParent();
+                    FacesManagedBean fmb = findManagedBeanByName(node.getImage());
+                    if (fmb == null) {
+                        return;
+                    }
+                    TypeElement fmbType = info.getElements().getTypeElement(fmb.getManagedBeanClass());
+                    Element enclosing = fmbType;
+                    for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
+                        Node child = parent.jjtGetChild(i);
+                        if (child instanceof AstPropertySuffix) {
+                            if (targetName.equals(child.getImage()) && enclosing.equals(targetType)) {
+                                Element matching = getElementForProperty(child.getImage(), enclosing);
+                                if (matching != null) {
+                                    result[0] = child;
+                                    return;
+                                }
+                            } else {
+                                enclosing = getElementForProperty(child.getImage(), enclosing);
+                            }
 
-        if (identifiers.isEmpty()) {
-            return Collections.emptyList();
+                        }
+                    }
+                }
+            }
+        });
+        return result[0];
+
+    }
+
+    /**
+     * Gets the element matching the given name from the given enclosing class.
+     * @param name the name of the element to find.
+     * @param enclosing
+     * @return
+     */
+    private Element getElementForProperty(String name, Element enclosing) {
+        for (Element each : enclosing.getEnclosedElements()) {
+            // we're only interested in public methods
+            // XXX: should probably include public fields too
+            if (each.getKind() != ElementKind.METHOD || !each.getModifiers().contains(Modifier.PUBLIC)) {
+                continue;
+            }
+            String methodName = each.getSimpleName().toString();
+            if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
+                ExecutableType returnType = (ExecutableType) each.asType();
+                return info.getTypes().asElement(returnType.getReturnType());
+            }
         }
-        
-        List<WhereUsedQueryElement> result = new ArrayList<WhereUsedQueryElement>(identifiers.size());
-        for (IndexedIdentifier identifier : identifiers) {
-            ParserResultHolder parserResultHolder = getParserResult(identifier.getFile());
+        return null;
+    }
+
+    private List<ELElement> getMatchingElements(Collection<? extends IndexResult> indexResult)  {
+        List<ELElement> result = new ArrayList<ELElement>();
+        for (IndexResult ir : indexResult) {
+            FileObject file = ir.getFile();
+            ParserResultHolder parserResultHolder = getParserResult(file);
             if (parserResultHolder.parserResult == null) {
                 continue;
             }
+            String expression = ir.getValue(Fields.EXPRESSION);
+            for (ELElement element : parserResultHolder.parserResult.getElements()) {
+                if (expression.equals(element.getExpression())) {
+                    result.add(element);
+                }
+            }
+        }
+        return result;
+
+    }
+
+    private static List<WhereUsedQueryElement> createElements(Collection<? extends IndexResult> results, String reference) {
+
+        if (results.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        List<WhereUsedQueryElement> result = new ArrayList<WhereUsedQueryElement>(results.size());
+        for (IndexResult ir : results) {
+            FileObject file = ir.getFile();
+            ParserResultHolder parserResultHolder = getParserResult(file);
+            if (parserResultHolder.parserResult == null) {
+                continue;
+            }
+            String expression = ir.getValue(Fields.EXPRESSION);
             List<ELElement> elements = new ArrayList(parserResultHolder.parserResult.getElements());
             for (Iterator<ELElement> it = elements.iterator(); it.hasNext();) {
                 ELElement eLElement = it.next();
-                if (identifier.getExpression().equals(eLElement.getExpression())) {
+                if (expression.equals(eLElement.getExpression())) {
                     WhereUsedQueryElement wuqe =
-                            new WhereUsedQueryElement(identifier.getFile(), reference, eLElement, parserResultHolder);
+                            new WhereUsedQueryElement(file, reference, eLElement, eLElement.getNode(), parserResultHolder);
                     result.add(wuqe);
                     it.remove();
                 }

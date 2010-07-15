@@ -126,6 +126,16 @@ public class JsfELRefactoringPlugin implements RefactoringPlugin {
         return null;
     }
 
+    protected FacesManagedBean findManagedBeanByName(String beanName) {
+        List<FacesManagedBean> beans = JSFBeanCache.getBeans(getWebModule());
+        for (FacesManagedBean bean : beans) {
+            if (bean.getManagedBeanName().equals(beanName)) {
+                return bean;
+            }
+        }
+        return null;
+    }
+
     protected static ParserResultHolder getParserResult(FileObject fo) {
         try {
             final Source source = Source.create(fo);

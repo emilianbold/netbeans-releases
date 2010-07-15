@@ -1,5 +1,6 @@
 package org.netbeans.modules.web.jsf.editor.refactoring;
 
+import com.sun.el.parser.Node;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -21,12 +22,14 @@ final class WhereUsedQueryElement extends SimpleRefactoringElementImplementation
     private final String reference;
     private final ELElement eLElement;
     private final ParserResultHolder parserResult;
+    private final Node targetNode;
 
-    public WhereUsedQueryElement(FileObject file, String reference, ELElement eLElement, ParserResultHolder parserResult) {
+    public WhereUsedQueryElement(FileObject file, String reference, ELElement eLElement, Node targetNode, ParserResultHolder parserResult) {
         this.file = file;
         this.reference = reference;
         this.eLElement = eLElement;
         this.parserResult = parserResult;
+        this.targetNode = targetNode;
     }
 
     @Override
@@ -65,9 +68,13 @@ final class WhereUsedQueryElement extends SimpleRefactoringElementImplementation
 
     @Override
     public PositionBounds getPosition() {
+        
+        int startOffset = eLElement.getOriginalOffset().getStart() + targetNode.startOffset();
+        int endOffset = startOffset + (targetNode.endOffset() - targetNode.startOffset());
+
         CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
-        PositionRef start = editor.createPositionRef(eLElement.getOriginalOffset().getStart(), Bias.Forward);
-        PositionRef end = editor.createPositionRef(eLElement.getOriginalOffset().getEnd(), Bias.Backward);
+        PositionRef start = editor.createPositionRef(startOffset, Bias.Forward);
+        PositionRef end = editor.createPositionRef(endOffset, Bias.Backward);
         return new PositionBounds(start, end);
     }
 }
