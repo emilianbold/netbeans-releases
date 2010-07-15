@@ -143,9 +143,73 @@ public class CommandRunner extends BasicTask<OperationState> {
      * Sends restart-domain command to server (asynchronous)
      *
      */
-    public Future<OperationState> restartServer() {
-            return execute(Commands.RESTART, "MSG_RESTART_SERVER_IN_PROGRESS"); // NOI18N
+    public Future<OperationState> restartServer(int debugPort) {
+        if (-1 == debugPort) {
+            return execute(new ServerCommand("restart-domain") {
+
+                @Override
+                public String getQuery() {
+                    return "debug=false";
+                }
+            }, "MSG_RESTART_SERVER_IN_PROGRESS"); // NOI18N
         }
+        // force the options to be correct for remote debugging, then restart...
+        CommandRunner inner = new CommandRunner(isReallyRunning, cf, ip, new OperationStateListener() {
+
+            @Override
+            public void operationStateChanged(OperationState newState, String message) {
+                //throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+        });
+
+        // I wish that the server folks had let me add a port number to the
+        // restart-domain --debug command... but this will have to do until then
+
+        ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand("configs.config.server-config.java-config.debug-options");
+
+        OperationState state = null;
+        try {
+            state = inner.execute(getCmd).get();
+        } catch (InterruptedException ie) {
+            Logger.getLogger("glassfish").log(Level.INFO,debugPort+"",ie);
+        } catch (ExecutionException ee) {
+            Logger.getLogger("glassfish").log(Level.INFO,debugPort+"",ee);
+        }
+        String qs = null;
+        if (state == OperationState.COMPLETED) {
+            Map<String, String> data = getCmd.getData();
+            if (!data.isEmpty()) {
+                // now I can reset the debug data
+                String oldValue = data.get("configs.config.server-config.java-config.debug-options");
+                ServerCommand.SetPropertyCommand setCmd =
+                        cf.getSetPropertyCommand("configs.config.server-config.java-config.debug-options",
+                        oldValue.replace("transport=dt_shmem", "transport=dt_socket").
+                        replace("address=[^,]+", "address=" + debugPort));
+                //serverCmd = setCmd;
+                //task = executor.submit(this);
+                try {
+                    state = inner.execute(setCmd).get();
+                    qs = "debug=true";
+                } catch (InterruptedException ie) {
+                     Logger.getLogger("glassfish").log(Level.INFO,debugPort+"",ie);
+                } catch (ExecutionException ee) {
+                     Logger.getLogger("glassfish").log(Level.INFO,debugPort+"",ee);
+                }
+            }
+        }
+        if (null == qs) {
+            qs = "debug=false";
+        }
+        final String fqs = qs;
+        return execute(new ServerCommand("restart-domain") {
+
+            @Override
+            public String getQuery() {
+                return fqs;
+            }
+        }, "MSG_RESTART_SERVER_IN_PROGRESS");
+    }
 
     /**
      * Sends list-applications command to server (synchronous)

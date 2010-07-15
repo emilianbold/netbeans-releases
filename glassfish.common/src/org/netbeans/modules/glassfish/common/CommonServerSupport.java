@@ -129,8 +129,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             String deployerUrl = instanceProvider.formatUri(glassfishRoot, hostName, adminPort);
             ip.put(URL_ATTR, deployerUrl);
         }
-
-        ip.put(JVM_MODE, isRemote ? DEBUG_MODE : NORMAL_MODE);
+        // Asume a local instance is in NORMAL_MODE
+        // Assume remote Prelude and 3.0 instances are in DEBUG (we cannot change them)
+        // Assume a remote 3.1 instance is in NORMAL_MODE... we can restart it into debug mode
+        ip.put(JVM_MODE, isRemote && !instanceProvider.equals(GlassfishInstanceProvider.getEe6WC()) ? DEBUG_MODE : NORMAL_MODE);
         properties.putAll(ip);
         
         // XXX username/password handling at some point.
@@ -375,9 +377,14 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                 }
             }
         };
-        FutureTask<OperationState> task = new FutureTask<OperationState>(
+        FutureTask<OperationState> task = null;
+        if (!isRemote()) {
+            task = new FutureTask<OperationState>(
                 new StopTask(this, stopServerListener, stateListener));
         // prevent j2eeserver from stopping a server it did not start.
+        } else {
+            task = new FutureTask<OperationState>(new NoopTask(this,stopServerListener,stateListener));
+        }
         if (stopDisabled) {
             stopServerListener.operationStateChanged(OperationState.COMPLETED, "");
             if (null != stateListener) {
@@ -685,7 +692,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             if(newState == OperationState.RUNNING) {
                 setServerState(ServerState.STARTING);
             } else if(newState == OperationState.COMPLETED) {
-                startedByIde = isReady(false,300,TimeUnit.MILLISECONDS);
+                startedByIde = isRemote ? false : isReady(false,300,TimeUnit.MILLISECONDS);
                 setServerState(endState);
             } else if(newState == OperationState.FAILED) {
                 setServerState(ServerState.STOPPED);
