@@ -55,9 +55,6 @@ import javax.swing.JComponent;
 
 
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
@@ -65,7 +62,6 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -86,24 +82,10 @@ import org.openide.windows.TopComponent;
  */
 public class MultiViewActionMapTest extends NbTestCase {
     
-    /** Creates a new instance of SFSTest */
     public MultiViewActionMapTest(String name) {
         super (name);
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(MultiViewActionMapTest.class);
-        
-        return suite;
-    }
-
     protected boolean runInEQ () {
         return true;
     }

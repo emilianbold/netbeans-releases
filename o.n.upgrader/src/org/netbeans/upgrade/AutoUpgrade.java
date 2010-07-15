@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -115,20 +115,20 @@ public final class AutoUpgrade {
 
     // the order of VERSION_TO_CHECK here defines the precedence of imports
     // the first one will be choosen for import
-    final static private List VERSION_TO_CHECK = 
-            Arrays.asList (new String[] { ".netbeans/6.8", ".netbeans/6.7", ".netbeans/6.5", ".netbeans/6.1", ".netbeans/6.0", ".netbeans/5.5.1", ".netbeans/5.5" });//NOI18N
+    final static private List<String> VERSION_TO_CHECK = 
+            Arrays.asList (new String[] { ".netbeans/6.9", ".netbeans/6.8", ".netbeans/6.7", ".netbeans/6.5", ".netbeans/6.1", ".netbeans/6.0", ".netbeans/5.5.1", ".netbeans/5.5" });//NOI18N
 
             
-    static private File checkPrevious (String[] version, final List versionsToCheck) {        
+    static private File checkPrevious (String[] version, final List<String> versionsToCheck) {        
         String userHome = System.getProperty ("user.home"); // NOI18N
         File sourceFolder = null;
         
         if (userHome != null) {
             File userHomeFile = new File (userHome);
-            Iterator it = versionsToCheck.iterator ();
+            Iterator<String> it = versionsToCheck.iterator ();
             String ver;
             while (it.hasNext () && sourceFolder == null) {
-                ver = (String) it.next ();
+                ver = it.next ();
                 sourceFolder = new File (userHomeFile.getAbsolutePath (), ver);
                 
                 if (sourceFolder.isDirectory ()) {
@@ -160,7 +160,7 @@ public final class AutoUpgrade {
     throws java.io.IOException, java.beans.PropertyVetoException {        
         File userdir = new File(System.getProperty ("netbeans.user", "")); // NOI18N
 
-        java.util.Set includeExclude;
+        java.util.Set<?> includeExclude;
         try {
             Reader r = new InputStreamReader (
                     AutoUpgrade.class.getResourceAsStream ("copy" + oldVersion), // NOI18N
@@ -168,9 +168,7 @@ public final class AutoUpgrade {
             includeExclude = IncludeExclude.create (r);
             r.close ();
         } catch (IOException ex) {
-            IOException e = new IOException ("Cannot import from version: " + oldVersion);
-            e.initCause (ex);
-            throw e;
+            throw new IOException("Cannot import from version: " + oldVersion, ex);
         }
 
         ErrorManager.getDefault ().log (
@@ -189,9 +187,7 @@ public final class AutoUpgrade {
                 URL url = AutoUpgrade.class.getResource("layer" + oldVersion + ".xml"); // NOI18N
                 xmlfs = (url != null) ? new XMLFileSystem(url) : null;
             } catch (SAXException ex) {
-                IOException e = new IOException ("Cannot import from version: " + oldVersion); // NOI18N
-                e.initCause (ex);
-                throw e;
+                throw new IOException("Cannot import from version: " + oldVersion, ex);
             }
             
             old = (xmlfs != null) ? createLayeredSystem(lfs, xmlfs) : lfs;
@@ -207,7 +203,7 @@ public final class AutoUpgrade {
     private static void doNonStandardUpgrade (File source,String oldVersion) 
             throws IOException, PropertyVetoException {
         File userdir = new File(System.getProperty("netbeans.user", "")); // NOI18N        
-        java.util.Set includeExclude;
+        java.util.Set<?> includeExclude;
         try {
             InputStream is = AutoUpgrade.class.getResourceAsStream("nonstandard" + oldVersion); // NOI18N
             if (is == null) {
@@ -217,9 +213,7 @@ public final class AutoUpgrade {
             includeExclude = IncludeExclude.create(r);
             r.close();
         } catch (IOException ex) {
-            IOException e = new IOException("Cannot import from version: " +  oldVersion + "nonstandard");
-            e.initCause(ex);
-            throw e;
+            throw new IOException("Cannot import from version: " +  oldVersion + "nonstandard", ex);
         }        
         ErrorManager.getDefault ().log (ErrorManager.USER, "Import: Old version: " // NOI18N
             + oldVersion + "nonstandard"  + ". Importing from " + source + " to " + userdir // NOI18N

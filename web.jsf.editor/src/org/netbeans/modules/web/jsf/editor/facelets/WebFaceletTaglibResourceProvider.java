@@ -99,14 +99,28 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
             }
 
             FileObject webModuleRoot = wm.getDocumentBase();
+            FileObject webInfBase = wm.getWebInf() == null ? null : wm.getWebInf().getParent();
             Collection<URL> librariesURLs = new ArrayList<URL>();
             if(faceletsLibrariesList != null) {
                 StringTokenizer st = new StringTokenizer(faceletsLibrariesList, ";");
                 while(st.hasMoreTokens()) {
                     String libraryPath = st.nextToken();
-                    FileObject libraryFO = webModuleRoot.getFileObject(libraryPath);
+                    FileObject libraryFO = null;
+                    if(webInfBase != null) {
+                        //try to resolve according to the web-inf parent
+                        libraryFO = webInfBase.getFileObject(libraryPath);
+                    }
+                    if(libraryFO == null) {
+                        //try to resolve according to the web module root,
+                        //in most cases a folder identical to the web-inf's parent folder
+                        //but may not always be true
+                        libraryFO = webModuleRoot.getFileObject(libraryPath);
+                    }
                     if(libraryFO != null) {
-                        librariesURLs.add(URLMapper.findURL(libraryFO, URLMapper.INTERNAL));
+                        URL url = URLMapper.findURL(libraryFO, URLMapper.INTERNAL);
+                        if(url != null) {
+                            librariesURLs.add(url);
+                        }
                     }
                 }
             }
@@ -119,5 +133,5 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
         }
         return null;
     }
-    
+
 }

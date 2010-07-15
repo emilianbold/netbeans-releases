@@ -117,14 +117,14 @@ public class EvaluatorTest extends TestBase {
     public void testClusterProperty() throws Exception {
         NbModuleProject p1 = generateStandaloneModule("module1");
         PropertyEvaluator eval = p1.evaluator();
-        String cluster = eval.getProperty("cluster");
-        assertEquals("Correct absolute path to module's cluster", file(getWorkDir(), "module1/build/cluster"), new File(cluster));
+        assertEquals("${build.dir}", file(getWorkDir(), "module1/build"), p1.getHelper().resolveFile(eval.getProperty("build.dir")));
+        assertEquals("standalone ${cluster}", file(getWorkDir(), "module1/build/cluster"), p1.getHelper().resolveFile(eval.getProperty("cluster")));
         SuiteProject s1 = generateSuite("suite1");
         NbModuleProject p2 = generateSuiteComponent(s1, "module2");
         eval = p2.evaluator();
-        // todo
-        cluster = eval.getProperty("cluster");
-        assertEquals("Correct absolute path to suite's cluster", file(getWorkDir(), "suite1/build/cluster"), new File(cluster));
+        assertEquals("${suite.dir}", file(getWorkDir(), "suite1"), p2.getHelper().resolveFile(eval.getProperty("suite.dir")));
+        assertEquals("${suite.build.dir}", file(getWorkDir(), "suite1/build"), p2.getHelper().resolveFile(eval.getProperty("suite.build.dir")));
+        assertEquals("suite component ${cluster}", file(getWorkDir(), "suite1/build/cluster"), p2.getHelper().resolveFile(eval.getProperty("cluster")));
     }
 
     /** @see "#63541" */

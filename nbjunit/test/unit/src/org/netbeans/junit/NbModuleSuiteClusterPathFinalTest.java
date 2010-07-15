@@ -71,7 +71,7 @@ public class NbModuleSuiteClusterPathFinalTest extends NbTestCase {
     
     public void testClusterPathFinal() throws Exception{
         LinkedList<File> clusters = new LinkedList<File>();
-        NbModuleSuite.S.findClusters(clusters, Collections.singletonList("ide[0-9]*"));
+        NbModuleSuite.S.findClusters(clusters, Collections.singletonList("ide"));
         assertFalse("Something found", clusters.isEmpty());
         assertEquals("One element found", 1, clusters.size());
         final File ideCluster = clusters.get(0);
@@ -82,8 +82,8 @@ public class NbModuleSuiteClusterPathFinalTest extends NbTestCase {
         String val = System.getProperty("my.clusters");
         assertNotNull("The test was running", clusters);
         assertTrue("ide cluster shall be included: " + val, val.contains(ideCluster.getPath()));
-        assertFalse("no java cluster shall be included: " + val, val.matches(".*java[0-9]*[:;].*"));
-        assertFalse("no apisupport cluster shall be included: " + val, val.matches(".*apisupport[0-9]*[:;].*"));
-        assertFalse("no ergonomics cluster shall be included: " + val, val.matches(".*ergonomics[0-9]*[:;].*"));
+        assertFalse("no java cluster shall be included: " + val, val.matches(".*java[:;].*"));
+        assertFalse("no apisupport cluster shall be included: " + val, val.matches(".*apisupport[:;].*"));
+        assertFalse("no ergonomics cluster shall be included: " + val, val.matches(".*ergonomics[:;].*"));
     }
 }

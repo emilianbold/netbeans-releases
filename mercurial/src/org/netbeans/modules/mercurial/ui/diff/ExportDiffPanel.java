@@ -125,11 +125,11 @@ public class ExportDiffPanel extends ChangesetPickerPanel {
         String fileName;
         if (fileToDiff != null && repoRev != null && repoRev.getLog() != null && repo != null) { //"<filename-ext>_%b_%r_%h"
             fileName = fileToDiff.getName().replace('.', '-') + "_" +  //NOI18N
-                    repoRev.getLog().getRevision() + "_" +  //NOI18N
+                    repoRev.getLog().getRevisionNumber() + "_" +  //NOI18N
                     repoRev.getLog().getCSetShortID(); //NOI18N
         }else if (repoRev != null && repoRev.getLog() != null && repo != null){
             fileName = HgModuleConfig.getDefault().getExportFilename().replace("%b", repo.getName()); //NOI18N
-            fileName = fileName.replace("%r", repoRev.getLog().getRevision()); //NOI18N
+            fileName = fileName.replace("%r", repoRev.getLog().getRevisionNumber()); //NOI18N
             fileName = fileName.replace("%h", repoRev.getLog().getCSetShortID()); //NOI18N
         }else if (repo != null){
             fileName = HgModuleConfig.getDefault().getExportFilename().replace("%b", repo.getName()); //NOI18N

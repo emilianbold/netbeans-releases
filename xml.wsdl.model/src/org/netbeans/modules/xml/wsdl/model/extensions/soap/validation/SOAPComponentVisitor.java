@@ -39,7 +39,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.xml.wsdl.model.extensions.soap.validation;
 
 import java.net.URI;
@@ -396,63 +395,37 @@ public class SOAPComponentVisitor implements SOAPComponent.Visitor {
     
     public void visit(SOAPBody body) {
         Collection<String> encodingStyles = body.getEncodingStyles();
+
         if (encodingStyles != null) {
             // This is optional.  Don't verify contents at this point.
         }
-        
         String namespace = body.getNamespace();
+
         if (namespace != null) {
             // This is optional.  We should verify that it is a valid URI, but
             // I don't want to be too restrictive at this point.
         }
-        
         try {
             SOAPMessageBase.Use use = body.getUse();
-        } catch (Throwable th) {
+
+            // #184959
+            if (use == SOAPMessageBase.Use.LITERAL) {
+                if (namespace == null || namespace.length() == 0) {
+                    results.add(
+                        new Validator.ResultItem(mValidator,
+                        Validator.ResultType.WARNING,
+                        body,
+                        NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.R2717_Literal_Binding")));
+                }
+            }
+        }
+        catch (Throwable th) {
             results.add(
-                    new Validator.ResultItem(mValidator,
-                    Validator.ResultType.ERROR,
-                    body,
-                    NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.Unsupported_use_attribute")));
+                new Validator.ResultItem(mValidator,
+                Validator.ResultType.ERROR,
+                body,
+                NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.Unsupported_use_attribute")));
         }
-        
-        List<String> parts = body.getParts();
-        if (parts != null) {
-            // This is optional.  Don't verify contents at this point.
-        }
-        
-        // Make sure that the Message definition exists
-        /*
-        WSDLComponent bindingMessage = body.getParent();
-        System.out.println("BindingMessage: " + bindingMessage);
-        if (bindingMessage instanceof BindingInput) {
-            BindingInput bindingInput = (BindingInput)bindingMessage;
-            System.out.println("BindingInput: " + bindingInput);
-            System.out.println("BindingInput Name: "+ bindingInput.getName());
-            System.out.println("Reference: " + bindingInput.getInput());
-            Input abstractInput = bindingInput.getInput().get();
-            if (abstractInput == null) {
-                results.add(
-                    new Validator.ResultItem(this,
-                        Validator.ResultType.ERROR,
-                        components,
-                        NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.No_abstract_message"),
-                        ""));
-            }
-            NamedComponentReference<Message> message = abstractInput.getMessage();
-            if (message == null) {
-                results.add(
-                    new Validator.ResultItem(this,
-                        Validator.ResultType.ERROR,
-                        components,
-                        NbBundle.getMessage(SOAPComponentVisitor.class, "SOAPBodyValidator.No_abstract_message"),
-                        ""));
-            }
-         
-        } else {
-         
-        }
-         */
     }
     
     public void visit(SOAPFault fault) {

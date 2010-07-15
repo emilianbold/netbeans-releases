@@ -79,7 +79,7 @@ public final class ViewFactoryImpl implements ViewFactory {
             } else if (kind.equals(AbstractDocument.ParagraphElementName)) {
                 return null;
             } else if (kind.equals(AbstractDocument.SectionElementName)) {
-                return new DocumentView(elem, false);
+                return new DocumentView(elem);
             } else if (kind.equals(StyleConstants.ComponentElementName)) {
                 return new ComponentView(elem);
             } else if (kind.equals(StyleConstants.IconElementName)) {

@@ -46,7 +46,6 @@ package org.netbeans.modules.palette;
 import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.palette.Utils.SortCategoriesAction;
 import java.util.Arrays;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.palette.AbstractPaletteTestHid;
 import org.netbeans.spi.palette.DummyActions;
 import org.netbeans.spi.palette.PaletteController;
@@ -67,12 +66,6 @@ public class UtilsTest extends AbstractPaletteTestHid {
 
     public UtilsTest(String testName) {
         super(testName);
-    }
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new UtilsTest("testSortAction"));
-        return suite;
     }
 
     /** Tests order of nodes after SortCategoriesAction is performed (see issue 146337). */

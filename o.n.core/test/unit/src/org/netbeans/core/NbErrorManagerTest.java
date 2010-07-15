@@ -56,11 +56,9 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
-import junit.framework.Test;
 import org.netbeans.core.startup.TopLogging;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -79,11 +77,6 @@ public final class NbErrorManagerTest extends NbTestCase {
         super(s);
     }
 
-    public static Test suite() {
-        //return new NbErrorManagerTest("testNestedThrowables");
-        return new NbTestSuite(NbErrorManagerTest.class);
-    }
-    
     private ErrorManager err;
     @Override
     protected void setUp() throws Exception {

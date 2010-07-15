@@ -134,6 +134,11 @@ public interface Model<C extends Component<C>> extends Referenceable {
     State getState();
     
     /**
+     * Be very careful while using this method. It returns only current state
+     * and doesn't inform if the transaction has been started by current thread.
+     * Only the thread, which owns the transaction can use it and do changes to
+     * the model.  
+     *
      * @return true if model is in middle of transformation tranasction.
      */
     boolean isIntransaction();
@@ -154,7 +159,10 @@ public interface Model<C extends Component<C>> extends Referenceable {
     /**
      * This method stops the transaction and causes all events to be fired. 
      * After all events have been fired, the document representation will be 
-     * modified to reflect the current value of the model (flush). 
+     * modified to reflect the current value of the model (flush).
+     *
+     * Be aware that the method does nothing if the transaction hasn't been started or
+     * started by another thread.
      */
     void endTransaction();
     

@@ -104,22 +104,19 @@ public class FolderArchive implements Archive {
             if (normalize) {
                 folder = FileUtil.normalizeFile(folder);
             }
-            if (folder.canRead()) {
-                File[] content = folder.listFiles();            
-                if (content != null) {
-                    List<JavaFileObject> result = new ArrayList<JavaFileObject>(content.length);
-                    for (File f : content) {
-                        if (f.isFile()) {
-                            if (entry == null || entry.includes(f.toURI().toURL())) {
-                                if (kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(f.getName())))) {
-                                    result.add(FileObjects.fileFileObject(f,this.root,filter, encoding));
-                                }
-                            }
-                        }
+            final File[] content = folder.listFiles();
+            if (content != null) {
+                List<JavaFileObject> result = new ArrayList<JavaFileObject>(content.length);
+                for (File f : content) {
+                    if ((kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(f.getName())))) &&
+                        f.isFile() &&
+                        (entry == null || entry.includes(f.toURI().toURL()))) {
+                        result.add(FileObjects.fileFileObject(f,this.root,filter, encoding));
                     }
-                    return Collections.unmodifiableList(result);
                 }
+                return Collections.unmodifiableList(result);
             }
+            
         }
         return Collections.<JavaFileObject>emptyList();
     }
@@ -133,6 +130,11 @@ public class FolderArchive implements Archive {
     }
 
     public void clear () {
+    }
 
+    @Override
+    public JavaFileObject getFile(String name) {
+        final File file = new File (this.root, name.replace('/', File.separatorChar));      //NOI18N
+        return file.exists() ? FileObjects.fileFileObject(file,this.root,null,encoding) : null ;
     }
 }

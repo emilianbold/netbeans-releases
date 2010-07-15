@@ -153,7 +153,7 @@ public abstract class APTAbstractWalker extends APTWalker {
      * @param postIncludeState cached information about visit of this include directive
      * @return true if need to cache post include state
      */
-    abstract protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, APTMacroMap.State postIncludeState);
+    abstract protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState);
     abstract protected boolean hasIncludeActionSideEffects();
 
     protected void onDefine(APT apt) {
@@ -238,14 +238,15 @@ public abstract class APTAbstractWalker extends APTWalker {
     }
 
     private void serialIncludeImpl(APTInclude aptInclude, ResolvedPath resolvedPath) {
-        APTMacroMap.State postIncludeState = cacheEntry.getPostIncludeMacroState(aptInclude);
-        if (postIncludeState != null && !hasIncludeActionSideEffects()) {
-            getPreprocHandler().getMacroMap().setState(postIncludeState);
+        PostIncludeData postIncludeData = cacheEntry.getPostIncludeState(aptInclude);
+        if (postIncludeData.hasPostIncludeMacroState() && !hasIncludeActionSideEffects()) {
+            getPreprocHandler().getMacroMap().setState(postIncludeData.getPostIncludeMacroState());
             return;
         }
-        if (include(resolvedPath, aptInclude, postIncludeState)) {
-            postIncludeState = getPreprocHandler().getMacroMap().getState();
-            cacheEntry.setPostIncludeMacroState(aptInclude, postIncludeState);
+        if (include(resolvedPath, aptInclude, postIncludeData)) {
+            APTMacroMap.State postIncludeMacroState = getPreprocHandler().getMacroMap().getState();
+            PostIncludeData newData = new PostIncludeData(postIncludeMacroState, postIncludeData.getDeadBlocks());
+            cacheEntry.setIncludeData(aptInclude, newData);
         }
     }
 }

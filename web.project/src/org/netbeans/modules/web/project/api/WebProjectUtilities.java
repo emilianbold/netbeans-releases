@@ -150,7 +150,7 @@ public class WebProjectUtilities {
     public static final String MINIMUM_ANT_VERSION = "1.6.5";
     
     private static final Logger LOGGER = Logger.getLogger(WebProjectUtilities.class.getName());
-    private static String RESOURCE_FOLDER = "org/netbeans/modules/web/project/ui/resources/"; //NOI18N
+    private static String RESOURCE_FOLDER = "/org/netbeans/modules/web/project/ui/resources/"; //NOI18N
     private WebProjectUtilities() {}
     
     /**
@@ -234,7 +234,7 @@ public class WebProjectUtilities {
         
         //create default manifest
         if(confFolderFO != null) {
-            String manifestText = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "MANIFEST.MF")); //NOI18N
+            String manifestText = readResource(WebProjectUtilities.class.getResourceAsStream(RESOURCE_FOLDER + "MANIFEST.MF")); //NOI18N
             FileObject manifest = FileUtil.createData(confFolderFO, "MANIFEST.MF"); //NOI18N
             FileLock lock = manifest.lock();
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(manifest.getOutputStream(lock)));

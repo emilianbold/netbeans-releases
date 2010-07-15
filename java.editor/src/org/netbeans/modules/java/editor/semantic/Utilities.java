@@ -371,7 +371,7 @@ public class Utilities {
         return result[0];
     }
     
-    private static int findLastBracketImpl(MethodTree tree, CompilationUnitTree cu, SourcePositions positions, Document doc) {
+    private static int findLastBracketImpl(Tree tree, CompilationUnitTree cu, SourcePositions positions, Document doc) {
         int start = (int)positions.getStartPosition(cu, tree);
         int end   = (int)positions.getEndPosition(cu, tree);
         
@@ -403,7 +403,7 @@ public class Utilities {
         return (-1);
     }
     
-    public static int findLastBracket(final MethodTree tree, final CompilationUnitTree cu, final SourcePositions positions, final Document doc) {
+    public static int findLastBracket(final Tree tree, final CompilationUnitTree cu, final SourcePositions positions, final Document doc) {
         final int[] result = new int[1];
         
         doc.render(new Runnable() {

@@ -295,7 +295,7 @@ public final class GeneratedFilesHelper {
                         public void run() throws IOException {
                             FileObject projectXml = dir.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
                             if (projectXml == null) {
-                                throw new IOException("project.xml file doesn't exist"); // NOI18N
+                                throw new IOException("Missing project metadata: " + h.resolveFile(AntProjectHelper.PROJECT_XML_PATH)); // NOI18N
                             }
                             final FileObject buildScriptXml = FileUtil.createData(dir, path);
                             byte[] projectXmlData;

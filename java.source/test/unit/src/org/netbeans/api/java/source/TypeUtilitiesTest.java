@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,6 +44,7 @@
 package org.netbeans.api.java.source;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import javax.lang.model.element.TypeElement;
@@ -53,6 +54,8 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -138,6 +141,25 @@ public class TypeUtilitiesTest extends NbTestCase {
                 }
                 
                 assertTrue(wasThrown);
+            }
+        }, true);
+        
+    }
+    
+    public void testTypeName() throws Exception {
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject src  = root.createData("Test.java");
+        TestUtilities.copyStringToFile(src, "package test; public class Test {}");
+        JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), ClassPathSupport.createClassPath(new URL[0]), ClassPathSupport.createClassPath(new URL[0])), src);
+        
+        js.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController info) throws IOException  {
+                info.toPhase(JavaSource.Phase.RESOLVED);
+                TypeElement context = info.getTopLevelElements().get(0);
+                assertEquals("java.util.List<java.lang.String>[]", info.getTypeUtilities().getTypeName(info.getTreeUtilities().parseType("java.util.List<java.lang.String>[]", context), TypeUtilities.TypeNameOptions.PRINT_FQN));
+                assertEquals("List<String>[]", info.getTypeUtilities().getTypeName(info.getTreeUtilities().parseType("java.util.List<java.lang.String>[]", context)));
+                assertEquals("java.util.List<java.lang.String>...", info.getTypeUtilities().getTypeName(info.getTreeUtilities().parseType("java.util.List<java.lang.String>[]", context), TypeUtilities.TypeNameOptions.PRINT_FQN, TypeUtilities.TypeNameOptions.PRINT_AS_VARARG));
+                assertEquals("List<String>...", info.getTypeUtilities().getTypeName(info.getTreeUtilities().parseType("java.util.List<java.lang.String>[]", context), TypeUtilities.TypeNameOptions.PRINT_AS_VARARG));
             }
         }, true);
         

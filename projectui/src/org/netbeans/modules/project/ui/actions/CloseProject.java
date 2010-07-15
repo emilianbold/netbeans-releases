@@ -66,7 +66,7 @@ public class CloseProject extends ProjectAction {
     
     public CloseProject( Lookup context ) {
         super( (String)null, namePattern, namePatternPopup, null, context );        
-        refresh( getLookup() );
+        refresh(getLookup(), true);
     }
         
     @Override
@@ -86,9 +86,9 @@ public class CloseProject extends ProjectAction {
     }
     
     @Override
-    public void refresh( Lookup context ) {
+    public void refresh(Lookup context, boolean immediate) {
         
-        super.refresh( context );
+        super.refresh(context, immediate);
         
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );
         // XXX make it work better for mutliple open projects

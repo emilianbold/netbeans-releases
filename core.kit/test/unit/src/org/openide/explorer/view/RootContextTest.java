@@ -45,18 +45,13 @@
 
 package org.openide.explorer.view;
 
-import java.beans.PropertyVetoException;
 import javax.swing.ListSelectionModel;
 import javax.swing.tree.TreeSelectionModel;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
-import org.openide.explorer.view.*;
 
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -73,15 +68,6 @@ public class RootContextTest extends NbTestCase {
     
     public RootContextTest (java.lang.String testName) {
         super (testName);
-    }
-    
-    public static void main (java.lang.String[] args) {
-        junit.textui.TestRunner.run (suite ());
-    }
-    
-    public static Test suite () {
-        TestSuite suite = new NbTestSuite (RootContextTest.class);
-        return suite;
     }
     
     // helper variables

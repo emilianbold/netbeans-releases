@@ -7,7 +7,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -32,9 +32,8 @@
                   <Component id="jButton1" alignment="1" max="32767" attributes="1"/>
               </Group>
           </Group>
-          <Component id="jLabelErrorMessage" alignment="0" pref="576" max="32767" attributes="2"/>
-          <Component id="jCheckBoxBuildSubprojects" alignment="0" pref="576" max="32767" attributes="1"/>
-          <Component id="jTabbedPane1" alignment="0" pref="576" max="32767" attributes="2"/>
+          <Component id="jCheckBoxBuildSubprojects" alignment="0" pref="630" max="32767" attributes="1"/>
+          <Component id="jTabbedPane1" alignment="0" pref="630" max="32767" attributes="2"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -55,8 +54,6 @@
               <Component id="jTabbedPane1" pref="323" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jCheckBoxBuildSubprojects" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="jLabelErrorMessage" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -1189,12 +1186,6 @@
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabelErrorMessage">
-      <Properties>
-        <Property name="text" type="java.lang.String" value=" "/>
-        <Property name="opaque" type="boolean" value="true"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="sharedLibrariesLabel">
       <Properties>

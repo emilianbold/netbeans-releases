@@ -92,8 +92,8 @@
         </file>
       </folder>
       <file name="DTDCConfiguration.instance">
-        <attr name="instanceCreate" methodvalue="com.sun.dlight.collector.dtrace.impl.DTDCConfigurationFactory.create"/>
-        <attr name="instanceOf" stringvalue="com.sun.dlight.collector.dtrace.api.DTDCConfiguration"/>
+        <attr name="instanceCreate" methodvalue="com.sun.tools.dlight.collector.dtrace.impl.DTDCConfigurationFactory.create"/>
+        <attr name="instanceOf" stringvalue="com.sun.tools.dlight.collector.dtrace.api.DTDCConfiguration"/>
         <attr name="script" urlvalue="nbresloc:/org/netbeans/modules/dlight/iofileb/script.d"/>
         <attr name="datatable" stringvalue="DLight/iofileb.Configuration/DataTableMetadata.instance"/>
         <attr name="stack.support" boolvalue="true"/>

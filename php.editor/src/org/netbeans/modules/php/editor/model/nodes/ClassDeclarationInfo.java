@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.php.editor.model.nodes;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
@@ -93,8 +95,26 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
             getOriginalNode().getSuperClass() : null;
     }
 
+    public QualifiedName getSuperClassName() {
+        final Expression superClass = getSuperClass();
+        return (superClass != null) ?
+            QualifiedName.create(superClass) : null;
+    }
+
     public List<? extends Expression> getInterfaces() {
         return getOriginalNode().getInterfaes();
+    }
+
+    public Set<QualifiedName> getInterfaceNames() {
+        final Set<QualifiedName> retval = new HashSet<QualifiedName>();
+        final List<Expression> interfaes = getOriginalNode().getInterfaes();
+        for (Expression iface : interfaes) {
+            QualifiedName ifaceName = QualifiedName.create(iface);
+            if (ifaceName != null) {
+                retval.add(ifaceName);
+            }
+        }
+        return retval;
     }
 
     public PhpModifiers getAccessModifiers() {

@@ -1627,7 +1627,7 @@ executeMainClass() {
 }
 
 escapeString() {
-	echo "$1" | sed "s/\\\/\\\\\\\/g;s/\ /\\\\ /g;s/\"/\\\\\"/g" # escape spaces & commas
+	echo "$1" | sed "s/\\\/\\\\\\\/g;s/\ /\\\\ /g;s/\"/\\\\\"/g;s/(/\\\\\(/g;s/)/\\\\\)/g;" # escape spaces, commas and parentheses
 }
 
 getMessage() {

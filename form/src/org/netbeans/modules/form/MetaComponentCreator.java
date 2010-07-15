@@ -1500,7 +1500,7 @@ public class MetaComponentCreator {
             if ("".equals(((TextField)comp).getText())) { // NOI18N
                 changes.put("text", varName); // NOI18N
             }
-        } else if (comp instanceof JComboBox) {
+        } else if ("javax.swing.JComboBox".equals(comp.getClass().getName())) { // NOI18N
             ComboBoxModel model = ((JComboBox)comp).getModel();
             if ((model == null) || (model.getSize() == 0)) {
                 String prefix = NbBundle.getMessage(MetaComponentCreator.class, "FMT_CreatorComboBoxItem"); // NOI18N

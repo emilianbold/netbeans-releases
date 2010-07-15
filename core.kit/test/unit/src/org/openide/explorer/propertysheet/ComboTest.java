@@ -53,11 +53,9 @@ package org.openide.explorer.propertysheet;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.DisplayMode;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -65,19 +63,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.explorer.propertysheet.*;
-import org.openide.explorer.propertysheet.editors.*;
 import java.beans.*;
 import java.lang.reflect.*;
 import javax.swing.*;
 import javax.swing.ImageIcon;
-import junit.framework.*;
-import junit.textui.TestRunner;
 import org.netbeans.junit.*;
-import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 
 
 /** Tests property marking functionality and the ability of a Property to
@@ -396,25 +387,6 @@ public class ComboTest extends NbTestCase {
         }
     }
     
-    public static void main(String args[]) {
-        LookAndFeel lf = UIManager.getLookAndFeel();
-        TestRunner.run(suite ());
-    }
-    
-    public static Test suite() {
-        return new ComboTestSuite ();
-    }
-    
-    private static final class ComboTestSuite extends NbTestSuite {
-        public ComboTestSuite () {
-            super (ComboTest.class);
-        }
-        
-        public void run (final TestResult tr) {
-            super.run (tr);
-        }
-    }
-
     // Property definition
     public class TProperty extends PropertySupport {
         private Object myValue = "Value";

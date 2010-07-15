@@ -112,12 +112,6 @@ public class ModuleManagerTest extends SetupHid {
         super(name);
     }
 
-    /*
-    public static Test suite() {
-        return new ModuleManagerTest("test...");
-    }
-     */
-
     @Override
     protected Level logLevel() {
         return Level.FINE;

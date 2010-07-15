@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeploy
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.openide.WizardDescriptor.InstantiatingIterator;
@@ -149,6 +150,11 @@ public final class ProxyOptionalFactory extends OptionalDeploymentManagerFactory
         if (!noInitializationFinish) {
             getDelegate().finishServerInitialization();
         }
+    }
+
+    @Override
+    public ServerLibraryManager getServerLibraryManager(DeploymentManager dm) {
+        return getDelegate().getServerLibraryManager(dm);
     }
 
     private OptionalDeploymentManagerFactory getDelegate() {

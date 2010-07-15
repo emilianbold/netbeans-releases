@@ -50,12 +50,9 @@ import java.util.Stack;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 
-import org.netbeans.junit.NbTestSuite;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -79,11 +76,6 @@ public class ExternalChangeOfModifiedFileTest extends NbTestCase {
     
     public ExternalChangeOfModifiedFileTest (java.lang.String testName) {
         super(testName);
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(ExternalChangeOfModifiedFileTest.class);
-        return suite;
     }
     
     @Override

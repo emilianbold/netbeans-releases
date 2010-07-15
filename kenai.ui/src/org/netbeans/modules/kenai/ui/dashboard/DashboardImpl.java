@@ -114,7 +114,11 @@ public final class DashboardImpl extends Dashboard {
     private final Object LOCK = new Object();
 
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
-    private Kenai kenai = Utilities.getPreferredKenai();
+    private Kenai kenai;
+    {
+     Kenai k = Utilities.getLastKenai();
+     kenai = k==null?Utilities.getPreferredKenai():k;
+    }
 
     private PropertyChangeListener kenaiListener;
 
@@ -219,6 +223,7 @@ public final class DashboardImpl extends Dashboard {
     }
 
     public void setKenai(Kenai kenai) {
+        Utilities.setLastKenai(kenai);
         this.kenai = kenai;
         final PasswordAuthentication newValue = kenai!=null?kenai.getPasswordAuthentication():null;
         if (newValue == null) {

@@ -189,7 +189,7 @@ public final class ChangeType implements ErrorRule<Void> {
 
                 result.add(new ChangeTypeFix(info.getJavaSource(),
                         ((VariableTree) leaf[0]).getName().toString(), 
-                        Utilities.getTypeName(expressionType[0], false).toString(), offset));
+                        Utilities.getTypeName(info, expressionType[0], false).toString(), offset));
             }
         }
         

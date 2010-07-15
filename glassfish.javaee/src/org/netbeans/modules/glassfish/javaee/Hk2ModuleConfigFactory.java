@@ -61,7 +61,7 @@ public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory {
     public ModuleConfiguration create(J2eeModule module) throws ConfigurationException {
         ModuleConfiguration retVal = null;
         try {
-            retVal = new ModuleConfigurationImpl(module);
+            retVal = new ModuleConfigurationImpl(module, new Hk2Configuration(module));
         } catch (ConfigurationException ce) {
             throw ce;
         } catch (Exception ex) {

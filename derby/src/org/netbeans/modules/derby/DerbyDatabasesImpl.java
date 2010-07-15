@@ -418,7 +418,7 @@ public final class DerbyDatabasesImpl {
      */
      public synchronized void extractSampleDatabase(String databaseName) throws IOException{
         File systemHomeFile = ensureSystemHome();
-        File sourceFO = InstalledFileLocator.getDefault().locate("modules/ext/derbysampledb.zip", null, false); // NOI18N
+        File sourceFO = InstalledFileLocator.getDefault().locate("modules/ext/derbysampledb.zip", "org.netbeans.modules.derby", false); // NOI18N
         FileObject systemHomeFO = FileUtil.toFileObject(systemHomeFile);
         FileObject sampleFO = systemHomeFO.getFileObject(databaseName);
         if (sampleFO == null) {
@@ -461,9 +461,9 @@ public final class DerbyDatabasesImpl {
             throw new IllegalStateException("The " + DerbyOptions.DRIVER_DISP_NAME_NET + " driver was not found"); // NOI18N
         }
         Preferences pref = NbPreferences.root().node(PATH_TO_DATABASE_PREFERENCES + databaseName);
-        pref.put(USER_KEY, user);
-        pref.put(SCHEMA_KEY, schema);
-        pref.put(PASSWORD_KEY, password);
+        pref.put(USER_KEY, user == null ? "" : user);
+        pref.put(SCHEMA_KEY, schema == null ? "" : schema);
+        pref.put(PASSWORD_KEY, password == null ? "" : password);
         DatabaseConnection dbconn = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:" + RegisterDerby.getDefault().getPort() + "/" + databaseName, user, schema, password, rememberPassword); // NOI18N
         if (ConnectionManager.getDefault().getConnection(dbconn.getName()) == null) {
             ConnectionManager.getDefault().addConnection(dbconn);

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.cncppunit.editor.filecreation;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,6 +69,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -117,9 +119,12 @@ public class TestCppUnitIterator extends AbstractUnitTestIterator {
                 }
             }
         }
+
+        FileObject rootFolder = getRootFolder();
+        File rootFolderFile = FileUtil.toFile(rootFolder);
         params.putAll(CppUnitCodeGenerator.generateTemplateParamsForFunctions(
                 getTestClassName(),
-                getRootFolder().getPath(),
+                rootFolderFile.getAbsolutePath(),
                 fs));
 
         String headerName = getTestClassHeaderFileName(); //NOI18N

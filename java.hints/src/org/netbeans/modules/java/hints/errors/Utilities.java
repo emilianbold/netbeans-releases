@@ -238,7 +238,7 @@ public class Utilities {
         if (tm.getKind().isPrimitive()) {
             return "" + Character.toLowerCase(tm.getKind().name().charAt(0));
         }
-        
+
         switch (tm.getKind()) {
             case DECLARED:
                 DeclaredType dt = (DeclaredType) tm;

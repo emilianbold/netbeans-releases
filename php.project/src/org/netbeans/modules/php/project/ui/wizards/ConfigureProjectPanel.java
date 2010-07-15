@@ -60,10 +60,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.project.ui.wizards.NewPhpProjectWizardIterator.WizardType;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -170,7 +170,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         configureProjectPanelVisual.setProjectFolder(getProjectFolder().getAbsolutePath());
 
         // php version
-        configureProjectPanelVisual.setPhpVersion(getPhpVersion());
+        PhpVersion phpVersion = getPhpVersion();
+        if (phpVersion != null) {
+            configureProjectPanelVisual.setPhpVersion(phpVersion);
+        }
 
         // encoding
         configureProjectPanelVisual.setEncoding(getEncoding());
@@ -322,6 +325,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         return steps;
     }
 
+    public WizardType getWizardType() {
+        return wizardType;
+    }
+
     String getProjectName() {
         String projectName = (String) descriptor.getProperty(PROJECT_NAME);
         if (projectName == null) {
@@ -355,11 +362,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private PhpVersion getPhpVersion() {
-        PhpVersion phpVersion = (PhpVersion) descriptor.getProperty(PHP_VERSION);
-        if (phpVersion == null) {
-            phpVersion = ProjectPropertiesSupport.getDefaultPhpVersion();
-        }
-        return phpVersion;
+        return (PhpVersion) descriptor.getProperty(PHP_VERSION);
     }
 
     private Charset getEncoding() {

@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,16 +45,31 @@ package org.netbeans.api.java.source;
 
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.SimpleTypeVisitor6;
+import org.netbeans.api.annotations.common.CheckReturnValue;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 /**Various utilities related to the {@link TypeMirror}s.
- * 
+ *
  * @see javax.lang.model.util.Types
  *
  * @since 0.6
- * 
+ *
  * @author Jan Lahoda
  */
 public final class TypeUtilities {
@@ -113,5 +128,146 @@ public final class TypeUtilities {
             l2 = l2.prepend((Type)typeMirror);
         return Types.instance(info.impl.getJavacTask().getContext()).subst((Type)type, l1, l2);
     }
-    
+
+    /**Get textual representation of the given type.
+     *
+     * @param type to print
+     * @param options allows to specify various adjustments to the output text
+     * @return textual representation of the given type
+     * @since 0.62
+     */
+    public @NonNull @CheckReturnValue CharSequence getTypeName(@NullAllowed TypeMirror type, @NonNull TypeNameOptions... options) {
+	if (type == null)
+            return ""; //NOI18N
+        Set<TypeNameOptions> opt = EnumSet.noneOf(TypeNameOptions.class);
+        opt.addAll(Arrays.asList(options));
+        return new TypeNameVisitor(opt.contains(TypeNameOptions.PRINT_AS_VARARG)).visit(type, opt.contains(TypeNameOptions.PRINT_FQN)).toString();
+    }
+
+    /**Options for the {@link #getTypeName(javax.lang.model.type.TypeMirror, org.netbeans.api.java.source.TypeUtilities.TypeNameOptions[]) } method.
+     * @since 0.62
+     */
+    public enum TypeNameOptions {
+        /**
+         * Print declared types as fully qualified names.
+         */
+        PRINT_FQN,
+        /**
+         * Print "..." instead of "[]".
+         */
+        PRINT_AS_VARARG;
+    }
+
+    private static final String UNKNOWN = "<unknown>"; //NOI18N
+    private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
+    private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
+
+        private boolean varArg;
+        private boolean insideCapturedWildcard = false;
+
+        private TypeNameVisitor(boolean varArg) {
+            super(new StringBuilder());
+            this.varArg = varArg;
+        }
+
+        @Override
+        public StringBuilder defaultAction(TypeMirror t, Boolean p) {
+            return DEFAULT_VALUE.append(t);
+        }
+
+        @Override
+        public StringBuilder visitDeclared(DeclaredType t, Boolean p) {
+            Element e = t.asElement();
+            if (e instanceof TypeElement) {
+                TypeElement te = (TypeElement)e;
+                DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
+                Iterator<? extends TypeMirror> it = t.getTypeArguments().iterator();
+                if (it.hasNext()) {
+                    DEFAULT_VALUE.append("<"); //NOI18N
+                    while(it.hasNext()) {
+                        visit(it.next(), p);
+                        if (it.hasNext())
+                            DEFAULT_VALUE.append(", "); //NOI18N
+                    }
+                    DEFAULT_VALUE.append(">"); //NOI18N
+                }
+                return DEFAULT_VALUE;
+            } else {
+                return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
+            }
+        }
+
+        @Override
+        public StringBuilder visitArray(ArrayType t, Boolean p) {
+            boolean isVarArg = varArg;
+            varArg = false;
+            visit(t.getComponentType(), p);
+            return DEFAULT_VALUE.append(isVarArg ? "..." : "[]"); //NOI18N
+        }
+
+        @Override
+        public StringBuilder visitTypeVariable(TypeVariable t, Boolean p) {
+            Element e = t.asElement();
+            if (e != null) {
+                String name = e.getSimpleName().toString();
+                if (!CAPTURED_WILDCARD.equals(name))
+                    return DEFAULT_VALUE.append(name);
+            }
+            DEFAULT_VALUE.append("?"); //NOI18N
+            if (!insideCapturedWildcard) {
+                insideCapturedWildcard = true;
+                TypeMirror bound = t.getLowerBound();
+                if (bound != null && bound.getKind() != TypeKind.NULL) {
+                    DEFAULT_VALUE.append(" super "); //NOI18N
+                    visit(bound, p);
+                } else {
+                    bound = t.getUpperBound();
+                    if (bound != null && bound.getKind() != TypeKind.NULL) {
+                        DEFAULT_VALUE.append(" extends "); //NOI18N
+                        if (bound.getKind() == TypeKind.TYPEVAR)
+                            bound = ((TypeVariable)bound).getLowerBound();
+                        visit(bound, p);
+                    }
+                }
+                insideCapturedWildcard = false;
+            }
+            return DEFAULT_VALUE;
+        }
+
+        @Override
+        public StringBuilder visitWildcard(WildcardType t, Boolean p) {
+            int len = DEFAULT_VALUE.length();
+            DEFAULT_VALUE.append("?"); //NOI18N
+            TypeMirror bound = t.getSuperBound();
+            if (bound == null) {
+                bound = t.getExtendsBound();
+                if (bound != null) {
+                    DEFAULT_VALUE.append(" extends "); //NOI18N
+                    if (bound.getKind() == TypeKind.WILDCARD)
+                        bound = ((WildcardType)bound).getSuperBound();
+                    visit(bound, p);
+                } else if (len == 0) {
+                    bound = SourceUtils.getBound(t);
+                    if (bound != null && (bound.getKind() != TypeKind.DECLARED || !((TypeElement)((DeclaredType)bound).asElement()).getQualifiedName().contentEquals("java.lang.Object"))) { //NOI18N
+                        DEFAULT_VALUE.append(" extends "); //NOI18N
+                        visit(bound, p);
+                    }
+                }
+            } else {
+                DEFAULT_VALUE.append(" super "); //NOI18N
+                visit(bound, p);
+            }
+            return DEFAULT_VALUE;
+        }
+
+        @Override
+        public StringBuilder visitError(ErrorType t, Boolean p) {
+            Element e = t.asElement();
+            if (e instanceof TypeElement) {
+                TypeElement te = (TypeElement)e;
+                return DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
+            }
+            return DEFAULT_VALUE;
+        }
+    }
 }

@@ -41,20 +41,22 @@
  */
 package org.netbeans.modules.dlight.api.support;
 
+import java.io.IOException;
 import java.net.ConnectException;
 import java.nio.charset.Charset;
-import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
@@ -69,9 +71,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
-import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
@@ -94,12 +94,19 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private String cmd;
     private boolean x11forwarding;
     private Future<Integer> targetFutureResult;
-    private volatile int pid = -1;
-    private volatile Integer status = null;
-    private final StateLock stateLock = new StateLock();
-    private volatile State state;
     private LineConvertorFactory outConvertorFactory;
     private LineConvertorFactory errConvertorFactory;
+    private final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
+    private static final EnumMap<NativeProcess.State, DLightTarget.State> stateTrMap = new EnumMap<NativeProcess.State, DLightTarget.State>(NativeProcess.State.class);
+
+    static {
+        stateTrMap.put(NativeProcess.State.CANCELLED, State.TERMINATED);
+        stateTrMap.put(NativeProcess.State.ERROR, State.FAILED);
+        stateTrMap.put(NativeProcess.State.FINISHED, State.DONE);
+        stateTrMap.put(NativeProcess.State.INITIAL, State.INIT);
+        stateTrMap.put(NativeProcess.State.RUNNING, State.RUNNING);
+        stateTrMap.put(NativeProcess.State.STARTING, State.STARTING);
+    }
 
     public NativeExecutableTarget(NativeExecutableTargetConfiguration configuration) {
         super(new NativeExecutableTargetExecutionService());
@@ -137,14 +144,26 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
 
     @Override
     public int getPID() {
-        return pid;
+        NativeProcess p = processRef.get();
+        if (p != null) {
+            try {
+                return p.getPID();
+            } catch (IOException ex) {
+//            Exceptions.printStackTrace(ex);
+            }
+        }
+        return -1;
     }
 
     @Override
     public State getState() {
-        synchronized (stateLock) {
-            return state;
+        NativeProcess p = processRef.get();
+
+        if (p != null) {
+            return stateTrMap.get(p.getState());
         }
+
+        return State.INIT;
     }
 
     @Override
@@ -159,44 +178,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         }
 
         NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
-        NativeProcess process = (NativeProcess) event.getSource();
-
-        State newState = null;
-        boolean doNotify = true;
-        boolean doResume = false;
-
-        synchronized (stateLock) {
-            switch (event.state) {
-                case INITIAL:
-                    state = State.INIT;
-                    break;
-                case STARTING:
-                    state = State.STARTING;
-                    break;
-                case RUNNING:
-                    state = State.RUNNING;
-                    pid = event.pid;
-                    //doResume = true;
-                    break;
-                case CANCELLED:
-                    doNotify = false;
-                    state = State.TERMINATED;
-                    log.log(Level.FINE, "NativeTask {0} cancelled!", process.toString()); // NOI18N
-                    break;
-                case ERROR:
-                    doNotify = false;
-                    state = State.FAILED;
-                    log.log(Level.FINE, "NativeTask {0} finished with error! ", process.toString()); // NOI18N
-                    break;
-                case FINISHED:
-                    doNotify = false;
-                    state = State.DONE;
-                    status = process.exitValue();
-                    break;
-            }
-
-            newState = state;
-        }
+        processRef.compareAndSet(null, (NativeProcess) event.getSource());
 
         // #165655 - reported RUN status may intermix with program's output
         // This is because notification is sent as soon as process's waitFor()
@@ -209,13 +191,16 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         // We will not notify listeners here, but rather will do this from
         // a runnable passed to an execution service as a postExecution parameter.
 
-        if (doNotify) {
-            Integer notificationValue = (newState == DLightTarget.State.RUNNING) ? Integer.valueOf(pid) : status;
-            notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, newState, notificationValue));
-        }
+        State state = stateTrMap.get(event.state);
 
-        if (doResume) {
-            resume();
+        switch (event.state) {
+            case INITIAL:
+            case STARTING:
+                notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, state, -1));
+                break;
+            case RUNNING:
+                notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, state, event.pid));
+                break;
         }
     }
 
@@ -311,15 +296,21 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
 
                 @Override
                 public void run() {
-                    final State stateToNotify;
-                    final Integer statusToNotify;
-                    
-                    synchronized (NativeExecutableTarget.this) {
-                        stateToNotify = state == null ? State.FAILED : state;
-                        statusToNotify = status == null ? Integer.MIN_VALUE : status;
+                    final NativeProcess process = processRef.get();
+
+                    if (process == null) {
+                        return;
                     }
-                    
-                    notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, stateToNotify, statusToNotify));
+
+                    int rc = -1;
+
+                    try {
+                        rc = process.waitFor();
+                    } catch (InterruptedException ex) {
+//                        Exceptions.printStackTrace(ex);
+                    }
+
+                    notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, stateTrMap.get(process.getState()), rc));
                 }
             });
 
@@ -344,9 +335,9 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         }
     }
 
-    private void resume() {
-        CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGCONT, null);
-    }
+//    private void resume() {
+//        CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGCONT, null);
+//    }
 
     private void terminate() {
         synchronized (this) {

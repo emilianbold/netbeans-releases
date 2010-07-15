@@ -86,7 +86,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             ((Disposable) body).dispose();
         }
     }
-    
+
     @Override
     public CsmCompoundStatement getBody() {
         return body;
@@ -183,24 +183,41 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         return (CsmFunction) def;
     }
 
-    private static CsmFunction findByNameAndParamsNumber(Iterator declarations, CharSequence name, int paramsNumber) {
+    private CsmFunction findByNameAndParamsNumber(Iterator declarations, CharSequence name, int paramsNumber) {
         CsmFunction out = null;
+        CsmFunction best = null;
+        CsmFunction best2 = null;
         for (Iterator it = declarations; it.hasNext();) {
             Object o = it.next();
             if (CsmKindUtilities.isCsmObject(o) && CsmKindUtilities.isFunction((CsmObject) o)) {
                 CsmFunction decl = (CsmFunction) o;
-                if (decl.getName().equals(name) && decl.getParameters().size() == paramsNumber) {
-                    out = decl;
-                    if (!FunctionImplEx.isFakeFunction(decl)) {
-                        break;
-                    }
-                }
-                if (out == null && decl.getName().equals(name)) {
-                    if (!FunctionImplEx.isFakeFunction(decl)) {
+                if (decl.getName().equals(name)) {
+                    if (decl.getParameters().size() == paramsNumber) {
                         out = decl;
+                        if (!FunctionImplEx.isFakeFunction(decl)) {
+                            if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), decl)) {
+                                best = decl;
+                                break;
+                            }
+                        }
+                    } else {
+                        if (!FunctionImplEx.isFakeFunction(decl)) {
+                            if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), decl)) {
+                                best2 = decl;
+                            }
+                            if (out == null) {
+                                out = decl;
+                            }
+                        }
                     }
                 }
             }
+        }
+        if (best != null) {
+            return best;
+        }
+        if (best2 != null) {
+            return best2;
         }
         return out;
     }

@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
             <file name="junit-3.8.2.xml" url="junit_3_8_2_lib.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.junit.Bundle#junit"/>
             </file>
-            <file name="junit-4.5.xml" url="junit_4_5_lib.xml">
+            <file name="junit-4.8.2.xml" url="junit_4_8_2_lib.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.junit.Bundle#junit_4"/>
             </file>
         </folder>
@@ -147,7 +147,14 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
                 <attr name="templateCategory" stringvalue="invisible"/>
             </file>
-            
+
+            <file name="junit-custom.xml" url="templates/junit-custom.xml">
+                <attr name="position" intvalue="0"/>
+                <attr name="template" boolvalue="false"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
+            </file>
+
         </folder>
     </folder>
 
@@ -162,6 +169,14 @@ made subject to such option by the copyright holder.
                             <attr name="position" intvalue="220"/>
                         </file>
                     </folder>
+                    <file name="org-netbeans-modules-junit-actions-RunTestMethodAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-actions-RunTestMethodAction.instance"/>
+                        <attr name="position" intvalue="1795"/>
+                    </file>
+                    <file name="org-netbeans-modules-junit-actions-DebugTestMethodAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-actions-DebugTestMethodAction.instance"/>
+                        <attr name="position" intvalue="1797"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
@@ -172,6 +187,8 @@ made subject to such option by the copyright holder.
         <folder name="JUnitTests">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
             <file name="org-netbeans-modules-junit-CreateTestAction.instance"/>
+            <file name="org-netbeans-modules-junit-actions-RunTestMethodAction.instance"/>
+            <file name="org-netbeans-modules-junit-actions-DebugTestMethodAction.instance"/>
         </folder>
     </folder>
     <folder name="UI">

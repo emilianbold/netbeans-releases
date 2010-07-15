@@ -1267,7 +1267,7 @@ class OccurenceBuilder {
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, nodeInfo.getRange().getStart());
                         if (namespaceScope != null) {
                             Set<QualifiedName> allNames = new HashSet<QualifiedName>();
-                            for (QualifiedName qn : QualifiedName.getComposedNames(qualifiedName, namespaceScope)) {
+                            for (QualifiedName qn : VariousUtils.getComposedNames(qualifiedName, namespaceScope)) {
                                 if (!qn.getKind().isUnqualified() && !qn.isDefaultNamespace()) {
                                     allNames.add(qn.toNamespaceName());
                                 }
@@ -1339,7 +1339,7 @@ class OccurenceBuilder {
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, nodeInfo.getRange().getStart());
                         if (namespaceScope != null) {
                             Set<QualifiedName> allNames = new HashSet<QualifiedName>();
-                            for (QualifiedName qn : QualifiedName.getComposedNames(qualifiedName, namespaceScope)) {
+                            for (QualifiedName qn : VariousUtils.getComposedNames(qualifiedName, namespaceScope)) {
                                 if (!qn.getKind().isUnqualified() && !qn.isDefaultNamespace()) {
                                     allNames.add(qn.toNamespaceName());
                                 }
@@ -1376,7 +1376,7 @@ class OccurenceBuilder {
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, nodeInfo.getRange().getStart());
                         if (namespaceScope != null) {
                             Set<QualifiedName> allNames = new HashSet<QualifiedName>();
-                            for (QualifiedName qn : QualifiedName.getComposedNames(qualifiedName, namespaceScope)) {
+                            for (QualifiedName qn : VariousUtils.getComposedNames(qualifiedName, namespaceScope)) {
                                 if (!qn.getKind().isUnqualified() && !qn.isDefaultNamespace()) {
                                     allNames.add(qn.toNamespaceName());
                                 }
@@ -1683,8 +1683,8 @@ class OccurenceBuilder {
             if (queryQN.equals(nodeQN)) {
                 return true;
             }
-            final Collection<QualifiedName> queryComposedNames = QualifiedName.getComposedNames(queryQN, query.getNamespaceScope());
-            final Collection<QualifiedName> nodeQomposedNames = QualifiedName.getComposedNames(nodeQN, ModelUtils.getNamespaceScope(nodeScope));
+            final Collection<QualifiedName> queryComposedNames = VariousUtils.getComposedNames(queryQN, query.getNamespaceScope());
+            final Collection<QualifiedName> nodeQomposedNames = VariousUtils.getComposedNames(nodeQN, ModelUtils.getNamespaceScope(nodeScope));
             queryComposedNames.retainAll(nodeQomposedNames);
             return !queryComposedNames.isEmpty();
         }
@@ -1845,7 +1845,7 @@ class OccurenceBuilder {
         }
 
         public Collection<QualifiedName> getComposedNames() {
-            return QualifiedName.getComposedNames(getQualifiedName(), getNamespaceScope());
+            return VariousUtils.getComposedNames(getQualifiedName(), getNamespaceScope());
         }
 
         public String getName() {

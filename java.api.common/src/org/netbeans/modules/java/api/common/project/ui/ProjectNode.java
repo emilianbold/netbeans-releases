@@ -103,6 +103,7 @@ class ProjectNode extends AbstractNode {
         this.artifactLocation = artifactLocation;
     }
 
+    @Override
     public String getDisplayName () {        
         ProjectInformation info = getProjectInformation();        
         if (info != null) {
@@ -114,10 +115,12 @@ class ProjectNode extends AbstractNode {
         }
     }
 
+    @Override
     public String getName () {
         return this.getDisplayName();
     }
 
+    @Override
     public Image getIcon(int type) {
         if (cachedIcon == null) {
             ProjectInformation info = getProjectInformation();
@@ -132,14 +135,28 @@ class ProjectNode extends AbstractNode {
         return cachedIcon;
     }
 
+    @Override
+    public String getShortDescription() {
+        final Project p = this.antArtifact.getProject();
+        FileObject fo;
+        if (p != null && (fo = p.getProjectDirectory()) != null) {
+            return FileUtil.getFileDisplayName(fo);
+        } else {
+            return super.getShortDescription();
+        }
+    }
+
+    @Override
     public Image getOpenedIcon(int type) {
         return this.getIcon(type);
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get (OpenProjectAction.class),
@@ -148,6 +165,7 @@ class ProjectNode extends AbstractNode {
         };
     }
 
+    @Override
     public Action getPreferredAction () {
         return getActions(false)[0];
     }
@@ -191,10 +209,12 @@ class ProjectNode extends AbstractNode {
         }
 
 
+        @Override
         public boolean hasJavadoc() {
             return findJavadoc().size() > 0;
         }
 
+        @Override
         public void showJavadoc() {
             Set<URL> us = findJavadoc();
             URL[] urls = us.toArray(new URL[us.size()]);
@@ -230,6 +250,7 @@ class ProjectNode extends AbstractNode {
 
     private static class OpenProjectAction extends NodeAction {
 
+        @Override
         protected void performAction(Node[] activatedNodes) {
             Project[] projects = new Project[activatedNodes.length];
             for (int i=0; i<projects.length;i++) {
@@ -243,6 +264,7 @@ class ProjectNode extends AbstractNode {
             OpenProjects.getDefault().open(projects, false);
         }
 
+        @Override
         protected boolean enable(Node[] activatedNodes) {
             final Collection<Project> openedProjects =Arrays.asList(OpenProjects.getDefault().getOpenProjects());
             for (int i=0; i<activatedNodes.length; i++) {
@@ -269,14 +291,17 @@ class ProjectNode extends AbstractNode {
             return p;
         }
 
+        @Override
         public String getName() {
             return NbBundle.getMessage (ProjectNode.class,"CTL_OpenProject");
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx (OpenProjectAction.class);
         }
 
+        @Override
         protected boolean asynchronous() {
             return false;
         }

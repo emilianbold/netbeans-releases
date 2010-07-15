@@ -240,17 +240,102 @@ public class ProvidedExtensionsTest extends NbTestCase {
         }
     }
 
-    public void testAfterAtomicAction() throws IOException {
+    public void testDuringAtomicAction() throws IOException {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
+        iListener.clear();
         fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
-                FileUtil.createData(new File(getWorkDir(),"a/b/c/d/e/f/g.txt"));
-                assertEquals(0, iListener.implsCreateSuccessCalls);
+                FileObject f = FileUtil.createData(new File(getWorkDir(), "a/b/c/d/e/f/g.txt"));
+                assertEquals(7, iListener.implsCreateSuccessCalls);
+                f.delete();
+                assertEquals(1, iListener.implsDeleteSuccessCalls);
             }            
         });
-        assertEquals(7, iListener.implsCreateSuccessCalls);
     }
     
+    public void testCreatedExternally() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        FileObject[] children = fo.getChildren(); // scan folder
+
+        FileObject folder = fo.createFolder("folder");
+        iListener.clear();
+        assertEquals(0, iListener.implsCreatedExternallyCalls);
+        File f = new File(FileUtil.toFile(fo), "file");
+        f.createNewFile();
+        assertEquals(0, iListener.implsCreatedExternallyCalls);
+        fo.refresh();
+        assertEquals(1, iListener.implsCreatedExternallyCalls);
+    }
+
+    public void testDeletedExternally() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        FileObject file = fo.createData("file");
+
+        iListener.clear();
+        FileUtil.toFile(file).delete();
+        assertEquals(0, iListener.implsDeletedExternallyCalls);
+        fo.refresh();
+        assertEquals(1, iListener.implsDeletedExternallyCalls);
+    }
+
+    public void testFileChangedExternally() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        FileObject file = fo.createData("file");
+        FileUtil.toFile(file).setLastModified(System.currentTimeMillis() - 10000);
+        fo.refresh();
+
+        iListener.clear();
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(FileUtil.toFile(file));
+            fos.write("data".getBytes());
+            fos.flush();
+        } finally {
+            if(fos != null) fos.close();
+        }
+        assertEquals(0, iListener.implsFileChangedCalls);
+        fo.refresh();
+        file.refresh();
+        assertEquals(1, iListener.implsFileChangedCalls);
+    }
+
+    public void testMove_BeforeSuccessFailure() throws IOException {
+        FileObject fromFolder = FileUtil.toFileObject(getWorkDir()).createFolder("moveFrom");
+        FileObject toFolder = FileUtil.toFileObject(getWorkDir()).createFolder("moveTo");
+        assertNotNull(fromFolder);
+        assertNotNull(toFolder);
+        FileObject toMove = fromFolder.createData("aa");
+        assertNotNull(toMove);
+        iListener.clear();
+
+        assertNotNull(iListener);
+        assertEquals(0,iListener.beforeMoveCalls);
+        assertEquals(0,iListener.moveSuccessCalls);
+        assertEquals(0,iListener.moveFailureCalls);
+
+        // move
+        FileLock lock = toMove.lock();
+        toMove.move(lock, toFolder, toMove.getName(), toMove.getExt());
+        assertFalse(toMove.isValid());
+        assertEquals(1,iListener.beforeMoveCalls);
+        assertEquals(1,iListener.moveSuccessCalls);
+
+        iListener.clear();
+        try {
+            // success
+            assertEquals(0,iListener.moveSuccessCalls);
+            assertEquals(0,iListener.moveFailureCalls);
+
+            // move to itself => failure
+            toMove.move(lock, toFolder, toMove.getName(), toMove.getExt());
+            fail();
+        } catch (IOException ex) {
+            // failure
+            assertEquals(0,iListener.moveSuccessCalls);
+            assertEquals(1,iListener.moveFailureCalls);
+        }
+    }
+
     public void testImplsRename2() throws IOException {
         final List events = new ArrayList();
         FileObject fo = FileUtil.toFileObject(getWorkDir());
@@ -464,9 +549,16 @@ public class ProvidedExtensionsTest extends NbTestCase {
         private int renameImplCalls;
         private int implsBeforeChangeCalls;
         private int implsCreateSuccessCalls;        
+        private int implsDeleteSuccessCalls;
+        private int implsCreatedExternallyCalls;
+        private int implsDeletedExternallyCalls;
+        private int implsFileChangedCalls;
         private int implsFileLockCalls;
         private int implsFileUnlockCalls;
         private int implsCanWriteCalls;
+        private int beforeMoveCalls;
+        private int moveSuccessCalls;
+        private int moveFailureCalls;
         
         private static  boolean implsMoveRetVal = true;
         private static boolean implsRenameRetVal = true;
@@ -501,6 +593,13 @@ public class ProvidedExtensionsTest extends NbTestCase {
             renameImplCalls = 0;
             implsBeforeChangeCalls = 0;
             implsCreateSuccessCalls = 0;
+            implsDeleteSuccessCalls = 0;
+            implsCreatedExternallyCalls = 0;
+            implsDeletedExternallyCalls = 0;
+            implsFileChangedCalls = 0;
+            beforeMoveCalls = 0;
+            moveSuccessCalls = 0;
+            moveFailureCalls = 0;
             implsFileLockCalls = 0;
             implsCanWriteCalls = 0;
         }
@@ -527,11 +626,39 @@ public class ProvidedExtensionsTest extends NbTestCase {
             implsCreateSuccessCalls++;
         }
 
+        public void deleteSuccess(FileObject fo) {
+            implsDeleteSuccessCalls++;
+        }
+
         public void beforeChange(FileObject f) {
             assertNotNull(FileUtil.toFile(f));
             implsBeforeChangeCalls++;
         }
         
+        public void createdExternally(FileObject fo) {
+            implsCreatedExternallyCalls++;
+        }
+
+        public void deletedExternally(FileObject fo) {
+            implsDeletedExternallyCalls++;
+        }
+
+        public void fileChanged(FileObject fo) {
+            implsFileChangedCalls++;
+        }
+
+        public void beforeMove(FileObject fo, File to) {
+            beforeMoveCalls++;
+        }
+
+        public void moveSuccess(FileObject fo, File to) {
+            moveSuccessCalls++;
+        }
+
+        public void moveFailure(FileObject fo, File to) {
+            moveFailureCalls++;
+        }
+
         public static void nextRefreshCall(File forDir, long retValue, File... toAdd) {
             refreshCallForDir = forDir;
             refreshCallRetValue = retValue;

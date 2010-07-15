@@ -45,9 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Writer;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,6 +53,7 @@ import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -83,11 +82,11 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
+import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -109,20 +108,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
         this.pae = pae;
-    }
-
-    /**
-     * Will be called to get arguments for the action. Can be overridden.
-     */
-    private String getArguments() {
-        return pae.getProfile().getArgsFlat();
-    }
-
-    /**
-     * Will be called to get the environment for the action. Can be overridden.
-     */
-    private String[] getEnvironment() {
-        return pae.getProfile().getEnvironment().getenv();
     }
 
     @Override
@@ -263,14 +248,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
         ProcessChangeListener processChangeListener =
                 new ProcessChangeListener(this, null/*Writer outputListener*/,
-                converter, io, pae.getActionName());
+                converter, io);
 
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-                .setWorkingDirectory(workingDirectory)
-                .unbufferOutput(unbuffer)
-                .setExecutable(exe)
-                .setArguments(args.toArray(new String[args.size()]))
-                .addNativeProcessListener(processChangeListener);
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
+                setWorkingDirectory(workingDirectory).
+                unbufferOutput(unbuffer).
+                setExecutable(exe).
+                setArguments(args.toArray(new String[args.size()])).
+                addNativeProcessListener(processChangeListener);
 
         npb.getEnvironment().putAll(env);
 
@@ -291,16 +276,17 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
         }
 
-        NativeExecutionDescriptor descr = new NativeExecutionDescriptor()
-                .controllable(true)
-                .frontWindow(true)
-                .inputVisible(showInput)
-                .inputOutput(io)
-                .outLineBased(!unbuffer)
-                .showProgress(true)
-                .postExecution(processChangeListener)
-                .errConvertorFactory(processChangeListener)
-                .outConvertorFactory(processChangeListener);
+        NativeExecutionDescriptor descr =
+                new NativeExecutionDescriptor().controllable(true).
+                frontWindow(true).
+                inputVisible(showInput).
+                inputOutput(io).
+                outLineBased(!unbuffer).
+                showProgress(true).
+                postMessageDisplayer(new PostMessageDisplayer.Default(pae.getActionName())).
+                postExecution(processChangeListener).
+                errConvertorFactory(processChangeListener).
+                outConvertorFactory(processChangeListener);
 
         if (actionType == PredefinedType.BUILD || actionType == PredefinedType.CLEAN) {
             descr.noReset(true);
@@ -315,7 +301,11 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
         }
 
-        NativeExecutionService es = NativeExecutionService.newService(npb, descr, pae.getActionName()); // NOI18N
+        NativeExecutionService es =
+                NativeExecutionService.newService(npb,
+                descr,
+                pae.getActionName());
+
         executorTask = es.run();
     }
 
@@ -404,22 +394,16 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
     private static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
 
-        private static final boolean showHeader = Boolean.getBoolean("cnd.execution.showheader");
+        private final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
         private final ExecutionListener listener;
         private Writer outputListener;
         private final LineConvertor lineConvertor;
-        private final InputOutput tab;
-        private final String actionName;
-        private long startTimeMillis;
-        private Runnable postRunnable;
 
         public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor,
-                InputOutput tab, String actionName) {
+                InputOutput tab) {
             this.listener = listener;
             this.outputListener = outputListener;
             this.lineConvertor = lineConvertor;
-            this.tab = tab;
-            this.actionName = actionName;
         }
 
         @Override
@@ -427,135 +411,25 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             if (!(e instanceof NativeProcessChangeEvent)) {
                 return;
             }
+
             final NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
-            final NativeProcess process = (NativeProcess) event.getSource();
-            switch (event.state) {
-                case INITIAL:
-                    break;
-                case STARTING:
-                    break;
-                case RUNNING:
-                    startTimeMillis = System.currentTimeMillis();
-                    if (showHeader) {
-                        assert false;
-                        // TODO: is it needed?
-                        //String runDirToShow = execEnv.isLocal() ?
-                        //    runDir : HostInfoProvider.getMapper(execEnv).getRemotePath(runDir,true);
-                        //String preText = MessageFormat.format(getString("PRETEXT"),
-                        //        exePlusArgsQuoted(executable, arguments), runDirToShow);
-                        //err.println(preText);
-                        //err.println();
-                    }
-                    if (listener != null) {
-                        listener.executionStarted(event.pid);
-                    }
-                    break;
-                case CANCELLED: {
-                    closeOutputListener();
-                    postRunnable = new Runnable() {
+            processRef.compareAndSet(null, (NativeProcess) event.getSource());
 
-                        @Override
-                        public void run() {
-                            StringBuilder res = new StringBuilder();
-                            res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase())); // NOI18N
-                            res.append(" ("); // NOI18N
-                            if (process.exitValue() != 0) {
-                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                res.append(' ');
-                            }
-                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                            res.append(')');
-
-                            // use \n\r to correctly move cursor in terminals as well
-                            tab.getErr().printf("\n\r%s\n\r",res.toString()); // NOI18N
-                            closeIO();
-
-                            if (listener != null) {
-                                listener.executionFinished(process.exitValue());
-                            }
-                            
-                            StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString("MSG_TERMINATED"), actionName)); // NOI18N
-                        }
-                    };
-                    break;
-                }
-                case ERROR: {
-                    closeOutputListener();
-                    postRunnable = new Runnable() {
-
-                        @Override
-                        public void run() {
-                            StringBuilder res = new StringBuilder();
-                            res.append(MessageFormat.format(getString("FAILED"), actionName.toUpperCase())); // NOI18N
-                            res.append(" ("); // NOI18N
-                            if (process.exitValue() != 0) {
-                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                res.append(' ');
-                            }
-                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                            res.append(')');
-
-                            // use \n\r to correctly move cursor in terminals as well
-                            tab.getErr().printf("\n\r%s\n\r",res.toString()); // NOI18N
-                            closeIO();
-                            if (listener != null) {
-                                listener.executionFinished(-1);
-                            }
-                            StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString("MSG_FAILED"), actionName));
-                        }
-                    };
-                    break;
-                }
-                case FINISHED: {
-                    closeOutputListener();
-                    postRunnable = new Runnable() {
-
-                        @Override
-                        public void run() {
-                            int rc = process.exitValue();
-                            StringBuilder res = new StringBuilder();
-                            res.append(MessageFormat.format(getString(rc == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase())); // NOI18N
-                            res.append(" ("); // NOI18N
-                            if (rc != 0) {
-                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                res.append(' ');
-                            }
-                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                            res.append(')');
-
-                            PrintWriter pw = (rc == 0) ? tab.getOut() : tab.getErr();
-                            // use \n\r to correctly move cursor in terminals as well
-                            pw.printf("\n\r%s\n\r",res.toString()); // NOI18N
-                            closeIO();
-
-                            if (listener != null) {
-                                listener.executionFinished(process.exitValue());
-                            }
-
-                            StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString(rc == 0 ? "MSG_SUCCESSFUL" : "MSG_FAILED"), actionName));
-                        }
-                    };
-                    break;
+            if (event.state == NativeProcess.State.RUNNING) {
+                if (listener != null) {
+                    listener.executionStarted(event.pid);
                 }
             }
         }
 
         @Override
+        // Started by Execution as postRunnable
         public void run() {
-            if (postRunnable != null) {
-                postRunnable.run();
-            }
-        }
+            closeOutputListener();
 
-        private void closeIO() {
-            if (false) {
-                tab.getErr().close();
-                tab.getOut().close();
-                try {
-                    tab.getIn().close();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+            NativeProcess process = processRef.get();
+            if (process != null && listener != null) {
+                listener.executionFinished(process.exitValue());
             }
         }
 
@@ -595,25 +469,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 return lineConvertor.convert(line);
             }
             return null;
-        }
-
-        private static String formatTime(long millis) {
-            StringBuilder res = new StringBuilder();
-            long seconds = millis / 1000;
-            long minutes = seconds / 60;
-            long hours = minutes / 60;
-            if (hours > 0) {
-                res.append(" ").append(hours).append(getString("HOUR")); // NOI18N
-            }
-            if (minutes > 0) {
-                res.append(" ").append(minutes - hours * 60).append(getString("MINUTE")); // NOI18N
-            }
-            if (seconds > 0) {
-                res.append(" ").append(seconds - minutes * 60).append(getString("SECOND")); // NOI18N
-            } else {
-                res.append(" ").append(millis - seconds * 1000).append(getString("MILLISECOND")); // NOI18N
-            }
-            return res.toString();
         }
     }
 }

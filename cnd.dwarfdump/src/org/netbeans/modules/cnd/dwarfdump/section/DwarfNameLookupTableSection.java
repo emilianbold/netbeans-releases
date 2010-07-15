@@ -103,20 +103,20 @@ public class DwarfNameLookupTableSection extends ElfSection {
             table.version = reader.readShort();
             table.debug_info_offset = reader.read3264();
             table.debug_info_length = reader.read3264();
-            
+            long savePosition = reader.getFilePointer();
             CompilationUnit cu = debugInfo.getCompilationUnit(table.debug_info_offset);
+            reader.seek(savePosition);
             
             if (cu == null) {
 		continue;
 	    }
-	    
+
             for (;;) {
                 long entryOffset = reader.read3264();
                 
                 if (entryOffset == 0) {
                     break;
                 }
-                
                 table.addEntry(entryOffset, reader.readString());
             }
 

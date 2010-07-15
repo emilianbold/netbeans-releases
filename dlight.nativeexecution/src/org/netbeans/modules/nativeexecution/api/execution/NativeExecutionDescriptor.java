@@ -68,6 +68,7 @@ public final class NativeExecutionDescriptor {
     LineConvertorFactory outConvertorFactory;
     boolean noReset;
     Charset charset;
+    PostMessageDisplayer postMessageDisplayer;
 
     public NativeExecutionDescriptor controllable(boolean controllable) {
         this.controllable = controllable;
@@ -99,6 +100,14 @@ public final class NativeExecutionDescriptor {
         return this;
     }
 
+    /**
+     * Passed Runnable will be executed after process is finished and all I/O is
+     * done. Also it is guaranteed that executed process's exitValue() is
+     * available at this point...
+     *
+     * @param postExecution
+     * @return
+     */
     public NativeExecutionDescriptor postExecution(Runnable postExecution) {
         this.postExecution = postExecution;
         return this;
@@ -121,6 +130,11 @@ public final class NativeExecutionDescriptor {
 
     public NativeExecutionDescriptor charset(Charset charset) {
         this.charset = charset;
+        return this;
+    }
+
+    public NativeExecutionDescriptor postMessageDisplayer(PostMessageDisplayer postMessageDisplayer) {
+        this.postMessageDisplayer = postMessageDisplayer;
         return this;
     }
 }

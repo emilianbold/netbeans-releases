@@ -46,11 +46,16 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.*;
 import static com.sun.source.tree.Tree.*;
 import java.io.File;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.*;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
+import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.ui.FmtOptions;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -347,6 +352,107 @@ public class OperatorsTest extends GeneratorTestMDRCompat {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        assertEquals(golden, res);
+    }
+
+    public void testUnary187556a() throws Exception {
+        performUnaryTest187556(Kind.UNARY_MINUS, Kind.UNARY_MINUS, "- -");
+    }
+
+    public void testUnary187556b() throws Exception {
+        performUnaryTest187556(Kind.UNARY_PLUS, Kind.UNARY_MINUS, "+-");
+    }
+
+    public void testUnary187556c() throws Exception {
+        performUnaryTest187556(Kind.UNARY_MINUS, Kind.UNARY_PLUS, "-+");
+    }
+
+    public void testUnary187556d() throws Exception {
+        performUnaryTest187556(Kind.UNARY_PLUS, Kind.UNARY_PLUS, "+ +");
+    }
+
+    public void testUnary187556e() throws Exception {
+        performUnaryTest187556(Kind.UNARY_PLUS, Kind.PREFIX_INCREMENT, "+ ++");
+    }
+
+    public void testUnary187556f() throws Exception {
+        performUnaryTest187556(Kind.UNARY_PLUS, Kind.PREFIX_DECREMENT, "+--");
+    }
+
+    private void performUnaryTest187556(final Kind first, final Kind second, String goldenSnippet) throws Exception {
+        String test = "public class Test { void m(int x) { int y = (|2 + 1); } }";
+        String golden = "public class Test { void m(int x) { int y = " + goldenSnippet + "(2 + 1); } }";
+        testFile = new File(getWorkDir(), "Test.java");
+        final int index = test.indexOf("|");
+        assertTrue(index != -1);
+        TestUtilities.copyStringToFile(testFile, test.replace("|", ""));
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+                Tree node = copy.getTreeUtilities().pathFor(index).getLeaf();
+                assertEquals(Kind.PARENTHESIZED, node.getKind());
+                System.out.println("node: " + node);
+                TreeMaker make = copy.getTreeMaker();
+                UnaryTree modified = make.Unary(first, make.Unary(second, (ExpressionTree) node));
+                System.out.println("modified: " + modified);
+                copy.rewrite(node, modified);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        assertEquals(golden, res);
+    }
+
+    public void testUnary187556g() throws Exception {
+        performUnaryVsBinaryTest187556(Kind.PLUS, Kind.UNARY_PLUS, "0+ +");
+    }
+
+    public void testUnary187556h() throws Exception {
+        performUnaryVsBinaryTest187556(Kind.PLUS, Kind.UNARY_MINUS, "0+-");
+    }
+
+    public void testUnary187556i() throws Exception {
+        performUnaryVsBinaryTest187556(Kind.MINUS, Kind.PREFIX_DECREMENT, "0- --");
+    }
+
+    private void performUnaryVsBinaryTest187556(final Kind first, final Kind second, String goldenSnippet) throws Exception {
+        String test = "public class Test { void m(int x) { int y = (|2 + 1); } }";
+        String golden = "public class Test { void m(int x) { int y = " + goldenSnippet + "(2 + 1); } }";
+        testFile = new File(getWorkDir(), "Test.java");
+        final int index = test.indexOf("|");
+        assertTrue(index != -1);
+        TestUtilities.copyStringToFile(testFile, test.replace("|", ""));
+
+        Preferences prefs = CodeStylePreferences.get(FileUtil.toFileObject(testFile), JavacParser.MIME_TYPE).getPreferences();
+        boolean orig = prefs.getBoolean(FmtOptions.spaceAroundBinaryOps, FmtOptions.getDefaultAsBoolean(FmtOptions.spaceAroundBinaryOps));
+
+        prefs.putBoolean(FmtOptions.spaceAroundBinaryOps, false);
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+                Tree node = copy.getTreeUtilities().pathFor(index).getLeaf();
+                assertEquals(Kind.PARENTHESIZED, node.getKind());
+                System.out.println("node: " + node);
+                TreeMaker make = copy.getTreeMaker();
+                Tree modified = make.Binary(first, make.Literal(0), make.Unary(second, (ExpressionTree) node));
+                System.out.println("modified: " + modified);
+                copy.rewrite(node, modified);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+
+        prefs.putBoolean(FmtOptions.spaceAroundBinaryOps, orig);
+        
         assertEquals(golden, res);
     }
             

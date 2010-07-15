@@ -60,15 +60,6 @@ public class NbModuleSuite2Test extends TestCase {
         super(testName);
     }            
     
-    public static Test suite() {
-        Test t = null;
-        //t = new NbModuleSuiteTest("testRunEmptyConfig");
-        if (t == null) {
-            t = new NbTestSuite(NbModuleSuite2Test.class);
-        }
-        return t;
-    }
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();

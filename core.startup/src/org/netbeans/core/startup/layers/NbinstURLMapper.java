@@ -103,7 +103,7 @@ public class NbinstURLMapper extends URLMapper {
             URI uri = new URI (url.toExternalForm());
             String protocol = uri.getScheme();
             if (PROTOCOL.equals(protocol)) {
-                String module = uri.getHost();
+                String module = uri.getAuthority(); // URI.host is null if CNB contains '_'
                 String path = uri.getPath();
                 if (path.length()>0) {
                     String relpath = path.substring(1).replaceFirst("/$", ""); // NOI18N

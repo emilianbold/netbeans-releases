@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
  */
 public final class ClassifierContainerKey extends ProjectNameBasedKey {
 
-    public ClassifierContainerKey(String project) {
+    public ClassifierContainerKey(CharSequence project) {
         super(project);
     }
 
@@ -61,6 +61,7 @@ public final class ClassifierContainerKey extends ProjectNameBasedKey {
         super(in);
     }
 
+    @Override
     public int getSecondaryAt(int level) {
         assert (level == 0);
         return KeyObjectFactory.KEY_CLASSIFIER_CONTAINER_KEY;
@@ -72,10 +73,12 @@ public final class ClassifierContainerKey extends ProjectNameBasedKey {
     }
 
 
+    @Override
     public int getSecondaryDepth() {
         return 1;
     }
 
+    @Override
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
     }
