@@ -80,6 +80,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.openide.explorer.UIException;
 
@@ -271,6 +272,21 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
 
                 if (editor instanceof ExPropertyEditor) {
                     ((ExPropertyEditor) editor).attachEnv(env);
+                }
+            }
+        }
+    }
+
+    private void cancelEditor() {
+        if (getInplaceEditor() != null) {
+            java.awt.Container parent = getParent();
+            while (parent != null && !(parent instanceof javax.swing.JTable)) {
+                parent = parent.getParent();
+            }
+            if (parent != null) {
+                TableCellEditor tce = ((javax.swing.JTable) parent).getCellEditor();
+                if (tce != null) {
+                    tce.cancelCellEditing();
                 }
             }
         }
@@ -904,7 +920,9 @@ class EditablePropertyDisplayer extends EditorPropertyDisplayer implements Prope
         }
 
         public Object getPartialValue() {
-            return getEnteredValue();
+            Object pvalue = getEnteredValue();
+            cancelEditor();
+            return pvalue;
         }
 
         public java.beans.FeatureDescriptor getSelection() {

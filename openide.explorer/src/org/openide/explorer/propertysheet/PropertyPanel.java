@@ -446,6 +446,23 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
         return displayer;
     }
 
+    /**
+     * Writes the edited value to the property.
+     * @return <code>true</code> when the value was successfully written, <code>false</code> otherwise.
+     */
+    public boolean commit() {
+        if (displayer instanceof PropertyDisplayer_Editable) {
+            try {
+                return ((PropertyDisplayer_Editable) displayer).commit();
+            } catch (IllegalArgumentException iae) {
+                PropertyDialogManager.notify(iae);
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
     /** Installs the component we will embed to display the property */
     private void installDisplayerComponent() {
         //Fetch or instantiate the component we will embed to display the 
@@ -980,11 +997,7 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
             }
 
             if (!changeImmediate) {
-                try {
-                    ((PropertyDisplayer_Editable) displayer).commit();
-                } catch (IllegalArgumentException iae) {
-                    PropertyDialogManager.notify(iae);
-                }
+                commit();
             }
         }
     }
@@ -1035,6 +1048,19 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
         }
 
         return result;
+    }
+
+    /**
+     * Provide the current in-place editor, or <code>null</code>.
+     * @return in-place editor or or <code>null</code>.
+     */
+    public InplaceEditor getInplaceEditor() {
+        PropertyDisplayer pd = getPropertyDisplayer();
+        if (pd instanceof InplaceEditor.Factory) {
+            return ((InplaceEditor.Factory) pd).getInplaceEditor();
+        } else {
+            return null;
+        }
     }
 
     /** Sets whether or not this component is enabled.
