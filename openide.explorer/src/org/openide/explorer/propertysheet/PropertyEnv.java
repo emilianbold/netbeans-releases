@@ -51,6 +51,7 @@ import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.explorer.propertysheet.InplaceEditor.Factory;
 
 
 /**
@@ -397,8 +398,9 @@ public class PropertyEnv {
         ); //NOI18N
         sb.append(", "); //NOI18N
 
-        if (factory != null) {
-            sb.append("InplaceEditorFactory=").append(factory.getClass().getName()); //NOI18N
+        Factory f = factory;
+        if (f != null) {
+            sb.append("InplaceEditorFactory=").append(f.getClass().getName()); //NOI18N
             sb.append(", "); //NOI18N
         }
 
@@ -407,7 +409,12 @@ public class PropertyEnv {
         sb.append(", isChangeImmediate="); //NOI18N
         sb.append(isChangeImmediate());
         sb.append(", featureDescriptor="); //NOI18N
-        sb.append(getFeatureDescriptor().getDisplayName());
+        final FeatureDescriptor fd = getFeatureDescriptor();
+        if (fd != null) {
+            sb.append(fd.getDisplayName());
+        } else {
+            sb.append("null"); // NOI18N
+        }
 
         return sb.toString();
     }
